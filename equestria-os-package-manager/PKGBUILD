@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-package-manager
-pkgver=1.0.1
+pkgver=1.0.2
 pkgrel=1
 pkgdesc='Official Equestria OS Package Manager (Uninstall and Manage)'
 arch=('x86_64')
