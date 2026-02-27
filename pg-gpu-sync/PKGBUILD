@@ -1,0 +1,19 @@
+# Maintainer: Equestria OS Team <your@email.here>
+
+pkgname=pg-gpu-sync
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='NVIDIA driver manager for Equestria OS'
+arch=('any')
+license=('GPL3')
+url='https://psyche-games.com'
+depends=('bash' 'pciutils' 'pacman')
+
+source=(
+    'pg-gpu-sync'
+)
+sha256sums=('SKIP')
+
+package() {
+    install -Dm755 pg-gpu-sync "$pkgdir/usr/bin/pg-gpu-sync"
+}

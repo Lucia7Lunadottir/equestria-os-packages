@@ -1,0 +1,16 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = nvidia-open
+Target = nvidia-open-lts
+Target = nvidia-open-dkms
+Target = nvidia-dkms
+Target = nvidia-utils
+
+[Action]
+Description = Rebuilding initramfs after NVIDIA driver change...
+When = PostTransaction
+Exec = /usr/local/bin/pg-nvidia-fix
+Depends = pg-nvidia-hook

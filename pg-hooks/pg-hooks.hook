@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = pg-hooks
+
+[Action]
+Description = Applying Equestria OS branding...
+When = PostTransaction
+Exec = /usr/bin/pg-hooks-runner

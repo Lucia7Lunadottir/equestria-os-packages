@@ -1,0 +1,27 @@
+# Maintainer: Equestria OS Team <info@psyche-games.com>
+
+pkgname=pg-hooks
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='Pacman hooks for Equestria OS — maintains distro branding after system updates'
+arch=('any')
+license=('GPL3')
+url='https://psyche-games.com'
+depends=('bash')
+conflicts=('eos-hooks')
+replaces=('eos-hooks')
+
+source=(
+    'pg-hooks-runner'
+    'pg-hooks.hook'
+    '25-pg-os-release.hook'
+    'pg-lsb-release.hook'
+)
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -Dm755 pg-hooks-runner       "$pkgdir/usr/bin/pg-hooks-runner"
+    install -Dm644 pg-hooks.hook         "$pkgdir/usr/share/libalpm/hooks/pg-hooks.hook"
+    install -Dm644 25-pg-os-release.hook "$pkgdir/usr/share/libalpm/hooks/25-pg-os-release.hook"
+    install -Dm644 pg-lsb-release.hook   "$pkgdir/usr/share/libalpm/hooks/pg-lsb-release.hook"
+}

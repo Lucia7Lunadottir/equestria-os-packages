@@ -1,0 +1,16 @@
+# Игнорируем тяжелые билды Unity (Они не должны быть в истории Git)
+*/*_Data/
+*/*.x86_64
+*/*.so
+*/*.so.*
+*/*.lock
+*/*_BurstDebugInformation_DoNotShip/
+
+# Игнорируем кэш сборщика Arch Linux
+pkg/
+src/
+
+# Игнорируем готовые собранные пакеты (Их мы будем заливать вручную в Releases)
+*.pkg.tar.zst
+*.tar.gz
+*.zip
