@@ -1,0 +1,24 @@
+key,en,ru,de,fr,es,pt,pl,uk,zh,ja
+ui.title,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme
+ui.subtitle,Select character,Выберите персонажа,Charakter auswählen,Sélectionnez un personnage,Seleccionar personaje,Selecionar personagem,Wybierz postać,Виберіть персонажа,选择角色,キャラクターを選択
+ui.active_none,Active: —,Активен: —,Aktiv: —,Actif : —,Activo: —,Ativo: —,Aktywny: —,Активний: —,当前活动: —,アクティブ: —
+ui.active_char,Active: {0},Активен: {0},Aktiv: {0},Actif : {0},Activo: {0},Ativo: {0},Aktywny: {0},Активний: {0},当前活动: {0},アクティブ: {0}
+ui.btn_edit,Edit,Изменить,Bearbeiten,Éditer,Editar,Editar,Edytuj,Змінити,编辑,編集
+ui.btn_duplicate,Duplicate,Дублировать,Duplizieren,Dupliquer,Duplicar,Duplicar,Duplikuj,Дублювати,复制,複製
+ui.btn_create_new,Create New,Создать,Neu erstellen,Créer nouveau,Crear nuevo,Criar novo,Utwórz nowy,Створити,新建,新規作成
+ui.btn_open_terminal,Open Terminal,Открыть терминал,Terminal öffnen,Ouvrir le terminal,Abrir terminal,Abrir terminal,Otwórz terminal,Відкрити термінал,打开终端,ターミナルを開く
+ui.editor_title,Theme Editor,Редактор темы,Theme-Editor,Éditeur de thème,Editor de temas,Editor de temas,Edytor motywów,Редактор теми,主题编辑器,テーマエディター
+ui.fld_id,Character ID,ID Персонажа,Charakter-ID,ID du personnage,ID de personaje,ID do personagem,ID postaci,ID персонажа,角色 ID,キャラクター ID
+ui.fld_name,Display Name,Имя,Anzeigename,Nom d'affichage,Nombre para mostrar,Nome de exibição,Nazwa wyświetlana,Ім'я,显示名称,表示名
+ui.fld_wallpaper,Wallpaper Path,Путь к обоям,Hintergrundpfad,Chemin du fond d'écran,Ruta del fondo,Caminho do papel de parede,Ścieżka tapety,Шлях до шпалер,壁纸路径,壁紙のパス
+ui.fld_icon,Cutiemark Path,Путь к метке,Cutiemark-Pfad,Chemin de la Cutiemark,Ruta de la Cutiemark,Caminho da Cutiemark,Ścieżka znaczka,Шлях до мітки,可爱标志路径,キューティーマークのパス
+ui.lbl_ui_colors,UI Colors (Hex),Цвета UI (Hex),UI-Farben (Hex),Couleurs UI (Hex),Colores de UI (Hex),Cores da UI (Hex),Kolory UI (Hex),Кольори UI (Hex),UI 颜色 (Hex),UI カラー (Hex)
+ui.lbl_konsole_colors,Konsole Colors (RGB),Цвета Konsole (RGB),Konsole-Farben (RGB),Couleurs Konsole (RGB),Colores de Konsole (RGB),Cores do Konsole (RGB),Kolory Konsole (RGB),Кольори Konsole (RGB),Konsole 颜色 (RGB),Konsole カラー (RGB)
+ui.btn_delete,Delete,Удалить,Löschen,Supprimer,Eliminar,Excluir,Usuń,Видалити,删除,削除
+ui.btn_cancel,Cancel,Отмена,Abbrechen,Annuler,Cancelar,Cancelar,Anuluj,Скасувати,取消,キャンセル
+ui.btn_save,Save,Сохранить,Speichern,Enregistrer,Guardar,Salvar,Zapisz,Зберегти,保存,保存
+ui.cp_title,Pick Color,Выбор цвета,Farbe wählen,Choisir la couleur,Elegir color,Escolher cor,Wybierz kolor,Вибір кольору,选择颜色,色を選択
+ui.btn_apply,Apply,Применить,Anwenden,Appliquer,Aplicar,Aplicar,Zastosuj,Застосувати,应用,適用
+ui.delete_title,Delete Theme?,Удалить тему?,Theme löschen?,Supprimer le thème ?,¿Eliminar tema?,Excluir tema?,Usunąć motyw?,Видалити тему?,删除主题？,テーマを削除しますか？
+ui.delete_msg,Are you sure you want to delete '{0}'?,Вы уверены что хотите удалить '{0}'?,Sind Sie sicher dass Sie '{0}' löschen möchten?,Voulez-vous vraiment supprimer '{0}' ?,¿Seguro que quieres eliminar '{0}'?,Tem certeza que deseja excluir '{0}'?,Czy na pewno chcesz usunąć '{0}'?,Ви впевнені що хочете видалити '{0}'?,确定要删除 '{0}' 吗？,本当に '{0}' を削除しますか？
+ui.btn_yes_delete,Yes Delete,Да удалить,Ja löschen,Oui supprimer,Sí eliminar,Sim excluir,Tak usuń,Так видалити,确认删除,はい削除します

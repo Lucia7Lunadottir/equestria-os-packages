@@ -1,0 +1,19 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Categories=Settings;DesktopSettings;
+Comment[ru_RU]=Customizing the visual style and characters of Equestria OS
+Comment=Customizing the visual style and characters of Equestria OS
+Exec='/opt/equestria-os-character-theme/Equestria OS Character Theme.x86_64'
+GenericName[ru_RU]=Theme Manager
+GenericName=Theme Manager
+Icon=/home/lucial/equestria-packages/equestria-os-character-theme/EquestriaOS-Logo.png
+MimeType=
+Name[ru_RU]=Equestria OS Character Theme
+Name=Equestria OS Character Theme
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=
