@@ -5,13 +5,15 @@ pkgver=1.0.0
 pkgrel=1
 pkgdesc="Официальный визуальный стиль Equestria OS (SDDM, GRUB, Plasma Splash и Cutiemarks)"
 arch=('any')
-url="https://github.com/Psyche-Games"
+url="https://github.com/7Lucia7Lokidottir7"
 license=('custom')
 
 # Указываем, что этот пакет заменяет брендинг EndeavourOS
 conflicts=('endeavouros-branding')
 replaces=('endeavouros-branding')
-provides=('equestria-branding')
+
+provides=('endeavouros-branding' 'equestria-branding')
+
 
 source=()
 
