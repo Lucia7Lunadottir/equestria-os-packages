@@ -1,0 +1,527 @@
+#!/bin/bash
+
+# ============================================================
+#  PG GPU Sync — Equestria OS
+#  Automated NVIDIA driver manager for Arch-based systems.
+#
+#  Compatible with: Equestria OS, EndeavourOS, pure Arch Linux.
+#  No dependency on eos-* utilities or expac.
+#
+#  Modes:
+#    Interactive  — asks for confirmation (default)
+#    --auto       — fully silent, for OS installer / live image
+#    --test       — dry run, nothing is changed
+# ============================================================
+
+# ── Colour output ─────────────────────────────────────────────
+_RED='\033[0;31m'
+_YEL='\033[1;33m'
+_GRN='\033[0;32m'
+_CYN='\033[0;36m'
+_RST='\033[0m'
+
+Info()   { echo -e "${_GRN}[pg-gpu-sync]${_RST} $*"; }
+Warn()   { echo -e "${_YEL}[WARNING]${_RST}     $*" >&2; }
+DIE()    { echo -e "${_RED}[ERROR]${_RST}       $*" >&2; exit 1; }
+Note()   { echo -e "${_CYN}[NOTE]${_RST}        $*"; }
+Header() { echo -e "\n${_CYN}══════════════════════════════════════${_RST}\n  $*\n${_CYN}══════════════════════════════════════${_RST}"; }
+
+# ── Helper functions ──────────────────────────────────────────
+
+IsInstalled() { pacman -Qq "$1" &>/dev/null; }
+
+HasRepo() { grep -q "^\[$1\]" /etc/pacman.conf; }
+
+PkgAvailableInRepos() { pacman -Si "$1" &>/dev/null; }
+
+# ── GPU Detection ─────────────────────────────────────────────
+
+DetectGPU() {
+    # Try class 0300 (VGA) and 0302 (3D) explicitly, then fallback
+    GPU_RAW=$(lspci -d 10de::0300 2>/dev/null | head -n 1)
+    [ -z "$GPU_RAW" ] && GPU_RAW=$(lspci -d 10de::0302 2>/dev/null | head -n 1)
+    [ -z "$GPU_RAW" ] && GPU_RAW=$(lspci | grep -i "NVIDIA" | grep -iE "VGA|3D|Display" | head -n 1)
+
+    # Extract 2-letter family code: TU, GA, AD, GB, GM, GP, GV ...
+    GPU_FAMILY=$(echo "$GPU_RAW" | sed -E 's|.*NVIDIA Corporation ([A-Z]{2})[0-9A-Z]+ .*|\1|')
+    GPU_NAME=$(echo   "$GPU_RAW" | sed -E 's|.*NVIDIA Corporation ([^[]+).*|\1|' | xargs)
+
+    # lspci on some systems shows vendor string differently — second attempt
+    if [ -z "$GPU_FAMILY" ] || [ ${#GPU_FAMILY} -ne 2 ]; then
+        GPU_FAMILY=$(echo "$GPU_RAW" | grep -oP '(?<=NVIDIA Corporation )[A-Z]{2}')
+    fi
+}
+
+FamilyName() {
+    case "$1" in
+        TU) echo "Turing (RTX 20xx / GTX 16xx)" ;;
+        GA) echo "Ampere (RTX 30xx)" ;;
+        AD) echo "Ada Lovelace (RTX 40xx)" ;;
+        GB) echo "Blackwell (RTX 50xx)" ;;
+        GN) echo "Next-gen" ;;
+        GM) echo "Maxwell (GTX 750 / 900 series)" ;;
+        GP) echo "Pascal (GTX 10xx series)" ;;
+        GV) echo "Volta (Titan V / Quadro)" ;;
+        *)  echo "Unknown / Legacy" ;;
+    esac
+}
+
+# ── Driver Selection ──────────────────────────────────────────
+
+SelectDriver() {
+    LEGACY_NOTE=no
+    DRIVER_TYPE=""
+    DRIVER_PKG=""
+
+    # --nouveau override always wins
+    if [ "$MODE" = "nouveau" ]; then
+        DRIVER_TYPE="nouveau"
+        return
+    fi
+
+    case "$GPU_FAMILY" in
+        TU*|GA*|AD*|GB*|GN*)
+            # Turing and newer → official open-source kernel driver
+            DRIVER_TYPE="open"
+            DRIVER_PKG="nvidia-open-dkms"
+            ;;
+        GM*|GP*|GV*)
+            # Maxwell / Pascal / Volta → not in official repos since driver 560+
+            # nvidia-580xx-dkms from AUR is the right solution
+            DRIVER_TYPE="legacy"
+            DRIVER_PKG="nvidia-open-dkms"  # fallback, but will warn
+            LEGACY_NOTE=yes
+            ;;
+        "")
+            if [ "$FORCE" = yes ]; then
+                Warn "No NVIDIA GPU detected, proceeding because --force is set."
+                DRIVER_TYPE="open"
+                DRIVER_PKG="nvidia-open-dkms"
+            else
+                DIE "No NVIDIA GPU detected.\n       Use --force to override, or --nouveau for the nouveau driver."
+            fi
+            ;;
+        *)
+            # Fermi, Kepler, older — nouveau only
+            DRIVER_TYPE="nouveau"
+            ;;
+    esac
+
+    # --no-dkms: swap dkms variant for the plain package
+    if [ "$NO_DKMS" = yes ] && [ "$DRIVER_TYPE" = "open" ]; then
+        DRIVER_PKG="nvidia-open"
+        Note "--no-dkms: using 'nvidia-open' instead of 'nvidia-open-dkms'."
+        Note "  Only linux/linux-lts are supported without DKMS."
+    fi
+}
+
+# ── Kernel Headers ────────────────────────────────────────────
+
+CollectKernelHeaders() {
+    HEADERS_TO_INSTALL=()
+    [ "$NO_DKMS" = yes ] && return
+
+    local kernels=(linux linux-lts linux-zen linux-hardened linux-rt linux-rt-lts)
+    for k in "${kernels[@]}"; do
+        if IsInstalled "$k" && ! IsInstalled "${k}-headers"; then
+            HEADERS_TO_INSTALL+=("${k}-headers")
+            Info "Will install ${k}-headers (DKMS requirement)"
+        fi
+    done
+}
+
+# ── Package Lists ─────────────────────────────────────────────
+
+BuildPackageLists() {
+    INSTALL=()
+    REMOVE=()
+
+    if [ "$DRIVER_TYPE" = "nouveau" ]; then
+        INSTALL+=(vulkan-nouveau)
+        HasRepo multilib && [ "$BIT32" = yes ] && INSTALL+=(lib32-vulkan-nouveau)
+
+        # Remove conflicting proprietary packages
+        local rm_list=(nvidia-open-dkms nvidia-open nvidia-open-lts
+                        nvidia-utils nvidia-settings nvidia-hook pg-nvidia-hook)
+        for p in "${rm_list[@]}"; do
+            IsInstalled "$p" && REMOVE+=("$p")
+        done
+
+    else
+        # Main driver
+        INSTALL+=("$DRIVER_PKG")
+        INSTALL+=(nvidia-utils)
+        [ "$SETTINGS_PKG" = yes ] && INSTALL+=(nvidia-settings)
+
+        # Our own hook package (preferred) or fall back to eos nvidia-hook
+        if PkgAvailableInRepos pg-nvidia-hook; then
+            INSTALL+=(pg-nvidia-hook)
+        elif PkgAvailableInRepos nvidia-hook; then
+            INSTALL+=(nvidia-hook)
+            Note "pg-nvidia-hook not found — using nvidia-hook from EndeavourOS repos."
+        else
+            Warn "No nvidia hook package found. Initramfs won't auto-rebuild on driver updates."
+            Warn "  You can install pg-nvidia-hook manually from the Equestria OS repo."
+        fi
+
+        # 32-bit support
+        HasRepo multilib && [ "$BIT32" = yes ] && INSTALL+=(lib32-nvidia-utils)
+
+        # DKMS + headers
+        if [ "$NO_DKMS" = no ]; then
+            IsInstalled dkms || INSTALL+=(dkms)
+            INSTALL+=("${HEADERS_TO_INSTALL[@]}")
+        fi
+
+        # Remove conflicting open-source drivers
+        local rm_list=(xf86-video-nouveau vulkan-nouveau lib32-vulkan-nouveau)
+        for p in "${rm_list[@]}"; do
+            IsInstalled "$p" && REMOVE+=("$p")
+        done
+    fi
+
+    # Remove already-installed from INSTALL list
+    local filtered=()
+    for p in "${INSTALL[@]}"; do
+        [ -z "$p" ] && continue
+        IsInstalled "$p" || filtered+=("$p")
+    done
+    INSTALL=("${filtered[@]}")
+
+    # Deduplicate REMOVE
+    readarray -t REMOVE < <(printf "%s\n" "${REMOVE[@]}" | sort -u)
+}
+
+# ── Wayland DRM Modeset ───────────────────────────────────────
+
+ConfigureWayland() {
+    [ "$DRIVER_TYPE" = "nouveau" ] && return
+
+    local conf=/etc/modprobe.d/nvidia.conf
+    local line="options nvidia_drm modeset=1 fbdev=1"
+
+    if [ -f "$conf" ] && grep -q "modeset=1" "$conf"; then
+        Info "Wayland modeset already set in $conf"
+        return
+    fi
+
+    Info "Writing Wayland DRM modeset config → $conf"
+    if [ "$DRY_RUN" = no ]; then
+        echo "$line" > "$conf"
+    else
+        Note "[DRY RUN] Would write: $line  →  $conf"
+    fi
+}
+
+# ── initramfs module configuration ───────────────────────────
+# Supports both mkinitcpio and dracut automatically
+
+DetectInitramfsTool() {
+    if [ -f /etc/mkinitcpio.conf ]; then
+        echo "mkinitcpio"
+    elif command -v dracut &>/dev/null; then
+        echo "dracut"
+    else
+        echo "unknown"
+    fi
+}
+
+ConfigureMkinitcpio() {
+    [ "$DRIVER_TYPE" = "nouveau" ] && return
+
+    local tool
+    tool=$(DetectInitramfsTool)
+
+    case "$tool" in
+        mkinitcpio)
+            ConfigureMkinitcpioModules
+            ;;
+        dracut)
+            ConfigureDracut
+            ;;
+        *)
+            Warn "No supported initramfs tool found (mkinitcpio or dracut)."
+            Warn "  Add nvidia modules manually before rebooting!"
+            ;;
+    esac
+}
+
+ConfigureMkinitcpioModules() {
+    local conf=/etc/mkinitcpio.conf
+    local need="nvidia nvidia_modeset nvidia_uvm nvidia_drm"
+
+    local current_line
+    current_line=$(grep "^MODULES=" "$conf")
+    [ -z "$current_line" ] && { Warn "MODULES= line not found in $conf."; return; }
+
+    local missing=()
+    for mod in $need; do
+        echo "$current_line" | grep -q "\b$mod\b" || missing+=("$mod")
+    done
+
+    if [ ${#missing[@]} -eq 0 ]; then
+        Info "NVIDIA modules already in mkinitcpio MODULES=() — no changes."
+        return
+    fi
+
+    Info "Adding to mkinitcpio MODULES: ${missing[*]}"
+    if [ "$DRY_RUN" = no ]; then
+        local existing
+        existing=$(echo "$current_line" | sed -E 's|^MODULES=\(([^)]*)\)|\1|')
+        local combined
+        combined=$(echo "$existing ${missing[*]}" | tr -s ' ' | sed 's/^ //')
+        sed -i "s|^MODULES=(.*)|MODULES=($combined)|" "$conf"
+        Info "Updated: MODULES=($combined)"
+    else
+        Note "[DRY RUN] Would add to mkinitcpio MODULES=(): ${missing[*]}"
+    fi
+}
+
+ConfigureDracut() {
+    local conf=/etc/dracut.conf.d/nvidia.conf
+    local line='force_drivers+=" nvidia nvidia_modeset nvidia_uvm nvidia_drm "'
+
+    if [ -f "$conf" ] && grep -q "nvidia" "$conf"; then
+        Info "NVIDIA dracut config already exists at $conf"
+        return
+    fi
+
+    Info "Writing dracut NVIDIA config → $conf"
+    if [ "$DRY_RUN" = no ]; then
+        mkdir -p /etc/dracut.conf.d
+        echo "$line" > "$conf"
+        Info "Created $conf"
+    else
+        Note "[DRY RUN] Would write: $line  →  $conf"
+    fi
+}
+
+# ── Execute ───────────────────────────────────────────────────
+
+ExecuteChanges() {
+    if [ ${#REMOVE[@]} -gt 0 ]; then
+        Info "Removing conflicting packages: ${REMOVE[*]}"
+        if [ "$DRY_RUN" = no ]; then
+            pacman -Rns --noconfirm "${REMOVE[@]}" 2>/dev/null \
+                || Warn "Some packages could not be removed (may be dependencies of others)."
+        else
+            Note "[DRY RUN] Would remove: ${REMOVE[*]}"
+        fi
+    fi
+
+    if [ ${#INSTALL[@]} -gt 0 ]; then
+        Info "Installing: ${INSTALL[*]}"
+        if [ "$DRY_RUN" = no ]; then
+            pacman -S --needed --noconfirm "${INSTALL[@]}" \
+                || DIE "Package installation failed. Check the output above."
+        else
+            Note "[DRY RUN] Would install: ${INSTALL[*]}"
+        fi
+    fi
+
+    if [ ${#INSTALL[@]} -eq 0 ] && [ ${#REMOVE[@]} -eq 0 ]; then
+        Info "All packages are already up to date — nothing to do."
+    fi
+}
+
+RebuildInitramfs() {
+    [ "$DRIVER_TYPE" = "nouveau" ] && return
+
+    local tool
+    tool=$(DetectInitramfsTool)
+
+    case "$tool" in
+        mkinitcpio)
+            Info "Rebuilding initramfs with mkinitcpio -P ..."
+            if [ "$DRY_RUN" = no ]; then
+                mkinitcpio -P || Warn "mkinitcpio reported issues. Check output above."
+            else
+                Note "[DRY RUN] Would run: mkinitcpio -P"
+            fi
+            ;;
+        dracut)
+            Info "Rebuilding initramfs with dracut ..."
+            if [ "$DRY_RUN" = no ]; then
+                for kver_path in /usr/lib/modules/*/pkgbase; do
+                    [ -f "$kver_path" ] || continue
+                    local kver
+                    kver=$(basename "$(dirname "$kver_path")")
+                    Info "  → kernel $kver"
+                    dracut --force "/boot/initramfs-$kver.img" "$kver" \
+                        || Warn "dracut failed for $kver"
+                done
+            else
+                Note "[DRY RUN] Would run: dracut --force for each installed kernel"
+            fi
+            ;;
+        *)
+            Warn "Cannot rebuild initramfs — no supported tool found."
+            Warn "  Run 'mkinitcpio -P' or 'dracut' manually before rebooting!"
+            ;;
+    esac
+}
+
+# ── Legacy GPU Warning ────────────────────────────────────────
+
+HandleLegacyGPU() {
+    [ "$LEGACY_NOTE" != yes ] && return
+
+    Warn "GPU family ${GPU_FAMILY} ($(FamilyName "$GPU_FAMILY")) is no longer"
+    Warn "supported by the official Arch nvidia-open-dkms driver."
+    echo ""
+    Note "Recommended solution: install from AUR"
+    Note "  yay -S nvidia-580xx-dkms nvidia-580xx-utils"
+    echo ""
+
+    # In auto mode — abort and suggest AUR, don't install wrong driver silently
+    if [ "$AUTO" = yes ]; then
+        Warn "Auto mode: cannot install AUR packages. Skipping NVIDIA driver."
+        Warn "Install nvidia-580xx-dkms manually after the system boots."
+        DRIVER_TYPE="skip"
+        return
+    fi
+
+    read -rp "  Continue anyway with nvidia-open-dkms? (may not work correctly) [y/N] " reply
+    [[ "$reply" =~ ^[Yy]$ ]] || exit 0
+}
+
+# ── Summary ───────────────────────────────────────────────────
+
+ShowSummary() {
+    Header "PG GPU Sync — Plan"
+    printf "  %-16s %s\n" "GPU:"       "${GPU_NAME:-not detected}"
+    printf "  %-16s %s\n" "Family:"    "${GPU_FAMILY:-unknown} — $(FamilyName "$GPU_FAMILY")"
+    printf "  %-16s %s\n" "Driver:"    "${DRIVER_PKG:-none (nouveau)}"
+    printf "  %-16s %s\n" "Mode:"      "$([ "$DRY_RUN" = yes ] && echo "DRY RUN" || ([ "$AUTO" = yes ] && echo "AUTO (unattended)" || echo "Interactive"))"
+    echo ""
+    [ ${#INSTALL[@]} -gt 0 ] && printf "  %-16s %s\n" "To install:" "${INSTALL[*]}"
+    [ ${#REMOVE[@]}  -gt 0 ] && printf "  %-16s %s\n" "To remove:"  "${REMOVE[*]}"
+    echo ""
+}
+
+# ── Help ──────────────────────────────────────────────────────
+
+ShowHelp() {
+    cat <<EOF
+
+  pg-gpu-sync — Equestria OS NVIDIA Driver Manager
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Usage:  sudo pg-gpu-sync [options]
+
+  Options:
+    -h, --help          This help.
+    -t, --test          Dry run — show what WOULD happen, change nothing.
+    -a, --auto          Unattended mode for OS installer / live image.
+                        No prompts. Legacy GPU → skip (can't use AUR).
+    -f, --force         Install even if no NVIDIA GPU detected.
+    -n, --nouveau       Force the open-source nouveau driver.
+        --no-dkms       Install non-DKMS packages (linux/linux-lts only).
+        --32            Add 32-bit support (Steam/Proton).
+                        Requires [multilib] in /etc/pacman.conf.
+        --no-settings   Skip nvidia-settings.
+        --show-gpu      Print detected GPU info and exit.
+
+  GPU support:
+    Turing / Ampere / Ada / Blackwell  →  nvidia-open-dkms  (official repos)
+    Maxwell / Pascal / Volta           →  nvidia-580xx-dkms  (AUR only)
+    Kepler and older                   →  nouveau
+
+EOF
+}
+
+# ── Options Parsing ───────────────────────────────────────────
+
+ParseOptions() {
+    FORCE=no
+    DRY_RUN=no
+    AUTO=no
+    MODE="nvidia"
+    NO_DKMS=no
+    BIT32=no
+    SETTINGS_PKG=yes
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -h|--help)        ShowHelp; exit 0 ;;
+            -t|--test)        DRY_RUN=yes ;;
+            -a|--auto)        AUTO=yes ;;
+            -f|--force)       FORCE=yes ;;
+            -n|--nouveau)     MODE=nouveau ;;
+            --no-dkms)        NO_DKMS=yes ;;
+            --32)             BIT32=yes ;;
+            --no-settings)    SETTINGS_PKG=no ;;
+            --show-gpu)
+                DetectGPU
+                echo "GPU    : ${GPU_NAME:-not detected}"
+                echo "Family : ${GPU_FAMILY:-unknown} — $(FamilyName "$GPU_FAMILY")"
+                exit 0
+                ;;
+            *) Warn "Unknown option: $1"; ShowHelp; exit 1 ;;
+        esac
+        shift
+    done
+}
+
+# ── Main ──────────────────────────────────────────────────────
+
+Main() {
+    ParseOptions "$@"
+
+    # Root check
+    [ "$EUID" -ne 0 ] && DIE "Please run as root:  sudo pg-gpu-sync $*"
+
+    Header "PG GPU Sync — Equestria OS"
+
+    # 1. Detect GPU hardware
+    Info "Scanning for NVIDIA GPU..."
+    DetectGPU
+
+    [ -n "$GPU_NAME" ] && Info "Detected: $GPU_NAME  [family: ${GPU_FAMILY:-?}]"
+
+    # 2. Choose the right driver
+    SelectDriver
+    HandleLegacyGPU
+
+    # Skip entirely if legacy GPU in auto mode (can't use AUR)
+    [ "$DRIVER_TYPE" = "skip" ] && { Info "Skipping NVIDIA driver installation."; exit 0; }
+
+    # 3. Find which kernel headers are missing
+    CollectKernelHeaders
+
+    # 4. Build install/remove lists
+    BuildPackageLists
+
+    # 5. Show the plan
+    ShowSummary
+
+    # 6. Confirm (skip in auto/dry-run mode)
+    if [ "$DRY_RUN" = no ] && [ "$AUTO" = no ]; then
+        read -rp "  Proceed? [Y/n] " confirm
+        [[ "$confirm" =~ ^[Nn]$ ]] && { Info "Aborted."; exit 0; }
+        echo ""
+    fi
+
+    # 7. Remove conflicting packages + install new ones
+    ExecuteChanges
+
+    # 8. Wayland modeset config
+    ConfigureWayland
+
+    # 9. mkinitcpio MODULES injection
+    ConfigureMkinitcpio
+
+    # 10. Rebuild initramfs
+    RebuildInitramfs
+
+    # Done
+    Header "Done!"
+    if [ "$DRY_RUN" = yes ]; then
+        Note "Dry run complete — nothing was changed on your system."
+    else
+        Info "Installation complete. Please reboot."
+        Info "  sudo reboot"
+    fi
+}
+
+Main "$@"

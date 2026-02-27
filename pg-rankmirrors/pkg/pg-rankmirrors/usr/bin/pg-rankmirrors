@@ -1,0 +1,3 @@
+#!/bin/bash
+cd /usr/lib/pg-rankmirrors
+exec ./PGRankMirrors.x86_64 "$@"

@@ -1,0 +1,7 @@
+[Unit]
+Description=Equestria OS — Update checker
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/pg-update
+# Запускаем от имени пользователя чтобы notify-send работал

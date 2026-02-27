@@ -1,0 +1,11 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Name": "Equestria OS Splash",
+        "Description": "Equestria OS Edition",
+        "Icon": "preferences-desktop-theme-global",
+        "Authors": [{"Name": "Lucia Lokidottir"}],
+        "Id": "EquestriaOS-Splash",
+        "Version": "1.0"
+    }
+}

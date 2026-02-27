@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# ============================================================
+#  pg-hooks-runner — Equestria OS
+#  Прописывает имя дистрибутива в системные файлы.
+#  Запускается автоматически через pacman hooks.
+#
+#  Заменяет eos-hooks-runner от EndeavourOS.
+# ============================================================
+
+# Данные дистрибутива
+DISTRO_NAME="Equestria OS"
+DISTRO_ID="equestria-os"
+DISTRO_ID_LIKE="arch"
+DISTRO_URL="https://psyche-games.com"
+DISTRO_LOGO="equestria-os"
+
+Lsb_release() {
+    local file=/etc/lsb-release
+    [ $in_current_folder = yes ] && file="${file##*/}"
+    [ -f "$file" ] || return
+
+    # Добавить DISTRIB_CODENAME если его нет
+    if [ -z "$(grep "^DISTRIB_CODENAME=" "$file")" ]; then
+        echo "DISTRIB_CODENAME=\"rolling\"" >> "$file"
+    fi
+
+    sed -i "$file" \
+        -e "s|^DISTRIB_ID=.*|DISTRIB_ID=\"$DISTRO_NAME\"|" \
+        -e "s|^DISTRIB_CODENAME=.*|DISTRIB_CODENAME=\"rolling\"|" \
+        -e "s|^DISTRIB_DESCRIPTION=.*|DISTRIB_DESCRIPTION=\"$DISTRO_NAME Linux\"|"
+}
+
+Os_release() {
+    local file=/usr/lib/os-release
+    [ $in_current_folder = yes ] && file="${file##*/}"
+    [ -f "$file" ] || return
+
+    sed -i "$file" \
+        -e "s|^NAME=.*|NAME=\"$DISTRO_NAME\"|" \
+        -e "s|^PRETTY_NAME=.*|PRETTY_NAME=\"$DISTRO_NAME\"|" \
+        -e "s|^ID=.*|ID=\"$DISTRO_ID\"|" \
+        -e "s|^ID_LIKE=.*|ID_LIKE=\"$DISTRO_ID_LIKE\"|" \
+        -e "s|^HOME_URL=.*|HOME_URL=\"$DISTRO_URL\"|" \
+        -e "s|^DOCUMENTATION_URL=.*|DOCUMENTATION_URL=\"$DISTRO_URL\"|" \
+        -e "s|^SUPPORT_URL=.*|SUPPORT_URL=\"$DISTRO_URL\"|" \
+        -e "s|^BUG_REPORT_URL=.*|BUG_REPORT_URL=\"$DISTRO_URL\"|" \
+        -e "s|^PRIVACY_POLICY_URL=.*|PRIVACY_POLICY_URL=\"$DISTRO_URL\"|" \
+        -e "s|^LOGO=.*|LOGO=\"$DISTRO_LOGO\"|"
+
+    # Добавить ID_LIKE если отсутствует
+    if [ -z "$(grep "^ID_LIKE=" "$file")" ] && [ -n "$(grep "^ID=" "$file")" ]; then
+        sed -i "$file" -e "/^ID=/a ID_LIKE=\"$DISTRO_ID_LIKE\""
+    fi
+}
+
+Issues() {
+    local file1=/etc/issue
+    local file2=/usr/share/factory/etc/issue
+    [ $in_current_folder = yes ] && {
+        file1="${file1##*/}"
+        file2="${file2##*/}"
+    }
+    # Заменить любое упоминание Arch/EndeavourOS на Equestria OS
+    for f in "$file1" "$file2"; do
+        [ -f "$f" ] && sed -i \
+            -e "s|EndeavourOS|$DISTRO_NAME|g" \
+            -e "s|Arch Linux|$DISTRO_NAME|g" \
+            "$f"
+    done
+}
+
+Main() {
+    local hookname="$1"
+    local in_current_folder="${2:-no}"
+
+    case "$hookname" in
+        os-release)  Os_release ;;
+        lsb-release) Lsb_release ;;
+        issue)       Issues ;;
+        "")          Os_release
+                     Lsb_release
+                     Issues
+                     ;;
+        *)
+            echo "pg-hooks-runner: unknown hook '$hookname'" >&2
+            exit 1
+            ;;
+    esac
+}
+
+Main "$@"

@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = filesystem
+
+[Action]
+Description = Restoring Equestria OS branding in os-release...
+When = PostTransaction
+Exec = /usr/bin/pg-hooks-runner os-release

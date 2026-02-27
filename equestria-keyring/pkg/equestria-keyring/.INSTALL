@@ -1,0 +1,10 @@
+post_install() {
+    if [ -x usr/bin/pacman-key ]; then
+        usr/bin/pacman-key --add /usr/share/pacman/keyrings/equestria.gpg
+        usr/bin/pacman-key --populate equestria
+    fi
+}
+
+post_upgrade() {
+    post_install
+}

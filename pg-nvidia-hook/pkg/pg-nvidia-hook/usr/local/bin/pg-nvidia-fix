@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# ============================================================
+#  pg-nvidia-fix — Equestria OS
+#  Pacman post-transaction hook: rebuilds initramfs after
+#  any NVIDIA driver install, upgrade or removal.
+#
+#  Drop-in replacement for eos-nvidia-fix.
+#  No expac, no eos-* dependencies. Works on pure Arch.
+# ============================================================
+
+Main() {
+    # Check which initramfs tool is available and use it.
+    # Priority: mkinitcpio → dracut → booster
+
+    if command -v mkinitcpio &>/dev/null; then
+        echo "[pg-nvidia-fix] Rebuilding initramfs with mkinitcpio..."
+        mkinitcpio -P
+        return $?
+    fi
+
+    if command -v dracut &>/dev/null; then
+        echo "[pg-nvidia-fix] Rebuilding initramfs with dracut..."
+        # Rebuild for every installed kernel
+        for kver_path in /usr/lib/modules/*/pkgbase; do
+            [ -f "$kver_path" ] || continue
+            kver=$(basename "$(dirname "$kver_path")")
+            echo "[pg-nvidia-fix]   → kernel $kver"
+            dracut --force "/boot/initramfs-$kver.img" "$kver"
+        done
+        return 0
+    fi
+
+    echo "[pg-nvidia-fix] WARNING: No supported initramfs tool found."
+    echo "[pg-nvidia-fix] Please run 'mkinitcpio -P' or 'dracut' manually."
+    return 1
+}
+
+Main "$@"
