@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria OS Welcome
+Comment=Портал в мир магии и технологий
+Exec=equestria-welcome
+Icon=equestria-os-logo
+Categories=System;Utility;
+Terminal=false

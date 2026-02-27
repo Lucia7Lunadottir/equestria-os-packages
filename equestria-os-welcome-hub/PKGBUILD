@@ -1,0 +1,46 @@
+pkgname=equestria-os-welcome-hub
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="Официальный центр приветствия и портал сообщества Equestria OS"
+arch=('x86_64')
+url="https://github.com/7Lucia7Lokidottir7"
+license=('GPL')
+depends=('libx11' 'libxcursor' 'libxrandr' 'libpulse' 'libdecor' 'gtk3' 'konsole' 'yay' 'xdg-utils')
+
+# Добавляем все файлы билда в source, чтобы makepkg затянул их в папку сборки
+# Папку _Data мы добавим отдельно в package() через относительный путь
+source=("equestria-os-welcome.desktop"
+        "EquestriaOS-Logo.png"
+        "Equestria OS Welcome Hub.x86_64"
+        "UnityPlayer.so"
+        "libdecor-0.so.0"
+        "libdecor-cairo.so")
+
+# Пропускаем проверку сумм для локальных файлов
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+package() {
+    # Создаем структуру папок
+    mkdir -p "$pkgdir/opt/$pkgname"
+    mkdir -p "$pkgdir/usr/bin"
+    mkdir -p "$pkgdir/usr/share/applications"
+    mkdir -p "$pkgdir/usr/share/pixmaps"
+
+    # Копируем файлы, которые мы указали в source (они теперь лежат в $srcdir)
+    # Используем кавычки из-за пробелов в названиях!
+    cp "Equestria OS Welcome Hub.x86_64" "$pkgdir/opt/$pkgname/"
+    cp "UnityPlayer.so" "$pkgdir/opt/$pkgname/"
+    cp "libdecor-0.so.0" "$pkgdir/opt/$pkgname/"
+    cp "libdecor-cairo.so" "$pkgdir/opt/$pkgname/"
+
+    # Копируем папку с данными. 
+    # Так как makepkg не умеет в source для папок, берем её из текущей директории проекта ($startdir)
+    cp -r "$startdir/Equestria OS Welcome Hub_Data" "$pkgdir/opt/$pkgname/"
+
+    # Создаем симлинк (команда запуска)
+    ln -s "/opt/$pkgname/Equestria OS Welcome Hub.x86_64" "$pkgdir/usr/bin/equestria-welcome"
+
+    # Устанавливаем ярлык и иконку
+    cp "equestria-os-welcome.desktop" "$pkgdir/usr/share/applications/"
+    cp "EquestriaOS-Logo.png" "$pkgdir/usr/share/pixmaps/equestria-os-logo.png"
+}
