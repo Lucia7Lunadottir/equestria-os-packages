@@ -1,0 +1,52 @@
+# Maintainer: Equestria OS Team <info@psyche-games.com>
+
+pkgname=pg-rankmirrors
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='Equestria OS — Mirror manager with country selection'
+arch=('x86_64')
+license=('GPL3')
+url='https://psyche-games.com'
+depends=('reflector' 'polkit')
+
+# Папки не указываем в source — они копируются вручную в package()
+source=(
+    'PGRankMirrors.x86_64'
+    'UnityPlayer.so'
+    'libdecor-0.so.0'
+    'libdecor-cairo.so'
+    'pg-rankmirrors-backend'
+    'pg-rankmirrors.desktop'
+)
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+package() {
+    local appdir="$pkgdir/usr/lib/pg-rankmirrors"
+
+    install -d "$appdir"
+
+    # Бинарник и библиотеки
+    install -Dm755 PGRankMirrors.x86_64  "$appdir/PGRankMirrors.x86_64"
+    install -Dm755 UnityPlayer.so        "$appdir/UnityPlayer.so"
+    install -Dm755 libdecor-0.so.0       "$appdir/libdecor-0.so.0"
+    install -Dm755 libdecor-cairo.so     "$appdir/libdecor-cairo.so"
+
+    # Папка с данными Unity — копируем из папки рядом с PKGBUILD
+    cp -r "$startdir/PGRankMirrors_Data" "$appdir/PGRankMirrors_Data"
+
+    # Бэкенд
+    install -Dm755 pg-rankmirrors-backend "$pkgdir/usr/bin/pg-rankmirrors-backend"
+
+    # Wrapper-запускалка
+    install -d "$pkgdir/usr/bin"
+    cat > "$pkgdir/usr/bin/pg-rankmirrors" << 'WRAPPER'
+#!/bin/bash
+cd /usr/lib/pg-rankmirrors
+exec ./PGRankMirrors.x86_64 "$@"
+WRAPPER
+    chmod 755 "$pkgdir/usr/bin/pg-rankmirrors"
+
+    # .desktop
+    install -Dm644 pg-rankmirrors.desktop \
+        "$pkgdir/usr/share/applications/pg-rankmirrors.desktop"
+}

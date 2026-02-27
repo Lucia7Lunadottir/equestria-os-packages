@@ -1,0 +1,24 @@
+# Maintainer: Equestria OS Team <info@psyche-games.com>
+
+pkgname=pg-reboot-notify
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='Equestria OS — KDE notification when a reboot is needed after updates'
+arch=('any')
+license=('GPL3')
+url='https://psyche-games.com'
+depends=('bash' 'libnotify')
+
+source=(
+    'pg-reboot-notify'
+    'pg-reboot-notify.hook'
+)
+sha256sums=('SKIP' 'SKIP')
+
+package() {
+    install -Dm755 pg-reboot-notify \
+        "$pkgdir/usr/bin/pg-reboot-notify"
+
+    install -Dm644 pg-reboot-notify.hook \
+        "$pkgdir/usr/share/libalpm/hooks/pg-reboot-notify.hook"
+}

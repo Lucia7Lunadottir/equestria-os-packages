@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# ============================================================
+#  pg-reboot-notify — Equestria OS
+#  Проверяет нужна ли перезагрузка и показывает KDE-уведомление.
+#
+#  Запускается автоматически через systemd timer после обновлений.
+#  Устанавливается как пакет pg-reboot-notify.
+# ============================================================
+
+DISTRO="Equestria OS"
+ICON="system-reboot"  # стандартная иконка KDE
+
+# ── Проверки ────────────────────────────────────────────────
+
+# 1. Ядро: запущенное ядро отличается от установленного?
+RebootNeededKernel() {
+    local running
+    local installed
+    running=$(uname -r)
+    # Ищем установленные ядра
+    for preset in /etc/mkinitcpio.d/*.preset; do
+        local kver
+        kver=$(grep "^ALL_kver=" "$preset" 2>/dev/null | cut -d'=' -f2- | tr -d '"' | xargs basename 2>/dev/null)
+        [ -z "$kver" ] && continue
+        if [ "$kver" != "$running" ]; then
+            return 0  # нужна перезагрузка
+        fi
+    done
+    return 1
+}
+
+# 2. Systemd: есть ли незавершённые обновления?
+RebootNeededSystemd() {
+    systemctl is-system-running 2>/dev/null | grep -qE "degraded|starting"
+    return $?
+}
+
+# 3. Файл-флаг: некоторые пакеты создают этот файл
+RebootNeededFlag() {
+    [ -f /var/run/reboot-required ] || [ -f /run/reboot-required ]
+}
+
+# ── Уведомление ──────────────────────────────────────────────
+
+SendNotification() {
+    local reason="$1"
+
+    # notify-send — стандартный инструмент KDE/freedesktop
+    notify-send \
+        --app-name="$DISTRO" \
+        --icon="$ICON" \
+        --urgency=normal \
+        --expire-time=10000 \
+        "Рекомендуется перезагрузка" \
+        "$reason"
+}
+
+# ── Main ─────────────────────────────────────────────────────
+
+Main() {
+    local reason=""
+
+    if RebootNeededKernel; then
+        reason="Ядро было обновлено. Перезагрузи систему чтобы применить изменения."
+    elif RebootNeededFlag; then
+        reason="Один из пакетов требует перезагрузки системы."
+    fi
+
+    [ -z "$reason" ] && exit 0  # перезагрузка не нужна — молча выходим
+
+    SendNotification "$reason"
+}
+
+Main "$@"

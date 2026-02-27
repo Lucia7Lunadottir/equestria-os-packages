@@ -1,0 +1,33 @@
+# Maintainer: Equestria OS Team <info@psyche-games.com>
+
+pkgname=pg-update
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='Equestria OS — KDE notification when system updates are available'
+arch=('any')
+license=('GPL3')
+url='https://psyche-games.com'
+depends=('bash' 'libnotify' 'pacman')
+optdepends=('yay: AUR update notifications')
+
+source=(
+    'pg-update'
+    'pg-update.service'
+    'pg-update.timer'
+)
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -Dm755 pg-update \
+        "$pkgdir/usr/bin/pg-update"
+
+    install -Dm644 pg-update.service \
+        "$pkgdir/usr/lib/systemd/user/pg-update.service"
+
+    install -Dm644 pg-update.timer \
+        "$pkgdir/usr/lib/systemd/user/pg-update.timer"
+}
+
+post_install() {
+    systemctl --user enable --now pg-update.timer
+}
