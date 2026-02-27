@@ -1,0 +1,22 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-keyring
+pkgver=20260227
+pkgrel=1
+pkgdesc="Digital trust keys for Equestria OS"
+arch=('any')
+url="https://github.com/7Lucia7Lokidottir7"
+license=('GPL')
+install="equestria-keyring.install"
+
+source=('equestria.gpg'
+        'equestria-trusted'
+        'equestria-revoked')
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -d "$pkgdir/usr/share/pacman/keyrings/"
+    install -m644 equestria.gpg "$pkgdir/usr/share/pacman/keyrings/"
+    install -m644 equestria-trusted "$pkgdir/usr/share/pacman/keyrings/"
+    install -m644 equestria-revoked "$pkgdir/usr/share/pacman/keyrings/"
+}
