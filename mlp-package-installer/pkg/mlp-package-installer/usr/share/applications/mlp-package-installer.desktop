@@ -1,0 +1,18 @@
+[Desktop Entry]
+Categories=System;Settings;PackageManager;
+Comment[ru_RU]=Installing applications and drivers in Equestria OS
+Comment=Installing applications and drivers in Equestria OS
+Exec='/opt/mlp-package-installer/MLP Package Installer.x86_64'
+GenericName[ru_RU]=Package Manager
+GenericName=Package Manager
+Icon=/run/media/lucial/Main/Git Projects/Equestria-OS-Package-Installer/PackageInstallerUI/Builds/EquestriaOS-Logo.png
+MimeType=
+Name[ru_RU]=Equestria Store
+Name=Equestria Store
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

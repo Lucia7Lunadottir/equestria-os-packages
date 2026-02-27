@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# ============================================================
+#  pg-update — Equestria OS
+#  Проверяет наличие обновлений и показывает KDE-уведомление.
+#
+#  Запускается по таймеру (раз в час) через systemd.
+#  При наличии обновлений — всплывашка в трее KDE.
+# ============================================================
+
+DISTRO="Equestria OS"
+ICON="system-software-update"
+CACHE_FILE="/tmp/pg-update-last-count"
+
+# ── Подсчёт обновлений ────────────────────────────────────────
+
+CountUpdates() {
+    # Синхронизируем базы данных тихо
+    pacman -Sy --quiet 2>/dev/null
+
+    # Считаем доступные обновления
+    pacman -Qu 2>/dev/null | wc -l
+}
+
+CountAurUpdates() {
+    # Проверяем AUR через yay если он установлен
+    command -v yay &>/dev/null || return 0
+    yay -Qua 2>/dev/null | wc -l
+}
+
+# ── Уведомление ──────────────────────────────────────────────
+
+SendNotification() {
+    local count_pacman="$1"
+    local count_aur="$2"
+    local total=$(( count_pacman + count_aur ))
+    local body=""
+
+    if [ "$count_pacman" -gt 0 ]; then
+        body+="Пакеты: $count_pacman обновлений"
+    fi
+    if [ "$count_aur" -gt 0 ]; then
+        [ -n "$body" ] && body+="\n"
+        body+="AUR: $count_aur обновлений"
+    fi
+
+    notify-send \
+        --app-name="$DISTRO" \
+        --icon="$ICON" \
+        --urgency=low \
+        --expire-time=8000 \
+        "Доступны обновления ($total)" \
+        "$body"
+}
+
+# ── Main ─────────────────────────────────────────────────────
+
+Main() {
+    # Нужно интернет-соединение
+    ping -c 1 -W 3 archlinux.org &>/dev/null || exit 0
+
+    local count_pacman
+    local count_aur
+    count_pacman=$(CountUpdates)
+    count_aur=$(CountAurUpdates)
+    local total=$(( count_pacman + count_aur ))
+
+    # Не уведомлять если обновлений нет
+    [ "$total" -eq 0 ] && exit 0
+
+    # Не уведомлять повторно если количество не изменилось
+    local last_count=0
+    [ -f "$CACHE_FILE" ] && last_count=$(cat "$CACHE_FILE")
+    [ "$total" -eq "$last_count" ] && exit 0
+
+    # Сохранить текущее количество
+    echo "$total" > "$CACHE_FILE"
+
+    SendNotification "$count_pacman" "$count_aur"
+}
+
+Main "$@"

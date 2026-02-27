@@ -1,0 +1,19 @@
+[Desktop Entry]
+Categories=System;Settings;
+Comment[ru_RU]=Equestria OS — Select fastest Arch mirrors by country
+Comment=Equestria OS — Select fastest Arch mirrors by country
+Exec=pg-rankmirrors
+GenericName[ru_RU]=Selecting Mirrors
+GenericName=Selecting Mirrors
+Icon=/home/lucial/equestria-packages/pg-rankmirrors/EquestriaOS-Logo.png
+Keywords=mirror;reflector;pacman;
+MimeType=
+Name[ru_RU]=Mirror Manager
+Name=Mirror Manager
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

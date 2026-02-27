@@ -1,0 +1,95 @@
+#!/bin/bash
+
+# ============================================================
+#  pg-rankmirrors-backend — Equestria OS
+# ============================================================
+
+export LANG=C
+export LC_ALL=C
+
+MIRRORLIST="/etc/pacman.d/mirrorlist"
+BACKUP="/etc/pacman.d/mirrorlist.bak"
+
+ListCountries() {
+    if ! command -v reflector &>/dev/null; then
+        echo '{"error":"reflector is not installed"}'
+        exit 1
+    fi
+
+    local json="["
+    local first=true
+
+    # reflector --list-countries format:
+    # "Country Name         CODE  COUNT"
+    # We save NF before clearing to avoid awk field-renumbering bug
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+
+        local code count name
+        code=$(echo  "$line" | awk '{print $(NF-1)}')
+        count=$(echo "$line" | awk '{print $NF}')
+        # Remove last two fields (code + count) safely
+        name=$(echo  "$line" | awk '{n=NF; for(i=1;i<=n-2;i++) printf "%s%s",$i,(i<n-2?" ":""); print ""}' | xargs)
+
+        # Skip header or empty lines
+        [ -z "$code" ] || [ -z "$count" ] || [ -z "$name" ] && continue
+        [[ "$code" =~ ^[A-Z]{2}$ ]] || continue   # must be 2 uppercase letters
+
+        $first || json+=","
+        json+="{\"code\":\"$code\",\"name\":\"$name\",\"mirrors\":$count}"
+        first=false
+    done < <(LANG=C reflector --list-countries 2>/dev/null | tail -n +3)
+
+    json+="]"
+    echo "$json"
+}
+
+CurrentMirrors() {
+    grep "^Server" "$MIRRORLIST" 2>/dev/null | head -10
+}
+
+RankMirrors() {
+    local countries_arg="$1"
+    [ -z "$countries_arg" ] && { echo '{"error":"No countries selected"}'; exit 1; }
+    ! command -v reflector &>/dev/null && { echo '{"error":"reflector is not installed"}'; exit 1; }
+    [ "$EUID" -ne 0 ] && { echo '{"error":"Root required"}'; exit 1; }
+
+    cp "$MIRRORLIST" "$BACKUP" 2>/dev/null
+
+    local reflector_args=""
+    IFS=',' read -ra codes <<< "$countries_arg"
+    for code in "${codes[@]}"; do
+        reflector_args+="--country $code "
+    done
+
+    LANG=C reflector \
+        $reflector_args \
+        --protocol https \
+        --sort rate \
+        --latest 10 \
+        --save "$MIRRORLIST" 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo '{"status":"done"}'
+    else
+        cp "$BACKUP" "$MIRRORLIST" 2>/dev/null
+        echo '{"status":"error","message":"reflector failed, backup restored"}'
+    fi
+}
+
+RestoreBackup() {
+    if [ -f "$BACKUP" ]; then
+        cp "$BACKUP" "$MIRRORLIST"
+        echo '{"status":"restored"}'
+    else
+        echo '{"error":"No backup found"}'
+    fi
+}
+
+case "$1" in
+    list-countries) ListCountries ;;
+    current)        CurrentMirrors ;;
+    rank)           RankMirrors "$2" ;;
+    restore)        RestoreBackup ;;
+    *) echo "Usage: pg-rankmirrors-backend [list-countries|current|rank \"RU,DE\"|restore]"; exit 1 ;;
+esac

@@ -1,0 +1,14 @@
+[Trigger]
+Operation = Upgrade
+Type = Package
+Target = linux
+Target = linux-lts
+Target = linux-zen
+Target = linux-hardened
+Target = systemd
+
+[Action]
+Description = Checking if reboot is needed...
+When = PostTransaction
+Exec = /usr/bin/pg-reboot-notify
+NeedsTargets

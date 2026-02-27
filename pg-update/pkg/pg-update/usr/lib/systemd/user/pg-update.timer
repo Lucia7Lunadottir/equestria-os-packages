@@ -1,0 +1,10 @@
+[Unit]
+Description=Equestria OS — Check for updates every hour
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1h
+Unit=pg-update.service
+
+[Install]
+WantedBy=timers.target

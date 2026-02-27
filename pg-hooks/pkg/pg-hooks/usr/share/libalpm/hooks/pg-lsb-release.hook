@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = lsb-release
+
+[Action]
+Description = Restoring Equestria OS branding in lsb-release...
+When = PostTransaction
+Exec = /usr/bin/pg-hooks-runner lsb-release

@@ -1,0 +1,18 @@
+[SddmGreeterTheme]
+Name=Equestria OS-Breeze
+Description=Breeze SDDM theme modified for Equestria OS
+Original-Author=KDE Visual Design Group
+Author=Equestria OS
+Copyright=(c) 2014, David Edmundson
+License=CC-BY-SA
+Type=sddm-theme
+Version=0.1
+Website=https://psyche-games.com/
+Screenshot=preview.png
+MainScript=Main.qml
+ConfigFile=theme.conf
+TranslationsDirectory=translations
+Email=bordiyan20035@gmai.com
+Theme-Id=eos-breeze
+Theme-API=2.0
+QtVersion=6
