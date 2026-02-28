@@ -3,12 +3,12 @@
 pkgname = equestria-branding
 pkgbase = equestria-branding
 xdata = pkgtype=pkg
-pkgver = 1.0.0-1
+pkgver = 1.0.1-1
 pkgdesc = Официальный визуальный стиль Equestria OS (SDDM, GRUB, Plasma Splash и Cutiemarks)
-url = https://github.com/Psyche-Games
-builddate = 1772161206
-packager = Unknown Packager
-size = 21803208
+url = https://github.com/7Lucia7Lokidottir7
+builddate = 1772249954
+packager = Lucia Lokidottir <bordiyan20035@gmail.com>
+size = 21624963
 arch = any
 license = custom
 replaces = endeavouros-branding
