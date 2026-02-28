@@ -1,5 +1,5 @@
 pkgname=equestria-os-welcome-hub
-pkgver=1.1.2
+pkgver=1.1.3
 pkgrel=1
 pkgdesc="The official Equestria OS Welcome Center and Community Portal"
 arch=('x86_64')

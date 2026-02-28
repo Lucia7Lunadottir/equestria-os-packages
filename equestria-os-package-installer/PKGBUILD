@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-package-installer
-pkgver=1.0.1
+pkgver=1.0.2
 pkgrel=1
 pkgdesc='The official Equestria OS app and driver store'
 arch=('x86_64')

@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-character-theme
-pkgver=1.0.0
+pkgver=1.1.1
 pkgrel=1
 pkgdesc='Customizing the visual style and characters of Equestria OS'
 arch=('x86_64')
@@ -27,6 +27,4 @@ package() {
     # 4. Копируем ярлык для меню приложений
     install -Dm644 "$startdir/equestria-os-character-theme.desktop" "$pkgdir/usr/share/applications/"
 
-    # 5. Копируем твой логотип как иконку системы
-    install -Dm644 "$startdir/EquestriaOS-Logo.png" "$pkgdir/usr/share/pixmaps/equestria-os-character-theme.png"
 }

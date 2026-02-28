@@ -31,7 +31,7 @@ repo-add "$DB_NAME" *.pkg.tar.zst
 echo "☁️ Отправка обновления на GitHub..."
 cd "$BASE_DIR" || exit
 git add docs/x86_64/
-git commit -m "Авто-обновление репозитория Equestria OS: $(date +'%Y-%m-%d %H:%M')"
+git commit -m "Equestria OS repository auto-update: $(date +'%Y-%m-%d %H:%M')"
 git push origin main
 
 echo "✨ Готово! Репозиторий обновлен. Через пару минут пакеты будут доступны для pacman -Syu."
