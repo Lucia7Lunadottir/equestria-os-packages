@@ -1,7 +1,7 @@
 pkgname=equestria-os-welcome-hub
-pkgver=1.0.1
+pkgver=1.1.2
 pkgrel=1
-pkgdesc="Официальный центр приветствия и портал сообщества Equestria OS"
+pkgdesc="The official Equestria OS Welcome Center and Community Portal"
 arch=('x86_64')
 url="https://github.com/7Lucia7Lokidottir7"
 license=('GPL')

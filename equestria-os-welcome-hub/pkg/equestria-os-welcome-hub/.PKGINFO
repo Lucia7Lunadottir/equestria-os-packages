@@ -3,12 +3,12 @@
 pkgname = equestria-os-welcome-hub
 pkgbase = equestria-os-welcome-hub
 xdata = pkgtype=pkg
-pkgver = 1.0.1-1
-pkgdesc = Официальный центр приветствия и портал сообщества Equestria OS
+pkgver = 1.1.2-1
+pkgdesc = The official Equestria OS Welcome Center and Community Portal
 url = https://github.com/7Lucia7Lokidottir7
-builddate = 1772210243
+builddate = 1772301218
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 75986494
+size = 75987010
 arch = x86_64
 license = GPL
 depend = libx11
