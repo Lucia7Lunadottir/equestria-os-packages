@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 1.1.0-1
 pkgdesc = Equestria OS — KDE notification when system updates are available
 url = https://psyche-games.com
-builddate = 1772472499
+builddate = 1772480464
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 4332
 arch = any

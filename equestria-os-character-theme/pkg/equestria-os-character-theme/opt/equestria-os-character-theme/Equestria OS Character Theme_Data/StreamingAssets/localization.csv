@@ -22,3 +22,4 @@ ui.btn_apply,Apply,Применить,Anwenden,Appliquer,Aplicar,Aplicar,Zastosu
 ui.delete_title,Delete Theme?,Удалить тему?,Theme löschen?,Supprimer le thème ?,¿Eliminar tema?,Excluir tema?,Usunąć motyw?,Видалити тему?,删除主题？,テーマを削除しますか？
 ui.delete_msg,Are you sure you want to delete '{0}'?,Вы уверены что хотите удалить '{0}'?,Sind Sie sicher dass Sie '{0}' löschen möchten?,Voulez-vous vraiment supprimer '{0}' ?,¿Seguro que quieres eliminar '{0}'?,Tem certeza que deseja excluir '{0}'?,Czy na pewno chcesz usunąć '{0}'?,Ви впевнені що хочете видалити '{0}'?,确定要删除 '{0}' 吗？,本当に '{0}' を削除しますか？
 ui.btn_yes_delete,Yes Delete,Да удалить,Ja löschen,Oui supprimer,Sí eliminar,Sim excluir,Tak usuń,Так видалити,确认删除,はい削除します
+ui.btn_open_folder,Open Folder,Открыть папку,Ordner öffnen,Ouvrir le dossier,Abrir carpeta,Abrir pasta,Otwórz folder,Відкрити папку,打开文件夹,フォルダーを開く
