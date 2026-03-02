@@ -1,7 +1,7 @@
 [Desktop Entry]
 Categories=System;Settings;
 Comment=Official Equestria OS Package Manager (Uninstall and Manage)
-Exec='/opt/mlp-package-manager/MLP Package Manager.x86_64'
+Exec='/opt/equestria-os-package-manager/Equestria OS Package Manager.x86_64'
 GenericName[ru_RU]=Equestria OS Package Manager
 GenericName=Equestria OS Package Manager
 Icon=equestria-os-logo

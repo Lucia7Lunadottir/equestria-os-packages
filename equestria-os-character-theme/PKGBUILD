@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-character-theme
-pkgver=1.1.1
+pkgver=1.1.2
 pkgrel=1
 pkgdesc='Customizing the visual style and characters of Equestria OS'
 arch=('x86_64')
