@@ -6,9 +6,9 @@ xdata = pkgtype=pkg
 pkgver = 1.0.1-1
 pkgdesc = Equestria OS — Mirror manager with country selection
 url = https://psyche-games.com
-builddate = 1772314569
+builddate = 1772474509
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 75823485
+size = 75824778
 arch = x86_64
 license = GPL3
 depend = reflector

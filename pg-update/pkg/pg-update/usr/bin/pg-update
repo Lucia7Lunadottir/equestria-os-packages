@@ -14,35 +14,59 @@ CACHE_FILE="/tmp/pg-update-last-count"
 
 # ── Подсчёт обновлений ────────────────────────────────────────
 
-CountUpdates() {
+CountPacmanUpdates() {
     # Синхронизируем базы данных тихо
-    pacman -Sy --quiet 2>/dev/null
-
-    # Считаем доступные обновления
-    pacman -Qu 2>/dev/null | wc -l
+    # pacman -Sy --quiet 2>/dev/null
+    # pacman -Qu 2>/dev/null | wc -l
+    checkupdates 2>/dev/null | wc -l
 }
 
 CountAurUpdates() {
     # Проверяем AUR через yay если он установлен
-    command -v yay &>/dev/null || return 0
+    command -v yay &>/dev/null || { echo 0; return; }
     yay -Qua 2>/dev/null | wc -l
+}
+
+CountFlatpakUpdates() {
+    # Проверяем Flatpak, если установлен
+    command -v flatpak &>/dev/null || { echo 0; return; }
+
+    # Обновляем кэш flatpak тихо, затем считаем обновления
+    flatpak update --appstream &>/dev/null
+    flatpak remote-ls --updates 2>/dev/null | wc -l
+}
+
+CountSnapUpdates() {
+    # Проверяем Snap, если установлен
+    command -v snap &>/dev/null || { echo 0; return; }
+
+    local output
+    output=$(snap refresh --list 2>/dev/null)
+
+    # Если пишет, что всё обновлено, возвращаем 0
+    if [[ "$output" == *"All snaps up to date."* ]] || [[ -z "$output" ]]; then
+        echo 0
+    else
+        # Вычитаем первую строку (заголовок таблицы) и считаем остальные
+        echo "$output" | tail -n +2 | wc -l
+    fi
 }
 
 # ── Уведомление ──────────────────────────────────────────────
 
 SendNotification() {
-    local count_pacman="$1"
-    local count_aur="$2"
-    local total=$(( count_pacman + count_aur ))
+    local c_pacman="$1"
+    local c_aur="$2"
+    local c_flatpak="$3"
+    local c_snap="$4"
+    local total=$(( c_pacman + c_aur + c_flatpak + c_snap ))
+
     local body=""
 
-    if [ "$count_pacman" -gt 0 ]; then
-        body+="Пакеты: $count_pacman обновлений"
-    fi
-    if [ "$count_aur" -gt 0 ]; then
-        [ -n "$body" ] && body+="\n"
-        body+="AUR: $count_aur обновлений"
-    fi
+    [ "$c_pacman" -gt 0 ] && body+="Pacman: $c_pacman\n"
+    [ "$c_aur" -gt 0 ] && body+="AUR: $c_aur\n"
+    [ "$c_flatpak" -gt 0 ] && body+="Flatpak: $c_flatpak\n"
+    [ "$c_snap" -gt 0 ] && body+="Snap: $c_snap\n"
 
     notify-send \
         --app-name="$DISTRO" \
@@ -59,16 +83,20 @@ Main() {
     # Нужно интернет-соединение
     ping -c 1 -W 3 archlinux.org &>/dev/null || exit 0
 
-    local count_pacman
-    local count_aur
-    count_pacman=$(CountUpdates)
-    count_aur=$(CountAurUpdates)
-    local total=$(( count_pacman + count_aur ))
+    local count_pacman=$(CountPacmanUpdates)
+    local count_aur=$(CountAurUpdates)
+    local count_flatpak=$(CountFlatpakUpdates)
+    local count_snap=$(CountSnapUpdates)
 
-    # Не уведомлять если обновлений нет
-    [ "$total" -eq 0 ] && exit 0
+    local total=$(( count_pacman + count_aur + count_flatpak + count_snap ))
 
-    # Не уведомлять повторно если количество не изменилось
+    # Если обновлений нет, сбрасываем кэш и выходим
+    if [ "$total" -eq 0 ]; then
+        echo 0 > "$CACHE_FILE"
+        exit 0
+    fi
+
+    # Не уведомлять повторно если общее количество не изменилось
     local last_count=0
     [ -f "$CACHE_FILE" ] && last_count=$(cat "$CACHE_FILE")
     [ "$total" -eq "$last_count" ] && exit 0
@@ -76,7 +104,7 @@ Main() {
     # Сохранить текущее количество
     echo "$total" > "$CACHE_FILE"
 
-    SendNotification "$count_pacman" "$count_aur"
+    SendNotification "$count_pacman" "$count_aur" "$count_flatpak" "$count_snap"
 }
 
 Main "$@"

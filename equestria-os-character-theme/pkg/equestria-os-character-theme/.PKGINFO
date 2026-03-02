@@ -6,8 +6,8 @@ xdata = pkgtype=pkg
 pkgver = 1.1.2-1
 pkgdesc = Customizing the visual style and characters of Equestria OS
 url = https://psyche-games.com
-builddate = 1772339279
+builddate = 1772474434
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 101574409
+size = 101575808
 arch = x86_64
 license = custom

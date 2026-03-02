@@ -2,7 +2,25 @@
 [Desktop Entry]
 Type=Application
 Name=Equestria OS Welcome
+Name[de_DE]=Willkommen bei Equestria OS
+Name[es_ES]=Bienvenido a Equestria OS
+Name[fr_FR]=Bienvenue dans Equestria OS
+Name[ja_JP]=Equestria OS へようこそ
+Name[pl_PL]=Witamy w Equestria OS
+Name[pt_PT]=Bem-vindo ao Equestria OS
+Name[ru_RU]=Добро пожаловать в Equestria OS
+Name[uk_UA]=Ласкаво просимо до Equestria OS
+Name[zh_CN]=Equestria OS 欢迎
 Comment=A portal to the world of magic and technology
+Comment[de_DE]=Ein Portal in die Welt der Magie und Technologie
+Comment[es_ES]=Un portal al mundo de la magia y la tecnología
+Comment[fr_FR]=Un portail vers le monde de la magie et de la technologie
+Comment[ja_JP]=魔法とテクノロジーの世界へのポータル
+Comment[pl_PL]=Portal do świata magii i technologii
+Comment[pt_PT]=Um portal para o mundo da magia e da tecnologia
+Comment[ru_RU]=Портал в мир магии и технологий
+Comment[uk_UA]=Портал у світ магії та технологій
+Comment[zh_CN]=通往魔法与科技世界的大门
 Exec=equestria-welcome
 Icon=equestria-os-logo
 Categories=System;Utility;

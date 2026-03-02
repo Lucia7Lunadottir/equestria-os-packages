@@ -3,12 +3,12 @@
 pkgname = pg-update
 pkgbase = pg-update
 xdata = pkgtype=pkg
-pkgver = 1.0.0-1
+pkgver = 1.1.0-1
 pkgdesc = Equestria OS — KDE notification when system updates are available
 url = https://psyche-games.com
-builddate = 1772158477
-packager = Unknown Packager
-size = 3191
+builddate = 1772472499
+packager = Lucia Lokidottir <bordiyan20035@gmail.com>
+size = 4332
 arch = any
 license = GPL3
 depend = bash

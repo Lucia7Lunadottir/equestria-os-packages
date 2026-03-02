@@ -6,8 +6,8 @@ xdata = pkgtype=pkg
 pkgver = 1.0.2-1
 pkgdesc = The official Equestria OS app and driver store
 url = https://psyche-games.com
-builddate = 1772314559
+builddate = 1772474456
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 77838742
+size = 77850286
 arch = x86_64
 license = custom
