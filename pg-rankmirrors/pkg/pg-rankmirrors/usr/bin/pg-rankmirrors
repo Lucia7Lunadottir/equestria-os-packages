@@ -1,3 +1,2 @@
 #!/bin/bash
-cd /usr/lib/pg-rankmirrors
-exec ./PGRankMirrors.x86_64 "$@"
+exec python3 /opt/pg-rankmirrors/main.py "$@"

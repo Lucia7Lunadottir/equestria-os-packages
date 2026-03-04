@@ -1,46 +1,39 @@
+# Maintainer: Equestria OS Team
+
 pkgname=equestria-os-welcome-hub
-pkgver=1.1.3
+pkgver=2.0.0
 pkgrel=1
 pkgdesc="The official Equestria OS Welcome Center and Community Portal"
-arch=('x86_64')
+arch=('any')
 url="https://github.com/7Lucia7Lokidottir7"
 license=('GPL')
-depends=('libx11' 'libxcursor' 'libxrandr' 'libpulse' 'libdecor' 'gtk3' 'konsole' 'yay' 'xdg-utils')
-
-# Добавляем все файлы билда в source, чтобы makepkg затянул их в папку сборки
-# Папку _Data мы добавим отдельно в package() через относительный путь
-source=("equestria-os-welcome.desktop"
-        "EquestriaOS-Logo.png"
-        "Equestria OS Welcome Hub.x86_64"
-        "UnityPlayer.so"
-        "libdecor-0.so.0"
-        "libdecor-cairo.so")
-
-# Пропускаем проверку сумм для локальных файлов
-sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+depends=('python' 'python-pyqt6' 'xdg-utils')
 
 package() {
-    # Создаем структуру папок
-    mkdir -p "$pkgdir/opt/$pkgname"
-    mkdir -p "$pkgdir/usr/bin"
-    mkdir -p "$pkgdir/usr/share/applications"
-    mkdir -p "$pkgdir/usr/share/pixmaps"
+    install -d "$pkgdir/opt/$pkgname"
+    install -d "$pkgdir/usr/bin"
+    install -d "$pkgdir/usr/share/applications"
+    install -d "$pkgdir/usr/share/pixmaps"
 
-    # Копируем файлы, которые мы указали в source (они теперь лежат в $srcdir)
-    # Используем кавычки из-за пробелов в названиях!
-    cp "Equestria OS Welcome Hub.x86_64" "$pkgdir/opt/$pkgname/"
-    cp "UnityPlayer.so" "$pkgdir/opt/$pkgname/"
-    cp "libdecor-0.so.0" "$pkgdir/opt/$pkgname/"
-    cp "libdecor-cairo.so" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/welcome_hub.py" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/ui_welcome.py" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/style.qss" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/EquestriaOS-Logo.png" "$pkgdir/opt/$pkgname/"
 
-    # Копируем папку с данными. 
-    # Так как makepkg не умеет в source для папок, берем её из текущей директории проекта ($startdir)
-    cp -r "$startdir/Equestria OS Welcome Hub_Data" "$pkgdir/opt/$pkgname/"
+    if [ -f "$startdir/start.sh" ]; then
+        cp "$startdir/start.sh" "$pkgdir/opt/$pkgname/"
+        chmod 755 "$pkgdir/opt/$pkgname/start.sh"
+    fi
 
-    # Создаем симлинк (команда запуска)
-    ln -s "/opt/$pkgname/Equestria OS Welcome Hub.x86_64" "$pkgdir/usr/bin/equestria-welcome"
+    chmod 755 "$pkgdir/opt/$pkgname/welcome_hub.py"
 
-    # Устанавливаем ярлык и иконку
-    cp "equestria-os-welcome.desktop" "$pkgdir/usr/share/applications/"
-    cp "EquestriaOS-Logo.png" "$pkgdir/usr/share/pixmaps/equestria-os-logo.png"
+    echo "#!/bin/bash" > "$pkgdir/usr/bin/equestria-welcome"
+    echo "python3 /opt/$pkgname/welcome_hub.py \"\$@\"" >> "$pkgdir/usr/bin/equestria-welcome"
+    chmod 755 "$pkgdir/usr/bin/equestria-welcome"
+
+    install -Dm644 "$startdir/equestria-os-welcome.desktop" "$pkgdir/usr/share/applications/"
+
+    # Уникальное имя иконки: equestria-os-welcome-hub.png
+    install -Dm644 "$startdir/EquestriaOS-Logo.png" "$pkgdir/usr/share/pixmaps/equestria-os-welcome-hub.png"
 }

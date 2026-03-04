@@ -3,13 +3,15 @@
 pkgname = pg-rankmirrors
 pkgbase = pg-rankmirrors
 xdata = pkgtype=pkg
-pkgver = 1.0.1-1
+pkgver = 2.0.0-1
 pkgdesc = Equestria OS — Mirror manager with country selection
 url = https://psyche-games.com
-builddate = 1772474509
+builddate = 1772620499
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 75824778
-arch = x86_64
+size = 300102
+arch = any
 license = GPL3
+depend = python
+depend = python-pyqt6
 depend = reflector
 depend = polkit

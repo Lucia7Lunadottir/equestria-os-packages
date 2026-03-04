@@ -1,1 +1,2 @@
-/opt/equestria-os-welcome-hub/Equestria OS Welcome Hub.x86_64
+#!/bin/bash
+python3 /opt/equestria-os-welcome-hub/welcome_hub.py "$@"
