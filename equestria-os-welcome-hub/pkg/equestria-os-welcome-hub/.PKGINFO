@@ -6,9 +6,9 @@ xdata = pkgtype=pkg
 pkgver = 2.0.0-1
 pkgdesc = The official Equestria OS Welcome Center and Community Portal
 url = https://github.com/7Lucia7Lokidottir7
-builddate = 1772620632
+builddate = 1772664937
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 475088
+size = 475630
 arch = any
 license = GPL
 depend = python

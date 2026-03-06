@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-character-theme
 pkgver=2.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Customizing the visual style and characters of Equestria OS'
 arch=('any')
 url='https://psyche-games.com'
@@ -10,28 +10,40 @@ license=('custom')
 depends=('python' 'python-pyqt6')
 
 package() {
-    install -d "$pkgdir/opt/$pkgname"
+    local appdir="$pkgdir/opt/$pkgname"
+
+    install -d "$appdir"
     install -d "$pkgdir/usr/share/applications"
     install -d "$pkgdir/usr/share/pixmaps"
 
-    cp "$startdir/main.py" "$pkgdir/opt/$pkgname/"
-    cp "$startdir/ui.py" "$pkgdir/opt/$pkgname/"
-    cp "$startdir/style.qss" "$pkgdir/opt/$pkgname/"
-    cp "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/"
-    cp "$startdir/localization.csv" "$pkgdir/opt/$pkgname/"
+    # 1. Копируем скрипты и базовые интерфейсные ресурсы
+    cp "$startdir/main.py" "$appdir/"
+    cp "$startdir/ui.py" "$appdir/"
+    cp "$startdir/style.qss" "$appdir/"
+    cp "$startdir/equestria_cyrillic.ttf" "$appdir/"
+    cp "$startdir/localization.csv" "$appdir/"
 
+    # 2. НОВОЕ: Копируем дефолтный конфиг и папки с контентом
+    # (Обязательно в кавычках из-за пробела в "MLP Cutiemarks")
+    cp "$startdir/characters.json" "$appdir/"
+    cp -r "$startdir/Wallpapers" "$appdir/"
+    cp -r "$startdir/MLP Cutiemarks" "$appdir/"
+
+    # 3. Копируем обертку (если есть)
     if [ -f "$startdir/start.sh" ]; then
-        cp "$startdir/start.sh" "$pkgdir/opt/$pkgname/"
-        chmod 755 "$pkgdir/opt/$pkgname/start.sh"
+        cp "$startdir/start.sh" "$appdir/"
+        chmod 755 "$appdir/start.sh"
     fi
 
-    chmod 755 "$pkgdir/opt/$pkgname/main.py"
+    # Выдаем права на исполнение
+    chmod 755 "$appdir/main.py"
 
+    # 4. Копируем ярлык
     if [ -f "$startdir/equestria-theme-switcher.desktop" ]; then
         install -Dm644 "$startdir/equestria-theme-switcher.desktop" "$pkgdir/usr/share/applications/equestria-theme-switcher.desktop"
     fi
 
-    # Опционально: если закинешь сюда картинку, она тоже поставится без конфликтов
+    # 5. Опционально: копируем иконку приложения
     if [ -f "$startdir/EquestriaOS-Logo.png" ]; then
         install -Dm644 "$startdir/EquestriaOS-Logo.png" "$pkgdir/usr/share/pixmaps/equestria-theme-switcher.png"
     fi

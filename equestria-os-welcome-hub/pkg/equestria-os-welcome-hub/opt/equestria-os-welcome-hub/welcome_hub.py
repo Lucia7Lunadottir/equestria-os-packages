@@ -78,9 +78,9 @@ class main_app(QMainWindow, Ui_WelcomeHub):
 
         categories = [
             ("cat.system", [
-                Item("Equestria OS Theme Character", "/opt/equestria-os-character-theme/Equestria OS Character Theme.x86_64"),
-                Item("Equestria Store", "/opt/equestria-os-package-installer/Equestria OS Package Installer.x86_64"),
-                Item("Equestria OS Package Manager", "/opt/equestria-os-package-manager/Equestria OS Package Manager.x86_64")
+                Item("Equestria OS Theme Character", "python3 /opt/equestria-os-character-theme/main.py", "command"),
+                Item("Equestria Store", "python3 /opt/equestria-os-package-installer/main.py", "command"),
+                Item("Equestria OS Package Manager", "python3 /opt/equestria-os-package-manager/main.py", "command")
             ]),
             ("cat.music", [
                 Item("Jyc Row", "https://www.youtube.com/@JycRow"),
@@ -109,7 +109,12 @@ class main_app(QMainWindow, Ui_WelcomeHub):
                 Item("Pony Town", "https://pony.town/"),
                 Item("Legends of Equestria", "yay -S legends-of-equestria", "command"),
                 Item("World Without Time (Steam)", "steam://store/4219000/"),
-                Item("Ambient.White — demo (Proton)", "https://ambientproject.net/downloads/")
+                Item("Ambient.White — demo (Proton)", "https://ambientproject.net/downloads/"),
+                Item("Them's Fightin' Herds (Steam)", "https://store.steampowered.com/app/574980/Thems_Fightin_Herds/"),
+                Item("Remains (Steam)", "https://store.steampowered.com/app/3908900/Remains/"),
+                Item("My Little Karaoke: Singing is Magic", "https://www.mylittlekaraoke.com"),
+                Item("Fighting is Magic: Aurora (Proton)", "https://windowslogic.itch.io/fighting-is-magic-aurora"),
+                Item("Equestria at War — Hearts of Iron IV (Steam)", "https://steamcommunity.com/sharedfiles/filedetails/?id=1826643372")
             ]),
             ("cat.social", [
                 Item("Derpibooru", "https://derpibooru.org/"),
