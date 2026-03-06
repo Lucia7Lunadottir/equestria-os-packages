@@ -67,8 +67,24 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.update_texts()
 
     def init_user_folder(self):
-        if not os.path.exists(USER_PATH) or not os.path.exists(os.path.join(USER_PATH, "characters.json")):
-            shutil.copytree(SYSTEM_PATH, USER_PATH, dirs_exist_ok=True)
+        # Создаем базовую папку, если её нет
+        os.makedirs(USER_PATH, exist_ok=True)
+
+        # Список того, что РЕАЛЬНО нужно скопировать пользователю
+        assets_to_copy = ["characters.json", "Wallpapers", "MLP Cutiemarks"]
+
+        for item in assets_to_copy:
+            src = os.path.join(SYSTEM_PATH, item)
+            dst = os.path.join(USER_PATH, item)
+
+            # Если это дефолтный файл/папка есть в системе, копируем его
+            if os.path.exists(src):
+                if os.path.isdir(src):
+                    shutil.copytree(src, dst, dirs_exist_ok=True)
+                else:
+                    # Если файла у пользователя еще нет, копируем
+                    if not os.path.exists(dst):
+                        shutil.copy2(src, dst)
 
     def load_localization_csv(self):
         loc_path = os.path.join(SYSTEM_PATH, "localization.csv")
@@ -377,6 +393,14 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.run_shell(lock_script)
 
     def apply_fastfetch(self, character):
+
+        #====================================
+        # REQUIRE PACKAGES
+        # 1. fastfetch
+        # 2. chafa
+        # 3. imagemagick
+        #====================================
+
         ff_dir = os.path.expanduser("~/.config/fastfetch")
         os.makedirs(ff_dir, exist_ok=True)
         color = self.hex_to_fastfetch(character.AccentColor)

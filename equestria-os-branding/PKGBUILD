@@ -1,0 +1,45 @@
+# Maintainer: Equestria OS Team <твоя@почта>
+
+pkgname=equestria-os-branding
+pkgver=1.2.0
+pkgrel=3
+pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
+arch=('any')
+url="https://github.com/7Lucia7Lokidottir7"
+license=('custom')
+
+provides=('equestria-os-branding')
+
+
+source=()
+
+package() {
+    # 1. SDDM Тема
+    if [ -d "$startdir/sddm/equestria-os-breeze" ]; then
+        install -d "$pkgdir/usr/share/sddm/themes"
+        cp -r "$startdir/sddm/equestria-os-breeze" "$pkgdir/usr/share/sddm/themes/"
+    fi
+
+    # 2. GRUB Тема
+    if [ -d "$startdir/grub/equestria-os" ]; then
+        install -d "$pkgdir/usr/share/grub/themes"
+        cp -r "$startdir/grub/equestria-os" "$pkgdir/usr/share/grub/themes/"
+    fi
+
+    # 3. Plasma Splash Screen (Look and Feel)
+    if [ -d "$startdir/look-and-feel/Equestria-OS.desktop" ]; then
+        install -d "$pkgdir/usr/share/plasma/look-and-feel"
+        cp -r "$startdir/look-and-feel/Equestria-OS" "$pkgdir/usr/share/plasma/look-and-feel/"
+    fi
+
+    # 4. Cutiemarks и Pixmap
+    install -d "$pkgdir/usr/share/equestria-os/cutiemarks"
+    if [ -d "$startdir/cutiemarks" ]; then
+        cp -r "$startdir/cutiemarks/"* "$pkgdir/usr/share/equestria-os/cutiemarks/" 2>/dev/null || true
+    fi
+
+    install -d "$pkgdir/usr/share/pixmaps"
+    if [ -f "$startdir/equestria-os.png" ]; then
+        install -Dm644 "$startdir/equestria-os.png" "$pkgdir/usr/share/pixmaps/equestria-os.png"
+    fi
+}
