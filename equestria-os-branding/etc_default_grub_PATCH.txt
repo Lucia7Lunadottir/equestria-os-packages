@@ -1,0 +1,17 @@
+=== В файл airootfs/etc/default/grub добавить строку: ===
+
+GRUB_THEME="/usr/share/grub/themes/equestria-os/theme.txt"
+
+=== Полный рабочий пример файла /etc/default/grub: ===
+
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR="Equestria OS"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+GRUB_CMDLINE_LINUX=""
+GRUB_PRELOAD_MODULES="part_gpt part_msdos"
+GRUB_TIMEOUT_STYLE=menu
+GRUB_TERMINAL_INPUT=console
+GRUB_GFXMODE=auto
+GRUB_GFXPAYLOAD_LINUX=keep
+GRUB_THEME="/usr/share/grub/themes/equestria-os/theme.txt"

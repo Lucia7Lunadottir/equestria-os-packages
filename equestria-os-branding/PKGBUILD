@@ -1,7 +1,7 @@
-# Maintainer: Equestria OS Team <твоя@почта>
+# Maintainer: Equestria OS Team <info@psyche-games.com>
 
 pkgname=equestria-os-branding
-pkgver=1.2.0
+pkgver=1.2.2
 pkgrel=3
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
@@ -10,36 +10,44 @@ license=('custom')
 
 provides=('equestria-os-branding')
 
-
 source=()
 
 package() {
-    # 1. SDDM Тема
+    # 1. SDDM тема
     if [ -d "$startdir/sddm/equestria-os-breeze" ]; then
         install -d "$pkgdir/usr/share/sddm/themes"
         cp -r "$startdir/sddm/equestria-os-breeze" "$pkgdir/usr/share/sddm/themes/"
     fi
 
-    # 2. GRUB Тема
+    # 2. GRUB тема
     if [ -d "$startdir/grub/equestria-os" ]; then
         install -d "$pkgdir/usr/share/grub/themes"
         cp -r "$startdir/grub/equestria-os" "$pkgdir/usr/share/grub/themes/"
     fi
 
     # 3. Plasma Splash Screen (Look and Feel)
-    if [ -d "$startdir/look-and-feel/Equestria-OS.desktop" ]; then
+    if [ -d "$startdir/look-and-feel/Equestria-OS" ]; then
         install -d "$pkgdir/usr/share/plasma/look-and-feel"
         cp -r "$startdir/look-and-feel/Equestria-OS" "$pkgdir/usr/share/plasma/look-and-feel/"
     fi
 
-    # 4. Cutiemarks и Pixmap
+    # 4. Cutiemarks
     install -d "$pkgdir/usr/share/equestria-os/cutiemarks"
     if [ -d "$startdir/cutiemarks" ]; then
         cp -r "$startdir/cutiemarks/"* "$pkgdir/usr/share/equestria-os/cutiemarks/" 2>/dev/null || true
     fi
 
+    # 5. Только НАШИ pixmaps — без файлов из filesystem/pinentry/stoken/других пакетов
     install -d "$pkgdir/usr/share/pixmaps"
-    if [ -f "$startdir/equestria-os.png" ]; then
-        install -Dm644 "$startdir/equestria-os.png" "$pkgdir/usr/share/pixmaps/equestria-os.png"
-    fi
+    for f in \
+        equestria-os.png \
+        equestria-os-logo.png \
+        equestria-logo.png \
+        equestria-os-character-theme.png \
+        equestria-os-package-installer.png \
+        pgos_logo_final.png; do
+        if [ -f "$startdir/pixmaps/$f" ]; then
+            install -Dm644 "$startdir/pixmaps/$f" "$pkgdir/usr/share/pixmaps/$f"
+        fi
+    done
 }
