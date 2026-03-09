@@ -1,10 +1,28 @@
 [Desktop Entry]
 Name=Equestria OS Welcome Hub
-Name[ru]=Добро пожаловать в Equestria
-Name[uk]=Ласкаво просимо до Equestria
+Name[en]=Equestria OS Welcome Hub
+Name[ru]=Добро пожаловать в Equestria OS
+Name[de]=Equestria OS Willkommens-Hub
+Name[fr]=Hub de bienvenue Equestria OS
+Name[es]=Centro de bienvenida de Equestria OS
+Name[pt]=Hub de boas-vindas do Equestria OS
+Name[pl]=Centrum powitalne Equestria OS
+Name[uk]=Ласкаво просимо до Equestria OS
+Name[zh]=Equestria OS欢迎中心
+Name[ja]=Equestria OSウェルカムハブ
+
 Comment=Welcome screen and quick settings for Equestria OS
-Comment[ru]=Экран приветствия и быстрые настройки
-Comment[uk]=Екран вітання та швидкі налаштування
+Comment[en]=Welcome screen and quick settings for Equestria OS
+Comment[ru]=Экран приветствия и быстрые настройки Equestria OS
+Comment[de]=Willkommensbildschirm und Schnelleinstellungen für Equestria OS
+Comment[fr]=Écran de bienvenue et paramètres rapides pour Equestria OS
+Comment[es]=Pantalla de bienvenida y configuración rápida de Equestria OS
+Comment[pt]=Tela de boas-vindas e configurações rápidas do Equestria OS
+Comment[pl]=Ekran powitalny i szybkie ustawienia Equestria OS
+Comment[uk]=Екран вітання та швидкі налаштування Equestria OS
+Comment[zh]=Equestria OS的欢迎界面和快速设置
+Comment[ja]=Equestria OSのウェルカム画面とクイック設定
+
 Exec=python3 /opt/equestria-os-welcome-hub/welcome_hub.py
 Path=/opt/equestria-os-welcome-hub
 Icon=equestria-os-welcome-hub

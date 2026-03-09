@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-welcome-hub
-pkgver=2.0.0
+pkgver=2.0.1
 pkgrel=1
 pkgdesc="The official Equestria OS Welcome Center and Community Portal"
 arch=('any')

@@ -1,10 +1,28 @@
 [Desktop Entry]
 Name=Equestria OS Packages
+Name[en]=Equestria OS Packages
 Name[ru]=Пакеты Equestria OS
+Name[de]=Equestria OS Pakete
+Name[fr]=Paquets Equestria OS
+Name[es]=Paquetes de Equestria OS
+Name[pt]=Pacotes do Equestria OS
+Name[pl]=Pakiety Equestria OS
 Name[uk]=Пакети Equestria OS
+Name[zh]=Equestria OS软件包
+Name[ja]=Equestria OSパッケージ
+
 Comment=Manage pacman and AUR packages
+Comment[en]=Manage pacman and AUR packages
 Comment[ru]=Управление пакетами pacman и AUR
+Comment[de]=Pacman- und AUR-Pakete verwalten
+Comment[fr]=Gérer les paquets pacman et AUR
+Comment[es]=Gestionar paquetes de pacman y AUR
+Comment[pt]=Gerenciar pacotes do pacman e AUR
+Comment[pl]=Zarządzaj pakietami pacman i AUR
 Comment[uk]=Керування пакетами pacman та AUR
+Comment[zh]=管理pacman和AUR软件包
+Comment[ja]=pacmanおよびAURパッケージを管理する
+
 Exec=python3 /opt/equestria-os-package-manager/main.py
 Path=/opt/equestria-os-package-manager
 Icon=equestria-os-logo

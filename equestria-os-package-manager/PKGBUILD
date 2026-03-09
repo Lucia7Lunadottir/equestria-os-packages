@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-package-manager
-pkgver=2.0.0
-pkgrel=1
+pkgver=2.0.1
+pkgrel=2
 pkgdesc='Official Equestria OS Package Manager (Uninstall and Manage)'
 arch=('any')
 url='https://psyche-games.com'
