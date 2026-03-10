@@ -284,14 +284,15 @@ class main_app(QMainWindow, Ui_AppStore):
         self.modal_overlay.hide()
         # Добавляем --noconfirm для автоматизации и --overwrite для решения конфликтов
         # Также добавлена проверка на наличие snap, чтобы не сыпать ошибками
+        # Исправленный вариант
         cmd = (
-            "echo -e '\\e[1;35m✨ Starting Equestria OS Global Update...\\e[0m\\n'; "
-            "yay -Syu --noconfirm --overwrite '/usr/*' "
+            "bash -c \"echo -e '\\e[1;35m✨ Starting Equestria OS Global Update...\\e[0m\\n'; "
+            "yay -Syu --noconfirm --overwrite '/usr/*'; "
             "echo -e '\\n\\e[1;34m✨ Updating Flatpaks...\\e[0m\\n'; "
             "if command -v flatpak >/dev/null; then flatpak update -y; else echo 'Flatpak not installed'; fi; "
             "echo -e '\\n\\e[1;32m✨ Updating Snaps...\\e[0m\\n'; "
             "if command -v snap >/dev/null; then pkexec snap refresh; else echo 'Snap not installed'; fi; "
-            "echo -e '\\n\\e[1;33m✅ System update finished! Press Enter to close...\\e[0m'; read"
+            "echo -e '\\n\\e[1;33m✅ System update finished! Press Enter to close...\\e[0m'; read\""
         )
 
         subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
