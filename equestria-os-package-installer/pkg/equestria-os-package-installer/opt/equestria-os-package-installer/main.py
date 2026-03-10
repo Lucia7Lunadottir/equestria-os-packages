@@ -286,7 +286,7 @@ class main_app(QMainWindow, Ui_AppStore):
         # Также добавлена проверка на наличие snap, чтобы не сыпать ошибками
         cmd = (
             "echo -e '\\e[1;35m✨ Starting Equestria OS Global Update...\\e[0m\\n'; "
-            "yay -Syu --noconfirm --overwrite '/usr/share/grub/themes/equestria-os/*'; "
+            "yay -Syu --noconfirm --overwrite '/usr/*' "
             "echo -e '\\n\\e[1;34m✨ Updating Flatpaks...\\e[0m\\n'; "
             "if command -v flatpak >/dev/null; then flatpak update -y; else echo 'Flatpak not installed'; fi; "
             "echo -e '\\n\\e[1;32m✨ Updating Snaps...\\e[0m\\n'; "

@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-branding
 pkgver=1.2.2
-pkgrel=3
+pkgrel=4
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
 url="https://github.com/7Lucia7Lokidottir7"
@@ -37,12 +37,10 @@ package() {
         cp -r "$startdir/cutiemarks/"* "$pkgdir/usr/share/equestria-os/cutiemarks/" 2>/dev/null || true
     fi
 
-    # 5. Только НАШИ pixmaps — без файлов из filesystem/pinentry/stoken/других пакетов
+    # 5. Только уникальные наши pixmaps
     install -d "$pkgdir/usr/share/pixmaps"
     for f in \
         equestria-os.png \
-        equestria-os-logo.png \
-        equestria-logo.png \
         equestria-os-character-theme.png \
         equestria-os-package-installer.png \
         pgos_logo_final.png; do

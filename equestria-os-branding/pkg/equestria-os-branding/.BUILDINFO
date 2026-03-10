@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-branding
 pkgbase = equestria-os-branding
-pkgver = 1.2.2-3
+pkgver = 1.2.2-4
 pkgarch = any
-pkgbuild_sha256sum = ce706c22ed110410e2e126d74ebd5d6c0af4bf3f8799bf79be6d72520187eb17
+pkgbuild_sha256sum = 09487ef56b511ee5ab7d1d8a6965bf68468eb30195df781756f3221ccaf87ae4
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1773017043
+builddate = 1773017358
 builddir = /home/lucial/equestria-packages/equestria-os-branding
 startdir = /home/lucial/equestria-packages/equestria-os-branding
 buildtool = makepkg
