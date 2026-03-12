@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-keyring
 pkgver=20260227
-pkgrel=2
+pkgrel=3
 pkgdesc="Digital trust keys for Equestria OS"
 arch=('any')
 url="https://github.com/7Lucia7Lokidottir7"
