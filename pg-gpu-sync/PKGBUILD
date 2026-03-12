@@ -2,7 +2,7 @@
 
 pkgname=pg-gpu-sync
 pkgver=1.0.0
-pkgrel=2
+pkgrel=4
 pkgdesc='NVIDIA driver manager for Equestria OS'
 arch=('any')
 license=('GPL3')

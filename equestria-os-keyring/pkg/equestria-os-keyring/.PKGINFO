@@ -3,10 +3,10 @@
 pkgname = equestria-os-keyring
 pkgbase = equestria-os-keyring
 xdata = pkgtype=pkg
-pkgver = 20260227-2
+pkgver = 20260227-3
 pkgdesc = Digital trust keys for Equestria OS
 url = https://github.com/7Lucia7Lokidottir7
-builddate = 1772774333
+builddate = 1773345221
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 2334
 arch = any

@@ -87,6 +87,7 @@ SelectDriver() {
     LEGACY_NOTE=no
     DRIVER_TYPE=""
     DRIVER_PKG=""
+    GPU_GENERATION=""
 
     # --nouveau override always wins
     if [ "$MODE" = "nouveau" ]; then
@@ -99,11 +100,14 @@ SelectDriver() {
             # Turing and newer → official open-source kernel driver
             DRIVER_TYPE="open"
             DRIVER_PKG="nvidia-open-dkms"
+            GPU_GENERATION="modern"
             ;;
         GM*|GP*|GV*)
             # Maxwell / Pascal / Volta → поддерживается nvidia-open-dkms начиная с драйвера 560+
+            # GSP firmware на этих картах менее стабилен — нужен NVreg_EnableGpuFirmware=0
             DRIVER_TYPE="open"
             DRIVER_PKG="nvidia-open-dkms"
+            GPU_GENERATION="legacy"
             ;;
         "")
             if [ "$FORCE" = yes ]; then
@@ -242,19 +246,57 @@ ConfigureWayland() {
     [ "$DRIVER_TYPE" = "nouveau" ] && return
 
     local conf=/etc/modprobe.d/nvidia.conf
-    local line="options nvidia_drm modeset=1 fbdev=1"
 
-    if [ -f "$conf" ] && grep -q "modeset=1" "$conf"; then
-        Info "Wayland modeset already set in $conf"
+    if [ -f "$conf" ] && grep -q "modeset=1" "$conf" && grep -q "PreserveVideoMemoryAllocations" "$conf"; then
+        Info "Wayland modeset and suspend config already set in $conf"
+    else
+        Info "Writing NVIDIA modprobe config → $conf"
+        if [ "$DRY_RUN" = no ]; then
+            {
+                printf 'options nvidia_drm modeset=1 fbdev=1\n'
+                printf 'options nvidia NVreg_PreserveVideoMemoryAllocations=1\n'
+                # На Maxwell/Pascal/Volta GSP firmware менее стабилен — отключаем,
+                # иначе KWin не может инициализировать OpenGL и отключает анимации
+                [ "$GPU_GENERATION" = "legacy" ] && printf 'options nvidia NVreg_EnableGpuFirmware=0\n'
+            } > "$conf"
+        else
+            Note "[DRY RUN] Would write nvidia modprobe options → $conf"
+            [ "$GPU_GENERATION" = "legacy" ] && Note "[DRY RUN] Would add NVreg_EnableGpuFirmware=0 (Pascal/Maxwell/Volta)"
+        fi
+    fi
+
+    # Переменные окружения для KWin Wayland + NVIDIA:
+    # GBM_BACKEND — явно указываем GBM через nvidia-drm
+    # __GLX_VENDOR_LIBRARY_NAME — без этого некоторые приложения выбирают Mesa вместо NVIDIA
+    local envconf=/etc/environment.d/99-nvidia-wayland.conf
+    if [ -f "$envconf" ]; then
+        Info "NVIDIA Wayland environment already set in $envconf"
         return
     fi
 
-    Info "Writing Wayland DRM modeset config → $conf"
+    Info "Writing NVIDIA Wayland environment → $envconf"
     if [ "$DRY_RUN" = no ]; then
-        echo "$line" > "$conf"
+        mkdir -p /etc/environment.d
+        printf 'GBM_BACKEND=nvidia-drm\n__GLX_VENDOR_LIBRARY_NAME=nvidia\n' > "$envconf"
     else
-        Note "[DRY RUN] Would write: $line  →  $conf"
+        Note "[DRY RUN] Would write NVIDIA Wayland env → $envconf"
     fi
+}
+
+# ── NVIDIA Suspend/Resume Services ───────────────────────────
+
+EnableNvidiaSleepServices() {
+    [ "$DRIVER_TYPE" = "nouveau" ] && return
+    [ "$DRY_RUN" = yes ] && { Note "[DRY RUN] Would enable nvidia suspend/resume/hibernate services"; return; }
+
+    local services=(nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service)
+    for svc in "${services[@]}"; do
+        if systemctl list-unit-files "$svc" &>/dev/null; then
+            systemctl enable "$svc" 2>/dev/null \
+                && Info "Enabled $svc" \
+                || Warn "Could not enable $svc"
+        fi
+    done
 }
 
 # ── initramfs module configuration ───────────────────────────
@@ -567,13 +609,16 @@ Main() {
     # 8. Nouveau blacklist (создаём для nvidia, убираем для nouveau/старых карт)
     ConfigureNouveauBlacklist
 
-    # 9. Wayland modeset config
+    # 9. Wayland modeset config + suspend preserve memory
     ConfigureWayland
 
-    # 10. mkinitcpio MODULES injection
+    # 10. Enable nvidia suspend/resume/hibernate systemd services
+    EnableNvidiaSleepServices
+
+    # 11. mkinitcpio MODULES injection
     ConfigureMkinitcpio
 
-    # 11. Rebuild initramfs
+    # 12. Rebuild initramfs
     RebuildInitramfs
 
     # Сохраняем состояние GPU для будущих проверок

@@ -3,12 +3,12 @@
 pkgname = pg-gpu-sync
 pkgbase = pg-gpu-sync
 xdata = pkgtype=pkg
-pkgver = 1.0.0-2
+pkgver = 1.0.0-4
 pkgdesc = NVIDIA driver manager for Equestria OS
 url = https://psyche-games.com
-builddate = 1773222730
+builddate = 1773346617
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 22081
+size = 24513
 arch = any
 license = GPL3
 depend = bash
