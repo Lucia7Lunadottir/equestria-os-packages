@@ -26,6 +26,21 @@ DIE()    { echo -e "${_RED}[ERROR]${_RST}       $*" >&2; exit 1; }
 Note()   { echo -e "${_CYN}[NOTE]${_RST}        $*"; }
 Header() { echo -e "\n${_CYN}══════════════════════════════════════${_RST}\n  $*\n${_CYN}══════════════════════════════════════${_RST}"; }
 
+# ── State file (для обнаружения смены GPU) ────────────────────
+STATE_FILE=/var/lib/pg-gpu-sync/gpu-family
+
+# Возвращает 0 (true) если GPU изменился или первый запуск
+GpuChanged() {
+    [ ! -f "$STATE_FILE" ] && return 0
+    [ "$(cat "$STATE_FILE")" != "$GPU_FAMILY" ]
+}
+
+SaveGpuState() {
+    [ "$DRY_RUN" = yes ] && return
+    mkdir -p "$(dirname "$STATE_FILE")"
+    printf '%s\n' "$GPU_FAMILY" > "$STATE_FILE"
+}
+
 # ── Helper functions ──────────────────────────────────────────
 
 IsInstalled() { pacman -Qq "$1" &>/dev/null; }
@@ -86,17 +101,18 @@ SelectDriver() {
             DRIVER_PKG="nvidia-open-dkms"
             ;;
         GM*|GP*|GV*)
-            # Maxwell / Pascal / Volta → not in official repos since driver 560+
-            # nvidia-580xx-dkms from AUR is the right solution
-            DRIVER_TYPE="legacy"
-            DRIVER_PKG="nvidia-open-dkms"  # fallback, but will warn
-            LEGACY_NOTE=yes
+            # Maxwell / Pascal / Volta → поддерживается nvidia-open-dkms начиная с драйвера 560+
+            DRIVER_TYPE="open"
+            DRIVER_PKG="nvidia-open-dkms"
             ;;
         "")
             if [ "$FORCE" = yes ]; then
                 Warn "No NVIDIA GPU detected, proceeding because --force is set."
                 DRIVER_TYPE="open"
                 DRIVER_PKG="nvidia-open-dkms"
+            elif [ "$AUTO" = yes ]; then
+                Note "No NVIDIA GPU detected — skipping NVIDIA driver setup."
+                DRIVER_TYPE="skip"
             else
                 DIE "No NVIDIA GPU detected.\n       Use --force to override, or --nouveau for the nouveau driver."
             fi
@@ -190,6 +206,34 @@ BuildPackageLists() {
 
     # Deduplicate REMOVE
     readarray -t REMOVE < <(printf "%s\n" "${REMOVE[@]}" | sort -u)
+}
+
+# ── Nouveau Blacklist ─────────────────────────────────────────
+
+ConfigureNouveauBlacklist() {
+    local conf=/etc/modprobe.d/blacklist-nouveau.conf
+
+    if [ "$DRIVER_TYPE" = "nouveau" ]; then
+        # Старая карта — nouveau нужен, убираем blacklist если был
+        if [ -f "$conf" ]; then
+            Info "Removing nouveau blacklist (old GPU — nouveau required)"
+            [ "$DRY_RUN" = no ] && rm -f "$conf"
+        fi
+        return
+    fi
+
+    # Современная карта — блокируем nouveau чтобы не конфликтовал с nvidia
+    if [ -f "$conf" ] && grep -q "blacklist nouveau" "$conf"; then
+        Info "Nouveau blacklist already set in $conf"
+        return
+    fi
+
+    Info "Writing nouveau blacklist → $conf"
+    if [ "$DRY_RUN" = no ]; then
+        printf 'blacklist nouveau\noptions nouveau modeset=0\n' > "$conf"
+    else
+        Note "[DRY RUN] Would write nouveau blacklist → $conf"
+    fi
 }
 
 # ── Wayland DRM Modeset ───────────────────────────────────────
@@ -312,8 +356,13 @@ ExecuteChanges() {
     if [ ${#INSTALL[@]} -gt 0 ]; then
         Info "Installing: ${INSTALL[*]}"
         if [ "$DRY_RUN" = no ]; then
-            pacman -S --needed --noconfirm "${INSTALL[@]}" \
-                || DIE "Package installation failed. Check the output above."
+            if [ "$AUTO" = yes ]; then
+                pacman -S --needed --noconfirm "${INSTALL[@]}" \
+                    || Warn "Some packages could not be installed (may be offline). Driver config will still be applied."
+            else
+                pacman -S --needed --noconfirm "${INSTALL[@]}" \
+                    || DIE "Package installation failed. Check the output above."
+            fi
         else
             Note "[DRY RUN] Would install: ${INSTALL[*]}"
         fi
@@ -483,8 +532,18 @@ Main() {
     SelectDriver
     HandleLegacyGPU
 
-    # Skip entirely if legacy GPU in auto mode (can't use AUR)
-    [ "$DRIVER_TYPE" = "skip" ] && { Info "Skipping NVIDIA driver installation."; exit 0; }
+    # Skip entirely if no NVIDIA GPU in auto mode
+    [ "$DRIVER_TYPE" = "skip" ] && { SaveGpuState; Info "Skipping NVIDIA driver installation."; exit 0; }
+
+    # Быстрый путь в --auto режиме: если GPU не изменился — ничего не делаем
+    if [ "$AUTO" = yes ] && [ "$DRY_RUN" = no ]; then
+        if ! GpuChanged; then
+            Info "GPU unchanged ($(FamilyName "$GPU_FAMILY")) — driver already configured."
+            exit 0
+        fi
+        # Запоминаем: это реальная смена (файл уже был) или первый запуск (файла не было)
+        [ -f "$STATE_FILE" ] && _GPU_WAS_SWAPPED=yes || _GPU_WAS_SWAPPED=no
+    fi
 
     # 3. Find which kernel headers are missing
     CollectKernelHeaders
@@ -505,21 +564,32 @@ Main() {
     # 7. Remove conflicting packages + install new ones
     ExecuteChanges
 
-    # 8. Wayland modeset config
+    # 8. Nouveau blacklist (создаём для nvidia, убираем для nouveau/старых карт)
+    ConfigureNouveauBlacklist
+
+    # 9. Wayland modeset config
     ConfigureWayland
 
-    # 9. mkinitcpio MODULES injection
+    # 10. mkinitcpio MODULES injection
     ConfigureMkinitcpio
 
-    # 10. Rebuild initramfs
+    # 11. Rebuild initramfs
     RebuildInitramfs
+
+    # Сохраняем состояние GPU для будущих проверок
+    SaveGpuState
 
     # Done
     Header "Done!"
     if [ "$DRY_RUN" = yes ]; then
         Note "Dry run complete — nothing was changed on your system."
+    elif [ "$AUTO" = yes ] && [ "$_GPU_WAS_SWAPPED" = yes ]; then
+        # GPU был заменён во время работы системы — нужна перезагрузка для применения драйвера
+        Info "GPU was swapped — rebooting in 5 seconds to apply new driver..."
+        sleep 5
+        systemctl reboot
     else
-        Info "Installation complete. Please reboot."
+        Info "Done. Please reboot."
         Info "  sudo reboot"
     fi
 }
