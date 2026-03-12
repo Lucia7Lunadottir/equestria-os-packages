@@ -3,12 +3,12 @@
 pkgname = equestria-os-package-installer
 pkgbase = equestria-os-package-installer
 xdata = pkgtype=pkg
-pkgver = 2.0.3-1
+pkgver = 2.0.4-1
 pkgdesc = The official Equestria OS app and driver store
 url = https://psyche-games.com
-builddate = 1773160612
+builddate = 1773258209
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 525567
+size = 525630
 arch = any
 license = custom
 depend = python

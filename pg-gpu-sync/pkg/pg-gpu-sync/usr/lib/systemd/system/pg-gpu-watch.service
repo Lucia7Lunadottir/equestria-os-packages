@@ -1,0 +1,15 @@
+[Unit]
+Description=Equestria OS — GPU Hardware Change Detection
+Documentation=https://psyche-games.com
+Before=display-manager.service
+After=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/pg-gpu-sync --auto
+RemainAfterExit=no
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target
