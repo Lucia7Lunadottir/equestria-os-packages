@@ -1,0 +1,12 @@
+"DepotBuildConfig"
+{
+	"DepotID" "4390841"
+	"contentroot" "Z:\run\media\lucial\Main\Git Projects\World-without-Time\World without Time\Builds\Alpha 0.28.0"
+	"FileMapping"
+	{
+		"LocalPath" "*"
+		"DepotPath" "."
+		"recursive" "1"
+	}
+	"FileExclusion" "*.pdb"
+}

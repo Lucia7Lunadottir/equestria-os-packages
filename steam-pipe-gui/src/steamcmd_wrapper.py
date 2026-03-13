@@ -1,0 +1,1 @@
+/home/lucial/equestria-packages/steam-pipe-gui/steamcmd_wrapper.py

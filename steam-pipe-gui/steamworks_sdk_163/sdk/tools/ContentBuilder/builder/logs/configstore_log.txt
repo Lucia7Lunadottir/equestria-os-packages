@@ -1,0 +1,494 @@
+
+
+[2025-12-05 08:49:59] Client version: 1763795194
+[2025-12-05 08:49:59] Failed to read store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf.tmp'
+[2025-12-05 08:49:59] Failed to read store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf.tmp'
+[2025-12-05 08:49:59] Failed to read store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf.tmp'
+[2025-12-05 08:49:59] Failed to read store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf.tmp'
+[2025-12-05 08:49:59] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2025-12-05 08:50:01] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2025-12-05 08:50:03] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+
+
+[2025-12-05 08:50:22] Client version: 1763795194
+[2025-12-05 08:50:22] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-05 08:50:22] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-05 08:50:22] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+
+
+[2025-12-10 23:14:40] Client version: 1763795194
+[2025-12-10 23:14:40] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-10 23:14:40] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-10 23:14:40] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-10 23:14:40] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-10 23:14:44] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2025-12-10 23:15:04] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2025-12-10 23:15:05] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-10 23:15:05] Failed to read store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf.tmp'
+[2025-12-10 23:15:06] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2025-12-10 23:15:06] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2025-12-10 23:15:07] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2025-12-10 23:15:08] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2025-12-10 23:15:12] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2025-12-10 23:15:16] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2025-12-10 23:15:17] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2025-12-10 23:15:18] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2025-12-22 06:13:32] Client version: 1766091153
+[2025-12-22 06:13:32] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-22 06:13:32] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-22 06:13:32] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-22 06:13:32] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-22 06:13:32] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2025-12-22 06:13:32] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2025-12-22 06:13:32] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2025-12-22 06:13:32] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-22 06:13:33] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2025-12-22 06:13:35] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+
+
+[2025-12-22 06:15:04] Client version: 1766091153
+[2025-12-22 06:15:04] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-22 06:15:04] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-22 06:15:04] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-22 06:15:04] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-22 06:15:04] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2025-12-22 06:15:04] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-22 06:15:08] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2025-12-22 06:15:41] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2025-12-22 06:15:41] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2025-12-22 06:15:41] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2025-12-22 06:15:42] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2025-12-22 06:15:44] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2025-12-22 06:15:45] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2025-12-22 06:15:45] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2025-12-22 06:15:47] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-01-15 17:05:44] Client version: 1766451518
+[2026-01-15 17:05:44] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-01-15 17:05:44] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-01-15 17:05:44] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-01-15 17:05:44] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-01-15 17:05:44] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-01-15 17:05:44] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-01-15 17:05:44] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-01-15 17:05:44] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-01-15 17:05:45] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-01-15 17:05:48] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-01-15 17:06:04] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-01-15 17:06:04] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-01-15 17:06:05] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-01-15 17:06:06] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-01-15 17:06:08] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-01-15 17:06:08] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-01-15 17:06:10] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-01-15 17:06:11] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-01-15 17:09:34] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-01-15 17:09:55] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-01-15 17:10:24] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-01-15 17:10:24] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-01-15 17:10:26] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-01-15 17:10:28] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-02 09:50:06] Client version: 1769026246
+[2026-02-02 09:50:06] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 09:50:06] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 09:50:06] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 09:50:06] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 09:50:06] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-02 09:50:06] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-02-02 09:50:07] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-02 09:50:07] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 09:50:07] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-02 09:50:09] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+
+
+[2026-02-02 09:51:21] Client version: 1769026246
+[2026-02-02 09:51:21] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 09:51:21] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 09:51:21] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 09:51:21] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 09:51:21] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-02 09:51:21] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 09:51:23] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-02 09:51:50] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 09:51:50] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-02 09:51:51] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-02 09:51:52] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-02 09:51:53] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-02 09:51:56] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-02 10:50:42] Client version: 1769026246
+[2026-02-02 10:50:42] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 10:50:42] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 10:50:42] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 10:50:42] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 10:50:42] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-02 10:50:42] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-02 10:50:42] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 10:50:43] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-02 10:50:45] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-02 10:50:56] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-02 10:50:56] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-02 10:50:57] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-02 10:50:58] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-02 10:50:59] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-02 10:51:00] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-02 10:51:01] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-06 14:44:29] Client version: 1769026246
+[2026-02-06 14:44:29] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:44:29] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:44:29] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:44:29] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:44:29] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-06 14:44:29] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-02-06 14:44:29] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-06 14:44:29] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:44:30] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 14:44:32] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 14:44:54] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:44:54] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-06 14:44:54] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 14:44:55] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-06 14:44:56] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-06 14:44:57] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-06 14:47:07] Client version: 1769026246
+[2026-02-06 14:47:07] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:47:07] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:47:07] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:47:07] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:47:07] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-06 14:47:07] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-06 14:47:07] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:47:07] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 14:47:09] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 14:47:20] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:47:20] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-06 14:47:21] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 14:47:21] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-06 14:47:22] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-06 14:49:11] Client version: 1769026246
+[2026-02-06 14:49:11] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:49:11] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:49:11] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:49:11] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:49:11] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-06 14:49:11] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-06 14:49:11] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:49:12] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 14:49:15] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 14:49:21] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 14:49:21] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-06 14:49:22] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 14:49:23] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-06 14:49:23] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-06 14:49:25] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-06 16:17:41] Client version: 1769026246
+[2026-02-06 16:17:41] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 16:17:41] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 16:17:41] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 16:17:41] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 16:17:41] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-06 16:17:41] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-06 16:17:41] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 16:17:41] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 16:17:43] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 16:17:54] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-06 16:17:54] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-06 16:17:55] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-06 16:17:56] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-06 16:17:56] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-06 16:17:58] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-07 03:57:31] Client version: 1769026246
+[2026-02-07 03:57:31] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 03:57:31] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 03:57:31] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 03:57:31] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 03:57:31] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-07 03:57:31] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-02-07 03:57:31] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-07 03:57:31] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 03:57:31] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-07 03:57:34] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-07 03:57:56] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 03:57:56] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-07 03:57:56] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-07 03:57:57] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-07 03:57:58] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-07 03:58:00] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-07 14:52:16] Client version: 1769026246
+[2026-02-07 14:52:16] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 14:52:16] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 14:52:16] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 14:52:16] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 14:52:16] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-07 14:52:16] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-02-07 14:52:16] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-07 14:52:16] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 14:52:17] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-07 14:52:19] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-07 14:52:25] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 14:52:25] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-07 14:52:25] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-07 14:52:26] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-07 14:52:27] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-07 14:52:29] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-07 19:18:45] Client version: 1769026246
+[2026-02-07 19:18:45] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 19:18:45] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 19:18:45] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 19:18:45] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 19:18:45] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-07 19:18:45] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-07 19:18:45] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 19:18:46] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-07 19:18:48] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-07 19:18:59] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-07 19:18:59] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-07 19:19:00] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-07 19:19:01] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-07 19:19:02] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-07 19:19:04] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-09 23:44:27] Client version: 1769026246
+[2026-02-09 23:44:27] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-09 23:44:27] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-09 23:44:27] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-09 23:44:27] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-09 23:44:27] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-09 23:44:27] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-02-09 23:44:27] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-09 23:44:27] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-09 23:44:28] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-09 23:44:30] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-09 23:44:36] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-09 23:44:36] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-09 23:44:36] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-09 23:44:37] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-09 23:44:38] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-09 23:44:39] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-09 23:44:39] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-10 13:13:38] Client version: 1769026246
+[2026-02-10 13:13:38] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 13:13:38] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 13:13:38] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 13:13:38] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 13:13:38] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-10 13:13:38] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-02-10 13:13:38] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-10 13:13:38] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 13:13:38] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-10 13:13:40] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-10 13:14:50] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+
+
+[2026-02-10 13:19:52] Client version: 1769026246
+[2026-02-10 13:19:52] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 13:19:52] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 13:19:52] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 13:19:52] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 13:19:52] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-10 13:19:52] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 13:19:54] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-10 13:20:05] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 13:20:05] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-10 13:20:06] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-10 13:20:06] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-10 13:20:07] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-10 13:20:08] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-10 13:20:09] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-10 15:37:17] Client version: 1769026246
+[2026-02-10 15:37:17] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 15:37:17] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 15:37:17] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 15:37:17] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 15:37:17] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-10 15:37:17] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-10 15:37:17] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 15:37:17] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-10 15:37:20] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-10 15:37:31] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-10 15:37:31] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-10 15:37:31] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-10 15:37:32] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-10 15:37:33] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-10 15:37:35] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-11 09:43:01] Client version: 1769026246
+[2026-02-11 09:43:01] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-11 09:43:01] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-11 09:43:01] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-11 09:43:01] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-11 09:43:01] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-11 09:43:01] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-02-11 09:43:01] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-11 09:43:01] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-11 09:43:02] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-11 09:43:04] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-11 09:43:20] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-11 09:43:20] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-11 09:43:21] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-11 09:43:21] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-11 09:43:22] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-11 09:43:23] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-11 09:43:24] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-12 09:57:32] Client version: 1769026246
+[2026-02-12 09:57:32] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 09:57:32] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 09:57:32] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 09:57:32] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 09:57:32] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-12 09:57:32] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-02-12 09:57:32] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-12 09:57:32] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 09:57:32] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 09:57:34] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 09:57:40] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 09:57:40] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-12 09:57:40] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 09:57:41] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-12 09:57:41] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-12 09:57:43] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-12 09:57:43] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-12 20:36:55] Client version: 1769026246
+[2026-02-12 20:36:55] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 20:36:55] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 20:36:55] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 20:36:55] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 20:36:55] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-12 20:36:55] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-02-12 20:36:55] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-12 20:36:55] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 20:36:56] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 20:36:58] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 20:37:04] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 20:37:04] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-12 20:37:04] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 20:37:05] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-12 20:37:06] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-12 20:37:07] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-12 20:37:07] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-12 21:29:29] Client version: 1769026246
+[2026-02-12 21:29:29] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 21:29:29] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 21:29:29] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 21:29:29] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 21:29:29] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-12 21:29:29] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-12 21:29:29] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 21:29:30] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 21:29:32] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 21:29:43] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 21:29:43] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-12 21:29:43] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 21:29:44] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-12 21:29:45] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-12 21:29:45] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-12 21:29:46] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-12 22:17:52] Client version: 1769026246
+[2026-02-12 22:17:52] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 22:17:52] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 22:17:52] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 22:17:52] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 22:17:52] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-12 22:17:52] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-12 22:17:52] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 22:17:52] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 22:18:01] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 22:18:10] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-12 22:18:10] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-12 22:18:10] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-12 22:18:11] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-12 22:18:12] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-12 22:18:14] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-13 01:11:44] Client version: 1769026246
+[2026-02-13 01:11:44] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-13 01:11:44] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-13 01:11:44] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-13 01:11:44] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-13 01:11:44] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-13 01:11:44] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-02-13 01:11:44] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-13 01:11:44] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-13 01:11:45] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-13 01:11:47] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-13 01:11:59] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-13 01:11:59] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-13 01:11:59] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-13 01:12:00] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-13 01:12:01] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-13 01:12:01] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-13 01:12:02] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-18 01:22:24] Client version: 1769026246
+[2026-02-18 01:22:24] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-18 01:22:24] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-18 01:22:24] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-18 01:22:24] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-18 01:22:24] Loaded store 'machineuser' from 'C:\Users\Bordi\AppData\Local\Steam\local.vdf' successfully
+[2026-02-18 01:22:24] Flushed store 'machineuser' to 'C:\Users\Bordi\AppData\Local\Steam\local.vdf'
+[2026-02-18 01:22:24] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-18 01:22:24] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-18 01:22:24] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-18 01:22:29] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-18 01:22:40] Loaded store 'install' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-18 01:22:40] Loaded store 'userlocal' from 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-18 01:22:41] Flushed store 'install' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-18 01:22:41] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-18 01:22:45] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-18 01:22:46] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-18 01:22:47] Flushed store 'userlocal' to 'D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+
+
+[2026-02-23 04:25:34] Client version: 1769026246
+[2026-02-23 04:25:34] Loaded store 'install' from 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-23 04:25:34] Loaded store 'install' from 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-23 04:25:34] Loaded store 'install' from 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-23 04:25:34] Loaded store 'install' from 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-23 04:25:34] Failed to read store 'machineuser' from 'C:\users\lucial\AppData\Local\Steam\local.vdf.tmp'
+[2026-02-23 04:25:34] Loaded store 'userlocal' from 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-23 04:25:34] Loaded store 'install' from 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-23 04:25:35] Flushed store 'install' to 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-23 04:25:38] Flushed store 'install' to 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-23 04:25:55] Loaded store 'install' from 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf' successfully
+[2026-02-23 04:25:55] Loaded store 'userlocal' from 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf' successfully
+[2026-02-23 04:25:55] Flushed store 'install' to 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\config.vdf'
+[2026-02-23 04:25:56] Flushed store 'userlocal' to 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-23 04:25:58] Flushed store 'userlocal' to 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-23 04:25:58] Flushed store 'userlocal' to 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'
+[2026-02-23 04:25:59] Flushed store 'userlocal' to 'Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\userdata\469909866\config\localconfig.vdf'

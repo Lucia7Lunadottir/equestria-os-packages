@@ -1,0 +1,12 @@
+"DepotBuildConfig"
+{
+	"DepotID" "4219001"
+	"contentroot" "D:\Git Projects\World-without-Time\World without Time\Builds\Alpha 0.16.0"
+	"FileMapping"
+	{
+		"LocalPath" "*"
+		"DepotPath" "."
+		"recursive" "1"
+	}
+	"FileExclusion" "*.pdb"
+}

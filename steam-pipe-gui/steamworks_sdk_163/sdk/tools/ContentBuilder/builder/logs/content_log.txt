@@ -1,0 +1,159 @@
+
+
+[2025-12-10 23:15:05] Client version: 1763795194
+[2025-12-10 23:15:05] Load failed: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf.
+[2025-12-10 23:15:05] Load failed: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\libraryfolders.vdf.
+[2025-12-10 23:15:05] Steam library folders configuration will be reset.
+[2025-12-10 23:15:05] No install folder configuration files found.
+[2025-12-10 23:15:05] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2025-12-10 23:15:05] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2025-12-22 06:13:32] Client version: 1766091153
+[2025-12-22 06:13:32] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2025-12-22 06:13:32] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2025-12-22 06:13:32] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2025-12-22 06:15:05] Client version: 1766091153
+[2025-12-22 06:15:05] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2025-12-22 06:15:05] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2025-12-22 06:15:05] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-01-15 17:05:44] Client version: 1766451518
+[2026-01-15 17:05:44] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-01-15 17:05:44] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-01-15 17:05:44] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-02 09:50:07] Client version: 1769026246
+[2026-02-02 09:50:07] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-02 09:50:07] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-02 09:50:07] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-02 09:51:21] Client version: 1769026246
+[2026-02-02 09:51:21] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-02 09:51:21] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-02 09:51:21] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-02 10:50:42] Client version: 1769026246
+[2026-02-02 10:50:42] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-02 10:50:42] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-02 10:50:42] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-06 14:44:29] Client version: 1769026246
+[2026-02-06 14:44:29] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-06 14:44:29] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-06 14:44:29] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-06 14:47:07] Client version: 1769026246
+[2026-02-06 14:47:07] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-06 14:47:07] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-06 14:47:07] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-06 14:49:11] Client version: 1769026246
+[2026-02-06 14:49:11] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-06 14:49:11] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-06 14:49:11] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-06 16:17:41] Client version: 1769026246
+[2026-02-06 16:17:41] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-06 16:17:41] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-06 16:17:41] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-07 03:57:31] Client version: 1769026246
+[2026-02-07 03:57:31] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-07 03:57:31] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-07 03:57:31] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-07 14:52:16] Client version: 1769026246
+[2026-02-07 14:52:16] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-07 14:52:16] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-07 14:52:16] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-07 19:18:45] Client version: 1769026246
+[2026-02-07 19:18:45] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-07 19:18:45] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-07 19:18:45] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-09 23:44:27] Client version: 1769026246
+[2026-02-09 23:44:27] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-09 23:44:27] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-09 23:44:27] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-10 13:13:38] Client version: 1769026246
+[2026-02-10 13:13:38] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-10 13:13:38] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-10 13:13:38] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-10 13:19:52] Client version: 1769026246
+[2026-02-10 13:19:52] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-10 13:19:52] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-10 13:19:52] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-10 15:37:17] Client version: 1769026246
+[2026-02-10 15:37:17] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-10 15:37:17] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-10 15:37:17] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-11 09:43:01] Client version: 1769026246
+[2026-02-11 09:43:01] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-11 09:43:01] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-11 09:43:01] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-12 09:57:32] Client version: 1769026246
+[2026-02-12 09:57:32] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-12 09:57:32] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-12 09:57:32] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-12 20:36:55] Client version: 1769026246
+[2026-02-12 20:36:55] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-12 20:36:55] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-12 20:36:55] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-12 21:29:29] Client version: 1769026246
+[2026-02-12 21:29:29] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-12 21:29:29] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-12 21:29:29] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-12 22:17:52] Client version: 1769026246
+[2026-02-12 22:17:52] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-12 22:17:52] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-12 22:17:52] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-13 01:11:44] Client version: 1769026246
+[2026-02-13 01:11:44] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-13 01:11:44] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-13 01:11:44] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-18 01:22:24] Client version: 1769026246
+[2026-02-18 01:22:24] Loaded Steam library folders configuration: D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-18 01:22:24] Loaded 0 apps from install folder "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-18 01:22:24] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2026-02-23 04:25:34] Client version: 1769026246
+[2026-02-23 04:25:34] Loaded Steam library folders configuration: Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2026-02-23 04:25:34] Loaded 0 apps from install folder "Z:\run\media\lucial\Main\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2026-02-23 04:25:34] Triggered async write of Steam library folders configuration (1 libraries).

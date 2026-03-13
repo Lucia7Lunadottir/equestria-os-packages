@@ -1,0 +1,14 @@
+"appbuild"
+{
+	"appid" "21743832"
+	"desc" "Alpha 0.17.0"
+	"buildoutput" "D:\steamworks_sdk_163\sdk\tools\ContentBuilder\output"
+	"contentroot" ""
+	"setlive" ""
+	"preview" "0"
+	"local"	""
+	"depots"
+	{
+		"4390841"	"D:\steamworks_sdk_163\sdk\tools\ContentBuilder\scripts\depot_4390841.vdf"
+	}
+}

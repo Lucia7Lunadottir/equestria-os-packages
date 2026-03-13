@@ -1,0 +1,122 @@
+
+
+[2025-12-22 06:13:32] Client version: 1766091153
+[2025-12-22 06:13:32] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2025-12-22 06:15:04] Client version: 1766091153
+[2025-12-22 06:15:04] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2025-12-22 06:15:41] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-01-15 17:05:44] Client version: 1766451518
+[2026-01-15 17:05:44] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-01-15 17:06:04] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-02 09:50:07] Client version: 1769026246
+[2026-02-02 09:50:07] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-02 09:51:21] Client version: 1769026246
+[2026-02-02 09:51:21] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-02 09:51:50] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-02 10:50:42] Client version: 1769026246
+[2026-02-02 10:50:42] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-02 10:50:56] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-06 14:44:29] Client version: 1769026246
+[2026-02-06 14:44:29] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-06 14:44:54] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-06 14:47:07] Client version: 1769026246
+[2026-02-06 14:47:07] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-06 14:47:20] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-06 14:49:11] Client version: 1769026246
+[2026-02-06 14:49:11] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-06 14:49:21] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-06 16:17:41] Client version: 1769026246
+[2026-02-06 16:17:41] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-06 16:17:54] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-07 03:57:31] Client version: 1769026246
+[2026-02-07 03:57:31] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-07 03:57:56] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-07 14:52:16] Client version: 1769026246
+[2026-02-07 14:52:16] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-07 14:52:25] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-07 19:18:45] Client version: 1769026246
+[2026-02-07 19:18:45] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-07 19:18:59] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-09 23:44:27] Client version: 1769026246
+[2026-02-09 23:44:27] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-09 23:44:36] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-10 13:13:38] Client version: 1769026246
+[2026-02-10 13:13:38] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-10 13:19:52] Client version: 1769026246
+[2026-02-10 13:19:52] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-10 13:20:05] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-10 15:37:17] Client version: 1769026246
+[2026-02-10 15:37:17] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-10 15:37:31] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-11 09:43:01] Client version: 1769026246
+[2026-02-11 09:43:01] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-11 09:43:20] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-12 09:57:32] Client version: 1769026246
+[2026-02-12 09:57:32] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-12 09:57:40] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-12 20:36:55] Client version: 1769026246
+[2026-02-12 20:36:55] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-12 20:37:04] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-12 21:29:29] Client version: 1769026246
+[2026-02-12 21:29:29] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-12 21:29:43] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-12 22:17:52] Client version: 1769026246
+[2026-02-12 22:17:52] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-12 22:18:10] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-13 01:11:44] Client version: 1769026246
+[2026-02-13 01:11:44] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-13 01:11:59] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-18 01:22:24] Client version: 1769026246
+[2026-02-18 01:22:24] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-18 01:22:40] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+
+
+[2026-02-23 04:25:34] Client version: 1769026246
+[2026-02-23 04:25:34] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
+[2026-02-23 04:25:55] Loaded cached family info for account 469909866 ( groupID=10089405, name="Lokidotters Family', role=1)
