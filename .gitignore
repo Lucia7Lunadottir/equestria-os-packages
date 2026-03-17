@@ -11,3 +11,6 @@
 !docs/x86_64/*.db.tar.gz
 !docs/x86_64/*.files
 !docs/x86_64/*.files.tar.gz
+
+# Вложенные git-репозитории (не сабмодули)
+imagefinish/src/Linux-Photoshop
