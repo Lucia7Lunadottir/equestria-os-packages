@@ -1,0 +1,39 @@
+# Maintainer: lucial <lucial@equestriaos.org>
+pkgname=imagefinish
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="A PyQt6 image editor inspired by Photoshop"
+arch=('any')
+url="https://github.com/7Lucia7Lokidottir7/Linux-Photoshop"
+license=('GPL3')
+depends=('python' 'python-pyqt6')
+optdepends=('python-numpy: faster pixel operations')
+source=(
+    "git+https://github.com/7Lucia7Lokidottir7/Linux-Photoshop.git"
+    'imagefinish.desktop'
+)
+sha256sums=('SKIP' 'SKIP')
+
+package() {
+    cd "Linux-Photoshop"
+
+    # Устанавливаем приложение в /opt/
+    install -dm755 "$pkgdir/opt/$pkgname"
+
+    install -m644 main.py "$pkgdir/opt/$pkgname/"
+
+    cp -r core ui tools utils locales brushes shapes \
+        "$pkgdir/opt/$pkgname/"
+
+    # Пустые папки, которые git не трекает
+    install -dm755 "$pkgdir/opt/$pkgname/fonts"
+    install -dm755 "$pkgdir/opt/$pkgname/patterns"
+
+    # Иконка
+    install -Dm644 icon.png "$pkgdir/opt/$pkgname/icon.png"
+    install -Dm644 icon.png "$pkgdir/usr/share/pixmaps/imagefinish.png"
+
+    # .desktop
+    install -Dm644 "$srcdir/imagefinish.desktop" \
+        "$pkgdir/usr/share/applications/imagefinish.desktop"
+}

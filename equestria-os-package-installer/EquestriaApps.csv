@@ -1,5 +1,6 @@
 PackageName;DisplayName;CategoryKey;DescKey
 unityhub;Unity Hub;cat.gamedev;desc.unityhub
+steampipe-gui;SteamPipe GUI;cat.gamedev;desc.steampipe-gui
 jetbrains-rider;Rider;cat.gamedev;desc.rider
 code;Visual Studio Code;cat.gamedev;desc.code
 godot;Godot Engine;cat.gamedev;desc.godot
@@ -8,6 +9,7 @@ krita;Krita;cat.creativity;desc.krita
 blender;Blender;cat.creativity;desc.blender
 gimp;GIMP;cat.creativity;desc.gimp
 inkscape;Inkscape;cat.creativity;desc.inkscape
+imagefinish;ImageFinish;cat.creativity;desc.imagefinish
 steam;Steam;cat.gaming;desc.steam
 steamvr;SteamVR;cat.gaming;desc.steamvr
 sidequest-bin;SideQuest;cat.gaming;desc.sidequest
