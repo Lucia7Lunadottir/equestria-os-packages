@@ -1,1 +1,0 @@
-docs/x86_64/steampipe-gui-* filter=lfs diff=lfs merge=lfs -text
