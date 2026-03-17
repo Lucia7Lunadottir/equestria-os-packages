@@ -434,7 +434,10 @@ fi
         self.run_shell(f'chmod +x "{prompt_script}"')
 
         env_path = os.path.join(konsole_dir, "eg_active.bashrc")
-        with open(env_path, "w", encoding='utf-8') as f: f.write(f'export EG_CHARACTER="{character.DisplayName}"\nexport EG_CHARACTER_COLOR="{self.get_ansi_color(character.Id)}"\nsource ~/.local/share/konsole/eg_character_prompt.sh\nfastfetch\n')
+        # Сначала подгружаем дефолтный .bashrc, а потом уже накатываем наши переменные и промпт
+        bashrc_source = "if [ -f ~/.bashrc ]; then source ~/.bashrc; fi\n"
+        with open(env_path, "w", encoding='utf-8') as f:
+            f.write(f'{bashrc_source}export EG_CHARACTER="{character.DisplayName}"\nexport EG_CHARACTER_COLOR="{self.get_ansi_color(character.Id)}"\nsource ~/.local/share/konsole/eg_character_prompt.sh\nfastfetch\n')
 
         prof_content = f"[Appearance]\nColorScheme=EquestriaOS\nFont=Noto Mono,11,-1,5,50,0,0,0,0,0\n\n[General]\nCommand=/bin/bash --rcfile {env_path}\nName=EquestriaOS\nIcon={os.path.join(USER_PATH, character.IconPath)}\nParent=FALLBACK/\nTerminalColumns=120\nTerminalRows=30\n\n[Interaction Options]\nAutoCopySelectedText=true\n\n[Scrolling]\nHistoryMode=2\nScrollBarPosition=2\n\n[Terminal Features]\nBlinkingCursorEnabled=true\n"
         with open(os.path.join(konsole_dir, "EquestriaOS.profile"), "w", encoding='utf-8') as f: f.write(prof_content)
@@ -453,6 +456,26 @@ fi
             with open(konsolerc, "w", encoding='utf-8') as f: f.write(content)
         except: pass
         self.run_shell("for s in $(qdbus6 | grep konsole); do for e in $(qdbus6 $s | grep Sessions); do qdbus6 $s $e org.kde.konsole.Session.setProfile EquestriaOS 2>/dev/null; done; done")
+        # Автоматически добавляем хук в ~/.bashrc пользователя
+        bashrc_path = os.path.expanduser("~/.bashrc")
+        hook_comment = "# EquestriaOS Character Theme Hook\n"
+        hook_cmd = "[ -f ~/.local/share/konsole/eg_character_prompt.sh ] && source ~/.local/share/konsole/eg_character_prompt.sh\n"
+
+        try:
+            if os.path.exists(bashrc_path):
+                with open(bashrc_path, "r", encoding='utf-8') as f:
+                    bashrc_content = f.read()
+
+                # Если хука еще нет, аккуратно дописываем его в конец
+                if "eg_character_prompt.sh" not in bashrc_content:
+                    with open(bashrc_path, "a", encoding='utf-8') as f:
+                        f.write(f"\n{hook_comment}{hook_cmd}")
+        except Exception as e:
+            print(f"Не удалось обновить .bashrc: {e}")
+
+
+
+
 
     def apply_kde_theme(self, character):
         active_name = "EG_Active_A" if self.accent_toggle % 2 == 0 else "EG_Active_B"

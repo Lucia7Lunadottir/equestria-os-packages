@@ -434,7 +434,10 @@ fi
         self.run_shell(f'chmod +x "{prompt_script}"')
 
         env_path = os.path.join(konsole_dir, "eg_active.bashrc")
-        with open(env_path, "w", encoding='utf-8') as f: f.write(f'export EG_CHARACTER="{character.DisplayName}"\nexport EG_CHARACTER_COLOR="{self.get_ansi_color(character.Id)}"\nsource ~/.local/share/konsole/eg_character_prompt.sh\nfastfetch\n')
+        # Сначала подгружаем дефолтный .bashrc, а потом уже накатываем наши переменные и промпт
+        bashrc_source = "if [ -f ~/.bashrc ]; then source ~/.bashrc; fi\n"
+        with open(env_path, "w", encoding='utf-8') as f:
+            f.write(f'{bashrc_source}export EG_CHARACTER="{character.DisplayName}"\nexport EG_CHARACTER_COLOR="{self.get_ansi_color(character.Id)}"\nsource ~/.local/share/konsole/eg_character_prompt.sh\nfastfetch\n')
 
         prof_content = f"[Appearance]\nColorScheme=EquestriaOS\nFont=Noto Mono,11,-1,5,50,0,0,0,0,0\n\n[General]\nCommand=/bin/bash --rcfile {env_path}\nName=EquestriaOS\nIcon={os.path.join(USER_PATH, character.IconPath)}\nParent=FALLBACK/\nTerminalColumns=120\nTerminalRows=30\n\n[Interaction Options]\nAutoCopySelectedText=true\n\n[Scrolling]\nHistoryMode=2\nScrollBarPosition=2\n\n[Terminal Features]\nBlinkingCursorEnabled=true\n"
         with open(os.path.join(konsole_dir, "EquestriaOS.profile"), "w", encoding='utf-8') as f: f.write(prof_content)

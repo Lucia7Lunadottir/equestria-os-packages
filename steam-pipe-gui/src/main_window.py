@@ -1,1 +1,0 @@
-/home/lucial/equestria-packages/steam-pipe-gui/main_window.py
