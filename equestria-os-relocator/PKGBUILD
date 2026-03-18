@@ -1,0 +1,53 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-relocator
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="GUI tool to move files/folders and create symlinks at the original location"
+arch=('any')
+url="https://github.com/7Lucia7Lokidottir7"
+license=('GPL')
+depends=('python' 'python-pyqt6' 'polkit')
+optdepends=('kdesu: alternative privilege elevation')
+
+post_install() {
+    kbuildsycoca6 --noincremental || true
+}
+
+package() {
+    install -d "$pkgdir/opt/$pkgname"
+    install -d "$pkgdir/usr/bin"
+    install -d "$pkgdir/usr/share/applications"
+    install -d "$pkgdir/usr/share/pixmaps"
+    install -d "$pkgdir/usr/share/kio/servicemenus"
+
+    # Python files
+    install -Dm644 "$startdir/main.py"         "$pkgdir/opt/$pkgname/main.py"
+    install -Dm644 "$startdir/ui_relocator.py" "$pkgdir/opt/$pkgname/ui_relocator.py"
+    install -Dm644 "$startdir/app.py"          "$pkgdir/opt/$pkgname/app.py"
+    install -Dm644 "$startdir/core.py"         "$pkgdir/opt/$pkgname/core.py"
+    install -Dm644 "$startdir/privilege.py"    "$pkgdir/opt/$pkgname/privilege.py"
+    install -Dm644 "$startdir/style.qss"       "$pkgdir/opt/$pkgname/style.qss"
+
+    # Assets
+    install -Dm644 "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/equestria_cyrillic.ttf"
+    install -Dm644 "$startdir/EquestriaOS-Logo.png"   "$pkgdir/opt/$pkgname/EquestriaOS-Logo.png"
+
+    # Wrapper script
+    cat > "$pkgdir/usr/bin/equestria-relocator" <<'EOF'
+#!/bin/bash
+cd /opt/equestria-os-relocator
+python3 main.py "$@"
+EOF
+    chmod 755 "$pkgdir/usr/bin/equestria-relocator"
+
+    # Desktop entries
+    install -Dm644 "$startdir/equestria-os-relocator.desktop" \
+        "$pkgdir/usr/share/applications/equestria-os-relocator.desktop"
+    install -Dm755 "$startdir/equestria-os-relocator-servicemenu.desktop" \
+        "$pkgdir/usr/share/kio/servicemenus/equestria-os-relocator-servicemenu.desktop"
+
+    # Icon
+    install -Dm644 "$startdir/EquestriaOS-Logo.png" \
+        "$pkgdir/usr/share/pixmaps/equestria-os-relocator.png"
+}
