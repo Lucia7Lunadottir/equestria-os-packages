@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ ! -t 0 ]; then
+    konsole -e bash "$0"
+    exit
+fi
+
 echo "🐎 Запуск автоматического обновления репозитория Equestria OS..."
 
 BASE_DIR="$HOME/equestria-packages"

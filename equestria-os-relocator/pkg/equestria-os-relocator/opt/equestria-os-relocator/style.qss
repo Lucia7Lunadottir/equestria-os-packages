@@ -1,0 +1,165 @@
+/* Base container */
+QWidget#root { background-color: rgb(30, 30, 46); }
+
+/* Language buttons */
+QPushButton[cssClass="lang-button"] {
+    background-color: transparent; color: rgb(180, 180, 200);
+    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 3px 5px; font-size: 10px;
+    font-family: sans-serif;
+}
+QPushButton[cssClass="lang-button"]:hover {
+    background-color: rgb(49, 50, 68); color: rgb(220, 220, 255);
+}
+QPushButton[cssClass="lang-button"][active="true"] {
+    background-color: rgb(203, 166, 247); color: rgb(30, 30, 46); font-weight: bold;
+    border: 1px solid rgb(203, 166, 247);
+}
+
+/* App title */
+QLabel#AppTitle {
+    color: rgb(245, 194, 231);
+    font-size: 22px;
+    font-weight: bold;
+    font-family: sans-serif;
+    qproperty-alignment: 'AlignLeft';
+}
+
+/* Section labels */
+QLabel#SectionLabel {
+    color: rgb(137, 180, 250);
+    font-size: 13px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+
+/* Divider */
+QFrame#Divider {
+    background-color: rgb(69, 71, 90);
+    border: none;
+}
+
+/* Scroll area for sources */
+QScrollArea#SourceScrollArea {
+    background-color: transparent;
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+}
+QWidget#SourceContainer { background-color: transparent; }
+
+/* Source and destination line edits */
+QLineEdit#SourceEdit, QLineEdit#DestEdit {
+    background-color: rgb(49, 50, 68);
+    color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+QLineEdit#SourceEdit:focus, QLineEdit#DestEdit:focus {
+    border: 1px solid rgb(245, 194, 231);
+}
+
+/* Generic Browse button */
+QPushButton#BrowseBtn {
+    background-color: rgb(49, 50, 68);
+    color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+QPushButton#BrowseBtn:hover {
+    background-color: rgb(69, 71, 90);
+    border: 1px solid rgb(203, 166, 247);
+}
+
+/* Add Source button — dashed ghost border, blue text */
+QPushButton#AddSourceBtn {
+    background-color: transparent;
+    color: rgb(137, 180, 250);
+    border: 1px dashed rgb(137, 180, 250);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+QPushButton#AddSourceBtn:hover {
+    background-color: rgb(49, 50, 68);
+}
+
+/* Remove button — transparent, red text */
+QPushButton#RemoveBtn {
+    background-color: transparent;
+    color: rgb(243, 139, 168);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+QPushButton#RemoveBtn:hover {
+    background-color: rgb(49, 50, 68);
+    border: 1px solid rgb(243, 139, 168);
+}
+
+/* Symlink toggle — identical to AutostartToggle */
+QPushButton#SymlinkToggle {
+    background-color: rgb(30, 30, 46);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    color: transparent;
+    font-family: sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    padding-bottom: 2px;
+}
+QPushButton#SymlinkToggle:checked {
+    background-color: rgb(245, 194, 231);
+    border: 1px solid rgb(245, 194, 231);
+    color: rgb(30, 30, 46);
+}
+
+/* Relocate button — pink fill (same as active NavBtn) */
+QPushButton#RelocateBtn {
+    background-color: rgb(245, 194, 231);
+    color: rgb(30, 30, 46);
+    border: 1px solid rgb(245, 194, 231);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+QPushButton#RelocateBtn:hover {
+    background-color: rgb(255, 210, 245);
+    border: 1px solid rgb(255, 210, 245);
+}
+QPushButton#RelocateBtn:disabled {
+    background-color: rgb(69, 71, 90);
+    color: rgb(127, 132, 156);
+    border: 1px solid rgb(69, 71, 90);
+}
+
+/* NTFS warning */
+QLabel#NtfsWarning {
+    background-color: rgb(49, 50, 40);
+    color: rgb(249, 226, 175);
+    border: 1px solid rgb(249, 226, 175);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+
+/* Status label */
+QLabel#StatusLabel {
+    color: rgb(166, 227, 161);
+    font-size: 13px;
+    font-family: sans-serif;
+    qproperty-alignment: 'AlignLeft';
+}
+QLabel#StatusLabel[status="error"] {
+    color: rgb(243, 139, 168);
+}

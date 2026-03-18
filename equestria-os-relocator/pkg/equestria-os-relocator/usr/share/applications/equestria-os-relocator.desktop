@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=Equestria OS Relocator
+Name[en]=Equestria OS Relocator
+Name[ru]=Equestria OS Relocator
+
+Comment=Move files and create symlinks at the original location
+Comment[en]=Move files and create symlinks at the original location
+Comment[ru]=Переместить файлы и создать символические ссылки на прежнем месте
+
+Exec=equestria-relocator %F
+Path=/opt/equestria-os-relocator
+Icon=equestria-os-relocator
+Terminal=false
+Type=Application
+Categories=System;Utility;Qt;
+StartupNotify=true
+StartupWMClass=equestria-os-relocator
