@@ -6,9 +6,9 @@ xdata = pkgtype=pkg
 pkgver = 1.0.0-1
 pkgdesc = GUI tool to move files/folders and create symlinks at the original location
 url = https://github.com/7Lucia7Lokidottir7
-builddate = 1773833150
+builddate = 1773920014
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 490153
+size = 494579
 arch = any
 license = GPL
 depend = python

@@ -2,10 +2,10 @@ import os
 
 from PyQt6.QtWidgets import (
     QMainWindow, QHBoxLayout, QLineEdit, QPushButton,
-    QFileDialog, QMessageBox, QWidget
+    QFileDialog, QWidget
 )
 from PyQt6.QtGui import QFontDatabase, QFont, QIcon
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 
 from ui_relocator import Ui_Relocator
 import core, privilege
@@ -71,6 +71,44 @@ STRINGS = {
                          "zh": "已将 {n} 个项目移动到 {dest}，创建了 {s} 个符号链接。",
                          "ja": "{n}個を{dest}に移動しました。シンボリックリンク{s}個を作成しました。"},
 }
+
+
+class RelocateWorker(QThread):
+    finished = pyqtSignal(list)               # list of RelocateResult
+    elevated_finished = pyqtSignal(bool, str) # success, error
+    progress = pyqtSignal(int, int)           # current, total
+
+    def __init__(self, sources, destination, elevated=False, elevator=None):
+        super().__init__()
+        self._sources = sources
+        self._destination = destination
+        self._elevated = elevated
+        self._elevator = elevator
+
+    def run(self):
+        if self._elevated:
+            proc = privilege.start_elevated(self._elevator, self._sources, self._destination)
+            total = len(self._sources)
+            for line in proc.stdout:
+                line = line.strip()
+                if line.startswith("PROGRESS"):
+                    _, cur, tot = line.split()
+                    self.progress.emit(int(cur), int(tot))
+                elif line.startswith("OK"):
+                    pass
+            proc.wait()
+            if proc.returncode == 0:
+                self.elevated_finished.emit(True, "")
+            else:
+                self.elevated_finished.emit(False, proc.stderr.read().strip())
+        else:
+            total = len(self._sources)
+            results = []
+            for i, src in enumerate(self._sources, 1):
+                r = core.relocate([src], self._destination, create_symlink=True)
+                results.extend(r)
+                self.progress.emit(i, total)
+            self.finished.emit(results)
 
 
 class RelocatorApp(QMainWindow, Ui_Relocator):
@@ -288,32 +326,48 @@ class RelocatorApp(QMainWindow, Ui_Relocator):
         sources = [le.text().strip() for _, le, _, _, _ in self._source_rows if le.text().strip()]
         destination = self.dest_edit.text().strip()
 
+        self.relocate_btn.setEnabled(False)
+        self._set_status(self.t("working"))
+
         if privilege.needs_elevation(sources + [destination]):
             elevator = privilege.find_elevator()
             if not elevator:
                 self._set_status(self.t("err_no_elevator"), is_error=True)
+                self.relocate_btn.setEnabled(True)
                 return
-            reply = QMessageBox.question(
-                self,
-                self.t("elev_title"),
-                self.t("elev_msg"),
-                QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
-            )
-            if reply == QMessageBox.StandardButton.Ok:
-                privilege.relaunch_elevated(elevator)
-            return
+            self._worker = RelocateWorker(sources, destination, elevated=True, elevator=elevator)
+            self._worker.elevated_finished.connect(self._on_elevated_done)
+        else:
+            self._worker = RelocateWorker(sources, destination)
+            self._worker.finished.connect(self._on_done)
 
-        self.relocate_btn.setEnabled(False)
-        self._set_status(self.t("working"))
+        self._worker.progress.connect(self._on_progress)
+        self._worker.start()
 
-        results = core.relocate(sources, destination, create_symlink=True)
+    def _on_progress(self, current, total):
+        self.progress_bar.setMaximum(total)
+        self.progress_bar.setValue(current)
+        self.progress_bar.setFormat(f"{current} / {total}  ({int(current / total * 100)}%)")
+        self.progress_bar.show()
 
+    def _on_done(self, results):
+        self.progress_bar.hide()
         errors = [r for r in results if r.error]
         if errors:
             self._set_status("\n".join(f"• {r.source}: {r.error}" for r in errors), is_error=True)
         else:
             moved = len(results)
             symlinks = sum(1 for r in results if r.symlink_created)
-            self._set_status(self.t("success").format(n=moved, dest=destination, s=symlinks))
+            dest = self.dest_edit.text().strip()
+            self._set_status(self.t("success").format(n=moved, dest=dest, s=symlinks))
+        self.relocate_btn.setEnabled(True)
 
+    def _on_elevated_done(self, success, err):
+        self.progress_bar.hide()
+        if success:
+            sources = [le.text().strip() for _, le, _, _, _ in self._source_rows if le.text().strip()]
+            dest = self.dest_edit.text().strip()
+            self._set_status(self.t("success").format(n=len(sources), dest=dest, s=len(sources)))
+        else:
+            self._set_status(err or self.t("err_no_elevator"), is_error=True)
         self.relocate_btn.setEnabled(True)

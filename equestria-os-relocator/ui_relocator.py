@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QPushButton, QScrollArea, QFrame, QLineEdit
+    QPushButton, QScrollArea, QFrame, QLineEdit, QProgressBar
 )
 from PyQt6.QtCore import Qt
 
@@ -90,6 +90,13 @@ class Ui_Relocator:
         self.relocate_btn.setObjectName("RelocateBtn")
         self.relocate_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         main_layout.addWidget(self.relocate_btn)
+
+        # --- Progress bar ---
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setObjectName("ProgressBar")
+        self.progress_bar.setTextVisible(True)
+        self.progress_bar.hide()
+        main_layout.addWidget(self.progress_bar)
 
         # --- Status label ---
         self.status_label = QLabel("")
