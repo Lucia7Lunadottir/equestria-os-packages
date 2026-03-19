@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(cd \"/home/lucial/Git Projects/equestria-os-relocator\" && python3 -c \"\nimport sys\nsys.path.insert\\(0, '.'\\)\nfrom relocator.core import detect_ntfs, check_writable, relocate, RelocateResult\nfrom relocator.privilege import find_elevator, needs_elevation\nfrom relocator.ui_relocator import Ui_Relocator\nprint\\('All imports OK'\\)\nprint\\('detect_ntfs /tmp:', detect_ntfs\\('/tmp'\\)\\)\nprint\\('check_writable /tmp:', check_writable\\('/tmp'\\)\\)\nprint\\('find_elevator:', find_elevator\\(\\)\\)\n\")",
-      "Bash(cd \"/home/lucial/Git Projects/equestria-os-relocator\" && python3 -c \"\nimport sys, ast\nfor f in ['relocator/__init__.py','relocator/core.py','relocator/privilege.py',\n          'relocator/ui_relocator.py','relocator/app.py','relocator/main.py']:\n    with open\\(f\\) as fh:\n        ast.parse\\(fh.read\\(\\)\\)\n    print\\(f, '— syntax OK'\\)\n\")"
+      "Bash(cd \"/home/lucial/Git Projects/equestria-os-relocator\" && python3 -c \"\nimport sys, ast\nfor f in ['relocator/__init__.py','relocator/core.py','relocator/privilege.py',\n          'relocator/ui_relocator.py','relocator/app.py','relocator/main.py']:\n    with open\\(f\\) as fh:\n        ast.parse\\(fh.read\\(\\)\\)\n    print\\(f, '— syntax OK'\\)\n\")",
+      "Bash(python3 -c \"\nimport os, sys\nsys.path.insert\\(0, '/opt/equestria-os-relocator'\\)\nfrom core import check_writable\nprint\\('Unity writable:', check_writable\\('/home/lucial/Unity'\\)\\)\nprint\\('parent writable:', check_writable\\('/home/lucial'\\)\\)\n\")",
+      "Bash(makepkg -si --noconfirm 2>&1)",
+      "Bash(makepkg -f 2>&1)",
+      "Bash(pkexec pacman -U --noconfirm /home/lucial/equestria-packages/equestria-os-relocator/equestria-os-relocator-1.0.0-1-any.pkg.tar.zst 2>&1)",
+      "Bash(pkexec pacman -U --noconfirm --overwrite '*' /home/lucial/equestria-packages/equestria-os-relocator/equestria-os-relocator-1.0.0-1-any.pkg.tar.zst 2>&1)"
     ]
   }
 }

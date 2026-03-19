@@ -27,6 +27,7 @@ package() {
     install -Dm644 "$startdir/app.py"          "$pkgdir/opt/$pkgname/app.py"
     install -Dm644 "$startdir/core.py"         "$pkgdir/opt/$pkgname/core.py"
     install -Dm644 "$startdir/privilege.py"    "$pkgdir/opt/$pkgname/privilege.py"
+    install -Dm644 "$startdir/backend.py"      "$pkgdir/opt/$pkgname/backend.py"
     install -Dm644 "$startdir/style.qss"       "$pkgdir/opt/$pkgname/style.qss"
 
     # Assets
