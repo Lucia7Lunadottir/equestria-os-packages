@@ -1,0 +1,14 @@
+post_install() {
+    update-desktop-database -q
+    kbuildsycoca6 --noincremental 2>/dev/null || true
+}
+
+post_upgrade() {
+    update-desktop-database -q
+    kbuildsycoca6 --noincremental 2>/dev/null || true
+}
+
+post_remove() {
+    update-desktop-database -q
+    kbuildsycoca6 --noincremental 2>/dev/null || true
+}

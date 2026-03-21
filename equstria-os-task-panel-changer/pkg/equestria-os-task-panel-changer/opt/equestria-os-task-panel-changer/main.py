@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout,
                              QPushButton, QColorDialog, QMessageBox, QFileDialog)
 from PyQt6.QtGui import QIcon, QColor, QFontDatabase, QFont
 from PyQt6.QtCore import Qt
-from ui import Ui_MainWindow, PresetCard
+from ui import Ui_MainWindow, PresetCard, PanelRowWidget
 
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
 USER_PATH = os.path.expanduser("~/.local/share/EquestriaOS/PanelStyles/")
@@ -36,7 +36,7 @@ class TaskPanelApp(QMainWindow):
         self._ed_color = "#313060"
         self._ed_opacity = 90
         self._ed_is_dark = True
-        self._ed_height = 48
+        self._panel_rows = []
         self._ed_layout_captured = None   # datetime string or None
 
         self.char_by_id = {}
@@ -205,7 +205,7 @@ class TaskPanelApp(QMainWindow):
             card = PresetCard(
                 preset_id=pid,
                 char_name=self._preset_display_name(preset),
-                desc_text=self._t(preset.get("desc_key", pid)),
+                desc_text=preset.get("desc") or self._t(preset.get("desc_key", pid)),
                 icon_path=self._preset_icon_path(preset),
             )
             card.update_appearance(self.panel_color, self.panel_opacity)
@@ -239,6 +239,7 @@ class TaskPanelApp(QMainWindow):
         self.ui.btn_ed_color.clicked.connect(self.on_ed_color_click)
         self.ui.sld_ed_opacity.valueChanged.connect(self.on_ed_opacity_changed)
         self.ui.btn_ed_icon.clicked.connect(self.open_icon_picker)
+        self.ui.btn_ed_add_panel.clicked.connect(lambda: self._add_panel_row())
         self.ui.btn_ed_theme.clicked.connect(self.toggle_editor_theme)
         self.ui.btn_ed_capture.clicked.connect(self.capture_panels)
         self.ui.btn_ed_restore.clicked.connect(self.restore_single_default)
@@ -281,9 +282,11 @@ class TaskPanelApp(QMainWindow):
         # Editor page labels
         self.ui.lbl_ed_id_row.setText(self._t("ui.ed_preset_id"))
         self.ui.lbl_ed_name_row.setText(self._t("ui.ed_name_label"))
+        self.ui.lbl_ed_desc_row.setText(self._t("ui.ed_desc_label"))
         self.ui.lbl_ed_icon_row.setText(self._t("ui.ed_icon_label"))
         self.ui.lbl_ed_color_row.setText(self._t("ui.ed_color_label"))
-        self.ui.lbl_ed_height_row.setText(self._t("ui.ed_height_label"))
+        self.ui.lbl_ed_panels.setText(self._t("ui.ed_panels_label"))
+        self.ui.btn_ed_add_panel.setText(self._t("ui.ed_add_panel_btn"))
         self.ui.lbl_ed_opacity_row.setText(self._t("ui.ed_opacity_label"))
         self.ui.lbl_ed_theme_row.setText(self._t("ui.ed_theme_label"))
         self.ui.lbl_ed_layout_row.setText(self._t("ui.ed_layout_label"))
@@ -293,6 +296,8 @@ class TaskPanelApp(QMainWindow):
         self.ui.btn_ed_save.setText(self._t("ui.btn_save"))
         self.ui.btn_ed_theme.setText(self._t("ui.dark_text") if self._ed_is_dark else self._t("ui.light_text"))
         self._update_capture_label()
+        for row in self._panel_rows:
+            row.retranslate(self._t)
 
     def _update_capture_label(self):
         if self._ed_layout_captured:
@@ -338,19 +343,21 @@ class TaskPanelApp(QMainWindow):
     def open_editor(self, preset_id):
         self.is_new_preset = (preset_id is None)
         self.editing_preset_id = preset_id
+        self._clear_panel_rows()
 
         if self.is_new_preset:
             self._ed_color = "#313060"
             self._ed_opacity = 90
             self._ed_is_dark = True
-            self._ed_height = 48
             self._ed_layout_captured = None
             self.ui.lbl_ed_title.setText(self._t("ui.ed_title_new"))
             self.ui.fld_ed_id.setText("")
             self.ui.fld_ed_id.setReadOnly(False)
             self.ui.fld_ed_name.setText("")
+            self.ui.fld_ed_desc.setText("")
             self.ui.fld_ed_icon.setText("")
             self.ui.btn_ed_restore.setEnabled(False)
+            self._add_panel_row(self._default_panel_config())
         else:
             preset = self._get_preset(preset_id)
             if not preset:
@@ -358,7 +365,6 @@ class TaskPanelApp(QMainWindow):
             self._ed_color = preset.get("color", "#313060")
             self._ed_opacity = preset.get("opacity", 90)
             self._ed_is_dark = preset.get("is_dark", True)
-            self._ed_height = preset.get("height", 48)
             self._ed_layout_captured = preset.get("layout_captured")
 
             display_name = self._preset_display_name(preset)
@@ -368,6 +374,7 @@ class TaskPanelApp(QMainWindow):
             self.ui.fld_ed_id.setText(preset_id)
             self.ui.fld_ed_id.setReadOnly(True)
             self.ui.fld_ed_name.setText(display_name)
+            self.ui.fld_ed_desc.setText(preset.get("desc") or self._t(preset.get("desc_key", preset_id)))
             self.ui.fld_ed_icon.setText(preset.get("icon", ""))
 
             sys_path = os.path.join(SYSTEM_PATH, "presets.json")
@@ -377,10 +384,12 @@ class TaskPanelApp(QMainWindow):
                     has_default = any(p["id"] == preset_id for p in json.load(f).get("presets", []))
             self.ui.btn_ed_restore.setEnabled(has_default)
 
+            for cfg in self._parse_preset_panels_config(preset):
+                self._add_panel_row(cfg)
+
         self.ui.btn_ed_color.setStyleSheet(f"background-color: {self._ed_color};")
         self.ui.sld_ed_opacity.setValue(self._ed_opacity)
         self.ui.lbl_ed_opacity_val.setText(f"{self._ed_opacity}%")
-        self.ui.spn_ed_height.setValue(self._ed_height)
         self._update_ui_state()
         self.ui.stacked_widget.setCurrentIndex(1)
 
@@ -431,6 +440,10 @@ class TaskPanelApp(QMainWindow):
         self._update_capture_label()
 
     def save_editor(self):
+        panels_config = [row.get_config() for row in self._panel_rows]
+        if not panels_config:
+            return
+
         if self.is_new_preset:
             new_id = self.ui.fld_ed_id.text().strip()
             if not new_id:
@@ -446,7 +459,8 @@ class TaskPanelApp(QMainWindow):
                 "color": self._ed_color,
                 "opacity": self._ed_opacity,
                 "is_dark": self._ed_is_dark,
-                "height": self.ui.spn_ed_height.value(),
+                "height": panels_config[0]["height"],
+                "panels_config": panels_config,
                 "script": "",
             }
             self.presets.append(preset)
@@ -457,16 +471,19 @@ class TaskPanelApp(QMainWindow):
             preset["color"] = self._ed_color
             preset["opacity"] = self._ed_opacity
             preset["is_dark"] = self._ed_is_dark
-            preset["height"] = self.ui.spn_ed_height.value()
+            preset["height"] = panels_config[0]["height"]
+            preset["panels_config"] = panels_config
 
-        # Keep JS script in sync with height (used as fallback when no capture exists)
-        height = self.ui.spn_ed_height.value()
-        if preset.get("script"):
-            preset["script"] = re.sub(r'\.height\s*=\s*\d+', f'.height={height}', preset["script"])
+        preset["script"] = self._generate_script_from_panels(panels_config)
 
         name = self.ui.fld_ed_name.text().strip()
         if name:
             preset["name"] = name
+        desc = self.ui.fld_ed_desc.text().strip()
+        if desc:
+            preset["desc"] = desc
+        elif "desc" in preset:
+            del preset["desc"]
         icon = self.ui.fld_ed_icon.text().strip()
         if icon:
             preset["icon"] = icon
@@ -479,10 +496,184 @@ class TaskPanelApp(QMainWindow):
 
         self._save_presets()
         self._build_preset_cards()
+
+        if not self.is_new_preset and self.editing_preset_id == self.active_preset_id:
+            appearance_changed = (
+                self._ed_color    != self.panel_color or
+                self._ed_opacity  != self.panel_opacity or
+                self._ed_is_dark  != self.panel_is_dark
+            )
+            self.panel_color   = self._ed_color
+            self.panel_opacity = self._ed_opacity
+            self.panel_is_dark = self._ed_is_dark
+            self.ui.sld_opacity.setValue(self.panel_opacity)
+            self.ui.lbl_opacity_val.setText(f"{self.panel_opacity}%")
+            if appearance_changed:
+                self._apply_panel_appearance()
+            # delay layout only when theme is being reloaded to avoid race condition
+            self._apply_preset_layout(self.editing_preset_id, delay=3 if appearance_changed else 0)
+
         self.ui.stacked_widget.setCurrentIndex(0)
 
     def cancel_editor(self):
         self.ui.stacked_widget.setCurrentIndex(0)
+
+    # ─────────────────────── Panel rows (editor) ───────────────────────
+
+    def _add_panel_row(self, cfg=None):
+        row = PanelRowWidget(cfg)
+        row.remove_requested.connect(self._remove_panel_row)
+        row.move_up_requested.connect(self._move_panel_row_up)
+        row.move_down_requested.connect(self._move_panel_row_down)
+        self.ui.ed_panels_layout.addWidget(row)
+        self._panel_rows.append(row)
+
+    def _remove_panel_row(self, row):
+        if len(self._panel_rows) <= 1:
+            return  # always keep at least one panel
+        self.ui.ed_panels_layout.removeWidget(row)
+        row.setParent(None)
+        row.deleteLater()
+        self._panel_rows.remove(row)
+
+    def _move_panel_row_up(self, row):
+        idx = self._panel_rows.index(row)
+        if idx <= 0:
+            return
+        self._panel_rows[idx], self._panel_rows[idx - 1] = self._panel_rows[idx - 1], self._panel_rows[idx]
+        self._rebuild_panels_layout()
+
+    def _move_panel_row_down(self, row):
+        idx = self._panel_rows.index(row)
+        if idx >= len(self._panel_rows) - 1:
+            return
+        self._panel_rows[idx], self._panel_rows[idx + 1] = self._panel_rows[idx + 1], self._panel_rows[idx]
+        self._rebuild_panels_layout()
+
+    def _rebuild_panels_layout(self):
+        for row in self._panel_rows:
+            self.ui.ed_panels_layout.removeWidget(row)
+        for row in self._panel_rows:
+            self.ui.ed_panels_layout.addWidget(row)
+
+    def _clear_panel_rows(self):
+        for row in self._panel_rows:
+            self.ui.ed_panels_layout.removeWidget(row)
+            row.setParent(None)
+            row.deleteLater()
+        self._panel_rows.clear()
+
+    def _default_panel_config(self, height=48):
+        return {
+            "position": "bottom", "height": height,
+            "width": 0, "offset": 0, "alignment": "left",
+            "floating": False, "autohide": False,
+            "lengthMode": "fill", "launcher": "kickoff",
+            "widgets": ["taskbar", "systray", "clock"],
+        }
+
+    def _parse_preset_panels_config(self, preset):
+        """Return panels_config list from preset, parsing legacy script if needed."""
+        if "panels_config" in preset:
+            return preset["panels_config"]
+        script = preset.get("script", "")
+        if not script:
+            return [self._default_panel_config(preset.get("height", 48))]
+        panels = []
+        for ps in re.split(r'var \w+=new Panel;', script)[1:]:
+            cfg = {}
+            m = re.search(r"\.location='(\w+)'", ps)
+            cfg["position"] = m.group(1) if m else "bottom"
+            m = re.search(r'\.height=(\d+)', ps)
+            cfg["height"] = int(m.group(1)) if m else preset.get("height", 48)
+            cfg["floating"] = "floating=true" in ps
+            cfg["autohide"] = "autohide" in ps
+            m = re.search(r"\.lengthMode='(\w+)'", ps)
+            cfg["lengthMode"] = m.group(1) if m else "fill"
+            m = re.search(r"\.alignment='(\w+)'", ps)
+            cfg["alignment"] = m.group(1) if m else ("center" if cfg.get("floating") else "left")
+            m = re.search(r"\.minimumLength=(\d+)", ps)
+            cfg["width"] = int(m.group(1)) if m else 0
+            m = re.search(r"\.offset=(\d+)", ps)
+            cfg["offset"] = int(m.group(1)) if m else 0
+            if "plasma.kickerdash'" in ps:
+                cfg["launcher"] = "kickerdash"
+            elif "plasma.kicker'" in ps:
+                cfg["launcher"] = "kicker"
+            elif "plasma.kickoff'" in ps:
+                cfg["launcher"] = "kickoff"
+            else:
+                cfg["launcher"] = "none"
+            widgets = []
+            if "plasma.icontasks'" in ps:    widgets.append("taskbar")
+            if "plasma.systemtray'" in ps:   widgets.append("systray")
+            if "plasma.digitalclock'" in ps: widgets.append("clock")
+            if "plasma.pager'" in ps:        widgets.append("pager")
+            if "plasma.systemmonitor'" in ps: widgets.append("monitor")
+            cfg["widgets"] = widgets
+            panels.append(cfg)
+        return panels or [self._default_panel_config(preset.get("height", 48))]
+
+    def _generate_script_from_panels(self, panels_config):
+        LAUNCHER_MAP = {
+            "kickoff":    "org.kde.plasma.kickoff",
+            "kicker":     "org.kde.plasma.kicker",
+            "kickerdash": "org.kde.plasma.kickerdash",
+        }
+        ICON = "/usr/share/pixmaps/equestria-os-logo.png"
+        parts = ["var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}"]
+        for i, p in enumerate(panels_config):
+            v = f"p{i}"
+            pos      = p.get("position", "bottom")
+            height   = p.get("height", 48)
+            width_px = p.get("width", 0)
+            offset   = p.get("offset", 0)
+            align    = p.get("alignment", "center" if p.get("floating") else "left")
+            floatP   = p.get("floating", False)
+            hide     = p.get("autohide", False)
+            lmode    = p.get("lengthMode", "fill")
+            launch   = p.get("launcher", "none")
+            ww       = p.get("widgets", [])
+
+            parts.append(f"var {v}=new Panel;")
+            parts.append(f"{v}.location='{pos}';")
+            parts.append(f"{v}.height={height};")
+            parts.append(f"{v}.alignment='{align}';")
+            if floatP:
+                parts.append(f"{v}.floating=true;")
+            parts.append(f"{v}.lengthMode='{lmode}';")
+            if width_px > 0:
+                parts.append(f"{v}.minimumLength={width_px};{v}.maximumLength={width_px};")
+            if offset != 0:
+                parts.append(f"{v}.offset={offset};")
+            if hide:
+                parts.append(f"{v}.hiding='autohide';")
+
+            has_launcher = launch in LAUNCHER_MAP
+            has_taskbar  = "taskbar" in ww
+            has_right    = any(x in ww for x in ("pager", "monitor", "systray", "clock"))
+
+            if has_launcher:
+                pid = LAUNCHER_MAP[launch]
+                parts.append(f"var k{i}={v}.addWidget('{pid}');")
+                parts.append(f"k{i}.currentConfigGroup=['General'];")
+                parts.append(f"k{i}.writeConfig('icon','{ICON}');")
+
+            # spacer between launcher and taskbar (or right widgets)
+            if has_launcher and (has_taskbar or has_right):
+                parts.append(f"{v}.addWidget('org.kde.plasma.panelspacer');")
+
+            if has_taskbar:
+                parts.append(f"{v}.addWidget('org.kde.plasma.icontasks');")
+                if has_right:
+                    parts.append(f"{v}.addWidget('org.kde.plasma.panelspacer');")
+
+            if "pager"   in ww: parts.append(f"{v}.addWidget('org.kde.plasma.pager');")
+            if "monitor" in ww: parts.append(f"{v}.addWidget('org.kde.plasma.systemmonitor');")
+            if "systray" in ww: parts.append(f"{v}.addWidget('org.kde.plasma.systemtray');")
+            if "clock"   in ww: parts.append(f"{v}.addWidget('org.kde.plasma.digitalclock');")
+
+        return "".join(parts)
 
     def restore_single_default(self):
         if self.is_new_preset or not self.editing_preset_id:
@@ -530,24 +721,30 @@ class TaskPanelApp(QMainWindow):
 
     # ─────────────────────── Panel Appearance & Layout ───────────────────────
 
-    def _apply_preset_layout(self, preset_id):
-        """Apply the panel layout for a preset (config backup if available, else JS script)."""
+    def _apply_preset_layout(self, preset_id, delay=0):
+        """Apply the panel layout for a preset (config backup if available, else JS script).
+
+        delay: seconds to wait before applying (use when a theme reload is already in progress).
+        """
         preset = self._get_preset(preset_id)
         if not preset:
             return
         layout_file = self._preset_layout_file(preset_id)
         if os.path.exists(layout_file):
             # Config-backup approach: restart plasmashell with saved config
+            wait = max(delay, 1)
             self._run_shell(
-                f"kquitapp6 plasmashell 2>/dev/null; sleep 1; "
+                f"kquitapp6 plasmashell 2>/dev/null; sleep {wait}; "
                 f"cp '{layout_file}' '{PLASMA_CONFIG}'; "
                 f"nohup plasmashell &>/dev/null &"
             )
         else:
             script = preset.get("script", "")
             if script:
+                escaped = script.replace("\\", "\\\\").replace('"', '\\"')
+                prefix = f"sleep {delay}; " if delay else ""
                 self._run_shell(
-                    f'qdbus6 org.kde.plasmashell /PlasmaShell evaluateScript "{script.replace(chr(34), chr(92)+chr(34))}"'
+                    f'{prefix}qdbus6 org.kde.plasmashell /PlasmaShell evaluateScript "{escaped}"'
                 )
 
     def _apply_panel_appearance(self):

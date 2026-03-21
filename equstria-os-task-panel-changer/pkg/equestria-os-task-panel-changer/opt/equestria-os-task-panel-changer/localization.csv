@@ -37,8 +37,25 @@ ui.ed_title_new,New Preset,Новый стиль,Neues Preset,Nouveau prérégla
 ui.ed_title_edit,Edit: {0},Изменить: {0},Bearbeiten: {0},Éditer : {0},Editar: {0},Editar: {0},Edytuj: {0},Змінити: {0},编辑: {0},編集: {0}
 ui.ed_preset_id,Preset ID:,ID стиля:,Preset-ID:,ID de préréglage :,ID de ajuste:,ID do predefinição:,ID ustawień:,ID стилю:,预设 ID:,プリセット ID:
 ui.ed_name_label,Display Name:,Имя:,Anzeigename:,Nom d'affichage :,Nombre:,Nome:,Nazwa:,Ім'я:,显示名称:,表示名:
+ui.ed_desc_label,Description:,Описание:,Beschreibung:,Description :,Descripción:,Descrição:,Opis:,Опис:,描述:,説明:
 ui.ed_color_label,Panel Color:,Цвет панели:,Panelfarbe:,Couleur du panneau :,Color del panel:,Cor do painel:,Kolor panelu:,Колір панелі:,面板颜色:,パネルカラー:
-ui.ed_height_label,Panel Height:,Высота панели:,Panelhöhe:,Hauteur du panneau :,Altura del panel:,Altura do painel:,Wysokość panelu:,Висота панелі:,面板高度:,パネルの高さ:
+ui.ed_panels_label,Panels:,Панели:,Panels:,Panneaux :,Paneles:,Painéis:,Panele:,Панелі:,面板:,パネル:
+ui.ed_add_panel_btn,+ Add Panel,+ Добавить панель,+ Panel hinzufügen,+ Ajouter un panneau,+ Añadir panel,+ Adicionar painel,+ Dodaj panel,+ Додати панель,+ 添加面板,+ パネルを追加
+ui.pr_position,Position:,Позиция:,Position:,Position :,Posición:,Posição:,Pozycja:,Позиція:,位置:,位置:
+ui.pr_height,Height:,Высота:,Höhe:,Hauteur :,Altura:,Altura:,Wysokość:,Висота:,高度:,高さ:
+ui.pr_width,Width:,Ширина:,Breite:,Largeur :,Ancho:,Largura:,Szerokość:,Ширина:,宽度:,幅:
+ui.pr_offset,Offset:,Смещение:,Versatz:,Décalage :,Desplaz.:,Deslocam.:,Przesunięcie:,Зміщення:,偏移:,オフセット:
+ui.pr_align,Align:,Выравн.:,Ausricht.:,Alignem. :,Alineac.:,Alinhám.:,Wyrówn.:,Вирівн.:,对齐:,整列:
+ui.pr_floating,Floating,Плавающая,Schwebend,Flottant,Flotante,Flutuante,Pływający,Плаваюча,浮动,フローティング
+ui.pr_autohide,Autohide,Автоскрытие,Ausblenden,Masquage auto,Ocultar auto,Ocultar auto,Auto-ukrywanie,Автоприховання,自动隐藏,自動隠し
+ui.pr_length,Length:,Длина:,Länge:,Longueur :,Longitud:,Comprimento:,Długość:,Довжина:,长度:,長さ:
+ui.pr_launcher,Launcher:,Меню пуск:,Starter:,Lanceur :,Lanzador:,Iniciador:,Launcher:,Запускач:,启动器:,ランチャー:
+ui.pr_widgets,Widgets:,Виджеты:,Widgets:,Widgets :,Widgets:,Widgets:,Widżety:,Віджети:,小部件:,ウィジェット:
+ui.pr_taskbar,Taskbar,Панель задач,Taskleiste,Barre des tâches,Barra tareas,Barra tarefas,Pasek zadań,Панель завдань,任务栏,タスクバー
+ui.pr_systray,Systray,Системный лоток,Systemtray,Zone de notif.,Bandeja sist.,Bandeja sist.,Zasobnik,Системний лоток,系统托盘,システムトレイ
+ui.pr_clock,Clock,Часы,Uhr,Horloge,Reloj,Relógio,Zegar,Годинник,时钟,時計
+ui.pr_pager,Pager,Пейджер,Pager,Pager,Paginador,Paginador,Pager,Пейджер,分页器,ページャー
+ui.pr_monitor,Monitor,Монитор,Monitor,Moniteur,Monitor,Monitor,Monitor,Монітор,监视器,モニター
 ui.ed_opacity_label,Opacity:,Прозрачность:,Deckkraft:,Opacité :,Opacidad:,Opacidade:,Krycie:,Прозорість:,不透明度:,不透明度:
 ui.ed_theme_label,Text Color:,Цвет текста:,Textfarbe:,Couleur du texte :,Color del texto:,Cor do texto:,Kolor tekstu:,Колір тексту:,文字颜色:,テキストカラー:
 ui.ed_icon_label,Icon:,Иконка:,Symbol:,Icône :,Icono:,Ícone:,Ikona:,Іконка:,图标:,アイコン:

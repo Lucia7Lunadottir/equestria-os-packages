@@ -212,3 +212,192 @@ QLabel[cssClass="capture-status"] {
     color: rgb(140, 130, 160);
     font-style: italic;
 }
+
+/* ─── QComboBox dropdown (global — prevents transparent popups) ─── */
+QComboBox QAbstractItemView {
+    background-color: rgb(22, 18, 36);
+    color: rgb(200, 190, 230);
+    border: 1px solid rgb(80, 65, 115);
+    selection-background-color: rgb(100, 60, 160);
+    selection-color: white;
+    outline: none;
+    padding: 2px;
+}
+
+QComboBox QAbstractItemView::item {
+    padding: 4px 8px;
+    min-height: 22px;
+}
+
+QComboBox QAbstractItemView::item:hover {
+    background-color: rgb(65, 50, 100);
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────── */
+QScrollBar:vertical {
+    background: rgb(20, 16, 32);
+    width: 7px;
+    border-radius: 3px;
+    margin: 0;
+}
+QScrollBar::handle:vertical {
+    background: rgb(80, 65, 115);
+    border-radius: 3px;
+    min-height: 24px;
+}
+QScrollBar::handle:vertical:hover {
+    background: rgb(120, 90, 170);
+}
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0;
+    background: none;
+}
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QScrollBar:horizontal {
+    background: rgb(20, 16, 32);
+    height: 7px;
+    border-radius: 3px;
+    margin: 0;
+}
+QScrollBar::handle:horizontal {
+    background: rgb(80, 65, 115);
+    border-radius: 3px;
+    min-width: 24px;
+}
+QScrollBar::handle:horizontal:hover {
+    background: rgb(120, 90, 170);
+}
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    width: 0;
+    background: none;
+}
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    background: none;
+}
+
+/* ─── Panel Row Widget ───────────────────────────────────────────── */
+QFrame#PanelRow {
+    background-color: rgb(26, 22, 40);
+    border: 1px solid rgb(58, 52, 88);
+    border-radius: 8px;
+}
+
+QFrame#PanelRow QLabel {
+    color: rgb(160, 150, 195);
+    font-size: 12px;
+}
+
+QFrame#PanelRow QCheckBox {
+    color: rgb(180, 170, 215);
+    font-size: 12px;
+    spacing: 5px;
+}
+
+QFrame#PanelRow QCheckBox::indicator {
+    width: 14px;
+    height: 14px;
+    border: 1px solid rgb(90, 80, 130);
+    border-radius: 3px;
+    background-color: rgb(18, 14, 28);
+}
+
+QFrame#PanelRow QCheckBox::indicator:hover {
+    border: 1px solid rgb(140, 100, 200);
+}
+
+QFrame#PanelRow QCheckBox::indicator:checked {
+    background-color: rgb(120, 80, 190);
+    border: 1px solid rgb(160, 110, 220);
+}
+
+QFrame#PanelRow QComboBox {
+    background-color: rgb(18, 14, 28);
+    border: 1px solid rgb(58, 52, 88);
+    border-radius: 5px;
+    color: rgb(200, 190, 230);
+    padding: 3px 6px;
+    font-size: 12px;
+    min-height: 22px;
+}
+
+QFrame#PanelRow QComboBox:hover {
+    border: 1px solid rgb(110, 80, 160);
+}
+
+QFrame#PanelRow QComboBox::drop-down {
+    background: rgb(40, 32, 65);
+    border-left: 1px solid rgb(58, 52, 88);
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    width: 18px;
+}
+
+QFrame#PanelRow QComboBox QAbstractItemView {
+    background-color: rgb(25, 20, 40);
+    color: rgb(200, 190, 230);
+    border: 1px solid rgb(80, 65, 115);
+    selection-background-color: rgb(100, 60, 160);
+    selection-color: white;
+    outline: none;
+}
+
+QFrame#PanelRow QSpinBox {
+    background-color: rgb(18, 14, 28);
+    border: 1px solid rgb(58, 52, 88);
+    border-radius: 5px;
+    color: rgb(200, 190, 230);
+    padding: 3px 5px;
+    font-size: 12px;
+    min-height: 22px;
+}
+
+QFrame#PanelRow QSpinBox:hover {
+    border: 1px solid rgb(110, 80, 160);
+}
+
+QFrame#PanelRow QSpinBox::up-button,
+QFrame#PanelRow QSpinBox::down-button {
+    background: rgb(42, 34, 68);
+    border: none;
+    width: 14px;
+}
+
+QFrame#PanelRow QSpinBox::up-button:hover,
+QFrame#PanelRow QSpinBox::down-button:hover {
+    background: rgb(100, 60, 160);
+}
+
+QPushButton#PanelMoveBtn {
+    background-color: rgb(40, 35, 62);
+    border: 1px solid rgb(70, 60, 100);
+    border-radius: 4px;
+    color: rgb(180, 170, 215);
+    font-size: 13px;
+    padding: 0;
+}
+
+QPushButton#PanelMoveBtn:hover {
+    background-color: rgb(80, 65, 120);
+    color: white;
+}
+
+QPushButton#PanelRemoveBtn {
+    background-color: rgb(60, 28, 42);
+    border: 1px solid rgb(100, 50, 70);
+    border-radius: 4px;
+    color: rgb(220, 130, 150);
+    font-size: 12px;
+    padding: 0;
+}
+
+QPushButton#PanelRemoveBtn:hover {
+    background-color: rgb(100, 40, 60);
+    color: rgb(255, 170, 180);
+}
