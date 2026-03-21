@@ -1,9 +1,9 @@
 import os
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QScrollArea, QSlider, QStackedWidget,
-                             QLineEdit, QSpinBox, QFrame)
+                             QLineEdit, QSpinBox, QFrame, QComboBox, QCheckBox)
 from PyQt6.QtGui import QPainter, QColor, QPixmap
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 
 PANEL_LAYOUTS = {
     "sunset":    [{"pos": "bottom", "w": 0.62, "h": 0.28, "float": True}],
@@ -103,6 +103,190 @@ class PresetCard(QPushButton):
 
     def update_appearance(self, color, opacity):
         self.preview_widget.set_appearance(color, opacity)
+
+
+class PanelRowWidget(QFrame):
+    """Editor row for a single KDE panel — 3-line layout."""
+    remove_requested    = pyqtSignal(object)
+    move_up_requested   = pyqtSignal(object)
+    move_down_requested = pyqtSignal(object)
+
+    _POSITIONS  = ["bottom", "top", "left", "right"]
+    _LAUNCHERS  = ["none", "kickoff", "kicker", "kickerdash"]
+    _LENGTHS    = ["fill", "fit"]
+    _ALIGNMENTS = ["left", "center", "right"]
+
+    def __init__(self, cfg=None, parent=None):
+        super().__init__(parent)
+        cfg = cfg or {}
+        self.setObjectName("PanelRow")
+        self.setFrameShape(QFrame.Shape.StyledPanel)
+
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(12, 8, 12, 8)
+        outer.setSpacing(6)
+
+        def sl():
+            l = QLabel()
+            l.setProperty("cssClass", "status-label")
+            return l
+
+        def spinbox(lo, hi, val, suffix=" px", w=72):
+            s = QSpinBox()
+            s.setRange(lo, hi)
+            s.setSuffix(suffix)
+            s.setValue(val)
+            s.setFixedWidth(w)
+            return s
+
+        # ── Row 1: position / size / alignment / order ────────────
+        r1 = QHBoxLayout()
+        r1.setSpacing(8)
+
+        self.cmb_pos = QComboBox()
+        self.cmb_pos.addItems(["Bottom", "Top", "Left", "Right"])
+        pos = cfg.get("position", "bottom")
+        self.cmb_pos.setCurrentIndex(self._POSITIONS.index(pos) if pos in self._POSITIONS else 0)
+        self._lbl_pos = sl()
+        r1.addWidget(self._lbl_pos)
+        r1.addWidget(self.cmb_pos)
+
+        self.spn_h = spinbox(20, 200, cfg.get("height", 48))
+        self._lbl_h = sl()
+        r1.addWidget(self._lbl_h)
+        r1.addWidget(self.spn_h)
+
+        self.spn_w = spinbox(0, 9999, cfg.get("width", 0))
+        self.spn_w.setSpecialValueText("Auto")
+        self._lbl_w = sl()
+        r1.addWidget(self._lbl_w)
+        r1.addWidget(self.spn_w)
+
+        self.spn_offset = spinbox(-9999, 9999, cfg.get("offset", 0))
+        self._lbl_offset = sl()
+        r1.addWidget(self._lbl_offset)
+        r1.addWidget(self.spn_offset)
+
+        self.cmb_align = QComboBox()
+        self.cmb_align.addItems(["Left", "Center", "Right"])
+        align = cfg.get("alignment", "center")
+        self.cmb_align.setCurrentIndex(
+            self._ALIGNMENTS.index(align) if align in self._ALIGNMENTS else 1)
+        self._lbl_align = sl()
+        r1.addWidget(self._lbl_align)
+        r1.addWidget(self.cmb_align)
+
+        r1.addStretch()
+
+        btn_up = QPushButton("↑")
+        btn_up.setObjectName("PanelMoveBtn")
+        btn_up.setFixedSize(22, 22)
+        btn_up.clicked.connect(lambda: self.move_up_requested.emit(self))
+        btn_dn = QPushButton("↓")
+        btn_dn.setObjectName("PanelMoveBtn")
+        btn_dn.setFixedSize(22, 22)
+        btn_dn.clicked.connect(lambda: self.move_down_requested.emit(self))
+        btn_rm = QPushButton("✕")
+        btn_rm.setObjectName("PanelRemoveBtn")
+        btn_rm.setFixedSize(22, 22)
+        btn_rm.clicked.connect(lambda: self.remove_requested.emit(self))
+        r1.addWidget(btn_up)
+        r1.addWidget(btn_dn)
+        r1.addWidget(btn_rm)
+        outer.addLayout(r1)
+
+        # ── Row 2: behaviour / launcher ───────────────────────────
+        r2 = QHBoxLayout()
+        r2.setSpacing(8)
+
+        self.chk_float = QCheckBox()
+        self.chk_float.setChecked(cfg.get("floating", False))
+        self.chk_hide  = QCheckBox()
+        self.chk_hide.setChecked(cfg.get("autohide", False))
+        r2.addWidget(self.chk_float)
+        r2.addWidget(self.chk_hide)
+
+        self.cmb_len = QComboBox()
+        self.cmb_len.addItems(["Fill width", "Fit content"])
+        lm = cfg.get("lengthMode", "fill")
+        self.cmb_len.setCurrentIndex(self._LENGTHS.index(lm) if lm in self._LENGTHS else 0)
+        self._lbl_len = sl()
+        r2.addWidget(self._lbl_len)
+        r2.addWidget(self.cmb_len)
+
+        self.cmb_launcher = QComboBox()
+        self.cmb_launcher.addItems(["None", "Kickoff", "Kicker (classic)", "KickerDash (fullscreen)"])
+        launcher = cfg.get("launcher", "none")
+        self.cmb_launcher.setCurrentIndex(
+            self._LAUNCHERS.index(launcher) if launcher in self._LAUNCHERS else 0)
+        self._lbl_launcher = sl()
+        r2.addWidget(self._lbl_launcher)
+        r2.addWidget(self.cmb_launcher)
+
+        r2.addStretch()
+        outer.addLayout(r2)
+
+        # ── Row 3: widgets ────────────────────────────────────────
+        r3 = QHBoxLayout()
+        r3.setSpacing(10)
+        self._lbl_widgets = sl()
+        r3.addWidget(self._lbl_widgets)
+        ww = cfg.get("widgets", [])
+        self.chk_taskbar = QCheckBox()
+        self.chk_taskbar.setChecked("taskbar" in ww)
+        self.chk_systray = QCheckBox()
+        self.chk_systray.setChecked("systray" in ww)
+        self.chk_clock   = QCheckBox()
+        self.chk_clock.setChecked("clock" in ww)
+        self.chk_pager   = QCheckBox()
+        self.chk_pager.setChecked("pager" in ww)
+        self.chk_monitor = QCheckBox()
+        self.chk_monitor.setChecked("monitor" in ww)
+        for c in (self.chk_taskbar, self.chk_systray, self.chk_clock,
+                  self.chk_pager, self.chk_monitor):
+            r3.addWidget(c)
+        r3.addStretch()
+        outer.addLayout(r3)
+
+        # set default English text so widget is readable before retranslate()
+        self.retranslate(lambda k: k)
+
+    def retranslate(self, t):
+        self._lbl_pos.setText(t("ui.pr_position"))
+        self._lbl_h.setText(t("ui.pr_height"))
+        self._lbl_w.setText(t("ui.pr_width"))
+        self._lbl_offset.setText(t("ui.pr_offset"))
+        self._lbl_align.setText(t("ui.pr_align"))
+        self._lbl_len.setText(t("ui.pr_length"))
+        self._lbl_launcher.setText(t("ui.pr_launcher"))
+        self._lbl_widgets.setText(t("ui.pr_widgets"))
+        self.chk_float.setText(t("ui.pr_floating"))
+        self.chk_hide.setText(t("ui.pr_autohide"))
+        self.chk_taskbar.setText(t("ui.pr_taskbar"))
+        self.chk_systray.setText(t("ui.pr_systray"))
+        self.chk_clock.setText(t("ui.pr_clock"))
+        self.chk_pager.setText(t("ui.pr_pager"))
+        self.chk_monitor.setText(t("ui.pr_monitor"))
+
+    def get_config(self):
+        widgets = []
+        if self.chk_taskbar.isChecked(): widgets.append("taskbar")
+        if self.chk_systray.isChecked(): widgets.append("systray")
+        if self.chk_clock.isChecked():   widgets.append("clock")
+        if self.chk_pager.isChecked():   widgets.append("pager")
+        if self.chk_monitor.isChecked(): widgets.append("monitor")
+        return {
+            "position":   self._POSITIONS[self.cmb_pos.currentIndex()],
+            "height":     self.spn_h.value(),
+            "width":      self.spn_w.value(),
+            "offset":     self.spn_offset.value(),
+            "alignment":  self._ALIGNMENTS[self.cmb_align.currentIndex()],
+            "floating":   self.chk_float.isChecked(),
+            "autohide":   self.chk_hide.isChecked(),
+            "lengthMode": self._LENGTHS[self.cmb_len.currentIndex()],
+            "launcher":   self._LAUNCHERS[self.cmb_launcher.currentIndex()],
+            "widgets":    widgets,
+        }
 
 
 class Ui_MainWindow:
@@ -273,6 +457,12 @@ class Ui_MainWindow:
         self.fld_ed_name.setFixedWidth(220)
         _, self.lbl_ed_name_row = add_row("Display Name:", self.fld_ed_name)
 
+        # Description
+        self.fld_ed_desc = QLineEdit()
+        self.fld_ed_desc.setObjectName("EditorField")
+        self.fld_ed_desc.setFixedWidth(320)
+        _, self.lbl_ed_desc_row = add_row("Description:", self.fld_ed_desc)
+
         # Icon path + browse button
         icon_w = QWidget()
         icon_lo = QHBoxLayout(icon_w)
@@ -294,13 +484,26 @@ class Ui_MainWindow:
         self.btn_ed_color.setFixedSize(40, 24)
         _, self.lbl_ed_color_row = add_row("Panel Color:", self.btn_ed_color)
 
-        # Panel height spinbox
-        self.spn_ed_height = QSpinBox()
-        self.spn_ed_height.setObjectName("EditorSpinBox")
-        self.spn_ed_height.setRange(20, 120)
-        self.spn_ed_height.setSuffix(" px")
-        self.spn_ed_height.setFixedWidth(90)
-        _, self.lbl_ed_height_row = add_row("Panel Height:", self.spn_ed_height)
+        # Panels section
+        panels_hdr = QWidget()
+        panels_hdr_lo = QHBoxLayout(panels_hdr)
+        panels_hdr_lo.setContentsMargins(0, 0, 0, 0)
+        panels_hdr_lo.setSpacing(8)
+        self.lbl_ed_panels = QLabel("Panels:")
+        self.lbl_ed_panels.setProperty("cssClass", "status-label")
+        self.lbl_ed_panels.setFixedWidth(150)
+        self.btn_ed_add_panel = QPushButton("+ Add Panel")
+        self.btn_ed_add_panel.setProperty("cssClass", "action-btn")
+        panels_hdr_lo.addWidget(self.lbl_ed_panels)
+        panels_hdr_lo.addWidget(self.btn_ed_add_panel)
+        panels_hdr_lo.addStretch()
+        ed_form.addWidget(panels_hdr)
+
+        self.ed_panels_container = QWidget()
+        self.ed_panels_layout = QVBoxLayout(self.ed_panels_container)
+        self.ed_panels_layout.setSpacing(6)
+        self.ed_panels_layout.setContentsMargins(0, 0, 0, 0)
+        ed_form.addWidget(self.ed_panels_container)
 
         # Opacity slider
         opacity_w = QWidget()

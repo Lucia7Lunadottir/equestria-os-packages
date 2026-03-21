@@ -1,13 +1,14 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-task-panel-changer
-pkgver=1.0.0
-pkgrel=2
+pkgver=1.0.1
+pkgrel=1
 pkgdesc='Task panel style manager for Equestria OS (KDE Plasma 6)'
 arch=('any')
 url='https://psyche-games.com'
 license=('custom')
 depends=('python' 'python-pyqt6')
+install="$pkgname.install"
 
 package() {
     local appdir="$pkgdir/opt/$pkgname"
