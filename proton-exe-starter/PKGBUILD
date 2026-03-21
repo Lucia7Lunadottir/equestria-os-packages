@@ -1,0 +1,61 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-proton-starter
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton)"
+arch=('any')
+url="https://github.com/7Lucia7Lokidottir7"
+license=('GPL')
+depends=('python' 'python-pyqt6' 'libnotify' 'xdg-utils' 'desktop-file-utils' 'xdg-desktop-portal-kde')
+install="$pkgname.install"
+
+package() {
+    local optdir="$pkgdir/opt/$pkgname"
+    local bindir="$pkgdir/usr/bin"
+
+    install -d "$optdir"
+    install -d "$bindir"
+    install -d "$pkgdir/usr/share/applications"
+    install -d "$pkgdir/usr/share/kio/servicemenus"
+
+    # Python source
+    install -Dm644 "$startdir/launcher.py"         "$optdir/launcher.py"
+    install -Dm644 "$startdir/main.py"             "$optdir/main.py"
+    install -Dm644 "$startdir/proton_runner.py"    "$optdir/proton_runner.py"
+    install -Dm644 "$startdir/proton_updater.py"   "$optdir/proton_updater.py"
+    install -Dm644 "$startdir/ui.py"               "$optdir/ui.py"
+    install -Dm644 "$startdir/style.qss"           "$optdir/style.qss"
+    install -Dm644 "$startdir/localization.csv"    "$optdir/localization.csv"
+
+    # Icon
+    if [ -f "$startdir/equestria-os.png" ]; then
+        install -Dm644 "$startdir/equestria-os.png" \
+            "$pkgdir/usr/share/pixmaps/equestria-os-logo.png"
+    fi
+
+    # Wrapper scripts
+    cat > "$bindir/equestria-proton-run" <<'EOF'
+#!/bin/bash
+exec python3 /opt/equestria-os-proton-starter/launcher.py "$@"
+EOF
+    chmod 755 "$bindir/equestria-proton-run"
+
+    cat > "$bindir/equestria-proton-settings" <<'EOF'
+#!/bin/bash
+exec python3 /opt/equestria-os-proton-starter/main.py "$@"
+EOF
+    chmod 755 "$bindir/equestria-proton-settings"
+
+    # Application desktop (default handler — double-click)
+    install -Dm644 "$startdir/equestria-os-proton-run.desktop" \
+        "$pkgdir/usr/share/applications/equestria-os-proton-run.desktop"
+
+    # KDE service menu — must be executable or Dolphin will refuse to run it
+    install -Dm755 "$startdir/equestria-os-proton.desktop" \
+        "$pkgdir/usr/share/kio/servicemenus/equestria-os-proton.desktop"
+
+    # Vendor-level MIME defaults — makes .exe open with our launcher out of the box
+    install -Dm644 "$startdir/mimeapps.list" \
+        "$pkgdir/usr/share/applications/mimeapps.list"
+}

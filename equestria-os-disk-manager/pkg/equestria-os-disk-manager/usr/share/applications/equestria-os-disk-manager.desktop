@@ -1,0 +1,35 @@
+[Desktop Entry]
+Name=Equestria OS Disk Manager
+Name[en]=Equestria OS Disk Manager
+Name[ru]=Equestria OS: Менеджер Дисков
+Name[de]=Equestria OS Festplatten-Manager
+Name[fr]=Equestria OS Gestionnaire de disques
+Name[es]=Equestria OS Gestor de discos
+Name[pt]=Equestria OS Gerenciador de discos
+Name[pl]=Equestria OS Menedżer dysków
+Name[uk]=Equestria OS Менеджер дисків
+Name[zh]=Equestria OS 磁盘管理器
+Name[ja]=Equestria OS ディスクマネージャー
+
+Comment=Manage disks: mount, automount, permissions, labels, format
+Comment[en]=Manage disks: mount, automount, permissions, labels, format
+Comment[ru]=Управление дисками: монтирование, автомонтирование, права, метки, форматирование
+Comment[de]=Festplatten verwalten: einbinden, Automount, Rechte, Bezeichnungen, formatieren
+Comment[fr]=Gérer les disques : montage, automontage, permissions, étiquettes, formatage
+Comment[es]=Gestionar discos: montaje, automontaje, permisos, etiquetas, formateo
+Comment[pt]=Gerenciar discos: montagem, automontagem, permissões, rótulos, formatação
+Comment[pl]=Zarządzaj dyskami: montowanie, automontowanie, uprawnienia, etykiety, formatowanie
+Comment[uk]=Керування дисками: монтування, автомонтування, права, мітки, форматування
+Comment[zh]=管理磁盘：挂载、自动挂载、权限、标签、格式化
+Comment[ja]=ディスク管理：マウント・自動マウント・権限・ラベル・フォーマット
+
+Exec=equestria-disk-manager
+Path=/opt/equestria-os-disk-manager
+Icon=equestria-os-disk-manager
+Terminal=false
+Type=Application
+Categories=System;Utility;Qt;
+StartupNotify=true
+StartupWMClass=equestria-os-disk-manager
+Keywords=disk;mount;format;fstab;partition;ntfs;ext4;btrfs;
+Keywords[ru]=диск;монтирование;форматирование;раздел;права;

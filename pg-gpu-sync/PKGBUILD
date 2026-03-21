@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team <your@email.here>
 
 pkgname=pg-gpu-sync
-pkgver=1.0.0
-pkgrel=4
+pkgver=1.1.0
+pkgrel=1
 pkgdesc='NVIDIA driver manager for Equestria OS'
 arch=('any')
 license=('GPL3')
@@ -17,6 +17,8 @@ sha256sums=('SKIP'
             'SKIP')
 
 package() {
-    install -Dm755 pg-gpu-sync         "$pkgdir/usr/bin/pg-gpu-sync"
+    install -Dm755 pg-gpu-sync          "$pkgdir/usr/bin/pg-gpu-sync"
     install -Dm644 pg-gpu-watch.service "$pkgdir/usr/lib/systemd/system/pg-gpu-watch.service"
+    # Offline driver cache directory — populate with .pkg.tar.zst files for offline installs
+    install -dm755 "$pkgdir/usr/share/pg-gpu-sync/drivers"
 }

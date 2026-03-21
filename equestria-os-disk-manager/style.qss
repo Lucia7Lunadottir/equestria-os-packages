@@ -1,0 +1,310 @@
+/* Base container */
+QWidget#root { background-color: rgb(30, 30, 46); }
+
+/* Language buttons */
+QPushButton[cssClass="lang-button"] {
+    background-color: transparent; color: rgb(180, 180, 200);
+    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 3px 5px; font-size: 10px;
+    font-family: sans-serif;
+}
+QPushButton[cssClass="lang-button"]:hover {
+    background-color: rgb(49, 50, 68); color: rgb(220, 220, 255);
+}
+QPushButton[cssClass="lang-button"][active="true"] {
+    background-color: rgb(203, 166, 247); color: rgb(30, 30, 46); font-weight: bold;
+    border: 1px solid rgb(203, 166, 247);
+}
+
+/* App title — font-family injected at runtime via {{TITLE_FONT}} */
+QLabel#AppTitle {
+    color: rgb(245, 194, 231);
+    font-size: 22px;
+    font-weight: bold;
+    font-family: {{TITLE_FONT}};
+    qproperty-alignment: 'AlignLeft';
+}
+
+/* Section labels */
+QLabel#SectionLabel {
+    color: rgb(137, 180, 250);
+    font-size: 13px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+
+/* Divider */
+QFrame#Divider {
+    background-color: rgb(69, 71, 90);
+    border: none;
+}
+
+/* Scroll area for sources */
+QScrollArea#SourceScrollArea {
+    background-color: transparent;
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+}
+QWidget#SourceContainer { background-color: transparent; }
+
+/* Source and destination line edits */
+QLineEdit#SourceEdit, QLineEdit#DestEdit {
+    background-color: rgb(49, 50, 68);
+    color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+QLineEdit#SourceEdit:focus, QLineEdit#DestEdit:focus {
+    border: 1px solid rgb(245, 194, 231);
+}
+
+/* Generic Browse button */
+QPushButton#BrowseBtn {
+    background-color: rgb(49, 50, 68);
+    color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+QPushButton#BrowseBtn:hover {
+    background-color: rgb(69, 71, 90);
+    border: 1px solid rgb(203, 166, 247);
+}
+
+/* Add Source button — dashed ghost border, blue text */
+QPushButton#AddSourceBtn {
+    background-color: transparent;
+    color: rgb(137, 180, 250);
+    border: 1px dashed rgb(137, 180, 250);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+QPushButton#AddSourceBtn:hover {
+    background-color: rgb(49, 50, 68);
+}
+
+/* Remove button — transparent, red text */
+QPushButton#RemoveBtn {
+    background-color: transparent;
+    color: rgb(243, 139, 168);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+QPushButton#RemoveBtn:hover {
+    background-color: rgb(49, 50, 68);
+    border: 1px solid rgb(243, 139, 168);
+}
+
+/* Symlink toggle — identical to AutostartToggle */
+QPushButton#SymlinkToggle {
+    background-color: rgb(30, 30, 46);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    color: transparent;
+    font-family: sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    padding-bottom: 2px;
+}
+QPushButton#SymlinkToggle:checked {
+    background-color: rgb(245, 194, 231);
+    border: 1px solid rgb(245, 194, 231);
+    color: rgb(30, 30, 46);
+}
+
+/* Relocate button — pink fill (same as active NavBtn) */
+QPushButton#RelocateBtn {
+    background-color: rgb(245, 194, 231);
+    color: rgb(30, 30, 46);
+    border: 1px solid rgb(245, 194, 231);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+QPushButton#RelocateBtn:hover {
+    background-color: rgb(255, 210, 245);
+    border: 1px solid rgb(255, 210, 245);
+}
+QPushButton#RelocateBtn:disabled {
+    background-color: rgb(69, 71, 90);
+    color: rgb(127, 132, 156);
+    border: 1px solid rgb(69, 71, 90);
+}
+
+/* NTFS warning */
+QLabel#NtfsWarning {
+    background-color: rgb(49, 50, 40);
+    color: rgb(249, 226, 175);
+    border: 1px solid rgb(249, 226, 175);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+
+/* Status label */
+QLabel#StatusLabel {
+    color: rgb(166, 227, 161);
+    font-size: 13px;
+    font-family: sans-serif;
+    qproperty-alignment: 'AlignLeft';
+}
+QLabel#StatusLabel[status="error"] {
+    color: rgb(243, 139, 168);
+}
+
+/* Checkbox styling */
+QCheckBox {
+    color: rgb(137, 180, 250); /* Голубой текст, как у SectionLabel */
+    font-size: 13px;
+    font-family: sans-serif;
+    spacing: 8px; /* Отступ между квадратиком и текстом */
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    background-color: rgb(49, 50, 68);
+}
+
+QCheckBox::indicator:hover {
+    border: 1px solid rgb(245, 194, 231);
+}
+
+QCheckBox::indicator:checked {
+    background-color: rgb(245, 194, 231);
+    border: 1px solid rgb(245, 194, 231);
+}
+
+/* Window / scroll background */
+QMainWindow, QWidget#CentralBg { background-color: rgb(30, 30, 46); }
+QScrollArea { background-color: transparent; border: none; }
+QScrollArea > QWidget > QWidget { background-color: transparent; }
+
+QScrollBar:vertical {
+    background: rgb(30, 30, 46);
+    width: 6px;
+    border-radius: 3px;
+}
+QScrollBar::handle:vertical {
+    background: rgb(108, 112, 134);
+    border-radius: 3px;
+    min-height: 20px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+
+/* ComboBox */
+QComboBox#SourceEdit {
+    background-color: rgb(49, 50, 68);
+    color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+QComboBox#SourceEdit:focus { border: 1px solid rgb(245, 194, 231); }
+QComboBox#SourceEdit::drop-down { border: none; width: 20px; }
+QComboBox#SourceEdit QAbstractItemView {
+    background-color: rgb(49, 50, 68);
+    color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90);
+    selection-background-color: rgb(108, 112, 134);
+    selection-color: rgb(205, 214, 244);
+    outline: none;
+}
+
+/* Progress frame */
+QFrame#ProgressFrame {
+    background-color: rgb(30, 30, 46);
+    border-top: 1px solid rgb(69, 71, 90);
+}
+QProgressBar {
+    background-color: rgb(49, 50, 68);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    max-height: 6px;
+}
+QProgressBar::chunk {
+    background-color: rgb(203, 166, 247);
+    border-radius: 4px;
+}
+
+/* fstab options widget */
+QFrame#OptionsFrame {
+    background-color: rgb(36, 36, 52);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 8px;
+}
+QLabel#OptionsSubLabel {
+    color: rgb(108, 112, 134);
+    font-size: 11px;
+    font-family: sans-serif;
+}
+QPushButton#OptionsCb {
+    background-color: transparent;
+    color: rgb(147, 153, 178);
+    font-size: 12px;
+    font-family: monospace;
+    border: none;
+    padding: 2px 4px;
+    text-align: left;
+}
+QPushButton#OptionsCb:hover  { color: rgb(205, 214, 244); }
+QPushButton#OptionsCb:checked { color: rgb(203, 166, 247); }
+QLineEdit#SmallEdit {
+    background-color: rgb(49, 50, 68);
+    color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-family: monospace;
+}
+QLineEdit#SmallEdit:focus { border: 1px solid rgb(203, 166, 247); }
+
+/* Format / danger zone */
+QFrame#DangerFrame {
+    border: 1px solid rgb(243, 139, 168);
+    border-radius: 8px;
+    background-color: rgb(38, 30, 36);
+}
+QLabel#DangerLabel {
+    color: rgb(243, 139, 168);
+    font-size: 13px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+QLabel#DangerWarn {
+    color: rgb(249, 226, 175);
+    font-size: 12px;
+    font-family: sans-serif;
+}
+QPushButton#DangerBtn {
+    background-color: transparent;
+    color: rgb(243, 139, 168);
+    border: 1px solid rgb(243, 139, 168);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+QPushButton#DangerBtn:hover { background-color: rgba(243, 139, 168, 30); }
+QPushButton#DangerBtn:disabled {
+    color: rgb(127, 132, 156);
+    border-color: rgb(69, 71, 90);
+}

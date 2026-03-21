@@ -1,0 +1,33 @@
+[Desktop Entry]
+Name=Equestria OS Services
+Name[en]=Equestria OS Services
+Name[ru]=Сервисы Equestria OS
+Name[de]=Equestria OS Dienste
+Name[fr]=Services Equestria OS
+Name[es]=Servicios Equestria OS
+Name[pt]=Serviços Equestria OS
+Name[pl]=Usługi Equestria OS
+Name[uk]=Сервіси Equestria OS
+Name[zh]=Equestria OS 服务
+Name[ja]=Equestria OS サービス
+
+Comment=Enable, disable, start and stop system services
+Comment[en]=Enable, disable, start and stop system services
+Comment[ru]=Включение, выключение, запуск и остановка системных сервисов
+Comment[de]=Systemdienste aktivieren, deaktivieren, starten und stoppen
+Comment[fr]=Activer, désactiver, démarrer et arrêter les services système
+Comment[es]=Habilitar, deshabilitar, iniciar y detener servicios del sistema
+Comment[pt]=Habilitar, desabilitar, iniciar e parar serviços do sistema
+Comment[pl]=Włączanie, wyłączanie, uruchamianie i zatrzymywanie usług systemowych
+Comment[uk]=Увімкнення, вимкнення, запуск і зупинка системних сервісів
+Comment[zh]=启用、禁用、启动和停止系统服务
+Comment[ja]=システムサービスの有効化・無効化・起動・停止
+
+Exec=python3 /opt/equestria-os-services-manager/main.py
+Path=/opt/equestria-os-services-manager
+Icon=equestria-os-services-manager
+Terminal=false
+Type=Application
+Categories=Settings;System;Qt;
+StartupNotify=true
+StartupWMClass=equestria-os-services-manager

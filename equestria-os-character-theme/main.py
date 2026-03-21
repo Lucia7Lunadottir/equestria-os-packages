@@ -59,6 +59,10 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.load_localization_csv()
         self.detect_system_language()
 
+        self.is_dark_mode = True
+        self.detect_kde_dark_mode()
+
+
         self.bind_events()
         self.load_characters()
 
@@ -112,6 +116,25 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         sys_code = sys_lang[:2].lower() if len(sys_lang) >= 2 else "en"
         self.current_lang = sys_code if sys_code in self.available_langs else (self.available_langs[0] if self.available_langs else "en")
 
+
+    def detect_kde_dark_mode(self):
+        # Читаем конфигурацию KDE, чтобы понять, какая тема сейчас активна
+        try:
+            res = subprocess.run(["kreadconfig6", "--file", "kdeglobals", "--group", "Colors:Window", "--key", "BackgroundNormal"], capture_output=True, text=True)
+            if res.stdout.strip():
+                r, g, b = map(int, res.stdout.strip().split(','))
+                # Вычисляем яркость: если фон темный, значит включена темная тема
+                self.is_dark_mode = (r*0.299 + g*0.587 + b*0.114) < 128
+        except:
+            self.is_dark_mode = True # По умолчанию тёмная
+
+    def toggle_dark_light(self):
+        self.is_dark_mode = not self.is_dark_mode
+        self.update_texts()
+        if self.active_character:
+            self.apply_kde_theme(self.active_character)
+
+
     def build_language_selector(self):
         while self.lang_layout.count():
             item = self.lang_layout.takeAt(0)
@@ -157,6 +180,13 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.btn_cancel.setText(self.t_str("ui.btn_cancel"))
         self.btn_save.setText(self.t_str("ui.btn_save"))
 
+        if hasattr(self, 'btn_theme_toggle'):
+            # Если есть переводы для кнопки, используем их, иначе базовые эмодзи
+            txt = self.t_str("ui.btn_light_mode") if self.is_dark_mode else self.t_str("ui.btn_dark_mode")
+            if not txt or txt.startswith("ui."):
+                txt = "☀️ Light Theme" if self.is_dark_mode else "🌙 Dark Theme"
+            self.btn_theme_toggle.setText(txt)
+
     def bind_events(self):
         self.btn_restore.clicked.connect(self.on_restore_defaults)
         self.btn_open_folder.clicked.connect(lambda: self.run_shell(f'xdg-open "{USER_PATH}"'))
@@ -169,6 +199,8 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.btn_delete.clicked.connect(self.confirm_delete_theme)
         self.btn_browse_wall.clicked.connect(self.browse_wallpaper)
         self.btn_browse_icon.clicked.connect(self.browse_icon)
+
+        self.btn_theme_toggle.clicked.connect(self.toggle_dark_light)
 
     def load_characters(self):
         json_path = os.path.join(USER_PATH, "characters.json")
@@ -482,7 +514,43 @@ fi
         self.accent_toggle += 1
         clean_hex = character.AccentColor.lstrip('#')
         r, g, b = (int(clean_hex[0:2], 16), int(clean_hex[2:4], 16), int(clean_hex[4:6], 16)) if len(clean_hex) == 6 else (255, 255, 255)
-        script = f"""TARGET_FILE="$HOME/.local/share/color-schemes/{active_name}.colors"; mkdir -p "$HOME/.local/share/color-schemes/"; if [ -f "$HOME/.local/share/color-schemes/{character.KdeColorScheme}.colors" ]; then cp "$HOME/.local/share/color-schemes/{character.KdeColorScheme}.colors" "$TARGET_FILE"; elif [ -f "/usr/share/color-schemes/{character.KdeColorScheme}.colors" ]; then cp "/usr/share/color-schemes/{character.KdeColorScheme}.colors" "$TARGET_FILE"; else printf '[Colors:Button]\\nBackgroundNormal=239,240,241\\nForegroundNormal=49,54,59\\n[Colors:Selection]\\nBackgroundNormal={r},{g},{b}\\nForegroundNormal=255,255,255\\n[Colors:View]\\nBackgroundNormal=252,252,252\\nForegroundNormal=49,54,59\\n[KDE]\\ncontrast=4\\n' > "$TARGET_FILE"; fi; kwriteconfig6 --file "$TARGET_FILE" --group General --key AccentColor "{r},{g},{b}"; kwriteconfig6 --file "$TARGET_FILE" --group General --key Name "{active_name}"; kwriteconfig6 --file "$TARGET_FILE" --group General --key ColorScheme "{active_name}"; kwriteconfig6 --file kdeglobals --group General --key AccentColor "{r},{g},{b}"; kwriteconfig6 --file kdeglobals --group General --key LastUsedCustomAccentColor "{r},{g},{b}"; plasma-apply-colorscheme "{active_name}" """
+
+        # Определяем базовые цвета в зависимости от режима
+        if self.is_dark_mode:
+            bg_btn = "49,54,59"; fg_btn = "239,240,241"
+            bg_view = "30,34,40"; fg_view = "239,240,241"
+            theme_suffix = "Dark"
+        else:
+            bg_btn = "239,240,241"; fg_btn = "49,54,59"
+            bg_view = "252,252,252"; fg_view = "49,54,59"
+            theme_suffix = "Light"
+
+        # Скрипт интеллектуально ищет подходящую цветовую схему и накладывает акцентный цвет персонажа
+        script = f"""
+TARGET_FILE="$HOME/.local/share/color-schemes/{active_name}.colors"
+mkdir -p "$HOME/.local/share/color-schemes/"
+
+if [ -f "$HOME/.local/share/color-schemes/{character.KdeColorScheme}{theme_suffix}.colors" ]; then
+    cp "$HOME/.local/share/color-schemes/{character.KdeColorScheme}{theme_suffix}.colors" "$TARGET_FILE"
+elif [ -f "/usr/share/color-schemes/{character.KdeColorScheme}{theme_suffix}.colors" ]; then
+    cp "/usr/share/color-schemes/{character.KdeColorScheme}{theme_suffix}.colors" "$TARGET_FILE"
+elif [ -f "/usr/share/color-schemes/Breeze{theme_suffix}.colors" ]; then
+    cp "/usr/share/color-schemes/Breeze{theme_suffix}.colors" "$TARGET_FILE"
+elif [ -f "$HOME/.local/share/color-schemes/{character.KdeColorScheme}.colors" ]; then
+    cp "$HOME/.local/share/color-schemes/{character.KdeColorScheme}.colors" "$TARGET_FILE"
+else
+    printf '[Colors:Button]\\nBackgroundNormal={bg_btn}\\nForegroundNormal={fg_btn}\\n[Colors:Selection]\\nBackgroundNormal={r},{g},{b}\\nForegroundNormal=255,255,255\\n[Colors:View]\\nBackgroundNormal={bg_view}\\nForegroundNormal={fg_view}\\n[Colors:Window]\\nBackgroundNormal={bg_btn}\\nForegroundNormal={fg_btn}\\n[KDE]\\ncontrast=4\\n' > "$TARGET_FILE"
+fi
+
+kwriteconfig6 --file "$TARGET_FILE" --group General --key AccentColor "{r},{g},{b}"
+kwriteconfig6 --file "$TARGET_FILE" --group General --key Name "{active_name}"
+kwriteconfig6 --file "$TARGET_FILE" --group General --key ColorScheme "{active_name}"
+
+kwriteconfig6 --file kdeglobals --group General --key AccentColor "{r},{g},{b}"
+kwriteconfig6 --file kdeglobals --group General --key LastUsedCustomAccentColor "{r},{g},{b}"
+
+plasma-apply-colorscheme "{active_name}"
+"""
         self.run_shell(script)
 
     def get_ansi_color(self, char_id):
