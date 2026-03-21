@@ -24,3 +24,5 @@ ui.delete_msg,Are you sure you want to delete '{0}'?,Вы уверены что 
 ui.btn_yes_delete,Yes Delete,Да удалить,Ja löschen,Oui supprimer,Sí eliminar,Sim excluir,Tak usuń,Так видалити,确认删除,はい削除します
 ui.btn_open_folder,Open Folder,Открыть папку,Ordner öffnen,Ouvrir le dossier,Abrir carpeta,Abrir pasta,Otwórz folder,Відкрити папку,打开文件夹,フォルダーを開く
 ui.btn_restore,Restore Defaults,Восстановить по умолчанию,Standard wiederherstellen,Restaurer par défaut,Restaurar predeterminados,Restaurar padrões,Przywróć domyślne,Відновити за замовчуванням,恢复默认,デフォルトに戻す
+ui.btn_light_mode,☀️ Light Theme,☀️ Светлая тема,☀️ Helles Design,☀️ Thème Clair,☀️ Tema Claro,☀️ Tema Claro,☀️ Jasny Motyw,☀️ Світла тема,☀️ 浅色主题,☀️ ライトテーマ
+ui.btn_dark_mode,🌙 Dark Theme,🌙 Тёмная тема,🌙 Dunkles Design,🌙 Thème Sombre,🌙 Tema Oscuro,🌙 Tema Escuro,🌙 Ciemny Motyw,🌙 Темна тема,🌙 深色主题,🌙 ダークテーマ

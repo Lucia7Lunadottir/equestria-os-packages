@@ -1,0 +1,58 @@
+QWidget {
+    background-color: rgb(18, 18, 28);
+    color: rgb(220, 200, 255);
+    font-size: 13px;
+}
+QGroupBox {
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+    margin-top: 12px;
+    padding-top: 24px;
+    font-weight: bold;
+    color: rgb(180, 170, 210);
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 5px;
+}
+QPushButton {
+    background-color: rgb(40, 35, 60);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    padding: 6px 16px;
+}
+QPushButton:hover { background-color: rgb(60, 50, 90); }
+QPushButton#btnDanger {
+    background-color: rgb(140, 40, 40);
+    border: 1px solid rgb(180, 50, 50);
+}
+QPushButton#btnDanger:hover { background-color: rgb(180, 50, 50); }
+QPushButton#btnSave {
+    background-color: rgb(46, 139, 87);
+    border: 1px solid rgb(60, 170, 100);
+}
+QPushButton#btnSave:hover { background-color: rgb(60, 170, 100); }
+QLineEdit {
+    background-color: rgb(25, 22, 38);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    padding: 4px;
+}
+
+/* Стили для кнопок переключения языка */
+QPushButton[cssClass="lang-button"] {
+    background-color: transparent;
+    color: rgb(140, 130, 160);
+    border: none;
+    font-weight: bold;
+    padding: 4px;
+}
+QPushButton[cssClass="lang-button"][active="true"] {
+    color: rgb(220, 200, 255);
+    border-bottom: 2px solid rgb(100, 60, 160);
+    border-radius: 0px;
+}
+QPushButton[cssClass="lang-button"]:hover {
+    color: white;
+}

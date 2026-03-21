@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"\nimport sys\nsys.argv = ['test']\n# Test imports and basic structure\nfrom ui import Ui_MainWindow, PanelPreviewWidget, PANEL_LAYOUTS\nprint\\('ui.py imports OK'\\)\n\nimport main\nprint\\('main.py imports OK'\\)\nprint\\('PRESETS:', list\\(main.PRESETS.keys\\(\\)\\)\\)\nprint\\('PRESET_ORDER:', main.PRESET_ORDER\\)\nprint\\('DEFAULT_PROFILES keys:', list\\(main.DEFAULT_PROFILES.keys\\(\\)\\)\\)\n\n# Test SVG generation\nclass MockApp\\(main.TaskPanelApp.__bases__[0]\\):\n    def __init__\\(self\\): pass\napp_mock = object.__new__\\(main.TaskPanelApp\\)\napp_mock.panel_color = '#1e1e2e'\napp_mock.panel_opacity = 90\nsvg = main.TaskPanelApp.generate_panel_svg\\(app_mock, '#1e1e2e', 0.9\\)\nassert 'floating-center' in svg\nassert 'hint-stretch-borders' in svg\nprint\\('SVG generation OK, length:', len\\(svg\\)\\)\n\n# Test PanelPreviewWidget configs\nfor pid in main.PRESET_ORDER:\n    assert pid in PANEL_LAYOUTS, f'Missing PANEL_LAYOUT for {pid}'\nprint\\('All preset layouts present OK'\\)\n\" 2>&1)"
+    ]
+  }
+}

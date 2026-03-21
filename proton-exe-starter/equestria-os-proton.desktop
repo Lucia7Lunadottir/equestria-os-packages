@@ -1,0 +1,35 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=KonqPopupMenu/Plugin
+MimeType=application/x-ms-dos-executable;application/x-msdownload;
+Actions=protonRun;protonSettings;
+X-KDE-Priority=TopLevel
+InitialPreference=100
+
+[Desktop Action protonRun]
+Name=Run with Equestria Proton
+Name[ru]=Запустить через Equestria Proton
+Name[de]=Mit Equestria Proton ausführen
+Name[fr]=Lancer avec Equestria Proton
+Name[es]=Ejecutar con Equestria Proton
+Name[pt]=Executar com Equestria Proton
+Name[pl]=Uruchom przez Equestria Proton
+Name[uk]=Запустити через Equestria Proton
+Name[zh_CN]=通过 Equestria Proton 运行
+Name[ja]=Equestria Proton で実行
+Icon=wine
+Exec=equestria-proton-run %f
+
+[Desktop Action protonSettings]
+Name=Equestria OS Proton Settings
+Name[ru]=Настройки Equestria OS Proton
+Name[de]=Equestria OS Proton Einstellungen
+Name[fr]=Paramètres Equestria OS Proton
+Name[es]=Ajustes Equestria OS Proton
+Name[pt]=Configurações Equestria OS Proton
+Name[pl]=Ustawienia Equestria OS Proton
+Name[uk]=Налаштування Equestria OS Proton
+Name[zh_CN]=Equestria OS Proton 设置
+Name[ja]=Equestria OS Proton 設定
+Icon=preferences-system
+Exec=equestria-proton-settings %f

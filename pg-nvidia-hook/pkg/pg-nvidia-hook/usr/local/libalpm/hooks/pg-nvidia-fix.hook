@@ -8,6 +8,10 @@ Target = nvidia-open-lts
 Target = nvidia-open-dkms
 Target = nvidia-dkms
 Target = nvidia-utils
+Target = nvidia-470xx-dkms
+Target = nvidia-470xx-utils
+Target = nvidia-390xx-dkms
+Target = nvidia-390xx-utils
 
 [Action]
 Description = Rebuilding initramfs after NVIDIA driver change...
