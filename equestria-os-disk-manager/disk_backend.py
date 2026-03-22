@@ -26,10 +26,7 @@ def add_to_fstab(uuid, mountpoint, fstype, options):
     safe_mp = mountpoint.replace(" ", "\\040")
     with open(FSTAB_PATH, 'a') as f:
         f.write(f"UUID={uuid}\t{safe_mp}\t{fstype}\t{options}\t0\t2\n")
-    try:
-        subprocess.run(["mount", mountpoint], check=True)
-    except Exception:
-        subprocess.run(["mount", "-a"], check=True)
+    subprocess.run(["mount", mountpoint], check=False)
     sys.stdout.write(f"OK: Added {uuid} and mounted to {mountpoint}\n")
 
 

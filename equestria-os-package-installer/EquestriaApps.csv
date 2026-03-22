@@ -22,6 +22,7 @@ obs-studio;OBS Studio;cat.media;desc.obs
 libreoffice-fresh;LibreOffice;cat.office;desc.libreoffice
 okular;Okular;cat.office;desc.okular
 firefox;Firefox;cat.web;desc.firefox
+opera;Opera;cat.web;desc.opera
 telegram-desktop;Telegram;cat.web;desc.telegram
 discord;Discord;cat.web;desc.discord
 qbittorrent;qBittorrent;cat.web;desc.qbittorrent

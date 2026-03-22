@@ -1,7 +1,7 @@
 post_install() {
     if [ -x usr/bin/pacman-key ]; then
-        usr/bin/pacman-key --add /usr/share/pacman/keyrings/equestria-os.gpg
-        usr/bin/pacman-key --populate equestria-os
+        usr/bin/pacman-key --add /usr/share/pacman/keyrings/equestria-os.gpg || true
+        usr/bin/pacman-key --populate equestria-os || true
     fi
 }
 

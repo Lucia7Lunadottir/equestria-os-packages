@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-proton-starter
 pkgver=1.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton)"
 arch=('any')
 url="https://github.com/7Lucia7Lokidottir7"
@@ -29,10 +29,8 @@ package() {
     install -Dm644 "$startdir/localization.csv"    "$optdir/localization.csv"
 
     # Icon
-    if [ -f "$startdir/equestria-os.png" ]; then
-        install -Dm644 "$startdir/equestria-os.png" \
-            "$pkgdir/usr/share/pixmaps/equestria-os-logo.png"
-    fi
+    install -Dm644 "$startdir/EquestriaOS-Logo.png" \
+        "$pkgdir/usr/share/pixmaps/equestria-os-proton-starter.png"
 
     # Wrapper scripts
     cat > "$bindir/equestria-proton-run" <<'EOF'
@@ -58,4 +56,7 @@ EOF
     # Vendor-level MIME defaults — makes .exe open with our launcher out of the box
     install -Dm644 "$startdir/mimeapps.list" \
         "$pkgdir/usr/share/applications/mimeapps.list"
+
+
+
 }

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Run with Equestria Proton
-Icon=wine
+Icon=equestria-os-proton-starter
 Exec=equestria-proton-run %f
 MimeType=application/x-ms-dos-executable;application/x-msdownload;
 NoDisplay=true

@@ -5,7 +5,7 @@ import sys
 
 from core import check_writable
 
-BACKEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backend.py")
+BACKEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disk_backend.py")
 
 
 def find_elevator() -> str | None:
