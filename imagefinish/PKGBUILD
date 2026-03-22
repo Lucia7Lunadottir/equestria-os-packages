@@ -1,6 +1,6 @@
 # Maintainer: lucial <lucial@equestriaos.org>
 pkgname=imagefinish
-pkgver=1.1.0
+pkgver=1.1.2
 pkgrel=1
 pkgdesc="A PyQt6 image editor inspired by Photoshop"
 arch=('any')

@@ -334,6 +334,7 @@ STRINGS = {
     "tt_umount":    {"en": "Unmount the currently mounted partition",                "ru": "Размонтировать смонтированный раздел"},
     "tt_set_label": {"en": "Change the partition label",                             "ru": "Изменить метку раздела"},
     "tt_format":    {"en": "Format with a new filesystem — ERASES ALL DATA",        "ru": "Форматировать с новой ФС — УНИЧТОЖАЕТ ВСЕ ДАННЫЕ"},
+    "no_label":     {"en": "No Label",                                             "ru": "Без метки",                          "de": "Kein Name",                              "fr": "Sans nom",                               "es": "Sin nombre",                             "pt": "Sem nome",                               "pl": "Bez nazwy",                              "uk": "Без мітки",                              "zh": "无标签",                                 "ja": "ラベルなし"},
 }
 
 
@@ -351,7 +352,11 @@ class DiskWorker(QThread):
             return
 
         backend_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disk_backend.py")
-        cmd = [elevator, sys.executable, backend_script] + self.command_args
+        inner = [sys.executable, backend_script] + self.command_args
+        if os.path.basename(elevator) == "kdesu":
+            cmd = [elevator, "--"] + inner
+        else:
+            cmd = [elevator] + inner
 
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         stdout, stderr = proc.communicate()
@@ -707,7 +712,7 @@ class DiskManagerApp(QMainWindow):
             return
 
         for name, info in self.partitions.items():
-            label = info.get("label") or ("Без метки" if self.current_lang == "ru" else "No Label")
+            label = info.get("label") or self.t("no_label")
             display = f"[{label}]  /dev/{name}  —  {info['size']}  ({info['fstype']})"
             self.disk_combo.addItem(display, name)
 
