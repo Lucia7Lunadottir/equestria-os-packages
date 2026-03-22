@@ -265,7 +265,7 @@ class main_app(QMainWindow, Ui_AppStore):
         if not selected: return
 
         pkg_list = " ".join(selected)
-        cmd = f"yay -S --needed {pkg_list}"
+        cmd = f"yay -Sy --needed {pkg_list}"
         full_cmd = f"{cmd}; echo -e '\\nTransaction finished. Press Enter to close...'; read"
         subprocess.Popen(["konsole", "-e", "bash", "-c", full_cmd])
 
