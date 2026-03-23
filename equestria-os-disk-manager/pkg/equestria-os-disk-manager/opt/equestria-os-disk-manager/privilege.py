@@ -7,10 +7,9 @@ from core import check_writable
 
 BACKEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disk_backend.py")
 
-
 def find_elevator() -> str | None:
-    """Return path to kdesu or pkexec, whichever is available."""
-    for cmd in ("kdesu", "/usr/lib/kf6/kdesu", "pkexec"):
+    """Return path to pkexec or kdesu, whichever is available."""
+    for cmd in ("pkexec", "kdesu", "/usr/lib/kf6/kdesu"):
         path = shutil.which(cmd)
         if path:
             return path

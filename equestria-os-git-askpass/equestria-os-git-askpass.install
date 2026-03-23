@@ -1,0 +1,14 @@
+post_install() {
+    # Устанавливаем перехватчик глобально для всей системы
+    git config --system core.askPass /usr/bin/equestria-os-git-askpass
+    echo "Equestria OS: Git GUI interceptor activated."
+}
+
+post_upgrade() {
+    git config --system core.askPass /usr/bin/equestria-os-git-askpass
+}
+
+pre_remove() {
+    # Убираем за собой при удалении пакета
+    git config --system --unset core.askPass || true
+}

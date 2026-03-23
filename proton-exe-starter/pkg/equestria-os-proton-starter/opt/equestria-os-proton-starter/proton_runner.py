@@ -77,7 +77,9 @@ def main():
 
     env = os.environ.copy()
     env["STEAM_COMPAT_DATA_PATH"] = prefix_path
-    env["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = os.path.expanduser("~/.local/share/Steam")
+    steam_path = os.path.expanduser("~/.local/share/Steam")
+    os.makedirs(steam_path, exist_ok=True) # Создаем папку-заглушку, если её нет
+    env["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = steam_path
     env["WINEDLLOVERRIDES"] = "winemenubuilder.exe=b"
 
     if settings.get("dxvk_hud"):

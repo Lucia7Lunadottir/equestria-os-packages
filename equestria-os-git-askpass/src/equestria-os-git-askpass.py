@@ -1,0 +1,1 @@
+/home/lucial/equestria-packages/equestria-os-git-askpass/equestria-os-git-askpass.py

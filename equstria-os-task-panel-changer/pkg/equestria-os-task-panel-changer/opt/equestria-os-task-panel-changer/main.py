@@ -16,7 +16,7 @@ from ui import Ui_MainWindow, PresetCard, PanelRowWidget
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
 USER_PATH = os.path.expanduser("~/.local/share/EquestriaOS/PanelStyles/")
 PLASMA_CONFIG = os.path.expanduser("~/.config/plasma-org.kde.plasma.desktop-appletsrc")
-
+PLASMA_SHELLRC = os.path.expanduser("~/.config/plasmashellrc")
 
 class TaskPanelApp(QMainWindow):
     def __init__(self):
@@ -436,6 +436,8 @@ class TaskPanelApp(QMainWindow):
             return
         layout_file = self._preset_layout_file(pid)
         shutil.copy2(PLASMA_CONFIG, layout_file)
+        if os.path.exists(PLASMA_SHELLRC):
+            shutil.copy2(PLASMA_SHELLRC, layout_file + "_shellrc")
         self._ed_layout_captured = datetime.now().strftime("%Y-%m-%d %H:%M")
         self._update_capture_label()
 
@@ -522,6 +524,7 @@ class TaskPanelApp(QMainWindow):
 
     def _add_panel_row(self, cfg=None):
         row = PanelRowWidget(cfg)
+        row.retranslate(self._t)
         row.remove_requested.connect(self._remove_panel_row)
         row.move_up_requested.connect(self._move_panel_row_up)
         row.move_down_requested.connect(self._move_panel_row_down)
@@ -673,6 +676,9 @@ class TaskPanelApp(QMainWindow):
             if "systray" in ww: parts.append(f"{v}.addWidget('org.kde.plasma.systemtray');")
             if "clock"   in ww: parts.append(f"{v}.addWidget('org.kde.plasma.digitalclock');")
 
+            # ЖЕСТКО ФИКСИРУЕМ ВЫСОТУ ЕЩЕ РАЗ В КОНЦЕ
+            parts.append(f"{v}.height={height};")
+
         return "".join(parts)
 
     def restore_single_default(self):
@@ -722,25 +728,40 @@ class TaskPanelApp(QMainWindow):
     # ─────────────────────── Panel Appearance & Layout ───────────────────────
 
     def _apply_preset_layout(self, preset_id, delay=0):
-        """Apply the panel layout for a preset (config backup if available, else JS script).
-
-        delay: seconds to wait before applying (use when a theme reload is already in progress).
-        """
+        """Apply the panel layout for a preset (config backup if available, else JS script)."""
         preset = self._get_preset(preset_id)
         if not preset:
             return
         layout_file = self._preset_layout_file(preset_id)
+
+        # 1. Генерируем скрипт, который принудительно задает нужную высоту панелям
+        panels_cfg = self._parse_preset_panels_config(preset)
+        height_script = "var ps=panels(); "
+        for i, cfg in enumerate(panels_cfg):
+            h = cfg.get("height", 48)
+            height_script += f"if(ps.length > {i}) {{ ps[{i}].height = {h}; }} "
+
+        escaped_h = height_script.replace("\\", "\\\\").replace('"', '\\"')
+
         if os.path.exists(layout_file):
-            # Config-backup approach: restart plasmashell with saved config
             wait = max(delay, 1)
+            shellrc_file = layout_file + "_shellrc"
+            restore_shellrc = f"cp '{shellrc_file}' '{PLASMA_SHELLRC}'; " if os.path.exists(shellrc_file) else ""
             self._run_shell(
-                f"kquitapp6 plasmashell 2>/dev/null; sleep {wait}; "
+                f"kquitapp6 plasmashell 2>/dev/null; "
+                f"sleep {wait}; "
+                f"killall -9 plasmashell 2>/dev/null; "
                 f"cp '{layout_file}' '{PLASMA_CONFIG}'; "
-                f"nohup plasmashell &>/dev/null &"
+                f"{restore_shellrc}"
+                f"nohup plasmashell &>/dev/null & "
+                # Ждем 3 секунды, пока Плазма проснется, и бьем её скриптом высоты
+                f"sleep 3; qdbus6 org.kde.plasmashell /PlasmaShell evaluateScript \"{escaped_h}\""
             )
         else:
             script = preset.get("script", "")
             if script:
+                # Вшиваем фикс высоты в конец основного скрипта
+                script += height_script
                 escaped = script.replace("\\", "\\\\").replace('"', '\\"')
                 prefix = f"sleep {delay}; " if delay else ""
                 self._run_shell(
@@ -760,13 +781,23 @@ class TaskPanelApp(QMainWindow):
         with open(os.path.join(theme_dir, "metadata.json"), "w", encoding="utf-8") as f:
             json.dump(metadata, f, indent=4)
 
-        text_color = "255,255,255" if self.panel_is_dark else "35,38,41"
+        if self.panel_is_dark:
+            # Тёмная тема меню (когда на панели белый текст)
+            txt = "255,255,255"
+            bg = "36,36,36"
+            view_bg = "49,54,59"
+        else:
+            # Светлая тема меню (когда на панели черный текст)
+            txt = "35,38,41"
+            bg = "239,240,241"
+            view_bg = "252,252,252"
+
         colors_data = (
-            f"[Colors:Window]\nForegroundNormal={text_color}\n"
-            f"[Colors:View]\nForegroundNormal={text_color}\n"
-            f"[Colors:Button]\nForegroundNormal={text_color}\n"
-            f"[Colors:Complementary]\nForegroundNormal={text_color}\n"
-            f"[Colors:Tooltip]\nForegroundNormal={text_color}\n"
+            f"[Colors:Window]\nForegroundNormal={txt}\nBackgroundNormal={bg}\n"
+            f"[Colors:View]\nForegroundNormal={txt}\nBackgroundNormal={view_bg}\n"
+            f"[Colors:Button]\nForegroundNormal={txt}\nBackgroundNormal={bg}\n"
+            f"[Colors:Tooltip]\nForegroundNormal={txt}\nBackgroundNormal={bg}\n"
+            f"[Colors:Complementary]\nForegroundNormal={txt}\nBackgroundNormal={bg}\n"
         )
         with open(os.path.join(theme_dir, "colors"), "w", encoding="utf-8") as f:
             f.write(colors_data)

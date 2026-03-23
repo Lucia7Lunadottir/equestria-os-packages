@@ -1,8 +1,8 @@
 import os
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QScrollArea, QSlider, QStackedWidget,
-                             QLineEdit, QSpinBox, QFrame, QComboBox, QCheckBox)
-from PyQt6.QtGui import QPainter, QColor, QPixmap
+                             QLineEdit, QSpinBox, QFrame, QComboBox, QCheckBox, QListView)
+from PyQt6.QtGui import QPainter, QColor, QPixmap, QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 
 PANEL_LAYOUTS = {
@@ -16,6 +16,24 @@ PANEL_LAYOUTS = {
     "fluttershy":[{"pos": "bottom", "w": 0.70, "h": 0.22, "float": True}],
     "pinkie":    [{"pos": "bottom", "w": 1.0,  "h": 0.24, "float": False}],
 }
+
+
+class SafeCheckBox(QPushButton):
+    """Кастомный чекбокс, который не ломается стилями QSS."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setCheckable(True)
+        self.setStyleSheet("text-align: left; background: transparent; border: none; color: rgb(200, 190, 230); font-family: sans-serif;")
+        self.toggled.connect(self._refresh)
+        self._lbl = ""
+        self._refresh()
+
+    def setText(self, text):
+        self._lbl = text
+        self._refresh()
+
+    def _refresh(self):
+        super().setText(f"☑  {self._lbl}" if self.isChecked() else f"☐  {self._lbl}")
 
 
 class PanelPreviewWidget(QWidget):
@@ -121,6 +139,67 @@ class PanelRowWidget(QFrame):
         cfg = cfg or {}
         self.setObjectName("PanelRow")
         self.setFrameShape(QFrame.Shape.StyledPanel)
+        self.setStyleSheet('''
+            QFrame#PanelRow {
+                background-color: rgb(26, 22, 40);
+                border: 1px solid rgb(70, 60, 100);
+                border-radius: 8px;
+            }
+            QLabel {
+                color: rgb(160, 150, 195);
+                font-size: 12px;
+                border: none;
+            }
+            QComboBox {
+                background-color: rgb(18, 14, 28);
+                border: 1px solid rgb(58, 52, 88);
+                border-radius: 5px;
+                color: rgb(200, 190, 230);
+                padding: 3px 6px;
+                font-size: 12px;
+                min-height: 22px;
+            }
+            QComboBox:hover {
+                border: 1px solid rgb(110, 80, 160);
+            }
+            QComboBox::drop-down {
+                background: rgb(40, 32, 65);
+                border-left: 1px solid rgb(58, 52, 88);
+                border-top-right-radius: 5px;
+                border-bottom-right-radius: 5px;
+                width: 18px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: rgb(25, 20, 40);
+                color: rgb(200, 190, 230);
+                border: 1px solid rgb(80, 65, 115);
+                selection-background-color: rgb(100, 60, 160);
+                selection-color: white;
+                outline: none;
+            }
+            QSpinBox {
+                background-color: rgb(18, 14, 28);
+                border: 2px solid rgb(100, 80, 140);
+                border-radius: 5px;
+                color: rgb(200, 190, 230);
+                padding: 5px 8px;
+                font-size: 14px;
+                min-height: 32px;
+            }
+            QSpinBox:hover {
+                border-color: rgb(140, 100, 200);
+            }
+            QSpinBox::up-button,
+            QSpinBox::down-button {
+                background-color: rgb(42, 34, 68);
+                border-left: 2px solid rgb(100, 80, 140);
+                width: 22px;
+            }
+            QSpinBox::up-button:hover,
+            QSpinBox::down-button:hover {
+                background-color: rgb(100, 60, 160);
+            }
+        ''')
 
         outer = QVBoxLayout(self)
         outer.setContentsMargins(12, 8, 12, 8)
@@ -177,16 +256,20 @@ class PanelRowWidget(QFrame):
         r1.addWidget(self.cmb_align)
 
         r1.addStretch()
-
+        icon_font = QFont("sans-serif", 16)
+        icon_font.setBold(True)
         btn_up = QPushButton("↑")
+        btn_up.setFont(icon_font)
         btn_up.setObjectName("PanelMoveBtn")
         btn_up.setFixedSize(22, 22)
         btn_up.clicked.connect(lambda: self.move_up_requested.emit(self))
         btn_dn = QPushButton("↓")
+        btn_dn.setFont(icon_font)
         btn_dn.setObjectName("PanelMoveBtn")
         btn_dn.setFixedSize(22, 22)
         btn_dn.clicked.connect(lambda: self.move_down_requested.emit(self))
         btn_rm = QPushButton("✕")
+        btn_rm.setFont(icon_font)
         btn_rm.setObjectName("PanelRemoveBtn")
         btn_rm.setFixedSize(22, 22)
         btn_rm.clicked.connect(lambda: self.remove_requested.emit(self))
@@ -199,9 +282,9 @@ class PanelRowWidget(QFrame):
         r2 = QHBoxLayout()
         r2.setSpacing(8)
 
-        self.chk_float = QCheckBox()
+        self.chk_float = SafeCheckBox()
         self.chk_float.setChecked(cfg.get("floating", False))
-        self.chk_hide  = QCheckBox()
+        self.chk_hide  = SafeCheckBox()
         self.chk_hide.setChecked(cfg.get("autohide", False))
         r2.addWidget(self.chk_float)
         r2.addWidget(self.chk_hide)
@@ -232,21 +315,26 @@ class PanelRowWidget(QFrame):
         self._lbl_widgets = sl()
         r3.addWidget(self._lbl_widgets)
         ww = cfg.get("widgets", [])
-        self.chk_taskbar = QCheckBox()
+        self.chk_taskbar = SafeCheckBox()
         self.chk_taskbar.setChecked("taskbar" in ww)
-        self.chk_systray = QCheckBox()
+        self.chk_systray = SafeCheckBox()
         self.chk_systray.setChecked("systray" in ww)
-        self.chk_clock   = QCheckBox()
+        self.chk_clock   = SafeCheckBox()
         self.chk_clock.setChecked("clock" in ww)
-        self.chk_pager   = QCheckBox()
+        self.chk_pager   = SafeCheckBox()
         self.chk_pager.setChecked("pager" in ww)
-        self.chk_monitor = QCheckBox()
+        self.chk_monitor = SafeCheckBox()
         self.chk_monitor.setChecked("monitor" in ww)
         for c in (self.chk_taskbar, self.chk_systray, self.chk_clock,
                   self.chk_pager, self.chk_monitor):
             r3.addWidget(c)
         r3.addStretch()
         outer.addLayout(r3)
+
+        self.cmb_pos.setView(QListView())
+        self.cmb_align.setView(QListView())
+        self.cmb_len.setView(QListView())
+        self.cmb_launcher.setView(QListView())
 
         # set default English text so widget is readable before retranslate()
         self.retranslate(lambda k: k)
@@ -448,18 +536,69 @@ class Ui_MainWindow:
         # Preset ID
         self.fld_ed_id = QLineEdit()
         self.fld_ed_id.setObjectName("EditorField")
+        self.fld_ed_id.setStyleSheet('''
+            QLineEdit {
+                background-color: rgb(15, 12, 25);
+                border: 2px solid rgb(90, 80, 130);
+                border-radius: 6px;
+                color: rgb(220, 200, 255);
+                padding: 4px 7px;
+                font-size: 13px;
+            }
+            QLineEdit:focus {
+                border: 2px solid rgb(140, 90, 200);
+            }
+            QLineEdit[readOnly="true"] {
+                color: rgb(120, 110, 150);
+                border: 2px solid rgb(60, 55, 90);
+            }
+        ''')
         self.fld_ed_id.setFixedWidth(220)
         self.row_ed_id, self.lbl_ed_id_row = add_row("Preset ID:", self.fld_ed_id)
 
         # Display name
         self.fld_ed_name = QLineEdit()
         self.fld_ed_name.setObjectName("EditorField")
+        self.fld_ed_name.setStyleSheet('''
+            QLineEdit {
+                background-color: rgb(15, 12, 25);
+                border: 2px solid rgb(90, 80, 130);
+                border-radius: 6px;
+                color: rgb(220, 200, 255);
+                padding: 4px 7px;
+                font-size: 13px;
+            }
+            QLineEdit:focus {
+                border: 2px solid rgb(140, 90, 200);
+            }
+            QLineEdit[readOnly="true"] {
+                color: rgb(120, 110, 150);
+                border: 2px solid rgb(60, 55, 90);
+            }
+        ''')
         self.fld_ed_name.setFixedWidth(220)
         _, self.lbl_ed_name_row = add_row("Display Name:", self.fld_ed_name)
 
         # Description
         self.fld_ed_desc = QLineEdit()
         self.fld_ed_desc.setObjectName("EditorField")
+        self.fld_ed_desc.setStyleSheet('''
+            QLineEdit {
+                background-color: rgb(15, 12, 25);
+                border: 2px solid rgb(90, 80, 130);
+                border-radius: 6px;
+                color: rgb(220, 200, 255);
+                padding: 4px 7px;
+                font-size: 13px;
+            }
+            QLineEdit:focus {
+                border: 2px solid rgb(140, 90, 200);
+            }
+            QLineEdit[readOnly="true"] {
+                color: rgb(120, 110, 150);
+                border: 2px solid rgb(60, 55, 90);
+            }
+        ''')
         self.fld_ed_desc.setFixedWidth(320)
         _, self.lbl_ed_desc_row = add_row("Description:", self.fld_ed_desc)
 
@@ -470,6 +609,23 @@ class Ui_MainWindow:
         icon_lo.setSpacing(6)
         self.fld_ed_icon = QLineEdit()
         self.fld_ed_icon.setObjectName("EditorField")
+        self.fld_ed_icon.setStyleSheet('''
+            QLineEdit {
+                background-color: rgb(15, 12, 25);
+                border: 2px solid rgb(90, 80, 130);
+                border-radius: 6px;
+                color: rgb(220, 200, 255);
+                padding: 4px 7px;
+                font-size: 13px;
+            }
+            QLineEdit:focus {
+                border: 2px solid rgb(140, 90, 200);
+            }
+            QLineEdit[readOnly="true"] {
+                color: rgb(120, 110, 150);
+                border: 2px solid rgb(60, 55, 90);
+            }
+        ''')
         self.fld_ed_icon.setFixedWidth(260)
         self.btn_ed_icon = QPushButton("…")
         self.btn_ed_icon.setObjectName("BrowseBtn")
@@ -494,6 +650,18 @@ class Ui_MainWindow:
         self.lbl_ed_panels.setFixedWidth(150)
         self.btn_ed_add_panel = QPushButton("+ Add Panel")
         self.btn_ed_add_panel.setProperty("cssClass", "action-btn")
+        self.btn_ed_add_panel.setStyleSheet('''
+            QPushButton {
+                background-color: rgb(60, 45, 90);
+                border: 1px solid rgb(90, 80, 130);
+                padding: 5px 12px;
+                font-size: 11px;
+            }
+            QPushButton:hover {
+                background-color: rgb(80, 65, 120);
+                border: 1px solid rgb(110, 100, 150);
+            }
+        ''')
         panels_hdr_lo.addWidget(self.lbl_ed_panels)
         panels_hdr_lo.addWidget(self.btn_ed_add_panel)
         panels_hdr_lo.addStretch()
