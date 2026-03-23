@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-disk-manager
-pkgver=1.0.1
+pkgver=1.0.2
 pkgrel=1
 pkgdesc="GUI tool for managing disks: mount, fstab, permissions, labels, format"
 arch=('any')

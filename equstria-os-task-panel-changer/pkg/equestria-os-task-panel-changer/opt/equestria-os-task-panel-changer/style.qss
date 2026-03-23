@@ -213,26 +213,6 @@ QLabel[cssClass="capture-status"] {
     font-style: italic;
 }
 
-/* ─── QComboBox dropdown (global — prevents transparent popups) ─── */
-QComboBox QAbstractItemView {
-    background-color: rgb(22, 18, 36);
-    color: rgb(200, 190, 230);
-    border: 1px solid rgb(80, 65, 115);
-    selection-background-color: rgb(100, 60, 160);
-    selection-color: white;
-    outline: none;
-    padding: 2px;
-}
-
-QComboBox QAbstractItemView::item {
-    padding: 4px 8px;
-    min-height: 22px;
-}
-
-QComboBox QAbstractItemView::item:hover {
-    background-color: rgb(65, 50, 100);
-}
-
 /* ─── Scrollbar ──────────────────────────────────────────────────── */
 QScrollBar:vertical {
     background: rgb(20, 16, 32);
@@ -285,7 +265,7 @@ QScrollBar::sub-page:horizontal {
 /* ─── Panel Row Widget ───────────────────────────────────────────── */
 QFrame#PanelRow {
     background-color: rgb(26, 22, 40);
-    border: 1px solid rgb(58, 52, 88);
+    border: 2px solid cyan;
     border-radius: 8px;
 }
 
@@ -339,7 +319,8 @@ QFrame#PanelRow QComboBox::drop-down {
     width: 18px;
 }
 
-QFrame#PanelRow QComboBox QAbstractItemView {
+QFrame#PanelRow QComboBox QAbstractItemView,
+QFrame#PanelRow QComboBox QListView {
     background-color: rgb(25, 20, 40);
     color: rgb(200, 190, 230);
     border: 1px solid rgb(80, 65, 115);
@@ -350,28 +331,52 @@ QFrame#PanelRow QComboBox QAbstractItemView {
 
 QFrame#PanelRow QSpinBox {
     background-color: rgb(18, 14, 28);
-    border: 1px solid rgb(58, 52, 88);
+    border: 2px solid rgb(100, 80, 140);
     border-radius: 5px;
     color: rgb(200, 190, 230);
-    padding: 3px 5px;
-    font-size: 12px;
-    min-height: 22px;
+    padding: 5px 8px;
+    font-size: 14px;
+    min-height: 32px;
 }
 
 QFrame#PanelRow QSpinBox:hover {
-    border: 1px solid rgb(110, 80, 160);
+    border-color: rgb(140, 100, 200);
 }
 
 QFrame#PanelRow QSpinBox::up-button,
 QFrame#PanelRow QSpinBox::down-button {
-    background: rgb(42, 34, 68);
-    border: none;
-    width: 14px;
+    background-color: rgb(42, 34, 68);
+    border-left: 2px solid rgb(100, 80, 140);
+    width: 22px;
 }
 
 QFrame#PanelRow QSpinBox::up-button:hover,
 QFrame#PanelRow QSpinBox::down-button:hover {
-    background: rgb(100, 60, 160);
+    background-color: rgb(100, 60, 160);
+}
+
+QFrame#PanelRow QSpinBox::up-arrow {
+    width: 0px;
+    height: 0px;
+    border-left: 5px solid rgb(42, 34, 68);
+    border-right: 5px solid rgb(42, 34, 68);
+    border-bottom: 5px solid rgb(180, 170, 215);
+}
+
+QFrame#PanelRow QSpinBox::up-arrow:hover {
+    border-bottom-color: white;
+}
+
+QFrame#PanelRow QSpinBox::down-arrow {
+    width: 0px;
+    height: 0px;
+    border-left: 5px solid rgb(42, 34, 68);
+    border-right: 5px solid rgb(42, 34, 68);
+    border-top: 5px solid rgb(180, 170, 215);
+}
+
+QFrame#PanelRow QSpinBox::down-arrow:hover {
+    border-top-color: white;
 }
 
 QPushButton#PanelMoveBtn {
@@ -379,7 +384,6 @@ QPushButton#PanelMoveBtn {
     border: 1px solid rgb(70, 60, 100);
     border-radius: 4px;
     color: rgb(180, 170, 215);
-    font-size: 13px;
     padding: 0;
 }
 
@@ -400,4 +404,40 @@ QPushButton#PanelRemoveBtn {
 QPushButton#PanelRemoveBtn:hover {
     background-color: rgb(100, 40, 60);
     color: rgb(255, 170, 180);
+}
+
+QPushButton#PanelMoveBtn,
+QPushButton#PanelRemoveBtn,
+QPushButton#BrowseBtn {
+    font-family: "Noto Sans", sans-serif;
+}
+
+/* ─── QComboBox dropdown (global — prevents transparent popups) ─── */
+QComboBox QAbstractItemView,
+QComboBox QListView {
+    background-color: rgb(25, 20, 40); /* Жестко задаем фон окна списка */
+    color: rgb(200, 190, 230);
+    border: 1px solid rgb(80, 65, 115);
+    selection-background-color: rgb(100, 60, 160);
+    selection-color: white;
+    outline: none;
+    padding: 2px;
+}
+
+/* Явно задаем фон для самих элементов списка, чтобы избежать прозрачности */
+QComboBox QAbstractItemView::item,
+QComboBox QListView::item {
+    background-color: rgb(25, 20, 40);
+    color: rgb(200, 190, 230);
+    padding: 4px 8px;
+    min-height: 22px;
+}
+
+/* Стили при наведении и выборе */
+QComboBox QAbstractItemView::item:hover,
+QComboBox QAbstractItemView::item:selected,
+QComboBox QListView::item:hover,
+QComboBox QListView::item:selected {
+    background-color: rgb(100, 60, 160);
+    color: white;
 }

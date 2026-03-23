@@ -4,8 +4,7 @@
 #  PG GPU Sync — Equestria OS
 #  Automated NVIDIA driver manager for Arch-based systems.
 #
-#  Compatible with: Equestria OS, EndeavourOS, pure Arch Linux.
-#  No dependency on eos-* utilities or expac.
+#  Compatible with: Equestria OS, pure Arch Linux.
 #
 #  Modes:
 #    Interactive  — asks for confirmation (default)
@@ -118,9 +117,8 @@ SelectDriver() {
             GPU_GENERATION="modern"
             ;;
         GM*|GP*|GV*)
-            # Maxwell / Pascal / Volta → supported by nvidia-open-dkms since 560+
-            # GSP firmware less stable on these — NVreg_EnableGpuFirmware=0 applied below
-            DRIVER_TYPE="open"
+            # Maxwell / Pascal / Volta → stable proprietary driver
+            DRIVER_TYPE="proprietary"
             DRIVER_PKG="nvidia-open-dkms"
             DRIVER_UTILS_PKG="nvidia-utils"
             GPU_GENERATION="legacy"
@@ -206,7 +204,7 @@ BuildPackageLists() {
 
         # Remove all conflicting proprietary packages
         local rm_list=(
-            nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-utils
+            nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-dkms nvidia-utils
             nvidia-470xx-dkms nvidia-470xx-utils
             nvidia-390xx-dkms nvidia-390xx-utils
             nvidia-settings nvidia-hook pg-nvidia-hook
@@ -252,7 +250,7 @@ BuildPackageLists() {
         # Remove conflicting drivers (everything except what we're about to install)
         local rm_list=(xf86-video-nouveau vulkan-nouveau lib32-vulkan-nouveau)
         case "$DRIVER_PKG" in
-            nvidia-open-dkms|nvidia-open|nvidia-open-lts)
+            nvidia-open-dkms|nvidia-open|nvidia-open-lts|nvidia-dkms)
                 rm_list+=(nvidia-470xx-dkms nvidia-470xx-utils nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
             nvidia-470xx-dkms)

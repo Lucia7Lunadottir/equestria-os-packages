@@ -1,13 +1,19 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-proton-starter
-pkgver=1.0.0
-pkgrel=2
+pkgver=1.0.1
+pkgrel=1
 pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton)"
 arch=('any')
 url="https://github.com/7Lucia7Lokidottir7"
 license=('GPL')
-depends=('python' 'python-pyqt6' 'libnotify' 'xdg-utils' 'desktop-file-utils' 'xdg-desktop-portal-kde')
+depends=('python' 'python-pyqt6' 'libnotify' 'xdg-utils' 'desktop-file-utils' 'xdg-desktop-portal-kde' 'lib32-glibc' 'lib32-gcc-libs')
+optdepends=(
+    'lib32-mesa: 32-bit OpenGL support for AMD/Intel/Nouveau'
+    'lib32-vulkan-radeon: 32-bit Vulkan support for AMD GPUs'
+    'lib32-vulkan-intel: 32-bit Vulkan support for Intel GPUs'
+    'lib32-nvidia-utils: 32-bit OpenGL/Vulkan support for NVIDIA GPUs'
+)
 install="$pkgname.install"
 
 package() {

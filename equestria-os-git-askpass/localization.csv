@@ -1,0 +1,4 @@
+key,en,ru,de,fr,es,pt,pl,uk,zh,ja
+askpass.title,Equestria OS Git Authentication,Аутентификация Git в Equestria OS,Equestria OS Git-Authentifizierung,Authentification Git Equestria OS,Autenticación Git de Equestria OS,Autenticação Git do Equestria OS,Uwierzytelnianie Git Equestria OS,Аутентифікація Git в Equestria OS,Equestria OS Git 身份验证,Equestria OS Git 認証
+askpass.btn_ok,OK,ОК,OK,OK,Aceptar,OK,OK,ОК,确定,OK
+askpass.btn_cancel,Cancel,Отмена,Abbrechen,Annuler,Cancelar,Cancelar,Anuluj,Скасувати,取消,キャンセル

@@ -1,0 +1,38 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-git-askpass
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Native GUI Git credential interceptor for Equestria OS (fixes Unity Git errors)"
+arch=('any')
+license=('GPL')
+depends=('python' 'python-pyqt6' 'git')
+install="$pkgname.install"
+source=('equestria-os-git-askpass.py'
+        'style.qss'
+        'localization.csv')
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+    local optdir="$pkgdir/opt/$pkgname"
+    local bindir="$pkgdir/usr/bin"
+
+    install -d "$optdir"
+    install -d "$bindir"
+    install -d "$pkgdir/usr/share/pixmaps"
+
+    # Копируем скрипт, стили и локализацию в /opt/
+    install -Dm644 "$srcdir/equestria-os-git-askpass.py" "$optdir/equestria-os-git-askpass.py"
+    install -Dm644 "$srcdir/style.qss" "$optdir/style.qss"
+    install -Dm644 "$srcdir/localization.csv" "$optdir/localization.csv"
+
+    # Иконка остается в системных пиксмапах, чтобы окна и DE могли её найти
+    install -Dm644 "$startdir/EquestriaOS-Logo.png" "$pkgdir/usr/share/pixmaps/equestria-os-git-askpass.png"
+
+    # Создаем бинарник в /usr/bin/, который будет запускать скрипт из /opt/
+    cat > "$bindir/equestria-os-git-askpass" <<EOF
+#!/bin/bash
+exec python3 /opt/equestria-os-git-askpass/equestria-os-git-askpass.py "\$@"
+EOF
+    chmod 755 "$bindir/equestria-os-git-askpass"
+}
