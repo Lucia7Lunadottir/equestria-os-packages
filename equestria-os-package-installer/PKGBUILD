@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-package-installer
 pkgver=2.2.1
-pkgrel=1
+pkgrel=2
 pkgdesc='The official Equestria OS app and driver store'
 arch=('any')
 url='https://psyche-games.com'

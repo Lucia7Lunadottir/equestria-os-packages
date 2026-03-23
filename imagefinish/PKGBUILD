@@ -1,39 +1,48 @@
-# Maintainer: lucial <lucial@equestriaos.org>
+# Maintainer: lucial <bordiyan20035@gmail.com>
 pkgname=imagefinish
-pkgver=1.1.2
+pkgver=r36.0287678
 pkgrel=1
 pkgdesc="A PyQt6 image editor inspired by Photoshop"
 arch=('any')
 url="https://github.com/7Lucia7Lokidottir7/Linux-Photoshop"
-license=('GPL3')
-depends=('python' 'python-pyqt6')
-optdepends=('python-numpy: faster pixel operations')
-source=(
-    "git+https://github.com/7Lucia7Lokidottir7/Linux-Photoshop.git"
-    'imagefinish.desktop'
-)
-sha256sums=('SKIP' 'SKIP')
+license=('MIT')
+depends=('python' 'python-pyqt6' 'python-numpy')
+#optdepends=('python-numpy: faster pixel operations')
+makedepends=('git')
+source=("$pkgname::git+$url.git")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "$srcdir/$pkgname"
+    git describe --tags --long 2>/dev/null \
+        | sed 's/\([^-]*-g\)/r\1/;s/-/./g' \
+        | grep . \
+        || printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
 
 package() {
-    cd "Linux-Photoshop"
+    cd "$srcdir/$pkgname"
 
-    # Устанавливаем приложение в /opt/
-    install -dm755 "$pkgdir/opt/$pkgname"
-
-    install -m644 main.py "$pkgdir/opt/$pkgname/"
-
-    cp -r core ui tools utils locales brushes shapes \
-        "$pkgdir/opt/$pkgname/"
-
-    # Пустые папки, которые git не трекает
-    install -dm755 "$pkgdir/opt/$pkgname/fonts"
-    install -dm755 "$pkgdir/opt/$pkgname/patterns"
+    # Файлы приложения
+    install -dm755 "$pkgdir/usr/share/$pkgname"
+    cp -r core locales tools ui utils brushes shapes \
+        "$pkgdir/usr/share/$pkgname/"
+    # fonts и patterns пустые — создаём директории для пользовательского контента
+    install -dm755 "$pkgdir/usr/share/$pkgname/fonts"
+    install -dm755 "$pkgdir/usr/share/$pkgname/patterns"
+    install -m644 main.py         "$pkgdir/usr/share/$pkgname/"
+    install -m644 settings.json   "$pkgdir/usr/share/$pkgname/"
 
     # Иконка
-    install -Dm644 icon.png "$pkgdir/opt/$pkgname/icon.png"
-    install -Dm644 icon.png "$pkgdir/usr/share/pixmaps/imagefinish.png"
+    install -Dm644 icon.png "$pkgdir/usr/share/pixmaps/$pkgname.png"
 
     # .desktop
-    install -Dm644 "$srcdir/imagefinish.desktop" \
-        "$pkgdir/usr/share/applications/imagefinish.desktop"
+    install -Dm644 imagefinish.desktop \
+        "$pkgdir/usr/share/applications/$pkgname.desktop"
+
+    # Лаунчер в /usr/bin
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/$pkgname" << 'LAUNCHER'
+#!/bin/bash
+exec python3 /usr/share/imagefinish/main.py "$@"
+LAUNCHER
 }

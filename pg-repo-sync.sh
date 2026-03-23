@@ -9,7 +9,7 @@ echo "🐎 Запуск автоматического обновления ре
 
 BASE_DIR="$HOME/equestria-packages"
 REPO_DIR="$BASE_DIR/docs/x86_64"
-DB_NAME="equestria.db.tar.gz"
+DB_NAME="equestria-os.db.tar.gz"
 
 cd "$BASE_DIR" || exit
 
