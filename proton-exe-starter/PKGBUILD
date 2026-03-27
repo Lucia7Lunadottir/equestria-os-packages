@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-proton-starter
 pkgver=1.0.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton)"
 arch=('any')
 url="https://github.com/7Lucia7Lokidottir7"

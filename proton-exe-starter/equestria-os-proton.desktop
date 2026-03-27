@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Service
-ServiceTypes=KonqPopupMenu/Plugin
-MimeType=application/x-ms-dos-executable;application/x-msdownload;
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+MimeType=application/x-ms-dos-executable;application/x-msdownload;application/vnd.microsoft.portable-executable;
 Actions=protonRun;protonSettings;
 X-KDE-Priority=TopLevel
 InitialPreference=100

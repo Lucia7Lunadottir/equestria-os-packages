@@ -3,6 +3,6 @@ Type=Application
 Name=Run with Equestria Proton
 Icon=equestria-os-proton-starter
 Exec=equestria-proton-run %f
-MimeType=application/x-ms-dos-executable;application/x-msdownload;
+MimeType=application/x-ms-dos-executable;application/x-msdownload;application/vnd.microsoft.portable-executable;
 NoDisplay=true
 StartupNotify=false
