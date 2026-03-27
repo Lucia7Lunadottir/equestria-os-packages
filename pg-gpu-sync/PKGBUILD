@@ -1,13 +1,23 @@
 # Maintainer: Equestria OS Team <your@email.here>
 
 pkgname=pg-gpu-sync
-pkgver=1.1.0
+pkgver=2.0.0
 pkgrel=1
-pkgdesc='NVIDIA driver manager for Equestria OS'
+pkgdesc='NVIDIA GPU driver manager with boot-time detection and KDE compositor config (Equestria OS)'
 arch=('any')
 license=('GPL3')
 url='https://psyche-games.com'
-depends=('bash' 'pciutils' 'pacman')
+depends=('bash' 'pciutils' 'pg-nvidia-hook')
+optdepends=(
+    'dkms: required for DKMS driver packages'
+    'linux-headers: required for DKMS with linux kernel'
+    'linux-lts-headers: required for DKMS with linux-lts kernel'
+    'nvidia-open-dkms: open kernel modules for Turing+ GPUs'
+    'nvidia-dkms: proprietary kernel modules for Maxwell/Pascal/Volta GPUs'
+    'nvidia-utils: userspace libraries and tools'
+    'nvidia-settings: GUI settings panel'
+)
+install=pg-gpu-sync.install
 
 source=(
     'pg-gpu-sync'
@@ -17,8 +27,12 @@ sha256sums=('SKIP'
             'SKIP')
 
 package() {
+    # Main script
     install -Dm755 pg-gpu-sync          "$pkgdir/usr/bin/pg-gpu-sync"
+
+    # Systemd service: auto-detect GPU changes at boot
     install -Dm644 pg-gpu-watch.service "$pkgdir/usr/lib/systemd/system/pg-gpu-watch.service"
-    # Offline driver cache directory — populate with .pkg.tar.zst files for offline installs
+
+    # Create offline driver cache directory
     install -dm755 "$pkgdir/usr/share/pg-gpu-sync/drivers"
 }

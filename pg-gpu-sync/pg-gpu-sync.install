@@ -1,0 +1,22 @@
+post_install() {
+    echo ">>> Enabling pg-gpu-watch.service (GPU detection at boot)..."
+    systemctl daemon-reload
+    systemctl enable pg-gpu-watch.service 2>/dev/null
+
+    echo ""
+    echo "  pg-gpu-sync installed!"
+    echo "  ─────────────────────────────────────────────"
+    echo "  • Run 'sudo pg-gpu-sync' to configure NVIDIA drivers now"
+    echo "  • pg-gpu-watch.service will auto-detect GPU changes at boot"
+    echo ""
+}
+
+post_upgrade() {
+    systemctl daemon-reload
+    systemctl enable pg-gpu-watch.service 2>/dev/null
+}
+
+pre_remove() {
+    systemctl disable pg-gpu-watch.service 2>/dev/null
+    systemctl daemon-reload
+}

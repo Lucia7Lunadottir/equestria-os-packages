@@ -36,7 +36,14 @@ class main_app(QMainWindow, Ui_WelcomeHub):
             "cat.games": {"en":"🎮 Games", "ru":"🎮 Игры", "de":"🎮 Spiele", "fr":"🎮 Jeux", "es":"🎮 Juegos", "pt":"🎮 Jogos", "pl":"🎮 Gry", "uk":"🎮 Ігри", "zh":"🎮 游戏", "ja":"🎮 ゲーム"},
             "cat.social": {"en":"🐴 Pony Social", "ru":"🐴 Пони-соцсети", "de":"🐴 Pony Soziales", "fr":"🐴 Social Pony", "es":"🐴 Social Pony", "pt":"🐴 Social Pony", "pl":"🐴 Kucyk Social", "uk":"🐴 Поні-соцмережі", "zh":"🐴 小马社区", "ja":"🐴 ポニーSNS"},
             "cat.support": {"en":"🆘 Support", "ru":"🆘 Поддержка", "de":"🆘 Support", "fr":"🆘 Aide", "es":"🆘 Soporte", "pt":"🆘 Suporte", "pl":"🆘 Wsparcie", "uk":"🆘 Підтримка", "zh":"🆘 支持", "ja":"🆘 サポート"},
-            "ui.autostart": {"en":"Launch on startup", "ru":"Запускать при старте", "de":"Beim Start ausführen", "fr":"Lancer au démarrage", "es":"Iniciar al arrancar", "pt":"Iniciar na inicialização", "pl":"Uruchom przy starcie", "uk":"Запускати при старті", "zh":"开机启动", "ja":"起動時に実行"}
+            "ui.autostart": {"en":"Launch on startup", "ru":"Запускать при старте", "de":"Beim Start ausführen", "fr":"Lancer au démarrage", "es":"Iniciar al arrancar", "pt":"Iniciar na inicialização", "pl":"Uruchom przy starcie", "uk":"Запускати при старті", "zh":"开机启动", "ja":"起動時に実行"},
+
+            # --- НОВЫЕ КЛЮЧИ ДЛЯ ПРИЛОЖЕНИЙ (ВСЕ 10 ЯЗЫКОВ) ---
+            "app.theme": {"en":"Equestria OS Theme Switcher", "ru":"Переключатель тем Equestria OS", "de":"Equestria-OS-Theme-Wechsler", "fr":"Sélecteur de thèmes Equestria OS", "es":"Selector de temas de Equestria OS", "pt":"Seletor de temas Equestria OS", "pl":"Przełącznik motywów Equestria OS", "uk":"Перемикач тем Equestria OS", "zh":"Equestria OS主题切换器", "ja":"Equestria OSテーマスイッチャー"},
+            "app.panel": {"en":"Equestria OS Task Panel Changer", "ru":"Настройка панели задач Equestria OS", "de":"Equestria OS Taskleisten-Konfigurator", "fr":"Gestionnaire de barre des tâches Equestria OS", "es":"Configurador de barra de tareas Equestria OS", "pt":"Configurador de barra de tarefas Equestria OS", "pl":"Konfigurator paska zadań Equestria OS", "uk":"Налаштування панелі завдань Equestria OS", "zh":"Equestria OS任务栏配置器", "ja":"Equestria OSタスクバー設定"},
+            "app.essentials": {"en":"Equestria OS Essentials", "ru":"Базовые программы Equestria OS", "de":"Equestria OS Essentials", "fr":"Les Essentiels Equestria OS", "es":"Esenciales de Equestria OS", "pt":"Essenciais do Equestria OS", "pl":"Niezbędnik Equestria OS", "uk":"Базові програми Equestria OS", "zh":"Equestria OS 必备软件", "ja":"Equestria OS 必須アプリ"},
+            "app.store": {"en":"Equestria OS App Store", "ru":"Магазин Equestria OS", "de":"Equestria OS App Store", "fr":"Boutique Equestria OS", "es":"Tienda Equestria OS", "pt":"Loja Equestria OS", "pl":"Sklep Equestria OS", "uk":"Магазин Equestria OS", "zh":"Equestria OS 应用商店", "ja":"Equestria OS アプリストア"},
+            "app.pkgs": {"en":"Equestria OS Packages", "ru":"Пакеты Equestria OS", "de":"Equestria OS Pakete", "fr":"Paquets Equestria OS", "es":"Paquetes de Equestria OS", "pt":"Pacotes do Equestria OS", "pl":"Pakiety Equestria OS", "uk":"Пакети Equestria OS", "zh":"Equestria OS软件包", "ja":"Equestria OSパッケージ"}
         }
 
         self.current_lang = os.getenv("LANG", "en")[:2]
@@ -78,9 +85,11 @@ class main_app(QMainWindow, Ui_WelcomeHub):
 
         categories = [
             ("cat.system", [
-                Item("Equestria OS Theme Character", "python3 /opt/equestria-os-character-theme/main.py", "command"),
-                Item("Equestria Store", "python3 /opt/equestria-os-package-installer/main.py", "command"),
-                Item("Equestria OS Package Manager", "python3 /opt/equestria-os-package-manager/main.py", "command")
+                Item(self.t("app.theme"), "python3 /opt/equestria-os-character-theme/main.py", "command"),
+                Item(self.t("app.panel"), "python3 /opt/equestria-os-task-panel-changer/main.py", "command"),
+                Item(self.t("app.essentials"), "python3 /opt/equestria-os-essentials/main.py", "command"),
+                Item(self.t("app.store"), "python3 /opt/equestria-os-app-store/main.py", "command"),
+                Item(self.t("app.pkgs"), "python3 /opt/equestria-os-package-manager/main.py", "command")
             ]),
             ("cat.music", [
                 Item("Jyc Row", "https://www.youtube.com/@JycRow"),
@@ -129,7 +138,7 @@ class main_app(QMainWindow, Ui_WelcomeHub):
             ("cat.support", [
                 Item("Arch Wiki", "https://wiki.archlinux.org/"),
                 Item("Arch Forums", "https://bbs.archlinux.org/"),
-                Item("Psyche Games", "https://psyche-games.com/")
+                Item("Psyche Games", "https://psyche-games.com/equestria-os.php")
             ])
         ]
 

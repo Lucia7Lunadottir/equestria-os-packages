@@ -30,6 +30,7 @@ ui.opacity,Opacity:,Прозрачность:,Deckkraft:,Opacité :,Opacidad:,Op
 ui.btn_edit,Edit,Изменить,Bearbeiten,Éditer,Editar,Editar,Edytuj,Змінити,编辑,編集
 ui.btn_new,New,Новый,Neu,Nouveau,Nuevo,Novo,Nowy,Новий,新建,新規
 ui.btn_restore_all,Restore All,Сбросить всё,Alles zurücksetzen,Tout restaurer,Restaurar todo,Restaurar tudo,Przywróć wszystko,Відновити все,全部恢复,すべて復元
+ui.hide_icons,Hide icons,Скрыть значки,Symbole ausblenden,Masquer les icônes,Ocultar iconos,Ocultar ícones,Ukryj ikony,Сховати значки,隐藏图标,アイコンを隠す
 ui.btn_restore_default,Restore Default,По умолчанию,Standard,Par défaut,Por defecto,Padrão,Domyślny,За замовч.,恢复默认,デフォルト
 ui.dark_text,🌙 Dark text,🌙 Тёмный текст,🌙 Dunkler Text,🌙 Texte sombre,🌙 Texto oscuro,🌙 Texto escuro,🌙 Ciemny tekst,🌙 Темний текст,🌙 深色文字,🌙 ダークテキスト
 ui.light_text,☀️ Light text,☀️ Светлый текст,☀️ Heller Text,☀️ Texte clair,☀️ Texto claro,☀️ Texto claro,☀️ Jasny tekst,☀️ Світлий текст,☀️ 浅色文字,☀️ ライトテキスト
@@ -75,3 +76,15 @@ preset.rarity,Top bar + floating dock,Топ-бар + плав. Dock,Top bar + f
 preset.applejack,Traditional (Cinnamon),Традиционная (Cinnamon),Traditional (Cinnamon),Traditional (Cinnamon),Traditional (Cinnamon),Traditional (Cinnamon),Traditional (Cinnamon),Traditional (Cinnamon),Traditional (Cinnamon),Traditional (Cinnamon)
 preset.fluttershy,Minimal + auto-hide,Минимализм + автоскрытие,Minimal + auto-hide,Minimal + auto-hide,Minimal + auto-hide,Minimal + auto-hide,Minimal + auto-hide,Minimal + auto-hide,Minimal + auto-hide,Minimal + auto-hide
 preset.pinkie,Widgets (system monitor),Виджеты (ресурсы),Widgets (system monitor),Widgets (system monitor),Widgets (system monitor),Widgets (system monitor),Widgets (system monitor),Widgets (system monitor),Widgets (system monitor),Widgets (system monitor)
+
+
+ui.pr_visibility,Visibility,Видимость,Sichtbarkeit,Visibilité,Visibilidad,Visibilidade,Widoczność,Видимість,可见性,可視性
+ui.vis_always,Always visible,Показывать всегда,Immer sichtbar,Toujours visible,Siempre visible,Sempre visível,Zawsze widoczne,Завжди показувати,始终可见,常に表示
+ui.vis_auto,Auto hide,Скрывать автоматически,Automatisch ausblenden,Masquer automatiquement,Ocultar automáticamente,Ocultar automaticamente,Autoukrywanie,Приховувати автоматично,自动隐藏,自動的に隠す
+ui.vis_dodge,Dodge windows,Скрывать под окнами,Fenster ausweichen,Éviter les fenêtres,Esquivar ventanas,Desviar janelas,Unikaj okien,Ухилятися від вікон,避开窗口,ウィンドウを避ける
+ui.vis_below,Windows go below,Перекрывать другие окна,Fenster verbergen darunter,Les fenêtres passent en dessous,Las ventanas van debajo,As janelas vão para baixo,Okna mogą przykrywać,Перекривати інші вікна,窗口在下方,ウィンドウの下に隠す
+
+
+ui.btn_delete,Delete,Удалить,Löschen,Supprimer,Eliminar,Excluir,Usuń,Видалити,删除,削除
+ui.delete_confirm_title,Delete Preset,Удалить пресет,Preset löschen,Supprimer le préréglage,Eliminar preset,Excluir predefinição,Usuń preset,Видалити пресет,删除预设,プリセットを削除
+ui.delete_confirm_msg,Are you sure you want to delete this preset?,Вы уверены, что хотите удалить этот пресет?,Möchten Sie dieses Preset wirklich löschen?,Voulez-vous vraiment supprimer ce préréglage ?,¿Está seguro de que desea eliminar este preset?,Tem certeza de que deseja excluir esta predefinição?,Czy na pewno chcesz usunąć ten preset?,Ви впевнені, що хочете видалити цей пресет?,您确定要删除此预设吗？,このプリセットを削除してもよろしいですか？

@@ -1,381 +1,8 @@
-import os
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QScrollArea, QSlider, QStackedWidget,
-                             QLineEdit, QSpinBox, QFrame, QComboBox, QCheckBox, QListView)
-from PyQt6.QtGui import QPainter, QColor, QPixmap, QFont
-from PyQt6.QtCore import Qt, pyqtSignal
-
-PANEL_LAYOUTS = {
-    "sunset":    [{"pos": "bottom", "w": 0.62, "h": 0.28, "float": True}],
-    "twilight":  [{"pos": "bottom", "w": 1.0,  "h": 0.22, "float": False}],
-    "rainbow":   [{"pos": "top",    "w": 1.0,  "h": 0.16, "float": False},
-                  {"pos": "bottom", "w": 0.45, "h": 0.26, "float": True}],
-    "rarity":    [{"pos": "top",    "w": 1.0,  "h": 0.14, "float": False},
-                  {"pos": "bottom", "w": 0.38, "h": 0.30, "float": True}],
-    "applejack": [{"pos": "bottom", "w": 1.0,  "h": 0.26, "float": False}],
-    "fluttershy":[{"pos": "bottom", "w": 0.70, "h": 0.22, "float": True}],
-    "pinkie":    [{"pos": "bottom", "w": 1.0,  "h": 0.24, "float": False}],
-}
-
-
-class SafeCheckBox(QPushButton):
-    """Кастомный чекбокс, который не ломается стилями QSS."""
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setCheckable(True)
-        self.setStyleSheet("text-align: left; background: transparent; border: none; color: rgb(200, 190, 230); font-family: sans-serif;")
-        self.toggled.connect(self._refresh)
-        self._lbl = ""
-        self._refresh()
-
-    def setText(self, text):
-        self._lbl = text
-        self._refresh()
-
-    def _refresh(self):
-        super().setText(f"☑  {self._lbl}" if self.isChecked() else f"☐  {self._lbl}")
-
-
-class PanelPreviewWidget(QWidget):
-    def __init__(self, preset_id, panel_color="#1e1e2e", panel_opacity=90, parent=None):
-        super().__init__(parent)
-        self.preset_id = preset_id
-        self.panel_color = panel_color
-        self.panel_opacity = panel_opacity
-        self.layout_configs = PANEL_LAYOUTS.get(preset_id, [])
-
-    def set_appearance(self, color, opacity):
-        self.panel_color = color
-        self.panel_opacity = opacity
-        self.update()
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        w, h = self.width(), self.height()
-
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor(44, 42, 68))
-        painter.drawRoundedRect(0, 0, w, h, 4, 4)
-
-        for cfg in self.layout_configs:
-            pw = int(w * cfg["w"])
-            ph = int(h * cfg["h"])
-            x = (w - pw) // 2
-            y = h - ph if cfg["pos"] == "bottom" else 0
-
-            color = QColor(self.panel_color)
-            color.setAlphaF(max(self.panel_opacity / 100.0, 0.70))
-            painter.setBrush(color)
-
-            radius = 5 if cfg.get("float") else 0
-            painter.drawRoundedRect(x, y, pw, ph, radius, radius)
-
-        painter.end()
-
-
-class PresetCard(QPushButton):
-    def __init__(self, preset_id, char_name, desc_text, icon_path, parent=None):
-        super().__init__(parent)
-        self.preset_id = preset_id
-        self.setFixedSize(160, 158)
-        self.setProperty("cssClass", "preset-card")
-        self.setProperty("active", "false")
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(6, 8, 6, 8)
-        layout.setSpacing(3)
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        icon_lbl = QLabel()
-        px = QPixmap(icon_path)
-        if not px.isNull():
-            icon_lbl.setPixmap(px.scaled(58, 58, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
-        icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-
-        name_lbl = QLabel(char_name)
-        name_lbl.setProperty("cssClass", "char-name")
-        name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        name_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-
-        desc_lbl = QLabel(desc_text)
-        desc_lbl.setProperty("cssClass", "layout-desc")
-        desc_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        desc_lbl.setWordWrap(True)
-        desc_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-
-        self.preview_widget = PanelPreviewWidget(preset_id)
-        self.preview_widget.setFixedSize(96, 34)
-        self.preview_widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-
-        layout.addWidget(icon_lbl)
-        layout.addWidget(name_lbl)
-        layout.addWidget(desc_lbl)
-        layout.addWidget(self.preview_widget, 0, Qt.AlignmentFlag.AlignCenter)
-
-    def set_active_state(self, is_active: bool):
-        self.setProperty("active", "true" if is_active else "false")
-        self.style().unpolish(self)
-        self.style().polish(self)
-
-    def update_appearance(self, color, opacity):
-        self.preview_widget.set_appearance(color, opacity)
-
-
-class PanelRowWidget(QFrame):
-    """Editor row for a single KDE panel — 3-line layout."""
-    remove_requested    = pyqtSignal(object)
-    move_up_requested   = pyqtSignal(object)
-    move_down_requested = pyqtSignal(object)
-
-    _POSITIONS  = ["bottom", "top", "left", "right"]
-    _LAUNCHERS  = ["none", "kickoff", "kicker", "kickerdash"]
-    _LENGTHS    = ["fill", "fit"]
-    _ALIGNMENTS = ["left", "center", "right"]
-
-    def __init__(self, cfg=None, parent=None):
-        super().__init__(parent)
-        cfg = cfg or {}
-        self.setObjectName("PanelRow")
-        self.setFrameShape(QFrame.Shape.StyledPanel)
-        self.setStyleSheet('''
-            QFrame#PanelRow {
-                background-color: rgb(26, 22, 40);
-                border: 1px solid rgb(70, 60, 100);
-                border-radius: 8px;
-            }
-            QLabel {
-                color: rgb(160, 150, 195);
-                font-size: 12px;
-                border: none;
-            }
-            QComboBox {
-                background-color: rgb(18, 14, 28);
-                border: 1px solid rgb(58, 52, 88);
-                border-radius: 5px;
-                color: rgb(200, 190, 230);
-                padding: 3px 6px;
-                font-size: 12px;
-                min-height: 22px;
-            }
-            QComboBox:hover {
-                border: 1px solid rgb(110, 80, 160);
-            }
-            QComboBox::drop-down {
-                background: rgb(40, 32, 65);
-                border-left: 1px solid rgb(58, 52, 88);
-                border-top-right-radius: 5px;
-                border-bottom-right-radius: 5px;
-                width: 18px;
-            }
-            QComboBox QAbstractItemView {
-                background-color: rgb(25, 20, 40);
-                color: rgb(200, 190, 230);
-                border: 1px solid rgb(80, 65, 115);
-                selection-background-color: rgb(100, 60, 160);
-                selection-color: white;
-                outline: none;
-            }
-            QSpinBox {
-                background-color: rgb(18, 14, 28);
-                border: 2px solid rgb(100, 80, 140);
-                border-radius: 5px;
-                color: rgb(200, 190, 230);
-                padding: 5px 8px;
-                font-size: 14px;
-                min-height: 32px;
-            }
-            QSpinBox:hover {
-                border-color: rgb(140, 100, 200);
-            }
-            QSpinBox::up-button,
-            QSpinBox::down-button {
-                background-color: rgb(42, 34, 68);
-                border-left: 2px solid rgb(100, 80, 140);
-                width: 22px;
-            }
-            QSpinBox::up-button:hover,
-            QSpinBox::down-button:hover {
-                background-color: rgb(100, 60, 160);
-            }
-        ''')
-
-        outer = QVBoxLayout(self)
-        outer.setContentsMargins(12, 8, 12, 8)
-        outer.setSpacing(6)
-
-        def sl():
-            l = QLabel()
-            l.setProperty("cssClass", "status-label")
-            return l
-
-        def spinbox(lo, hi, val, suffix=" px", w=72):
-            s = QSpinBox()
-            s.setRange(lo, hi)
-            s.setSuffix(suffix)
-            s.setValue(val)
-            s.setFixedWidth(w)
-            return s
-
-        # ── Row 1: position / size / alignment / order ────────────
-        r1 = QHBoxLayout()
-        r1.setSpacing(8)
-
-        self.cmb_pos = QComboBox()
-        self.cmb_pos.addItems(["Bottom", "Top", "Left", "Right"])
-        pos = cfg.get("position", "bottom")
-        self.cmb_pos.setCurrentIndex(self._POSITIONS.index(pos) if pos in self._POSITIONS else 0)
-        self._lbl_pos = sl()
-        r1.addWidget(self._lbl_pos)
-        r1.addWidget(self.cmb_pos)
-
-        self.spn_h = spinbox(20, 200, cfg.get("height", 48))
-        self._lbl_h = sl()
-        r1.addWidget(self._lbl_h)
-        r1.addWidget(self.spn_h)
-
-        self.spn_w = spinbox(0, 9999, cfg.get("width", 0))
-        self.spn_w.setSpecialValueText("Auto")
-        self._lbl_w = sl()
-        r1.addWidget(self._lbl_w)
-        r1.addWidget(self.spn_w)
-
-        self.spn_offset = spinbox(-9999, 9999, cfg.get("offset", 0))
-        self._lbl_offset = sl()
-        r1.addWidget(self._lbl_offset)
-        r1.addWidget(self.spn_offset)
-
-        self.cmb_align = QComboBox()
-        self.cmb_align.addItems(["Left", "Center", "Right"])
-        align = cfg.get("alignment", "center")
-        self.cmb_align.setCurrentIndex(
-            self._ALIGNMENTS.index(align) if align in self._ALIGNMENTS else 1)
-        self._lbl_align = sl()
-        r1.addWidget(self._lbl_align)
-        r1.addWidget(self.cmb_align)
-
-        r1.addStretch()
-        icon_font = QFont("sans-serif", 16)
-        icon_font.setBold(True)
-        btn_up = QPushButton("↑")
-        btn_up.setFont(icon_font)
-        btn_up.setObjectName("PanelMoveBtn")
-        btn_up.setFixedSize(22, 22)
-        btn_up.clicked.connect(lambda: self.move_up_requested.emit(self))
-        btn_dn = QPushButton("↓")
-        btn_dn.setFont(icon_font)
-        btn_dn.setObjectName("PanelMoveBtn")
-        btn_dn.setFixedSize(22, 22)
-        btn_dn.clicked.connect(lambda: self.move_down_requested.emit(self))
-        btn_rm = QPushButton("✕")
-        btn_rm.setFont(icon_font)
-        btn_rm.setObjectName("PanelRemoveBtn")
-        btn_rm.setFixedSize(22, 22)
-        btn_rm.clicked.connect(lambda: self.remove_requested.emit(self))
-        r1.addWidget(btn_up)
-        r1.addWidget(btn_dn)
-        r1.addWidget(btn_rm)
-        outer.addLayout(r1)
-
-        # ── Row 2: behaviour / launcher ───────────────────────────
-        r2 = QHBoxLayout()
-        r2.setSpacing(8)
-
-        self.chk_float = SafeCheckBox()
-        self.chk_float.setChecked(cfg.get("floating", False))
-        self.chk_hide  = SafeCheckBox()
-        self.chk_hide.setChecked(cfg.get("autohide", False))
-        r2.addWidget(self.chk_float)
-        r2.addWidget(self.chk_hide)
-
-        self.cmb_len = QComboBox()
-        self.cmb_len.addItems(["Fill width", "Fit content"])
-        lm = cfg.get("lengthMode", "fill")
-        self.cmb_len.setCurrentIndex(self._LENGTHS.index(lm) if lm in self._LENGTHS else 0)
-        self._lbl_len = sl()
-        r2.addWidget(self._lbl_len)
-        r2.addWidget(self.cmb_len)
-
-        self.cmb_launcher = QComboBox()
-        self.cmb_launcher.addItems(["None", "Kickoff", "Kicker (classic)", "KickerDash (fullscreen)"])
-        launcher = cfg.get("launcher", "none")
-        self.cmb_launcher.setCurrentIndex(
-            self._LAUNCHERS.index(launcher) if launcher in self._LAUNCHERS else 0)
-        self._lbl_launcher = sl()
-        r2.addWidget(self._lbl_launcher)
-        r2.addWidget(self.cmb_launcher)
-
-        r2.addStretch()
-        outer.addLayout(r2)
-
-        # ── Row 3: widgets ────────────────────────────────────────
-        r3 = QHBoxLayout()
-        r3.setSpacing(10)
-        self._lbl_widgets = sl()
-        r3.addWidget(self._lbl_widgets)
-        ww = cfg.get("widgets", [])
-        self.chk_taskbar = SafeCheckBox()
-        self.chk_taskbar.setChecked("taskbar" in ww)
-        self.chk_systray = SafeCheckBox()
-        self.chk_systray.setChecked("systray" in ww)
-        self.chk_clock   = SafeCheckBox()
-        self.chk_clock.setChecked("clock" in ww)
-        self.chk_pager   = SafeCheckBox()
-        self.chk_pager.setChecked("pager" in ww)
-        self.chk_monitor = SafeCheckBox()
-        self.chk_monitor.setChecked("monitor" in ww)
-        for c in (self.chk_taskbar, self.chk_systray, self.chk_clock,
-                  self.chk_pager, self.chk_monitor):
-            r3.addWidget(c)
-        r3.addStretch()
-        outer.addLayout(r3)
-
-        self.cmb_pos.setView(QListView())
-        self.cmb_align.setView(QListView())
-        self.cmb_len.setView(QListView())
-        self.cmb_launcher.setView(QListView())
-
-        # set default English text so widget is readable before retranslate()
-        self.retranslate(lambda k: k)
-
-    def retranslate(self, t):
-        self._lbl_pos.setText(t("ui.pr_position"))
-        self._lbl_h.setText(t("ui.pr_height"))
-        self._lbl_w.setText(t("ui.pr_width"))
-        self._lbl_offset.setText(t("ui.pr_offset"))
-        self._lbl_align.setText(t("ui.pr_align"))
-        self._lbl_len.setText(t("ui.pr_length"))
-        self._lbl_launcher.setText(t("ui.pr_launcher"))
-        self._lbl_widgets.setText(t("ui.pr_widgets"))
-        self.chk_float.setText(t("ui.pr_floating"))
-        self.chk_hide.setText(t("ui.pr_autohide"))
-        self.chk_taskbar.setText(t("ui.pr_taskbar"))
-        self.chk_systray.setText(t("ui.pr_systray"))
-        self.chk_clock.setText(t("ui.pr_clock"))
-        self.chk_pager.setText(t("ui.pr_pager"))
-        self.chk_monitor.setText(t("ui.pr_monitor"))
-
-    def get_config(self):
-        widgets = []
-        if self.chk_taskbar.isChecked(): widgets.append("taskbar")
-        if self.chk_systray.isChecked(): widgets.append("systray")
-        if self.chk_clock.isChecked():   widgets.append("clock")
-        if self.chk_pager.isChecked():   widgets.append("pager")
-        if self.chk_monitor.isChecked(): widgets.append("monitor")
-        return {
-            "position":   self._POSITIONS[self.cmb_pos.currentIndex()],
-            "height":     self.spn_h.value(),
-            "width":      self.spn_w.value(),
-            "offset":     self.spn_offset.value(),
-            "alignment":  self._ALIGNMENTS[self.cmb_align.currentIndex()],
-            "floating":   self.chk_float.isChecked(),
-            "autohide":   self.chk_hide.isChecked(),
-            "lengthMode": self._LENGTHS[self.cmb_len.currentIndex()],
-            "launcher":   self._LAUNCHERS[self.cmb_launcher.currentIndex()],
-            "widgets":    widgets,
-        }
-
+                             QLineEdit, QFrame)
+from PyQt6.QtCore import Qt
+from widgets import SafeCheckBox
 
 class Ui_MainWindow:
     def setupUi(self, MainWindow):
@@ -455,33 +82,6 @@ class Ui_MainWindow:
         self.status_layout.addWidget(self.lbl_status)
         self.status_layout.addStretch()
 
-        self.lbl_panel_color = QLabel("Panel color:")
-        self.lbl_panel_color.setProperty("cssClass", "status-label")
-        self.status_layout.addWidget(self.lbl_panel_color)
-
-        self.btn_color_swatch = QPushButton()
-        self.btn_color_swatch.setObjectName("ColorSwatchBtn")
-        self.status_layout.addWidget(self.btn_color_swatch)
-
-        self.btn_panel_theme = QPushButton("🌙")
-        self.btn_panel_theme.setProperty("cssClass", "action-btn")
-        self.status_layout.addWidget(self.btn_panel_theme)
-
-        self.lbl_opacity_label = QLabel("Opacity:")
-        self.lbl_opacity_label.setProperty("cssClass", "status-label")
-        self.status_layout.addWidget(self.lbl_opacity_label)
-
-        self.sld_opacity = QSlider(Qt.Orientation.Horizontal)
-        self.sld_opacity.setRange(0, 100)
-        self.sld_opacity.setValue(90)
-        self.sld_opacity.setFixedWidth(100)
-        self.status_layout.addWidget(self.sld_opacity)
-
-        self.lbl_opacity_val = QLabel("90%")
-        self.lbl_opacity_val.setProperty("cssClass", "status-label")
-        self.lbl_opacity_val.setFixedWidth(38)
-        self.status_layout.addWidget(self.lbl_opacity_val)
-
         self.btn_edit = QPushButton("Edit")
         self.btn_edit.setProperty("cssClass", "action-btn")
         self.btn_edit.setEnabled(False)
@@ -533,99 +133,31 @@ class Ui_MainWindow:
             ed_form.addWidget(row)
             return row, lbl
 
-        # Preset ID
         self.fld_ed_id = QLineEdit()
         self.fld_ed_id.setObjectName("EditorField")
-        self.fld_ed_id.setStyleSheet('''
-            QLineEdit {
-                background-color: rgb(15, 12, 25);
-                border: 2px solid rgb(90, 80, 130);
-                border-radius: 6px;
-                color: rgb(220, 200, 255);
-                padding: 4px 7px;
-                font-size: 13px;
-            }
-            QLineEdit:focus {
-                border: 2px solid rgb(140, 90, 200);
-            }
-            QLineEdit[readOnly="true"] {
-                color: rgb(120, 110, 150);
-                border: 2px solid rgb(60, 55, 90);
-            }
-        ''')
+        self.fld_ed_id.setStyleSheet("QLineEdit { background-color: rgb(15, 12, 25); border: 2px solid rgb(90, 80, 130); border-radius: 6px; color: rgb(220, 200, 255); padding: 4px 7px; font-size: 13px; } QLineEdit:focus { border: 2px solid rgb(140, 90, 200); } QLineEdit[readOnly=\"true\"] { color: rgb(120, 110, 150); border: 2px solid rgb(60, 55, 90); }")
         self.fld_ed_id.setFixedWidth(220)
         self.row_ed_id, self.lbl_ed_id_row = add_row("Preset ID:", self.fld_ed_id)
 
-        # Display name
         self.fld_ed_name = QLineEdit()
         self.fld_ed_name.setObjectName("EditorField")
-        self.fld_ed_name.setStyleSheet('''
-            QLineEdit {
-                background-color: rgb(15, 12, 25);
-                border: 2px solid rgb(90, 80, 130);
-                border-radius: 6px;
-                color: rgb(220, 200, 255);
-                padding: 4px 7px;
-                font-size: 13px;
-            }
-            QLineEdit:focus {
-                border: 2px solid rgb(140, 90, 200);
-            }
-            QLineEdit[readOnly="true"] {
-                color: rgb(120, 110, 150);
-                border: 2px solid rgb(60, 55, 90);
-            }
-        ''')
+        self.fld_ed_name.setStyleSheet(self.fld_ed_id.styleSheet())
         self.fld_ed_name.setFixedWidth(220)
         _, self.lbl_ed_name_row = add_row("Display Name:", self.fld_ed_name)
 
-        # Description
         self.fld_ed_desc = QLineEdit()
         self.fld_ed_desc.setObjectName("EditorField")
-        self.fld_ed_desc.setStyleSheet('''
-            QLineEdit {
-                background-color: rgb(15, 12, 25);
-                border: 2px solid rgb(90, 80, 130);
-                border-radius: 6px;
-                color: rgb(220, 200, 255);
-                padding: 4px 7px;
-                font-size: 13px;
-            }
-            QLineEdit:focus {
-                border: 2px solid rgb(140, 90, 200);
-            }
-            QLineEdit[readOnly="true"] {
-                color: rgb(120, 110, 150);
-                border: 2px solid rgb(60, 55, 90);
-            }
-        ''')
+        self.fld_ed_desc.setStyleSheet(self.fld_ed_id.styleSheet())
         self.fld_ed_desc.setFixedWidth(320)
         _, self.lbl_ed_desc_row = add_row("Description:", self.fld_ed_desc)
 
-        # Icon path + browse button
         icon_w = QWidget()
         icon_lo = QHBoxLayout(icon_w)
         icon_lo.setContentsMargins(0, 0, 0, 0)
         icon_lo.setSpacing(6)
         self.fld_ed_icon = QLineEdit()
         self.fld_ed_icon.setObjectName("EditorField")
-        self.fld_ed_icon.setStyleSheet('''
-            QLineEdit {
-                background-color: rgb(15, 12, 25);
-                border: 2px solid rgb(90, 80, 130);
-                border-radius: 6px;
-                color: rgb(220, 200, 255);
-                padding: 4px 7px;
-                font-size: 13px;
-            }
-            QLineEdit:focus {
-                border: 2px solid rgb(140, 90, 200);
-            }
-            QLineEdit[readOnly="true"] {
-                color: rgb(120, 110, 150);
-                border: 2px solid rgb(60, 55, 90);
-            }
-        ''')
+        self.fld_ed_icon.setStyleSheet(self.fld_ed_id.styleSheet())
         self.fld_ed_icon.setFixedWidth(260)
         self.btn_ed_icon = QPushButton("…")
         self.btn_ed_icon.setObjectName("BrowseBtn")
@@ -634,13 +166,11 @@ class Ui_MainWindow:
         icon_lo.addWidget(self.btn_ed_icon)
         _, self.lbl_ed_icon_row = add_row("Icon:", icon_w)
 
-        # Panel color swatch
         self.btn_ed_color = QPushButton()
         self.btn_ed_color.setObjectName("ColorSwatchBtn")
         self.btn_ed_color.setFixedSize(40, 24)
         _, self.lbl_ed_color_row = add_row("Panel Color:", self.btn_ed_color)
 
-        # Panels section
         panels_hdr = QWidget()
         panels_hdr_lo = QHBoxLayout(panels_hdr)
         panels_hdr_lo.setContentsMargins(0, 0, 0, 0)
@@ -650,18 +180,7 @@ class Ui_MainWindow:
         self.lbl_ed_panels.setFixedWidth(150)
         self.btn_ed_add_panel = QPushButton("+ Add Panel")
         self.btn_ed_add_panel.setProperty("cssClass", "action-btn")
-        self.btn_ed_add_panel.setStyleSheet('''
-            QPushButton {
-                background-color: rgb(60, 45, 90);
-                border: 1px solid rgb(90, 80, 130);
-                padding: 5px 12px;
-                font-size: 11px;
-            }
-            QPushButton:hover {
-                background-color: rgb(80, 65, 120);
-                border: 1px solid rgb(110, 100, 150);
-            }
-        ''')
+        self.btn_ed_add_panel.setStyleSheet("QPushButton { background-color: rgb(60, 45, 90); border: 1px solid rgb(90, 80, 130); padding: 5px 12px; font-size: 11px; } QPushButton:hover { background-color: rgb(80, 65, 120); border: 1px solid rgb(110, 100, 150); }")
         panels_hdr_lo.addWidget(self.lbl_ed_panels)
         panels_hdr_lo.addWidget(self.btn_ed_add_panel)
         panels_hdr_lo.addStretch()
@@ -673,7 +192,6 @@ class Ui_MainWindow:
         self.ed_panels_layout.setContentsMargins(0, 0, 0, 0)
         ed_form.addWidget(self.ed_panels_container)
 
-        # Opacity slider
         opacity_w = QWidget()
         opacity_lo = QHBoxLayout(opacity_w)
         opacity_lo.setContentsMargins(0, 0, 0, 0)
@@ -688,18 +206,18 @@ class Ui_MainWindow:
         opacity_lo.addWidget(self.lbl_ed_opacity_val)
         _, self.lbl_ed_opacity_row = add_row("Opacity:", opacity_w)
 
-        # Dark/light text toggle
+        self.chk_ed_hide_icons = SafeCheckBox()
+        _, self.lbl_ed_hide_icons_row = add_row("Desktop Icons:", self.chk_ed_hide_icons)
+
         self.btn_ed_theme = QPushButton("🌙 Dark text")
         self.btn_ed_theme.setProperty("cssClass", "action-btn")
         _, self.lbl_ed_theme_row = add_row("Text Color:", self.btn_ed_theme)
 
-        # Divider
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setObjectName("EditorDivider")
         ed_form.addWidget(line)
 
-        # Panel layout capture section
         layout_w = QWidget()
         layout_lo = QHBoxLayout(layout_w)
         layout_lo.setContentsMargins(0, 0, 0, 0)
@@ -726,6 +244,15 @@ class Ui_MainWindow:
         self.btn_ed_restore = QPushButton("Restore Default")
         self.btn_ed_restore.setProperty("cssClass", "action-btn")
         ed_status_lo.addWidget(self.btn_ed_restore)
+
+        self.btn_ed_delete = QPushButton("Delete")
+        self.btn_ed_delete.setProperty("cssClass", "action-btn")
+        self.btn_ed_delete.setStyleSheet("""
+            QPushButton { background-color: rgb(130, 40, 60); border: 1px solid rgb(170, 60, 80); }
+            QPushButton:hover { background-color: rgb(160, 50, 75); }
+        """)
+        ed_status_lo.addWidget(self.btn_ed_delete)
+
         ed_status_lo.addStretch()
 
         self.btn_ed_cancel = QPushButton("Cancel")

@@ -1,26 +1,26 @@
 #!/usr/bin/env xdg-open
 [Desktop Entry]
-Name=Equestria Theme Switcher
-Name[en]=Equestria Theme Switcher
-Name[ru]=Переключатель тем Equestria
-Name[de]=Equestria-Theme-Wechsler
-Name[fr]=Sélecteur de thèmes Equestria
-Name[es]=Selector de temas de Equestria
-Name[pt]=Seletor de temas Equestria
-Name[pl]=Przełącznik motywów Equestria
-Name[uk]=Перемикач тем Equestria
-Name[zh]=Equestria主题切换器
-Name[ja]=Equestriaテーマスイッチャー
+Name=Equestria OS Theme Switcher
+Name[en]=Equestria OS Theme Switcher
+Name[ru]=Переключатель тем Equestria OS
+Name[de]=Equestria-OS-Theme-Wechsler
+Name[fr]=Sélecteur de thèmes Equestria OS
+Name[es]=Selector de temas de Equestria OS
+Name[pt]=Seletor de temas Equestria OS
+Name[pl]=Przełącznik motywów Equestria OS
+Name[uk]=Перемикач тем Equestria OS
+Name[zh]=Equestria OS主题切换器
+Name[ja]=Equestria OSテーマスイッチャー
 
-Comment=Switch EG character themes in EquestriaOS
-Comment[en]=Switch EG character themes in EquestriaOS
-Comment[ru]=Переключение тем персонажей EG в EquestriaOS
+Comment=Switch EG character themes in Equestria OS
+Comment[en]=Switch EG character themes in Equestria OS
+Comment[ru]=Переключение тем персонажей EG в Equestria OS
 Comment[de]=EG-Charakterthemen in EquestriaOS wechseln
-Comment[fr]=Changer les thèmes de personnages EG dans EquestriaOS
-Comment[es]=Cambiar temas de personajes EG en EquestriaOS
-Comment[pt]=Alternar temas de personagens EG no EquestriaOS
-Comment[pl]=Przełączaj motywy postaci EG w EquestriaOS
-Comment[uk]=Перемикання тем персонажів EG у EquestriaOS
+Comment[fr]=Changer les thèmes de personnages EG dans Equestria OS
+Comment[es]=Cambiar temas de personajes EG en Equestria OS
+Comment[pt]=Alternar temas de personagens EG no Equestria OS
+Comment[pl]=Przełączaj motywy postaci EG w Equestria OS
+Comment[uk]=Перемикання тем персонажів EG у Equestria OS
 Comment[zh]=在EquestriaOS中切换EG角色主题
 Comment[ja]=EquestriaOSでEGキャラクターテーマを切り替える
 
@@ -30,4 +30,4 @@ Terminal=false
 Type=Application
 Categories=Settings;DesktopSettings;Qt;
 StartupNotify=true
-StartupWMClass=equestria-theme-switcher
+StartupWMClass=equestria-os-theme-switcher

@@ -1,0 +1,33 @@
+[Desktop Entry]
+Name=Equestria OS App Store
+Name[en]=Equestria OS App Store
+Name[ru]=Магазин Equestria OS
+Name[de]=Equestria OS App Store
+Name[fr]=Boutique Equestria OS
+Name[es]=Tienda Equestria OS
+Name[pt]=Loja Equestria OS
+Name[pl]=Sklep Equestria OS
+Name[uk]=Магазин Equestria OS
+Name[zh]=Equestria OS 应用商店
+Name[ja]=Equestria OS アプリストア
+
+Comment=Discover and install apps, games, and drivers
+Comment[en]=Discover and install apps, games, and drivers
+Comment[ru]=Поиск и установка приложений, игр и драйверов
+Comment[de]=Entdecke und installiere Apps, Spiele und Treiber
+Comment[fr]=Découvrez et installez des applications, des jeux et des pilotes
+Comment[es]=Descubre e instala aplicaciones, juegos y controladores
+Comment[pt]=Descubra e instale aplicativos, jogos e drivers
+Comment[pl]=Odkrywaj i instaluj aplikacje, gry i sterowniki
+Comment[uk]=Пошук та встановлення програм, ігор і драйверів
+Comment[zh]=发现并安装应用、游戏和驱动程序
+Comment[ja]=アプリ、ゲーム、ドライバーを見つけてインストールする
+
+Exec=python3 /opt/equestria-os-app-store/main.py
+Path=/opt/equestria-os-app-store
+Icon=equestria-os-app-store
+Terminal=false
+Type=Application
+Categories=Settings;System;PackageManager;Qt;
+StartupNotify=true
+StartupWMClass=equestria-os-app-store

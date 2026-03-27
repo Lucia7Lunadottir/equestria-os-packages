@@ -13,6 +13,7 @@ class PackageData:
 class main_app(QMainWindow, Ui_PackageManager):
     uninstall_finished = pyqtSignal(bool, str)
     fetch_finished = pyqtSignal(list)
+    cache_clear_finished = pyqtSignal(bool)
 
     def __init__(self):
         super().__init__()
@@ -21,6 +22,7 @@ class main_app(QMainWindow, Ui_PackageManager):
 
         self.uninstall_finished.connect(self.on_uninstall_finished)
         self.fetch_finished.connect(self.on_fetch_finished)
+        self.cache_clear_finished.connect(self.on_cache_clear_finished)
 
         f_path = os.path.join(self.base_path, "equestria_cyrillic.ttf")
         if os.path.exists(f_path):
@@ -70,7 +72,33 @@ class main_app(QMainWindow, Ui_PackageManager):
                 "ja": "{0} を削除しています..."
             },
             "btn.delete": {"en": "Delete", "ru": "Удалить", "de": "Löschen", "fr": "Supprimer", "es": "Eliminar", "pt": "Excluir", "pl": "Usuń", "uk": "Видалити", "zh": "删除", "ja": "削除"},
-            "btn.cancel": {"en": "Cancel", "ru": "Отмена", "de": "Abbrechen", "fr": "Annuler", "es": "Cancelar", "pt": "Cancelar", "pl": "Anuluj", "uk": "Скасувати", "zh": "取消", "ja": "キャンセル"}
+            "btn.cancel": {"en": "Cancel", "ru": "Отмена", "de": "Abbrechen", "fr": "Annuler", "es": "Cancelar", "pt": "Cancelar", "pl": "Anuluj", "uk": "Скасувати", "zh": "取消", "ja": "キャンセル"},
+            "btn.clearcache": {"en": "🧹 Clear Cache", "ru": "🧹 Очистить кэш", "de": "🧹 Cache leeren", "fr": "🧹 Vider le cache", "es": "🧹 Limpiar caché", "pt": "🧹 Limpar cache", "pl": "🧹 Wyczyść cache", "uk": "🧹 Очистити кеш", "zh": "🧹 清理缓存", "ja": "🧹 キャッシュを削除"},
+            "btn.clear": {"en": "Clear", "ru": "Очистить", "de": "Leeren", "fr": "Vider", "es": "Limpiar", "pt": "Limpar", "pl": "Wyczyść", "uk": "Очистити", "zh": "清理", "ja": "削除"},
+            "modal.clearcache_confirm": {
+                "en": "Remove cached packages that are no longer installed?",
+                "ru": "Удалить из кэша пакеты, которые больше не установлены?",
+                "de": "Nicht mehr installierte Pakete aus dem Cache entfernen?",
+                "fr": "Supprimer du cache les paquets qui ne sont plus installés ?",
+                "es": "¿Eliminar del caché los paquetes que ya no están instalados?",
+                "pt": "Remover do cache os pacotes que não estão mais instalados?",
+                "pl": "Usunąć z pamięci podręcznej pakiety, które nie są już zainstalowane?",
+                "uk": "Видалити з кешу пакети, які більше не встановлені?",
+                "zh": "从缓存中删除不再安装的软件包？",
+                "ja": "インストールされていないパッケージをキャッシュから削除しますか？"
+            },
+            "modal.clearcache_wait": {
+                "en": "Clearing package cache...",
+                "ru": "Очистка кэша пакетов...",
+                "de": "Cache wird geleert...",
+                "fr": "Nettoyage du cache...",
+                "es": "Limpiando caché...",
+                "pt": "Limpando cache...",
+                "pl": "Czyszczenie pamięci podręcznej...",
+                "uk": "Очищення кешу пакетів...",
+                "zh": "正在清理软件包缓存...",
+                "ja": "パッケージキャッシュをクリア中..."
+            }
         }
 
         self.current_lang = os.getenv("LANG", "en")[:2]
@@ -78,6 +106,7 @@ class main_app(QMainWindow, Ui_PackageManager):
 
         self.all_packages = []
         self.pkg_to_delete = None
+        self.action_type = None
 
         self.setup_logic()
         self.apply_localization()
@@ -91,7 +120,8 @@ class main_app(QMainWindow, Ui_PackageManager):
         self.category_dropdown.currentTextChanged.connect(self.apply_filters)
 
         self.btn_confirm_cancel.clicked.connect(self.modal_overlay.hide)
-        self.btn_confirm_delete.clicked.connect(self.execute_uninstall)
+        self.btn_confirm_delete.clicked.connect(self.execute_confirm)
+        self.btn_clearcache.clicked.connect(self.show_clearcache_confirm)
 
         codes = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
         for code in codes:
@@ -134,6 +164,7 @@ class main_app(QMainWindow, Ui_PackageManager):
 
         self.btn_confirm_cancel.setText(self.t("btn.cancel"))
         self.btn_confirm_delete.setText(self.t("btn.delete"))
+        self.btn_clearcache.setText(self.t("btn.clearcache"))
 
         delete_text = self.t("btn.delete")
         for i in range(self.list_layout.count()):
@@ -190,14 +221,29 @@ class main_app(QMainWindow, Ui_PackageManager):
                 widget.setVisible(text_match and cat_match)
 
     def show_confirm(self, pkg):
+        self.action_type = "delete"
         self.pkg_to_delete = pkg
         self.modal_text.setText(self.t("modal.confirm").format(pkg.name))
-
+        self.btn_confirm_delete.setText(self.t("btn.delete"))
         self.btn_confirm_delete.show()
         self.btn_confirm_cancel.show()
-
         self.modal_overlay.show()
         self.modal_overlay.raise_()
+
+    def show_clearcache_confirm(self):
+        self.action_type = "clearcache"
+        self.modal_text.setText(self.t("modal.clearcache_confirm"))
+        self.btn_confirm_delete.setText(self.t("btn.clear"))
+        self.btn_confirm_delete.show()
+        self.btn_confirm_cancel.show()
+        self.modal_overlay.show()
+        self.modal_overlay.raise_()
+
+    def execute_confirm(self):
+        if self.action_type == "delete":
+            self.execute_uninstall()
+        elif self.action_type == "clearcache":
+            self.execute_clearcache()
 
     def execute_uninstall(self):
         if not self.pkg_to_delete: return
@@ -224,6 +270,22 @@ class main_app(QMainWindow, Ui_PackageManager):
         if success:
             self.all_packages = [p for p in self.all_packages if p.name != pkg_name]
             self.build_list()
+
+    def execute_clearcache(self):
+        self.modal_text.setText(self.t("modal.clearcache_wait"))
+        self.btn_confirm_delete.hide()
+        self.btn_confirm_cancel.hide()
+
+        def _run():
+            proc = subprocess.run(["/bin/bash", "-c", "pkexec pacman -Sc --noconfirm"])
+            self.cache_clear_finished.emit(proc.returncode == 0)
+
+        threading.Thread(target=_run, daemon=True).start()
+
+    def on_cache_clear_finished(self, success):
+        self.modal_overlay.hide()
+        self.btn_confirm_delete.show()
+        self.btn_confirm_cancel.show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

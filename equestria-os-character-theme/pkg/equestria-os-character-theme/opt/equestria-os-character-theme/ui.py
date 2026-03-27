@@ -140,6 +140,8 @@ class Ui_MainWindow:
         self.status_layout.addWidget(self.lbl_status)
         self.status_layout.addStretch()
 
+        self.btn_theme_toggle = QPushButton("☀️ Light / 🌙 Dark")
+
         self.btn_restore = QPushButton("Restore Defaults")
         self.btn_restore.setStyleSheet("background-color: #8b0000;")
         self.btn_open_folder = QPushButton("Open Files")
@@ -148,9 +150,11 @@ class Ui_MainWindow:
         self.btn_create = QPushButton("Create New")
         self.btn_terminal = QPushButton("Open Terminal")
 
-        for btn in [self.btn_restore, self.btn_open_folder, self.btn_edit, self.btn_duplicate, self.btn_create, self.btn_terminal]:
+        for btn in [self.btn_theme_toggle, self.btn_restore, self.btn_open_folder, self.btn_edit, self.btn_duplicate, self.btn_create, self.btn_terminal]:
             btn.setProperty("cssClass", "open-terminal-btn")
             self.status_layout.addWidget(btn)
+
+
 
         self.page_main_layout.addWidget(self.status_bar)
         self.stacked_widget.addWidget(self.page_main)

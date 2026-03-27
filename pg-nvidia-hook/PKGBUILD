@@ -1,13 +1,14 @@
 # Maintainer: Equestria OS Team <your@email.here>
 
 pkgname=pg-nvidia-hook
-pkgver=1.0.2
+pkgver=1.0.3
 pkgrel=1
 pkgdesc='Pacman hook for NVIDIA — auto-rebuilds initramfs after driver updates (Equestria OS)'
 arch=('any')
 license=('GPL3')
 url='https://psyche-games.com'
-depends=('mkinitcpio')
+depends=('bash' 'mkinitcpio')
+conflicts=('nvidia-hook' 'eos-nvidia-fix')
 # Note: no dependency on expac or eos-* tools
 
 source=(
@@ -18,6 +19,6 @@ sha256sums=('SKIP'
             'SKIP')
 
 package() {
-    install -Dm755 pg-nvidia-fix      "$pkgdir/usr/local/bin/pg-nvidia-fix"
-    install -Dm644 pg-nvidia-fix.hook "$pkgdir/usr/local/libalpm/hooks/pg-nvidia-fix.hook"
+    install -Dm755 pg-nvidia-fix      "$pkgdir/usr/bin/pg-nvidia-fix"
+    install -Dm644 pg-nvidia-fix.hook "$pkgdir/usr/share/libalpm/hooks/pg-nvidia-fix.hook"
 }

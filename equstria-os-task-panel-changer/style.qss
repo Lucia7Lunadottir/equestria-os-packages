@@ -265,7 +265,7 @@ QScrollBar::sub-page:horizontal {
 /* ─── Panel Row Widget ───────────────────────────────────────────── */
 QFrame#PanelRow {
     background-color: rgb(26, 22, 40);
-    border: 2px solid cyan;
+    border: 1px solid rgb(70, 60, 100);
     border-radius: 8px;
 }
 
