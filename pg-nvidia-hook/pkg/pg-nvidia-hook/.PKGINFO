@@ -3,12 +3,15 @@
 pkgname = pg-nvidia-hook
 pkgbase = pg-nvidia-hook
 xdata = pkgtype=pkg
-pkgver = 1.0.2-1
+pkgver = 1.0.3-1
 pkgdesc = Pacman hook for NVIDIA — auto-rebuilds initramfs after driver updates (Equestria OS)
 url = https://psyche-games.com
-builddate = 1774008124
+builddate = 1774366125
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 1773
+size = 1793
 arch = any
 license = GPL3
+conflict = nvidia-hook
+conflict = eos-nvidia-fix
+depend = bash
 depend = mkinitcpio

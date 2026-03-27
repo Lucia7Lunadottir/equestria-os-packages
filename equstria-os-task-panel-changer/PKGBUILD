@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-task-panel-changer
-pkgver=1.0.2
+pkgver=1.2.1
 pkgrel=1
 pkgdesc='Task panel style manager for Equestria OS (KDE Plasma 6)'
 arch=('any')
@@ -21,17 +21,15 @@ package() {
     install -Dm644 "$startdir/main.py"                "$appdir/main.py"
     install -Dm644 "$startdir/ui.py"                  "$appdir/ui.py"
     install -Dm644 "$startdir/style.qss"              "$appdir/style.qss"
+    install -Dm644 "$startdir/plasma_utils.py"              "$appdir/plasma_utils.py"
+    install -Dm644 "$startdir/widgets.py"              "$appdir/widgets.py"
     install -Dm644 "$startdir/equestria_cyrillic.ttf" "$appdir/equestria_cyrillic.ttf"
     install -Dm644 "$startdir/localization.csv"       "$appdir/localization.csv"
 
     # Данные приложения
-    install -Dm644 "$startdir/characters.json"        "$appdir/characters.json"
     install -Dm644 "$startdir/presets.json"           "$appdir/presets.json"
     cp -r "$startdir/MLP Cutiemarks"                  "$appdir/"
 
-    # Вспомогательные скрипты
-    install -Dm755 "$startdir/save_panel.sh"          "$appdir/save_panel.sh"
-    install -Dm755 "$startdir/restore_panel.sh"       "$appdir/restore_panel.sh"
 
     # Запускатель /usr/bin/equestria-os-task-panel-changer
     printf '#!/bin/bash\nexec python3 /opt/%s/main.py "$@"\n' "$pkgname" \

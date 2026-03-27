@@ -7,7 +7,7 @@
             "color": "#dacac1",
             "opacity": 90,
             "is_dark": false,
-            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p0=new Panel;p0.location='bottom';p0.height=42;p0.alignment='center';p0.floating=true;p0.lengthMode='fit';var k0=p0.addWidget('org.kde.plasma.kickoff');k0.currentConfigGroup=['General'];k0.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.icontasks');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.systemtray');p0.addWidget('org.kde.plasma.digitalclock');",
+            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p0=new Panel;p0.location='bottom';p0.height=42;p0.alignment='center';p0.floating=true;p0.lengthMode='fit';var k0=p0.addWidget('org.kde.plasma.kickoff');k0.currentConfigGroup=['General'];k0.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.icontasks');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.systemtray');p0.addWidget('org.kde.plasma.digitalclock');p0.height=42;",
             "name": "Sunset Shimmer",
             "icon": "MLP Cutiemarks/Sunset_Shimmer.png",
             "height": 42,
@@ -71,7 +71,7 @@
             "color": "#1971bf",
             "opacity": 50,
             "is_dark": true,
-            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p0=new Panel;p0.location='top';p0.height=32;p0.alignment='left';p0.lengthMode='fill';var k0=p0.addWidget('org.kde.plasma.kickerdash');k0.currentConfigGroup=['General'];k0.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.systemtray');p0.addWidget('org.kde.plasma.digitalclock');var p1=new Panel;p1.location='bottom';p1.height=42;p1.alignment='center';p1.floating=true;p1.lengthMode='fit';p1.hiding='autohide';p1.addWidget('org.kde.plasma.icontasks');",
+            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p0=new Panel;p0.location='top';p0.height=32;p0.alignment='left';p0.lengthMode='fill';var k0=p0.addWidget('org.kde.plasma.kickerdash');k0.currentConfigGroup=['General'];k0.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.systemtray');p0.addWidget('org.kde.plasma.digitalclock');p0.height=32;var p1=new Panel;p1.location='bottom';p1.height=60;p1.alignment='center';p1.floating=true;p1.lengthMode='fit';p1.hiding='dodgewindows';var k1=p1.addWidget('org.kde.plasma.kickoff');k1.currentConfigGroup=['General'];k1.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p1.addWidget('org.kde.plasma.panelspacer');p1.addWidget('org.kde.plasma.icontasks');p1.height=60;",
             "name": "Rainbow Dash",
             "icon": "MLP Cutiemarks/Rainbow_Dash.png",
             "height": 32,
@@ -83,7 +83,7 @@
                     "offset": 0,
                     "alignment": "left",
                     "floating": false,
-                    "autohide": false,
+                    "visibilityMode": "none",
                     "lengthMode": "fill",
                     "launcher": "kickerdash",
                     "widgets": [
@@ -93,21 +93,22 @@
                 },
                 {
                     "position": "bottom",
-                    "height": 42,
+                    "height": 60,
                     "width": 0,
                     "offset": 0,
                     "alignment": "center",
                     "floating": true,
-                    "autohide": true,
+                    "visibilityMode": "dodgewindows",
                     "lengthMode": "fit",
-                    "launcher": "none",
+                    "launcher": "kickoff",
                     "widgets": [
                         "taskbar"
                     ]
                 }
             ],
             "desc": "Только верх (GNOME)",
-            "layout_captured": "2026-03-23 15:51"
+            "layout_captured": "2026-03-25 16:40",
+            "desktop_icons_hidden": true
         },
         {
             "id": "rarity",
@@ -116,7 +117,7 @@
             "color": "#9482b5",
             "opacity": 90,
             "is_dark": true,
-            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p0=new Panel;p0.location='top';p0.height=28;p0.alignment='center';p0.lengthMode='fill';var k0=p0.addWidget('org.kde.plasma.kickoff');k0.currentConfigGroup=['General'];k0.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.systemtray');p0.addWidget('org.kde.plasma.digitalclock');var p1=new Panel;p1.location='bottom';p1.height=42;p1.alignment='center';p1.lengthMode='fit';p1.hiding='autohide';p1.addWidget('org.kde.plasma.icontasks');",
+            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p0=new Panel;p0.location='top';p0.height=28;p0.alignment='center';p0.lengthMode='fill';var k0=p0.addWidget('org.kde.plasma.kickoff');k0.currentConfigGroup=['General'];k0.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.systemtray');p0.addWidget('org.kde.plasma.digitalclock');p0.height=28;var p1=new Panel;p1.location='bottom';p1.height=60;p1.alignment='center';p1.lengthMode='fit';p1.hiding='dodgewindows';p1.addWidget('org.kde.plasma.icontasks');p1.height=60;",
             "name": "Rarity",
             "icon": "MLP Cutiemarks/Rarity.png",
             "height": 28,
@@ -129,7 +130,7 @@
                     "offset": 0,
                     "alignment": "center",
                     "floating": false,
-                    "autohide": false,
+                    "visibilityMode": "none",
                     "lengthMode": "fill",
                     "launcher": "kickoff",
                     "widgets": [
@@ -139,56 +140,118 @@
                 },
                 {
                     "position": "bottom",
-                    "height": 42,
+                    "height": 60,
                     "width": 0,
                     "offset": 0,
                     "alignment": "center",
                     "floating": false,
-                    "autohide": true,
+                    "visibilityMode": "dodgewindows",
                     "lengthMode": "fit",
                     "launcher": "none",
                     "widgets": [
                         "taskbar"
                     ]
                 }
-            ]
+            ],
+            "desktop_icons_hidden": true
         },
         {
             "id": "applejack",
             "char_id": "applejack",
             "desc_key": "preset.applejack",
             "color": "#b57521",
-            "opacity": 70,
+            "opacity": 60,
             "is_dark": false,
-            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p=new Panel;p.location='bottom';p.height=42;p.lengthMode='fill';var k=p.addWidget('org.kde.plasma.kicker');k.currentConfigGroup=['General'];k.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p.addWidget('org.kde.plasma.panelspacer');p.addWidget('org.kde.plasma.icontasks');p.addWidget('org.kde.plasma.panelspacer');p.addWidget('org.kde.plasma.pager');p.addWidget('org.kde.plasma.systemtray');p.addWidget('org.kde.plasma.digitalclock');",
+            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p0=new Panel;p0.location='bottom';p0.height=42;p0.alignment='left';p0.lengthMode='fill';p0.offset=1;var k0=p0.addWidget('org.kde.plasma.kicker');k0.currentConfigGroup=['General'];k0.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.icontasks');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.pager');p0.addWidget('org.kde.plasma.systemtray');p0.addWidget('org.kde.plasma.digitalclock');p0.height=42;",
             "name": "Applejack",
             "icon": "MLP Cutiemarks/Applejack.png",
             "height": 42,
-            "layout_captured": "2026-03-21 13:42"
+            "layout_captured": "2026-03-24 14:12",
+            "panels_config": [
+                {
+                    "position": "bottom",
+                    "height": 42,
+                    "width": 0,
+                    "offset": 1,
+                    "alignment": "left",
+                    "floating": false,
+                    "autohide": false,
+                    "lengthMode": "fill",
+                    "launcher": "kicker",
+                    "widgets": [
+                        "taskbar",
+                        "systray",
+                        "clock",
+                        "pager"
+                    ]
+                }
+            ],
+            "desc": "Традиционная (Cinnamon)"
         },
         {
             "id": "fluttershy",
             "char_id": "fluttershy",
             "desc_key": "preset.fluttershy",
             "color": "#6c8223",
-            "opacity": 90,
+            "opacity": 60,
             "is_dark": true,
-            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p=new Panel;p.location='bottom';p.height=40;p.hiding='autohide';p.lengthMode='fit';var k=p.addWidget('org.kde.plasma.kickoff');k.currentConfigGroup=['General'];k.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p.addWidget('org.kde.plasma.panelspacer');p.addWidget('org.kde.plasma.systemtray');p.addWidget('org.kde.plasma.digitalclock');",
+            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p0=new Panel;p0.location='bottom';p0.height=40;p0.alignment='left';p0.lengthMode='fit';p0.hiding='autohide';var k0=p0.addWidget('org.kde.plasma.kickoff');k0.currentConfigGroup=['General'];k0.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.icontasks');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.systemtray');p0.addWidget('org.kde.plasma.digitalclock');p0.height=40;",
             "name": "Fluttershy",
             "icon": "MLP Cutiemarks/Fluttershy.png",
-            "height": 40
+            "height": 40,
+            "panels_config": [
+                {
+                    "position": "bottom",
+                    "height": 40,
+                    "width": 0,
+                    "offset": 0,
+                    "alignment": "left",
+                    "floating": false,
+                    "autohide": true,
+                    "lengthMode": "fit",
+                    "launcher": "kickoff",
+                    "widgets": [
+                        "taskbar",
+                        "systray",
+                        "clock"
+                    ]
+                }
+            ],
+            "desc": "Минимализм + автоскрытие",
+            "layout_captured": "2026-03-24 14:10"
         },
         {
             "id": "pinkie",
             "char_id": "pinkie",
             "desc_key": "preset.pinkie",
-            "color": "#F06292",
-            "opacity": 90,
+            "color": "#f0c1d1",
+            "opacity": 70,
             "is_dark": true,
-            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p=new Panel;p.location='bottom';p.height=48;p.lengthMode='fill';var k=p.addWidget('org.kde.plasma.kickoff');k.currentConfigGroup=['General'];k.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p.addWidget('org.kde.plasma.panelspacer');p.addWidget('org.kde.plasma.icontasks');p.addWidget('org.kde.plasma.panelspacer');p.addWidget('org.kde.plasma.systemmonitor');p.addWidget('org.kde.plasma.systemtray');p.addWidget('org.kde.plasma.digitalclock');",
+            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p0=new Panel;p0.location='bottom';p0.height=48;p0.alignment='left';p0.lengthMode='fill';var k0=p0.addWidget('org.kde.plasma.kickoff');k0.currentConfigGroup=['General'];k0.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.icontasks');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.systemmonitor');p0.addWidget('org.kde.plasma.systemtray');p0.addWidget('org.kde.plasma.digitalclock');p0.height=48;",
             "name": "Pinkie Pie",
             "icon": "MLP Cutiemarks/Pinkie_Pie.png",
-            "height": 48
+            "height": 48,
+            "desktop_icons_hidden": false,
+            "panels_config": [
+                {
+                    "position": "bottom",
+                    "height": 48,
+                    "width": 0,
+                    "offset": 0,
+                    "alignment": "left",
+                    "floating": false,
+                    "visibilityMode": "none",
+                    "lengthMode": "fill",
+                    "launcher": "kickoff",
+                    "widgets": [
+                        "taskbar",
+                        "systray",
+                        "clock",
+                        "monitor"
+                    ]
+                }
+            ],
+            "desc": "Виджеты (ресурсы)"
         }
     ]
 }

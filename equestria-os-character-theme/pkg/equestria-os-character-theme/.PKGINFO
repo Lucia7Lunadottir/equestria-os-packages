@@ -3,12 +3,12 @@
 pkgname = equestria-os-character-theme
 pkgbase = equestria-os-character-theme
 xdata = pkgtype=pkg
-pkgver = 2.0.2-1
+pkgver = 2.0.3-1
 pkgdesc = Customizing the visual style and characters of Equestria OS
 url = https://psyche-games.com
-builddate = 1773400220
+builddate = 1774498243
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 24893837
+size = 24898028
 arch = any
 license = custom
 depend = python

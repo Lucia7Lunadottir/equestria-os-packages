@@ -4,8 +4,7 @@
 #  PG GPU Sync — Equestria OS
 #  Automated NVIDIA driver manager for Arch-based systems.
 #
-#  Compatible with: Equestria OS, EndeavourOS, pure Arch Linux.
-#  No dependency on eos-* utilities or expac.
+#  Compatible with: Equestria OS, pure Arch Linux.
 #
 #  Modes:
 #    Interactive  — asks for confirmation (default)
@@ -30,8 +29,6 @@ Header() { echo -e "\n${_CYN}═════════════════
 STATE_FILE=/var/lib/pg-gpu-sync/gpu-family
 
 # ── Offline driver cache ───────────────────────────────────────
-# Pre-built .pkg.tar.zst files can be placed here (e.g. in the ISO image).
-# When found, they are used instead of downloading from the internet.
 DRIVER_CACHE_DIR=/usr/share/pg-gpu-sync/drivers
 
 GpuChanged() {
@@ -56,22 +53,18 @@ PkgAvailableInRepos() { pacman -Si "$1" &>/dev/null; }
 # ── GPU Detection ─────────────────────────────────────────────
 
 DetectGPU() {
-    # Try class 0300 (VGA) and 0302 (3D) explicitly, then fallback
     GPU_RAW=$(lspci -d 10de::0300 2>/dev/null | head -n 1)
     [ -z "$GPU_RAW" ] && GPU_RAW=$(lspci -d 10de::0302 2>/dev/null | head -n 1)
     [ -z "$GPU_RAW" ] && GPU_RAW=$(lspci | grep -i "NVIDIA" | grep -iE "VGA|3D|Display" | head -n 1)
 
-    # Extract 2-letter family code: TU, GA, AD, GB, GM, GP, GV, GK, GF ...
     GPU_FAMILY=$(echo "$GPU_RAW" | sed -E 's|.*NVIDIA Corporation ([A-Z]{2})[0-9A-Z]+ .*|\1|')
     GPU_NAME=$(echo   "$GPU_RAW" | sed -E 's|.*NVIDIA Corporation ([^[]+).*|\1|' | xargs)
 
-    # lspci on some systems shows vendor string differently — second attempt
     if [ -z "$GPU_FAMILY" ] || [ ${#GPU_FAMILY} -ne 2 ]; then
         GPU_FAMILY=$(echo "$GPU_RAW" | grep -oP '(?<=NVIDIA Corporation )[A-Z]{2}')
     fi
 }
 
-# Detects Optimus: laptop with integrated iGPU (Intel/AMD) + NVIDIA dGPU.
 DetectOptimus() {
     OPTIMUS=no
     local igpu
@@ -96,6 +89,13 @@ FamilyName() {
 }
 
 # ── Driver Selection ──────────────────────────────────────────
+#
+#  nvidia-open-dkms  = open-source kernel modules (GSP firmware)
+#                      Full support: Turing (TU) and newer ONLY
+#
+#  nvidia-dkms       = proprietary closed-source kernel modules
+#                      Required for Maxwell (GM) / Pascal (GP) / Volta (GV)
+#                      nvidia-open-dkms causes kernel panics on these GPUs
 
 SelectDriver() {
     DRIVER_TYPE=""
@@ -103,7 +103,6 @@ SelectDriver() {
     DRIVER_UTILS_PKG="nvidia-utils"
     GPU_GENERATION=""
 
-    # --nouveau override always wins
     if [ "$MODE" = "nouveau" ]; then
         DRIVER_TYPE="nouveau"
         return
@@ -111,32 +110,28 @@ SelectDriver() {
 
     case "$GPU_FAMILY" in
         TU*|GA*|AD*|GB*|GN*)
-            # Turing and newer → official open-source kernel driver
+            # Turing and newer → open-source kernel modules (GSP firmware)
             DRIVER_TYPE="open"
             DRIVER_PKG="nvidia-open-dkms"
             DRIVER_UTILS_PKG="nvidia-utils"
             GPU_GENERATION="modern"
             ;;
         GM*|GP*|GV*)
-            # Maxwell / Pascal / Volta → supported by nvidia-open-dkms since 560+
-            # GSP firmware less stable on these — NVreg_EnableGpuFirmware=0 applied below
-            DRIVER_TYPE="open"
-            DRIVER_PKG="nvidia-open-dkms"
+            # Maxwell / Pascal / Volta → proprietary closed-source driver
+            # nvidia-open-dkms is UNSTABLE on pre-Turing — causes kernel panics
+            DRIVER_TYPE="proprietary"
+            DRIVER_PKG="nvidia-dkms"
             DRIVER_UTILS_PKG="nvidia-utils"
             GPU_GENERATION="legacy"
             ;;
         GK*)
-            # Kepler (GTX 600/700, GT 7xxM laptops) → nvidia-470xx-dkms
-            # Available in offline cache or AUR
-            DRIVER_TYPE="open"
+            DRIVER_TYPE="proprietary"
             DRIVER_PKG="nvidia-470xx-dkms"
             DRIVER_UTILS_PKG="nvidia-470xx-utils"
             GPU_GENERATION="kepler"
             ;;
         GF*)
-            # Fermi (GT 400/500, GT 5xxM laptops e.g. GT 540M) → nvidia-390xx-dkms
-            # Available in offline cache or AUR
-            DRIVER_TYPE="open"
+            DRIVER_TYPE="proprietary"
             DRIVER_PKG="nvidia-390xx-dkms"
             DRIVER_UTILS_PKG="nvidia-390xx-utils"
             GPU_GENERATION="fermi"
@@ -155,18 +150,24 @@ SelectDriver() {
             fi
             ;;
         *)
-            # Older than Fermi (G8x, G9x, etc.) — nouveau only
             DRIVER_TYPE="nouveau"
             ;;
     esac
 
-    # --no-dkms: only applicable to nvidia-open-dkms; legacy AUR packages are DKMS-only
-    if [ "$NO_DKMS" = yes ] && [ "$DRIVER_PKG" = "nvidia-open-dkms" ]; then
-        DRIVER_PKG="nvidia-open"
-        Note "--no-dkms: using 'nvidia-open' instead of 'nvidia-open-dkms'."
-        Note "  Only linux/linux-lts are supported without DKMS."
-    elif [ "$NO_DKMS" = yes ] && [ "$DRIVER_TYPE" = "open" ]; then
-        Note "--no-dkms: ignored for $DRIVER_PKG (DKMS-only package)."
+    if [ "$NO_DKMS" = yes ]; then
+        case "$DRIVER_PKG" in
+            nvidia-open-dkms)
+                DRIVER_PKG="nvidia-open"
+                Note "--no-dkms: using 'nvidia-open' instead of 'nvidia-open-dkms'."
+                ;;
+            nvidia-dkms)
+                DRIVER_PKG="nvidia"
+                Note "--no-dkms: using 'nvidia' instead of 'nvidia-dkms'."
+                ;;
+            *)
+                Note "--no-dkms: ignored for $DRIVER_PKG (DKMS-only package)."
+                ;;
+        esac
     fi
 }
 
@@ -186,8 +187,7 @@ CollectKernelHeaders() {
 }
 
 # ── Offline cache lookup ──────────────────────────────────────
-# Finds the newest cached .pkg.tar.zst for a given package name.
-# Returns the path, or empty string if not found.
+
 FindCachedPkg() {
     local name="$1"
     [ -d "$DRIVER_CACHE_DIR" ] || return
@@ -204,62 +204,50 @@ BuildPackageLists() {
         INSTALL+=(vulkan-nouveau)
         HasRepo multilib && [ "$BIT32" = yes ] && INSTALL+=(lib32-vulkan-nouveau)
 
-        # Remove all conflicting proprietary packages
         local rm_list=(
-            nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-utils
+            nvidia-open-dkms nvidia-open nvidia-open-lts
+            nvidia-dkms nvidia nvidia-lts nvidia-utils
             nvidia-470xx-dkms nvidia-470xx-utils
             nvidia-390xx-dkms nvidia-390xx-utils
-            nvidia-settings nvidia-hook pg-nvidia-hook
+            nvidia-settings
         )
         for p in "${rm_list[@]}"; do
             IsInstalled "$p" && REMOVE+=("$p")
         done
 
     else
-        # Main driver + utils
         INSTALL+=("$DRIVER_PKG" "$DRIVER_UTILS_PKG")
 
-        # nvidia-settings: only for modern/legacy (open-dkms era), not legacy AUR
         if [ "$SETTINGS_PKG" = yes ] && [ "$GPU_GENERATION" != "fermi" ] && [ "$GPU_GENERATION" != "kepler" ]; then
             INSTALL+=(nvidia-settings)
         fi
 
-        # Hook package (our own preferred, fallback to EndeavourOS)
-        if PkgAvailableInRepos pg-nvidia-hook; then
-            INSTALL+=(pg-nvidia-hook)
-        elif PkgAvailableInRepos nvidia-hook; then
-            INSTALL+=(nvidia-hook)
-            Note "pg-nvidia-hook not found — using nvidia-hook from EndeavourOS repos."
-        else
-            Warn "No nvidia hook package found. Initramfs won't auto-rebuild on driver updates."
-        fi
-
-        # 32-bit support: lib32 package name differs by driver series
         if HasRepo multilib && [ "$BIT32" = yes ]; then
             case "$GPU_GENERATION" in
                 modern|legacy) INSTALL+=(lib32-nvidia-utils) ;;
-                # 470xx / 390xx don't have official lib32 packages in AUR
                 *) Note "32-bit libs not available for $DRIVER_PKG — skipping." ;;
             esac
         fi
 
-        # DKMS + headers
         if [ "$NO_DKMS" = no ]; then
             IsInstalled dkms || INSTALL+=(dkms)
             INSTALL+=("${HEADERS_TO_INSTALL[@]}")
         fi
 
-        # Remove conflicting drivers (everything except what we're about to install)
+        # Remove conflicting drivers
         local rm_list=(xf86-video-nouveau vulkan-nouveau lib32-vulkan-nouveau)
         case "$DRIVER_PKG" in
             nvidia-open-dkms|nvidia-open|nvidia-open-lts)
-                rm_list+=(nvidia-470xx-dkms nvidia-470xx-utils nvidia-390xx-dkms nvidia-390xx-utils)
+                rm_list+=(nvidia-dkms nvidia nvidia-lts nvidia-470xx-dkms nvidia-470xx-utils nvidia-390xx-dkms nvidia-390xx-utils)
+                ;;
+            nvidia-dkms|nvidia|nvidia-lts)
+                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-470xx-dkms nvidia-470xx-utils nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
             nvidia-470xx-dkms)
-                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-utils nvidia-390xx-dkms nvidia-390xx-utils)
+                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-dkms nvidia nvidia-lts nvidia-utils nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
             nvidia-390xx-dkms)
-                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-utils nvidia-470xx-dkms nvidia-470xx-utils)
+                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-dkms nvidia nvidia-lts nvidia-utils nvidia-470xx-dkms nvidia-470xx-utils)
                 ;;
         esac
         for p in "${rm_list[@]}"; do
@@ -305,21 +293,6 @@ ConfigureNouveauBlacklist() {
 }
 
 # ── Wayland DRM Modeset ───────────────────────────────────────
-#
-#  Per-generation options:
-#
-#  modern  (TU+, nvidia-open-dkms 560+):
-#    modeset=1 fbdev=1, PreserveVideoMemoryAllocations=1
-#
-#  legacy  (GM/GP/GV, nvidia-open-dkms 560+):
-#    modeset=1 fbdev=1, PreserveVideoMemoryAllocations=1, EnableGpuFirmware=0
-#
-#  kepler  (GK, nvidia-470xx-dkms):
-#    modeset=1 (no fbdev — not supported), EnableGpuFirmware=0
-#
-#  fermi   (GF, nvidia-390xx-dkms, e.g. GT 540M):
-#    modeset=1 (no fbdev, no PreserveVideoMemory — may cause issues on 390xx)
-#    EnableGpuFirmware=0
 
 ConfigureWayland() {
     [ "$DRIVER_TYPE" = "nouveau" ] && return
@@ -329,20 +302,16 @@ ConfigureWayland() {
     Info "Writing NVIDIA modprobe config → $conf"
     if [ "$DRY_RUN" = no ]; then
         {
-            # DRM modeset: required for Wayland and PRIME on all proprietary drivers
-            # fbdev=1: enables fbdev framebuffer — only supported on open-dkms 560+ era
             if [ "$GPU_GENERATION" = "modern" ] || [ "$GPU_GENERATION" = "legacy" ]; then
                 printf 'options nvidia_drm modeset=1 fbdev=1\n'
             else
                 printf 'options nvidia_drm modeset=1\n'
             fi
 
-            # Suspend memory preservation: open-dkms and 470xx (not 390xx — may be unstable)
             if [ "$GPU_GENERATION" = "modern" ] || [ "$GPU_GENERATION" = "legacy" ] || [ "$GPU_GENERATION" = "kepler" ]; then
                 printf 'options nvidia NVreg_PreserveVideoMemoryAllocations=1\n'
             fi
 
-            # Disable GSP firmware for all non-Turing+ generations
             if [ "$GPU_GENERATION" != "modern" ]; then
                 printf 'options nvidia NVreg_EnableGpuFirmware=0\n'
             fi
@@ -351,7 +320,6 @@ ConfigureWayland() {
         Note "[DRY RUN] Would write nvidia modprobe options → $conf  (generation: $GPU_GENERATION)"
     fi
 
-    # Wayland environment: GBM backend and GLX vendor override
     local envconf=/etc/environment.d/99-nvidia-wayland.conf
     if [ -f "$envconf" ]; then
         Info "NVIDIA Wayland environment already set in $envconf"
@@ -361,9 +329,63 @@ ConfigureWayland() {
     Info "Writing NVIDIA Wayland environment → $envconf"
     if [ "$DRY_RUN" = no ]; then
         mkdir -p /etc/environment.d
-        printf 'GBM_BACKEND=nvidia-drm\n__GLX_VENDOR_LIBRARY_NAME=nvidia\n' > "$envconf"
+        cat > "$envconf" <<'ENVEOF'
+# NVIDIA Wayland support — written by pg-gpu-sync
+GBM_BACKEND=nvidia-drm
+__GLX_VENDOR_LIBRARY_NAME=nvidia
+ENVEOF
     else
         Note "[DRY RUN] Would write NVIDIA Wayland env → $envconf"
+    fi
+}
+
+# ── KDE / KWin Compositor Configuration ──────────────────────
+
+ConfigureKwinCompositor() {
+    [ "$DRIVER_TYPE" = "nouveau" ] && return
+
+    local kwinconf=/etc/xdg/kwinrc
+
+    if [ -f "$kwinconf" ] && grep -q "GLCore" "$kwinconf"; then
+        Info "KWin compositor config already present in $kwinconf"
+        return
+    fi
+
+    Info "Writing KWin compositor defaults → $kwinconf"
+    if [ "$DRY_RUN" = no ]; then
+        mkdir -p /etc/xdg
+
+        # Remove existing [Compositing] section to avoid duplicates
+        if [ -f "$kwinconf" ]; then
+            sed -i '/^\[Compositing\]/,/^\[/{/^\[Compositing\]/d;/^\[/!d}' "$kwinconf"
+        fi
+
+        cat >> "$kwinconf" <<'KWINEOF'
+
+[Compositing]
+Backend=OpenGL
+GLCore=true
+GLPreferBufferSwap=e
+OpenGLIsUnsafe=false
+AnimationSpeed=3
+Enabled=true
+KWINEOF
+    else
+        Note "[DRY RUN] Would write KWin compositor config → $kwinconf"
+    fi
+
+    local kwinenv=/etc/environment.d/99-kwin-nvidia.conf
+    if [ ! -f "$kwinenv" ]; then
+        Info "Writing KWin NVIDIA environment → $kwinenv"
+        if [ "$DRY_RUN" = no ]; then
+            mkdir -p /etc/environment.d
+            cat > "$kwinenv" <<'KWENVEOF'
+# KWin: EGL vendor for NVIDIA
+__EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/10_nvidia.json
+KWENVEOF
+        else
+            Note "[DRY RUN] Would write KWin env → $kwinenv"
+        fi
     fi
 }
 
@@ -371,8 +393,6 @@ ConfigureWayland() {
 
 EnableNvidiaSleepServices() {
     [ "$DRIVER_TYPE" = "nouveau" ] && return
-
-    # Suspend services only exist in the nvidia-open-dkms package
     [ "$GPU_GENERATION" = "kepler" ] && return
     [ "$GPU_GENERATION" = "fermi"  ] && return
 
@@ -388,8 +408,7 @@ EnableNvidiaSleepServices() {
     done
 }
 
-# ── initramfs module configuration ───────────────────────────
-# Supports both mkinitcpio and dracut automatically.
+# ── initramfs ─────────────────────────────────────────────────
 
 DetectInitramfsTool() {
     if [ -f /etc/mkinitcpio.conf ]; then
@@ -467,7 +486,6 @@ ConfigureDracut() {
 }
 
 # ── Execute ───────────────────────────────────────────────────
-# Installs a single package: tries offline cache first, falls back to pacman -S.
 
 InstallPkg() {
     local pkg="$1"
@@ -594,15 +612,15 @@ ShowHelp() {
                         No prompts. Legacy GPU packages must be in cache.
     -f, --force         Install even if no NVIDIA GPU detected.
     -n, --nouveau       Force the open-source nouveau driver.
-        --no-dkms       Use non-DKMS package (nvidia-open only, linux/linux-lts).
+        --no-dkms       Use non-DKMS package (nvidia/nvidia-open, linux/linux-lts only).
         --32            Add 32-bit support (Steam/Proton).
                         Requires [multilib] in /etc/pacman.conf.
         --no-settings   Skip nvidia-settings.
         --show-gpu      Print detected GPU info and exit.
 
   GPU support:
-    Turing / Ampere / Ada / Blackwell  →  nvidia-open-dkms     (official repos)
-    Maxwell / Pascal / Volta           →  nvidia-open-dkms     (official repos)
+    Turing / Ampere / Ada / Blackwell  →  nvidia-open-dkms     (open, official repos)
+    Maxwell / Pascal / Volta           →  nvidia-dkms           (proprietary, official repos)
     Kepler  (GTX 600/700, GT 7xxM)    →  nvidia-470xx-dkms    (offline cache / AUR)
     Fermi   (GT 400/500, GT 5xxM)     →  nvidia-390xx-dkms    (offline cache / AUR)
     Older                              →  nouveau
@@ -611,7 +629,6 @@ ShowHelp() {
     Place pre-built .pkg.tar.zst files in:
       $DRIVER_CACHE_DIR/
     Packages found there are installed with 'pacman -U' (no internet required).
-    Useful for ISO images and installer auto mode.
 
 EOF
 }
@@ -671,7 +688,6 @@ Main() {
     # 2. Choose the right driver
     SelectDriver
 
-    # Skip entirely if no NVIDIA GPU in auto mode
     [ "$DRIVER_TYPE" = "skip" ] && { SaveGpuState; Info "Skipping NVIDIA driver installation."; exit 0; }
 
     # Fast path in --auto mode: skip if GPU hasn't changed
@@ -708,13 +724,16 @@ Main() {
     # 9. Wayland modeset config (generation-aware)
     ConfigureWayland
 
-    # 10. Enable nvidia suspend/resume/hibernate systemd services
+    # 10. KDE KWin compositor config for NVIDIA
+    ConfigureKwinCompositor
+
+    # 11. Enable nvidia suspend/resume/hibernate systemd services
     EnableNvidiaSleepServices
 
-    # 11. mkinitcpio/dracut MODULES injection
+    # 12. mkinitcpio/dracut MODULES injection
     ConfigureMkinitcpio
 
-    # 12. Rebuild initramfs
+    # 13. Rebuild initramfs
     RebuildInitramfs
 
     SaveGpuState

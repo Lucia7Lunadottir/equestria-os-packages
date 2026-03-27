@@ -1,0 +1,37 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-essentials
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="A curated selection of essential applications and recommended software for Equestria OS"
+arch=('any')
+depends=('python' 'python-pyqt6' 'polkit' 'konsole')
+
+package() {
+    install -d "$pkgdir/opt/$pkgname"
+    install -d "$pkgdir/usr/share/applications"
+    install -d "$pkgdir/usr/share/pixmaps"
+
+    # Берем файлы напрямую из папки, где лежит PKGBUILD
+    cp "$startdir/main.py" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/ui_store.py" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/style.qss" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/EquestriaApps.csv" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/EquestriaLocalizations.csv" "$pkgdir/opt/$pkgname/"
+
+    # Обрати внимание на регистр названия картинки! У тебя было EquestriaOS-Logo.png
+    cp "$startdir/EquestriaOS-Logo.png" "$pkgdir/opt/$pkgname/"
+
+    chmod 755 "$pkgdir/opt/$pkgname/main.py"
+
+    # Устанавливаем ярлык. Я добавил проверку на оба названия, чтобы точно не упало
+    if [ -f "$startdir/equestria-os-essentials.desktop" ]; then
+        install -Dm644 "$startdir/equestria-os-essentials.desktop" "$pkgdir/usr/share/applications/equestria-os-essentials.desktop"
+    elif [ -f "$startdir/equestria-app-store.desktop" ]; then
+        install -Dm644 "$startdir/equestria-app-store.desktop" "$pkgdir/usr/share/applications/equestria-os-essentials.desktop"
+    fi
+
+    # Иконка для системы
+    install -Dm644 "$startdir/EquestriaOS-Logo.png" "$pkgdir/usr/share/pixmaps/equestria-os-essentials.png"
+}

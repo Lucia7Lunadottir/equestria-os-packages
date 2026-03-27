@@ -1,28 +1,28 @@
 #!/usr/bin/env xdg-open
 [Desktop Entry]
-Name=Equestria Task Panel Changer
-Name[en]=Equestria Task Panel Changer
-Name[ru]=Настройка панели задач Equestria
-Name[de]=Equestria Taskleisten-Konfigurator
-Name[fr]=Gestionnaire de barre des tâches Equestria
-Name[es]=Configurador de barra de tareas Equestria
-Name[pt]=Configurador de barra de tarefas Equestria
-Name[pl]=Konfigurator paska zadań Equestria
-Name[uk]=Налаштування панелі завдань Equestria
-Name[zh]=Equestria任务栏配置器
-Name[ja]=Equestriaタスクバー設定
+Name=Equestria OS Task Panel Changer
+Name[en]=Equestria OS Task Panel Changer
+Name[ru]=Настройка панели задач Equestria OS
+Name[de]=Equestria OS Taskleisten-Konfigurator
+Name[fr]=Gestionnaire de barre des tâches Equestria OS
+Name[es]=Configurador de barra de tareas Equestria OS
+Name[pt]=Configurador de barra de tarefas Equestria OS
+Name[pl]=Konfigurator paska zadań Equestria OS
+Name[uk]=Налаштування панелі завдань Equestria OS
+Name[zh]=Equestria OS任务栏配置器
+Name[ja]=Equestria OSタスクバー設定
 
-Comment=Manage task panel styles and layouts in EquestriaOS
-Comment[en]=Manage task panel styles and layouts in EquestriaOS
-Comment[ru]=Управление стилями и раскладками панели задач в EquestriaOS
-Comment[de]=Taskleistenstile und -layouts in EquestriaOS verwalten
-Comment[fr]=Gérer les styles et dispositions de barre des tâches dans EquestriaOS
-Comment[es]=Gestionar estilos y diseños de la barra de tareas en EquestriaOS
-Comment[pt]=Gerenciar estilos e layouts da barra de tarefas no EquestriaOS
-Comment[pl]=Zarządzaj stylami i układami paska zadań w EquestriaOS
-Comment[uk]=Керування стилями та розташуванням панелі завдань у EquestriaOS
-Comment[zh]=在EquestriaOS中管理任务栏样式和布局
-Comment[ja]=EquestriaOSでタスクバーのスタイルとレイアウトを管理する
+Comment=Manage task panel styles and layouts in Equestria OS
+Comment[en]=Manage task panel styles and layouts in Equestria OS
+Comment[ru]=Управление стилями и раскладками панели задач в Equestria OS
+Comment[de]=Taskleistenstile und -layouts in Equestria OS verwalten
+Comment[fr]=Gérer les styles et dispositions de barre des tâches dans Equestria OS
+Comment[es]=Gestionar estilos y diseños de la barra de tareas en Equestria OS
+Comment[pt]=Gerenciar estilos e layouts da barra de tarefas no Equestria OS
+Comment[pl]=Zarządzaj stylami i układami paska zadań w Equestria OS
+Comment[uk]=Керування стилями та розташуванням панелі завдань у Equestria OS
+Comment[zh]=在Equestria OS中管理任务栏样式和布局
+Comment[ja]=Equestria OSでタスクバーのスタイルとレイアウトを管理する
 
 Exec=equestria-os-task-panel-changer
 Icon=equestria-os-logo
