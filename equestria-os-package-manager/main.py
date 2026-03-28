@@ -33,7 +33,7 @@ class main_app(QMainWindow, Ui_PackageManager):
         q_path = os.path.join(self.base_path, "style.qss")
         if os.path.exists(q_path): self.setStyleSheet(open(q_path, "r").read())
 
-        icon_path = os.path.join(self.base_path, "equestria-os-logo.png")
+        icon_path = os.path.join(self.base_path, "equestria-os-package-manager.png")
         if os.path.exists(icon_path): self.setWindowIcon(QIcon(icon_path))
 
         QApplication.setDesktopFileName("equestria-os-package-manager")

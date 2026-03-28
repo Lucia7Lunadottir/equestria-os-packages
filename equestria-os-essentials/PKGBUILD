@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-essentials
 pkgver=1.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="A curated selection of essential applications and recommended software for Equestria OS"
 arch=('any')
 depends=('python' 'python-pyqt6' 'polkit' 'konsole')
@@ -21,7 +21,7 @@ package() {
     cp "$startdir/EquestriaLocalizations.csv" "$pkgdir/opt/$pkgname/"
 
     # Обрати внимание на регистр названия картинки! У тебя было EquestriaOS-Logo.png
-    cp "$startdir/EquestriaOS-Logo.png" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/equestria-os-essentials.png" "$pkgdir/opt/$pkgname/"
 
     chmod 755 "$pkgdir/opt/$pkgname/main.py"
 
@@ -33,5 +33,5 @@ package() {
     fi
 
     # Иконка для системы
-    install -Dm644 "$startdir/EquestriaOS-Logo.png" "$pkgdir/usr/share/pixmaps/equestria-os-essentials.png"
+    install -Dm644 "$startdir/equestria-os-essentials.png" "$pkgdir/usr/share/pixmaps/equestria-os-essentials.png"
 }

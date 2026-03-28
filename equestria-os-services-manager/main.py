@@ -189,7 +189,7 @@ class ServicesApp(QMainWindow, Ui_ServicesManager):
         if os.path.exists(q_path):
             self.setStyleSheet(open(q_path).read())
 
-        icon_path = os.path.join(self.base_path, "EquestriaOS-Logo.png")
+        icon_path = os.path.join(self.base_path, "equestria-os-services-manager.png")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 

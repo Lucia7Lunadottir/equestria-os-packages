@@ -139,7 +139,7 @@ class RelocatorApp(QMainWindow, Ui_Relocator):
             self.setStyleSheet(open(qss_path).read())
 
         # Load window icon
-        icon_path = os.path.join(base_path, "EquestriaOS-Logo.png")
+        icon_path = os.path.join(base_path, "equestria-os-relocator.png")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 

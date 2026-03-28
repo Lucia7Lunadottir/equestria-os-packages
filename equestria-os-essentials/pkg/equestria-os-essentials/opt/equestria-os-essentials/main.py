@@ -298,7 +298,7 @@ class main_app(QMainWindow, Ui_AppStore):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    icon_path = "/usr/share/pixmaps/equestria-os-logo.png"
+    icon_path = "/usr/share/pixmaps/equestria-os-essentials.png"
     if os.path.exists(icon_path):
         app.setWindowIcon(QIcon(icon_path))
     else:
