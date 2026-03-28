@@ -18,7 +18,7 @@ package() {
     cp "$startdir/ui_services.py"       "$pkgdir/opt/$pkgname/"
     cp "$startdir/style.qss"            "$pkgdir/opt/$pkgname/"
     cp "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/"
-    cp "$startdir/EquestriaOS-Logo.png" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/equestria-os-services-manager.png" "$pkgdir/opt/$pkgname/"
 
     if [ -f "$startdir/start.sh" ]; then
         cp "$startdir/start.sh" "$pkgdir/opt/$pkgname/"
@@ -30,6 +30,6 @@ package() {
     install -Dm644 "$startdir/equestria-os-services-manager.desktop" \
         "$pkgdir/usr/share/applications/"
 
-    install -Dm644 "$startdir/EquestriaOS-Logo.png" \
+    install -Dm644 "$startdir/equestria-os-services-manager.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-services-manager.png"
 }

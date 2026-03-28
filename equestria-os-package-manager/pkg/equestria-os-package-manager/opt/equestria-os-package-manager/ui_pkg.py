@@ -63,13 +63,8 @@ class Ui_PackageManager:
         self.category_dropdown.setObjectName("CategoryDropdown")
         self.category_dropdown.setFixedWidth(200)
 
-        self.btn_clearcache = QPushButton("🧹 Clear Cache")
-        self.btn_clearcache.setObjectName("ClearCacheBtn")
-        self.btn_clearcache.setCursor(Qt.CursorShape.PointingHandCursor)
-
         filter_box.addWidget(self.search_field, 1)
         filter_box.addWidget(self.category_dropdown)
-        filter_box.addWidget(self.btn_clearcache)
         self.main_layout.addLayout(filter_box)
 
         self.scroll_area = QScrollArea()

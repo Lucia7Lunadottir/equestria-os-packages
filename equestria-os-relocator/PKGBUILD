@@ -32,7 +32,7 @@ package() {
 
     # Assets
     install -Dm644 "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/equestria_cyrillic.ttf"
-    install -Dm644 "$startdir/EquestriaOS-Logo.png"   "$pkgdir/opt/$pkgname/EquestriaOS-Logo.png"
+    install -Dm644 "$startdir/equestria-os-relocator.png"   "$pkgdir/opt/$pkgname/equestria-os-relocator.png"
 
     # Wrapper script
     cat > "$pkgdir/usr/bin/equestria-relocator" <<'EOF'
@@ -49,6 +49,6 @@ EOF
         "$pkgdir/usr/share/kio/servicemenus/equestria-os-relocator-servicemenu.desktop"
 
     # Icon
-    install -Dm644 "$startdir/EquestriaOS-Logo.png" \
+    install -Dm644 "$startdir/equestria-os-relocator.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-relocator.png"
 }

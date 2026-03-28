@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-disk-manager
-pkgver=1.0.2
+pkgver=1.0.3
 pkgrel=1
 pkgdesc="GUI tool for managing disks: mount, fstab, permissions, labels, format"
 arch=('any')
@@ -35,7 +35,7 @@ package() {
 
     # Assets
     install -Dm644 "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/equestria_cyrillic.ttf"
-    install -Dm644 "$startdir/EquestriaOS-Logo.png"   "$pkgdir/opt/$pkgname/EquestriaOS-Logo.png"
+    install -Dm644 "$startdir/equestria-os-disk-manager.png"   "$pkgdir/opt/$pkgname/equestria-os-disk-manager.png"
 
     # Wrapper script
     cat > "$pkgdir/usr/bin/equestria-disk-manager" <<'EOF'
@@ -50,6 +50,6 @@ EOF
         "$pkgdir/usr/share/applications/equestria-os-disk-manager.desktop"
 
     # Icon
-    install -Dm644 "$startdir/EquestriaOS-Logo.png" \
+    install -Dm644 "$startdir/equestria-os-disk-manager.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-disk-manager.png"
 }

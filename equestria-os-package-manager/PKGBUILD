@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-package-manager
-pkgver=2.0.1
-pkgrel=2
+pkgver=2.2.0
+pkgrel=1
 pkgdesc='Official Equestria OS Package Manager (Uninstall and Manage)'
 arch=('any')
 url='https://psyche-games.com'
@@ -18,7 +18,7 @@ package() {
     cp "$startdir/ui_pkg.py" "$pkgdir/opt/$pkgname/"
     cp "$startdir/style.qss" "$pkgdir/opt/$pkgname/"
     cp "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/"
-    cp "$startdir/EquestriaOS-Logo.png" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/equestria-os-package-manager.png" "$pkgdir/opt/$pkgname/"
 
     if [ -f "$startdir/start.sh" ]; then
         cp "$startdir/start.sh" "$pkgdir/opt/$pkgname/"
@@ -30,5 +30,5 @@ package() {
     install -Dm644 "$startdir/equestria-os-package-manager.desktop" "$pkgdir/usr/share/applications/"
 
     # Уникальное имя иконки: equestria-os-package-manager.png
-    install -Dm644 "$startdir/EquestriaOS-Logo.png" "$pkgdir/usr/share/pixmaps/equestria-os-package-manager.png"
+    install -Dm644 "$startdir/equestria-os-package-manager.png" "$pkgdir/usr/share/pixmaps/equestria-os-package-manager.png"
 }

@@ -956,7 +956,7 @@ def main():
     app = QApplication(sys.argv)
     # Wayland: link window to the .desktop file so the compositor uses its icon
     app.setDesktopFileName("equestria-os-disk-manager")
-    icon_path = os.path.join(os.path.dirname(__file__), "EquestriaOS-Logo.png")
+    icon_path = os.path.join(os.path.dirname(__file__), "equestria-os-disk-manager.png")
     app.setWindowIcon(QIcon(icon_path))
     win = DiskManagerApp()
     win.show()

@@ -59,17 +59,6 @@ QPushButton#ModalCancelBtn:hover {
     background-color: rgb(110, 105, 130); border: 1px solid rgb(110, 105, 130);
 }
 
-/* Кнопка очистки кэша */
-QPushButton#ClearCacheBtn {
-    background-color: rgb(40, 35, 60); color: rgb(200, 185, 230);
-    border-radius: 8px; padding: 8px 15px; font-weight: bold;
-    border: 1px solid rgb(100, 80, 140);
-}
-QPushButton#ClearCacheBtn:hover {
-    background-color: rgb(65, 55, 95); border: 1px solid rgb(150, 120, 200);
-    color: white;
-}
-
 /* Кнопки языков */
 QPushButton#LangBtn {
     background-color: transparent; color: rgb(180, 180, 200);

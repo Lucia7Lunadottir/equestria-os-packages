@@ -237,6 +237,8 @@ def main():
     import shlex
     extra_args = shlex.split(settings.get("launch_args", "").strip())
 
+    game_dir = os.path.dirname(exe_path)
+
     if settings.get("virtual_desktop"):
         # Run inside a Wine virtual desktop window.
         # Resolution matches the primary screen.
@@ -247,7 +249,7 @@ def main():
     else:
         cmd = [proton_bin, "run", exe_path] + extra_args
 
-    proc = subprocess.Popen(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    proc = subprocess.Popen(cmd, env=env, cwd=game_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # Background update check (at most once per week)
     subprocess.Popen(

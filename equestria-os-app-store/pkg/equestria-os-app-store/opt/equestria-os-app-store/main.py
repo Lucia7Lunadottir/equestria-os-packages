@@ -46,10 +46,10 @@ class main_app(QMainWindow, Ui_PackageManager):
         q_path = os.path.join(self.base_path, "style.qss")
         if os.path.exists(q_path): self.setStyleSheet(open(q_path, "r").read())
 
-        icon_path = os.path.join(self.base_path, "equestria-os-logo.png")
+        icon_path = os.path.join(self.base_path, "equestria-os-app-store.png")
         if os.path.exists(icon_path): self.setWindowIcon(QIcon(icon_path))
 
-        QApplication.setDesktopFileName("equestria-os-store")
+        QApplication.setDesktopFileName("equestria-os-app-store")
 
         self.langs_db = {
             "ui.title": {"en": "✨ Equestria OS App Store", "ru": "✨ Магазин Equestria OS", "de": "✨ Equestria OS App Store", "fr": "✨ Magasin Equestria OS", "es": "✨ Tienda Equestria OS", "pt": "✨ Loja Equestria OS", "pl": "✨ Sklep Equestria OS", "uk": "✨ Магазин Equestria OS", "zh": "✨ Equestria OS 商店", "ja": "✨ Equestria OS ストア"},

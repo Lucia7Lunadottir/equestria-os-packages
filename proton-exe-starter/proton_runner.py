@@ -87,6 +87,8 @@ def main():
 
     extra_args = shlex.split(settings.get("launch_args", "").strip())
 
+    game_dir = os.path.dirname(exe_path)
+
     if settings.get("virtual_desktop"):
         app = QApplication.instance() or QApplication(sys.argv)
         screen = app.primaryScreen().size()
@@ -97,7 +99,7 @@ def main():
         cmd = [proton_bin, "run", exe_path] + extra_args
 
     print(f"Running: {' '.join(cmd)}")
-    subprocess.Popen(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.Popen(cmd, env=env, cwd=game_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 if __name__ == "__main__":
