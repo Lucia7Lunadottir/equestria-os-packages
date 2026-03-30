@@ -1,0 +1,36 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Name=Equestria OS Swap Manager
+Name[en]=Equestria OS Swap Manager
+Name[ru]=Equestria OS: Менеджер Подкачки
+Name[de]=Equestria OS Swap-Manager
+Name[fr]=Equestria OS Gestionnaire Swap
+Name[es]=Equestria OS Gestor Swap
+Name[pt]=Equestria OS Gerenciador Swap
+Name[pl]=Equestria OS Menedżer Swap
+Name[uk]=Equestria OS Менеджер Swap
+Name[zh]=Equestria OS 交换空间管理器
+Name[ja]=Equestria OS スワップマネージャー
+
+Comment=Manage swap files, partitions, and system swappiness
+Comment[en]=Manage swap files, partitions, and system swappiness
+Comment[ru]=Управление файлами подкачки и параметром Swappiness
+Comment[de]=Swap-Dateien, Partitionen und System-Swappiness verwalten
+Comment[fr]=Gérer les fichiers d'échange, les partitions et le swappiness du système
+Comment[es]=Gestionar archivos de intercambio, particiones y swappiness del sistema
+Comment[pt]=Gerenciar arquivos de troca, partições e swappiness do sistema
+Comment[pl]=Zarządzaj plikami wymiany, partycjami i swappiness systemu
+Comment[uk]=Керування файлами підкачки та параметром Swappiness
+Comment[zh]=管理交换文件、分区和系统 swappiness
+Comment[ja]=スワップファイル、パーティション、システム swappiness の管理
+
+Exec=equestria-swap-manager
+Path=/opt/equestria-os-swap-manager
+Icon=equestria-os-swap-manager
+Terminal=false
+Type=Application
+Categories=System;Utility;Qt;
+StartupNotify=true
+StartupWMClass=equestria-os-swap-manager
+Keywords=swap;memory;swappiness;fstab;ram;
+Keywords[ru]=подкачка;память;swappiness;fstab;озу;

@@ -1,0 +1,186 @@
+/* Equestria OS Global Style */
+
+QWidget {
+    color: #cdd6f4; /* Catppuccin Text */
+    background-color: transparent;
+    font-family: sans-serif;
+    font-size: 14px;
+}
+
+#CentralBg {
+background-color: #11111b; /* Catppuccin Crust (очень темный) */
+}
+
+#AppTitle {
+font-family: {{TITLE_FONT}};
+font-size: 24px;
+font-weight: bold;
+color: #f5c2e7; /* Catppuccin Pink */
+margin-bottom: 5px;
+}
+
+#SectionLabel {
+font-weight: bold;
+color: #bac2de; /* Catppuccin Subtext1 */
+margin-top: 5px;
+}
+
+#StatusLabel {
+color: #a6adc8; /* Catppuccin Subtext0 */
+font-size: 13px;
+}
+
+#Divider {
+color: #313244; /* Catppuccin Surface1 */
+}
+
+/* Элементы ввода */
+QLineEdit, QSpinBox {
+    background-color: #1e1e2e; /* Catppuccin Base */
+    border: 1px solid #313244; /* Catppuccin Surface1 */
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #cdd6f4;
+}
+
+QLineEdit:focus, QSpinBox:focus {
+    border-color: #f5c2e7; /* Pink Accent */
+}
+
+QLineEdit#DestEdit {
+    font-family: monospace;
+    font-size: 13px;
+}
+
+/* Кнопки */
+QPushButton {
+    background-color: #313244; /* Catppuccin Surface1 */
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: bold;
+    color: #cdd6f4;
+}
+
+QPushButton:hover {
+    background-color: #45475a; /* Catppuccin Surface2 */
+}
+
+QPushButton:pressed {
+    background-color: #1e1e2e; /* Catppuccin Base */
+}
+
+QPushButton:disabled {
+    color: #6c7086; /* Catppuccin Overlay0 */
+    background-color: #181825; /* Catppuccin Mantle */
+}
+
+/* Акцентная кнопка (Применить) */
+QPushButton#RelocateBtn {
+    background-color: #f5c2e7; /* Pink */
+    color: #11111b; /* Crust */
+}
+
+QPushButton#RelocateBtn:hover {
+    background-color: #f2cdcd; /* Flamingo (светлее) */
+}
+
+/* Кнопка опасности (Удалить) */
+QPushButton#DangerBtn {
+    background-color: #f38ba8; /* Red */
+    color: #11111b;
+}
+
+QPushButton#DangerBtn:hover {
+    background-color: #eba0ac; /* Maroon (светлее) */
+}
+
+/* Кнопка Обновить */
+QPushButton#BrowseBtn {
+    padding: 4px 10px;
+    font-size: 16px;
+}
+
+/* Языковые кнопки */
+QPushButton[cssClass="lang-button"] {
+    background-color: #181825;
+    color: #7f849c;
+    font-size: 11px;
+    padding: 4px 8px;
+    font-weight: normal;
+    border-radius: 4px;
+}
+
+QPushButton[cssClass="lang-button"]:hover {
+    background-color: #313244;
+    color: #cdd6f4;
+}
+
+QPushButton[cssClass="lang-button"][active="true"] {
+    background-color: #f5c2e7; /* Pink */
+    color: #11111b;
+    font-weight: bold;
+}
+
+/* --- СТИЛИЗАЦИЯ ГАЛОЧКИ (FIX) --- */
+
+QCheckBox#SwapCheckBox {
+    color: #cdd6f4;
+    spacing: 10px; /* Отступ текста от галочки */
+    font-weight: bold;
+}
+
+/* Основа галочки */
+QCheckBox#SwapCheckBox::indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid #313244; /* Surface1 */
+    background-color: #1e1e2e; /* Base */
+}
+
+/* Состояние Hover */
+QCheckBox#SwapCheckBox::indicator:hover {
+    border-color: #f5c2e7; /* Pink Accent */
+}
+
+/* Состояние Включено (Checked) */
+QCheckBox#SwapCheckBox::indicator:checked {
+    border-color: #f5c2e7; /* Pink Accent */
+    background-color: #f5c2e7; /* Розовый фон */
+
+    /* ИНЪЕКЦИЯ СГЕНЕРИРОВАННОГО SVG */
+    image: url("{{CHECKMARK_SVG_PATH}}");
+}
+
+/* Состояние Checked + Hover */
+QCheckBox#SwapCheckBox::indicator:checked:hover {
+    background-color: #f2cdcd; /* Светлее */
+    border-color: #f2cdcd;
+}
+
+/* Состояние Disabled */
+QCheckBox#SwapCheckBox::indicator:disabled {
+    border-color: #181825;
+    background-color: #181825;
+}
+
+/* --- Прогресс бар --- */
+QFrame#ProgressFrame {
+    background-color: #181825;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+QProgressBar {
+    background-color: #313244;
+    border: none;
+    border-radius: 4px;
+    height: 6px;
+    text-align: center;
+}
+
+QProgressBar::chunk {
+    background-color: #f5c2e7; /* Pink Accent */
+    border-radius: 4px;
+}
