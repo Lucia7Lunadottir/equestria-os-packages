@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-proton-starter
-pkgver=1.0.1
-pkgrel=3
+pkgver=1.2.0
+pkgrel=0
 pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton)"
 arch=('any')
 url="https://github.com/7Lucia7Lokidottir7"
@@ -29,7 +29,6 @@ package() {
     install -Dm644 "$startdir/launcher.py"         "$optdir/launcher.py"
     install -Dm644 "$startdir/main.py"             "$optdir/main.py"
     install -Dm644 "$startdir/proton_runner.py"    "$optdir/proton_runner.py"
-    install -Dm644 "$startdir/proton_updater.py"   "$optdir/proton_updater.py"
     install -Dm644 "$startdir/ui.py"               "$optdir/ui.py"
     install -Dm644 "$startdir/style.qss"           "$optdir/style.qss"
     install -Dm644 "$startdir/localization.csv"    "$optdir/localization.csv"
