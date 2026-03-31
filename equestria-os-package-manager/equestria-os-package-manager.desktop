@@ -25,7 +25,7 @@ Comment[ja]=pacmanおよびAURパッケージを管理する
 
 Exec=python3 /opt/equestria-os-package-manager/main.py
 Path=/opt/equestria-os-package-manager
-Icon=equestria-os-logo
+Icon=equestria-os-package-manager
 Terminal=false
 Type=Application
 Categories=Settings;System;PackageManager;Qt;

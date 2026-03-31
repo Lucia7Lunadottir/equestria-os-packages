@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt
 
 class Ui_SettingsWindow:
     def setupUi(self, MainWindow):
-        MainWindow.resize(450, 510)
+        MainWindow.resize(450, 420)
 
         self.central_widget = QWidget(MainWindow)
         MainWindow.setCentralWidget(self.central_widget)
@@ -35,6 +35,9 @@ class Ui_SettingsWindow:
 
         self.chk_desktop = QCheckBox()
         glayout.addWidget(self.chk_desktop)
+
+        self.chk_fsr = QCheckBox()
+        glayout.addWidget(self.chk_fsr)
         layout.addWidget(self.group_graphics)
 
         # Группа: Параметры запуска
@@ -43,18 +46,6 @@ class Ui_SettingsWindow:
         self.txt_args = QLineEdit()
         alayout.addWidget(self.txt_args)
         layout.addWidget(self.group_args)
-
-        # Группа: Движок Proton
-        self.group_proton = QGroupBox()
-        prolayout = QHBoxLayout(self.group_proton)
-        self.lbl_version = QLabel()
-        self.lbl_version.setStyleSheet("font-size: 11px; color: rgb(140, 130, 160);")
-        self.btn_update = QPushButton()
-        self.btn_update.setObjectName("btnSave")
-        prolayout.addWidget(self.lbl_version)
-        prolayout.addStretch()
-        prolayout.addWidget(self.btn_update)
-        layout.addWidget(self.group_proton)
 
         # Группа: Опасная зона
         self.group_danger = QGroupBox()
@@ -74,8 +65,6 @@ class Ui_SettingsWindow:
         self.btn_cancel = QPushButton()
         self.btn_save = QPushButton()
         self.btn_save.setObjectName("btnSave")
-
-        btn_layout.addStretch()
         btn_layout.addWidget(self.btn_cancel)
         btn_layout.addWidget(self.btn_save)
         layout.addLayout(btn_layout)
