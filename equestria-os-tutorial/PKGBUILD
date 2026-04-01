@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-tutorial
-pkgver=1.0.0
+pkgver=1.2.0
 pkgrel=1
 pkgdesc="Interactive tour for new Equestria OS users"
 arch=('any')

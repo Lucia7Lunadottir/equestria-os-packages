@@ -31,6 +31,7 @@
     "slide6_text": "<p>Für fortgeschrittene Benutzer haben wir grafische Schalter erstellt. Kein Terminal mehr nötig, um Hintergrunddienste (Systemd) zu verwalten oder eine Swap-Datei zu erstellen, wenn Ihnen der RAM ausgeht.</p>",
     "s6_btn1": "⚙️ Dienste",
     "s6_btn2": "💾 Swap-Manager",
+    "s6_btn3": "💽 Laufwerke",
 
     "slide7_title": "Sie sind großartig! 🌟",
     "slide7_text": "<p>Dieses System ist jetzt Ihr Zuhause. Wenn Sie etwas vergessen oder den Autostart konfigurieren möchten, schauen Sie sich unser zentrales Hub an.</p><p>Erleben Sie Equestria OS auf magische Weise!</p>",

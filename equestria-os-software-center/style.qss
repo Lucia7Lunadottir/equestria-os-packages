@@ -201,6 +201,43 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     height: 0px;
 }
 
+/* Detail back button */
+QPushButton#DetailBackBtn {
+    background-color: transparent;
+    color: rgb(137, 180, 250);
+    border: 1px solid rgb(137, 180, 250);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-weight: bold;
+}
+QPushButton#DetailBackBtn:hover {
+    background-color: rgba(137, 180, 250, 0.15);
+}
+
+/* Detail action button (Install / Remove) */
+QPushButton#DetailActionBtn {
+    background-color: rgb(203, 166, 247);
+    color: rgb(17, 17, 27);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    font-size: 15px;
+    border: none;
+}
+QPushButton#DetailActionBtn:hover {
+    background-color: rgb(190, 140, 240);
+}
+QPushButton#DetailActionBtn:disabled {
+    background-color: rgb(69, 71, 90);
+    color: rgb(108, 112, 134);
+}
+
+/* Screenshot scroll area */
+QScrollArea#ScreenshotScroll {
+    background: transparent;
+    border: none;
+}
+
 /* Кнопки пагинации */
 QPushButton#PaginationBtn {
     background-color: rgb(49, 50, 68);

@@ -81,5 +81,21 @@
   "ui.next_page": "下一页 ➡",
   "ui.essentials_header": "🌟 基本",
   "ui.store_header": "📦 应用商店",
-  "ui.search_all": "🔍 搜索所有应用"
+  "ui.search_all": "🔍 搜索所有应用",
+  "ui.source_all": "全部",
+  "ui.source_pacman": "Pacman",
+  "ui.source_aur": "AUR",
+  "ui.source_flatpak": "Flatpak",
+  "ui.aur_placeholder": "输入以搜索AUR软件包...",
+  "ui.aur_warning": "⚠ 社区软件包 — 未经官方验证，可能无法按预期工作。",
+  "ui.detail_source": "来源",
+  "ui.detail_back": "返回",
+  "ui.detail_screenshots": "截图",
+  "ui.no_screenshots": "没有可用的截图",
+  "ui.flatpak_not_setup": "Flatpak未配置",
+  "ui.flatpak_init_desc": "要访问Flathub应用，需要初始化Flatpak（约50 MB下载）。",
+  "ui.flatpak_init_btn": "初始化Flatpak",
+  "ui.flatpak_not_installed_title": "未安装Flatpak",
+  "ui.flatpak_not_installed_desc": "安装Flatpak以访问数千个Flathub应用程序。",
+  "ui.flatpak_install_btn": "安装Flatpak"
 }

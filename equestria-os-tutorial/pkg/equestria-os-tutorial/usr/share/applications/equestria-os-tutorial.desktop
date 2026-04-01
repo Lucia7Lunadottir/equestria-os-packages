@@ -2,10 +2,26 @@
 Name=Equestria OS Tour
 Name[en]=Equestria OS Tour
 Name[ru]=Тур по Equestria OS
+Name[uk]=Тур по Equestria OS
+Name[de]=Equestria OS Tour
+Name[fr]=Visite guidée Equestria OS
+Name[es]=Tour de Equestria OS
+Name[pt]=Tour do Equestria OS
+Name[pl]=Wycieczka po Equestria OS
+Name[zh]=Equestria OS 导览
+Name[ja]=Equestria OS ツアー
 
 Comment=Interactive tour for new Equestria OS users
 Comment[en]=Interactive tour for new Equestria OS users
 Comment[ru]=Интерактивный тур для новых пользователей Equestria OS
+Comment[uk]=Інтерактивний тур для нових користувачів Equestria OS
+Comment[de]=Interaktive Tour für neue Benutzer von Equestria OS
+Comment[fr]=Visite interactive pour les nouveaux utilisateurs d'Equestria OS
+Comment[es]=Tour interactivo para nuevos usuarios de Equestria OS
+Comment[pt]=Tour interativo para novos utilizadores do Equestria OS
+Comment[pl]=Interaktywna wycieczka dla nowych użytkowników Equestria OS
+Comment[zh]=面向 Equestria OS 新用户的交互式导览
+Comment[ja]=Equestria OS 新規ユーザー向けのインタラクティブなツアー
 
 Exec=python3 /opt/equestria-os-tutorial/main.py
 Path=/opt/equestria-os-tutorial

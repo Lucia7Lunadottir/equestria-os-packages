@@ -103,7 +103,8 @@ class TutorialApp(QMainWindow):
             # Шаг 6: Сервисы и Подкачка
             {"title": "slide6_title", "text": "slide6_text", "image": "slide6.png", "actions": [
                 {"btn": "s6_btn1", "desktop": "equestria-os-services-manager.desktop"},
-                {"btn": "s6_btn2", "desktop": "equestria-os-swap-manager.desktop"}
+                {"btn": "s6_btn2", "desktop": "equestria-os-swap-manager.desktop"},
+                {"btn": "s6_btn3", "desktop": "equestria-os-disk-manager.desktop"}
             ]},
 
             # Шаг 7: Финал (Welcome Hub)

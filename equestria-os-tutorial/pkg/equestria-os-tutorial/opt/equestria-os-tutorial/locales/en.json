@@ -31,6 +31,7 @@
     "slide6_text": "<p>For advanced users, we've created graphical toggles. No need to use the terminal to manage background services (Systemd) or create a Swap file if you run out of RAM.</p>",
     "s6_btn1": "⚙️ Services",
     "s6_btn2": "💾 Swap Manager",
+    "s6_btn3": "💽 Disks",
 
     "slide7_title": "You are amazing! 🌟",
     "slide7_text": "<p>This system is now your home. If you forget something or want to configure autostart, check out our central hub.</p><p>Have a magical experience with Equestria OS!</p>",

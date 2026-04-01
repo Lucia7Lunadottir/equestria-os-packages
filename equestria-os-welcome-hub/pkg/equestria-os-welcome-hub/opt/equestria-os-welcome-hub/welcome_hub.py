@@ -40,6 +40,7 @@ class main_app(QMainWindow, Ui_WelcomeHub):
 
             # --- НОВЫЕ КЛЮЧИ ДЛЯ ПРИЛОЖЕНИЙ (ВСЕ 10 ЯЗЫКОВ) ---
             "app.theme": {"en":"Equestria OS Theme Switcher", "ru":"Переключатель тем Equestria OS", "de":"Equestria-OS-Theme-Wechsler", "fr":"Sélecteur de thèmes Equestria OS", "es":"Selector de temas de Equestria OS", "pt":"Seletor de temas Equestria OS", "pl":"Przełącznik motywów Equestria OS", "uk":"Перемикач тем Equestria OS", "zh":"Equestria OS主题切换器", "ja":"Equestria OSテーマスイッチャー"},
+            "app.tutorial": {"en":"Equestria OS Tour", "ru":"Тур по Equestria OS", "de":"Equestria OS Tour", "fr":"Visite guidée Equestria OS", "es":"Tour de Equestria OS", "pt":"Tour do Equestria OS", "pl":"Wycieczka po Equestria OS", "uk":"Тур по Equestria OS", "zh":"Equestria OS 导览", "ja":"Equestria OS ツアー"},
             "app.panel": {"en":"Equestria OS Task Panel Changer", "ru":"Настройка панели задач Equestria OS", "de":"Equestria OS Taskleisten-Konfigurator", "fr":"Gestionnaire de barre des tâches Equestria OS", "es":"Configurador de barra de tareas Equestria OS", "pt":"Configurador de barra de tarefas Equestria OS", "pl":"Konfigurator paska zadań Equestria OS", "uk":"Налаштування панелі завдань Equestria OS", "zh":"Equestria OS任务栏配置器", "ja":"Equestria OSタスクバー設定"},
             "app.essentials": {"en":"Equestria OS Essentials", "ru":"Базовые программы Equestria OS", "de":"Equestria OS Essentials", "fr":"Les Essentiels Equestria OS", "es":"Esenciales de Equestria OS", "pt":"Essenciais do Equestria OS", "pl":"Niezbędnik Equestria OS", "uk":"Базові програми Equestria OS", "zh":"Equestria OS 必备软件", "ja":"Equestria OS 必須アプリ"},
             "app.store": {"en":"Equestria OS App Store", "ru":"Магазин Equestria OS", "de":"Equestria OS App Store", "fr":"Boutique Equestria OS", "es":"Tienda Equestria OS", "pt":"Loja Equestria OS", "pl":"Sklep Equestria OS", "uk":"Магазин Equestria OS", "zh":"Equestria OS 应用商店", "ja":"Equestria OS アプリストア"},
@@ -85,6 +86,7 @@ class main_app(QMainWindow, Ui_WelcomeHub):
 
         categories = [
             ("cat.system", [
+                Item(self.t("app.tutorial"), "python3 /opt/equestria-os-tutorial/main.py", "command"),
                 Item(self.t("app.theme"), "python3 /opt/equestria-os-character-theme/main.py", "command"),
                 Item(self.t("app.panel"), "python3 /opt/equestria-os-task-panel-changer/main.py", "command"),
                 Item(self.t("app.essentials"), "python3 /opt/equestria-os-essentials/main.py", "command"),
