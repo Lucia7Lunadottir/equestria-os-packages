@@ -81,5 +81,21 @@
   "ui.next_page": "Далее ➡",
   "ui.essentials_header": "🌟 Основные",
   "ui.store_header": "📦 Магазин",
-  "ui.search_all": "🔍 Поиск всех приложений"
+  "ui.search_all": "🔍 Поиск всех приложений",
+  "ui.source_all": "Все",
+  "ui.source_pacman": "Pacman",
+  "ui.source_aur": "AUR",
+  "ui.source_flatpak": "Flatpak",
+  "ui.aur_placeholder": "Введите запрос для поиска пакетов AUR...",
+  "ui.aur_warning": "⚠ Пакет сообщества — официально не проверен, может работать не так, как ожидается.",
+  "ui.detail_source": "Источник",
+  "ui.detail_back": "Назад",
+  "ui.detail_screenshots": "Скриншоты",
+  "ui.no_screenshots": "Скриншоты недоступны",
+  "ui.flatpak_not_setup": "Flatpak не настроен",
+  "ui.flatpak_init_desc": "Для доступа к приложениям Flathub необходимо инициализировать Flatpak (~50 МБ).",
+  "ui.flatpak_init_btn": "Инициализировать Flatpak",
+  "ui.flatpak_not_installed_title": "Flatpak не установлен",
+  "ui.flatpak_not_installed_desc": "Установите Flatpak, чтобы получить доступ к тысячам приложений Flathub.",
+  "ui.flatpak_install_btn": "Установить Flatpak"
 }

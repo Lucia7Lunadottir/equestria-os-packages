@@ -31,6 +31,7 @@
     "slide6_text": "<p>Para usuarios avanzados, hemos creado interruptores gráficos. Ya no necesitas el terminal para gestionar servicios en segundo plano (Systemd) o crear un archivo de intercambio si te falta RAM.</p>",
     "s6_btn1": "⚙️ Servicios",
     "s6_btn2": "💾 Gestor de swap",
+    "s6_btn3": "💽 Discos",
 
     "slide7_title": "¡Eres increíble! 🌟",
     "slide7_text": "<p>Este sistema es ahora tu hogar. Si olvidas algo o quieres configurar el inicio automático, echa un vistazo a nuestro hub central.</p><p>¡Que tengas una experiencia mágica con Equestria OS!</p>",

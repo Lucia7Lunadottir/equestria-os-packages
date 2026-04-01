@@ -81,5 +81,21 @@
   "ui.next_page": "Далі ➡",
   "ui.essentials_header": "🌟 Основні",
   "ui.store_header": "📦 Магазин",
-  "ui.search_all": "🔍 Пошук усіх програм"
+  "ui.search_all": "🔍 Пошук усіх програм",
+  "ui.source_all": "Всі",
+  "ui.source_pacman": "Pacman",
+  "ui.source_aur": "AUR",
+  "ui.source_flatpak": "Flatpak",
+  "ui.aur_placeholder": "Введіть запит для пошуку пакетів AUR...",
+  "ui.aur_warning": "⚠ Пакет спільноти — офіційно не перевірений, може працювати не так, як очікується.",
+  "ui.detail_source": "Джерело",
+  "ui.detail_back": "Назад",
+  "ui.detail_screenshots": "Скриншоти",
+  "ui.no_screenshots": "Скриншоти недоступні",
+  "ui.flatpak_not_setup": "Flatpak не налаштовано",
+  "ui.flatpak_init_desc": "Для доступу до додатків Flathub необхідно ініціалізувати Flatpak (~50 МБ).",
+  "ui.flatpak_init_btn": "Ініціалізувати Flatpak",
+  "ui.flatpak_not_installed_title": "Flatpak не встановлено",
+  "ui.flatpak_not_installed_desc": "Встановіть Flatpak, щоб отримати доступ до тисяч додатків Flathub.",
+  "ui.flatpak_install_btn": "Встановити Flatpak"
 }

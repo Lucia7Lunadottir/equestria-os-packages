@@ -81,5 +81,21 @@
   "ui.next_page": "Próximo ➡",
   "ui.essentials_header": "🌟 Essenciais",
   "ui.store_header": "📦 Loja",
-  "ui.search_all": "🔍 Pesquisar todos os apps"
+  "ui.search_all": "🔍 Pesquisar todos os apps",
+  "ui.source_all": "Tudo",
+  "ui.source_pacman": "Pacman",
+  "ui.source_aur": "AUR",
+  "ui.source_flatpak": "Flatpak",
+  "ui.aur_placeholder": "Digite para pesquisar pacotes AUR...",
+  "ui.aur_warning": "⚠ Pacote comunitário — não verificado oficialmente, pode não funcionar como esperado.",
+  "ui.detail_source": "Fonte",
+  "ui.detail_back": "Voltar",
+  "ui.detail_screenshots": "Capturas de tela",
+  "ui.no_screenshots": "Nenhuma captura de tela disponível",
+  "ui.flatpak_not_setup": "Flatpak não está configurado",
+  "ui.flatpak_init_desc": "Para acessar os apps do Flathub, o Flatpak precisa ser inicializado (~50 MB).",
+  "ui.flatpak_init_btn": "Inicializar Flatpak",
+  "ui.flatpak_not_installed_title": "Flatpak não está instalado",
+  "ui.flatpak_not_installed_desc": "Instale o Flatpak para acessar milhares de aplicativos do Flathub.",
+  "ui.flatpak_install_btn": "Instalar Flatpak"
 }

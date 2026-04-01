@@ -31,6 +31,7 @@
     "slide6_text": "<p>Dla zaawansowanych użytkowników stworzyliśmy graficzne przełączniki. Nie trzeba już korzystać z terminala, aby zarządzać usługami w tle (Systemd) lub tworzyć plik wymiany, gdy brakuje RAM.</p>",
     "s6_btn1": "⚙️ Usługi",
     "s6_btn2": "💾 Menedżer swap",
+    "s6_btn3": "💽 Dyski",
 
     "slide7_title": "Jesteś niesamowity! 🌟",
     "slide7_text": "<p>Ten system jest teraz Twoim domem. Jeśli coś zapomnisz lub chcesz skonfigurować autostart — zajrzyj do naszego centralnego hubu.</p><p>Życzymy magicznych wrażeń z Equestria OS!</p>",

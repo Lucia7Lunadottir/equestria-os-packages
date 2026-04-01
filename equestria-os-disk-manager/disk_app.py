@@ -452,7 +452,7 @@ class DiskManagerApp(QMainWindow):
 
     def _setup_ui(self):
         self.setWindowTitle(self.t("title"))
-        self.resize(600, 820)
+        self.resize(700, 820)
 
         base_path = os.path.dirname(os.path.abspath(__file__))
 
