@@ -1,0 +1,38 @@
+{
+    "app_title": "Equestria OS — Wycieczka",
+    "btn_next": "Dalej ➔",
+    "btn_prev": "← Wstecz",
+    "btn_close": "Zakończ wycieczkę",
+
+    "slide0_title": "Witaj! 🐴✨",
+    "slide0_text": "<p>Zapomnij o wszystkim, co wiedziałeś o skomplikowanych systemach operacyjnych. Zrobiliśmy ten system tak prostym i przyjaznym, jak tylko się da.</p><p>Ta krótka wycieczka pokaże Ci główne funkcje Twojego nowego systemu.</p>",
+
+    "slide1_title": "Krok 1: Podstawy nawigacji",
+    "slide1_text": "<p>Gdzie jest menu Start? Po prostu naciśnij klawisz <b>Windows</b> (Super) lub kliknij ikonę menu na panelu.</p><p>Zacznij pisać nazwę potrzebnego programu — system znajdzie go natychmiast!</p>",
+
+    "slide2_title": "Krok 2: Twój unikalny pulpit",
+    "slide2_text": "<p>Equestria OS jest bardzo konfigurowalny. Przywykłeś do paska zadań na dole? A może chcesz dock na środku? Możesz też zmienić całą paletę kolorów na ulubioną postać!</p>",
+    "s2_btn1": "🎨 Kolory i Motywy",
+    "s2_btn2": "📐 Pasek zadań",
+
+    "slide3_title": "Krok 3: Oprogramowanie i Aktualizacje",
+    "slide3_text": "<p>Koniec z szukaniem instalatorów w internecie! Instaluj najlepsze oprogramowanie i aktualizuj cały system jednym kliknięciem przez <b>Essentials</b>.</p><p>Potrzebujesz konkretnej aplikacji spośród tysięcy? Po prostu przełącz się w tryb pełnego App Store!</p>",
+    "s3_btn1": "📦 Otwórz Essentials",
+
+    "slide4_title": "Krok 4: Porządek w systemie",
+    "slide4_text": "<p>Instalowanie jest łatwe, a odinstalowywanie jeszcze prostsze. Jeśli program nie jest Ci już potrzebny, użyj <b>Menedżera pakietów</b>, aby usunąć go bez śladu.</p>",
+    "s4_btn1": "🗑️ Menedżer pakietów",
+
+    "slide5_title": "Krok 5: Inteligentne przenoszenie plików",
+    "slide5_text": "<p>Mało miejsca na szybkim SSD? Nasze narzędzie <b>Relocator</b> pozwala przenieść ciężką grę na HDD, pozostawiając niewidoczne dowiązanie symboliczne. Launchery nawet nie zauważą, że pliki się przeniosły!</p>",
+    "s5_btn1": "🔗 Otwórz Relocator",
+
+    "slide6_title": "Krok 6: Pod maską",
+    "slide6_text": "<p>Dla zaawansowanych użytkowników stworzyliśmy graficzne przełączniki. Nie trzeba już korzystać z terminala, aby zarządzać usługami w tle (Systemd) lub tworzyć plik wymiany, gdy brakuje RAM.</p>",
+    "s6_btn1": "⚙️ Usługi",
+    "s6_btn2": "💾 Menedżer swap",
+
+    "slide7_title": "Jesteś niesamowity! 🌟",
+    "slide7_text": "<p>Ten system jest teraz Twoim domem. Jeśli coś zapomnisz lub chcesz skonfigurować autostart — zajrzyj do naszego centralnego hubu.</p><p>Życzymy magicznych wrażeń z Equestria OS!</p>",
+    "s7_btn1": "🏠 Welcome Hub"
+}

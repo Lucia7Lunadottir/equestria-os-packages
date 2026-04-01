@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=Equestria OS Tour
+Name[en]=Equestria OS Tour
+Name[ru]=Тур по Equestria OS
+
+Comment=Interactive tour for new Equestria OS users
+Comment[en]=Interactive tour for new Equestria OS users
+Comment[ru]=Интерактивный тур для новых пользователей Equestria OS
+
+Exec=python3 /opt/equestria-os-tutorial/main.py
+Path=/opt/equestria-os-tutorial
+Icon=equestria-os-tutorial
+Terminal=false
+Type=Application
+Categories=System;Utility;Qt;
+StartupNotify=true
+StartupWMClass=equestria-os-tutorial

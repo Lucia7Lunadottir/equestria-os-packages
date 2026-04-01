@@ -1,0 +1,29 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-tutorial
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Interactive tour for new Equestria OS users"
+arch=('any')
+url="https://github.com/7Lucia7Lokidottir7"
+license=('GPL')
+depends=('python' 'python-pyqt6')
+
+package() {
+    install -d "$pkgdir/opt/$pkgname"
+    install -d "$pkgdir/usr/share/applications"
+    install -d "$pkgdir/usr/share/pixmaps"
+
+    cp "$startdir/main.py" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/style.qss" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/tutorial.png" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/start.sh" "$pkgdir/opt/$pkgname/"
+    chmod 755 "$pkgdir/opt/$pkgname/start.sh"
+
+    cp -r "$startdir/assets" "$pkgdir/opt/$pkgname/"
+    cp -r "$startdir/locales" "$pkgdir/opt/$pkgname/"
+
+    install -Dm644 "$startdir/equestria-os-tutorial.desktop" "$pkgdir/usr/share/applications/"
+    install -Dm644 "$startdir/tutorial.png" "$pkgdir/usr/share/pixmaps/equestria-os-tutorial.png"
+}

@@ -1,0 +1,38 @@
+{
+    "app_title": "Equestria OS — Tour",
+    "btn_next": "Próximo ➔",
+    "btn_prev": "← Voltar",
+    "btn_close": "Finalizar tour",
+
+    "slide0_title": "Bem-vindo! 🐴✨",
+    "slide0_text": "<p>Esqueça tudo o que sabia sobre sistemas operativos complexos. Fizemos este sistema o mais simples e amigável possível.</p><p>Este breve tour mostrará as principais funcionalidades do seu novo sistema.</p>",
+
+    "slide1_title": "Passo 1: Navegação básica",
+    "slide1_text": "<p>Onde está o menu Iniciar? Simples: pressione a tecla <b>Windows</b> (Super) ou clique no ícone do menu no painel.</p><p>Basta começar a escrever o nome do programa — o sistema encontrá-lo-á instantaneamente!</p>",
+
+    "slide2_title": "Passo 2: O seu desktop único",
+    "slide2_text": "<p>O Equestria OS é altamente personalizável. Habituado à barra de tarefas em baixo? Ou quer um dock no centro? Também pode mudar todo o esquema de cores para o seu personagem favorito!</p>",
+    "s2_btn1": "🎨 Cores e Temas",
+    "s2_btn2": "📐 Barra de tarefas",
+
+    "slide3_title": "Passo 3: Software e Atualizações",
+    "slide3_text": "<p>Chega de procurar instaladores na internet! Instale os melhores programas e atualize todo o sistema com um clique via <b>Essentials</b>.</p><p>Precisa de uma app específica entre milhares? Basta mudar para o modo App Store completo!</p>",
+    "s3_btn1": "📦 Abrir Essentials",
+
+    "slide4_title": "Passo 4: Manter a ordem",
+    "slide4_text": "<p>Instalar é fácil, e desinstalar ainda mais. Se já não precisa de um programa, use o <b>Gestor de pacotes</b> para o remover completamente.</p>",
+    "s4_btn1": "🗑️ Gestor de pacotes",
+
+    "slide5_title": "Passo 5: Transferência inteligente de ficheiros",
+    "slide5_text": "<p>Pouco espaço no seu SSD rápido? A nossa ferramenta <b>Relocator</b> permite mover um jogo pesado para um HDD deixando um symlink invisível. Os launchers nem vão notar que os ficheiros mudaram!</p>",
+    "s5_btn1": "🔗 Abrir Relocator",
+
+    "slide6_title": "Passo 6: Por baixo do capô",
+    "slide6_text": "<p>Para utilizadores avançados, criámos interruptores gráficos. Não precisa mais do terminal para gerir serviços em segundo plano (Systemd) ou criar um ficheiro Swap se ficar sem RAM.</p>",
+    "s6_btn1": "⚙️ Serviços",
+    "s6_btn2": "💾 Gestor de swap",
+
+    "slide7_title": "É incrível! 🌟",
+    "slide7_text": "<p>Este sistema é agora a sua casa. Se se esquecer de algo ou quiser configurar o arranque automático, consulte o nosso hub central.</p><p>Tenha uma experiência mágica com o Equestria OS!</p>",
+    "s7_btn1": "🏠 Welcome Hub"
+}

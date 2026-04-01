@@ -1,0 +1,38 @@
+{
+    "app_title": "Equestria OS — Tour",
+    "btn_next": "Next ➔",
+    "btn_prev": "← Back",
+    "btn_close": "Finish Tour",
+
+    "slide0_title": "Welcome! 🐴✨",
+    "slide0_text": "<p>Forget everything you knew about complex OSs. We've made this system as simple and friendly as possible.</p><p>This short tour will show you the basic buttons of your new system.</p>",
+
+    "slide1_title": "Step 1: Basic Navigation",
+    "slide1_text": "<p>Where is the Start Menu? Just press the <b>Windows</b> (Super) key on your keyboard or click the menu icon on the panel.</p><p>Just start typing the name of the program you need — the system will find it instantly!</p>",
+
+    "slide2_title": "Step 2: Your Unique Desktop",
+    "slide2_text": "<p>Equestria OS is highly customizable. Used to the taskbar at the bottom? Or want a dock in the center? You can also change the entire color scheme to match your favorite character!</p>",
+    "s2_btn1": "🎨 Colors & Themes",
+    "s2_btn2": "📐 Task Panel",
+
+    "slide3_title": "Step 3: Software & Updates",
+    "slide3_text": "<p>No more searching for installers on the web! Install top-tier software and update your entire system with one click via <b>Essentials</b>.</p><p>Need a specific app out of thousands? Just switch to the full App Store mode inside!</p>",
+    "s3_btn1": "📦 Open Essentials",
+
+    "slide4_title": "Step 4: Keep it Clean",
+    "slide4_text": "<p>Installing is easy, and uninstalling is even easier. If you no longer need a program, use the <b>Package Manager</b> to safely remove it.</p>",
+    "s4_btn1": "🗑️ Package Manager",
+
+    "slide5_title": "Step 5: Smart File Transfer",
+    "slide5_text": "<p>Running out of space on your fast SSD? Our <b>Relocator</b> tool allows you to move a heavy game to an HDD, leaving an invisible symlink. Launchers won't even notice the files moved!</p>",
+    "s5_btn1": "🔗 Open Relocator",
+
+    "slide6_title": "Step 6: Under the Hood",
+    "slide6_text": "<p>For advanced users, we've created graphical toggles. No need to use the terminal to manage background services (Systemd) or create a Swap file if you run out of RAM.</p>",
+    "s6_btn1": "⚙️ Services",
+    "s6_btn2": "💾 Swap Manager",
+
+    "slide7_title": "You are amazing! 🌟",
+    "slide7_text": "<p>This system is now your home. If you forget something or want to configure autostart, check out our central hub.</p><p>Have a magical experience with Equestria OS!</p>",
+    "s7_btn1": "🏠 Welcome Hub"
+}

@@ -1,0 +1,38 @@
+{
+    "app_title": "Equestria OS — Visite guidée",
+    "btn_next": "Suivant ➔",
+    "btn_prev": "← Retour",
+    "btn_close": "Terminer la visite",
+
+    "slide0_title": "Bienvenue ! 🐴✨",
+    "slide0_text": "<p>Oubliez tout ce que vous saviez sur les systèmes d'exploitation complexes. Nous avons rendu ce système aussi simple et convivial que possible.</p><p>Cette courte visite vous montrera les fonctions essentielles de votre nouveau système.</p>",
+
+    "slide1_title": "Étape 1 : Navigation de base",
+    "slide1_text": "<p>Où est le menu Démarrer ? Simple : appuyez sur la touche <b>Windows</b> (Super) ou cliquez sur l'icône du menu dans le panneau.</p><p>Commencez simplement à taper le nom du programme — le système le trouvera instantanément !</p>",
+
+    "slide2_title": "Étape 2 : Votre bureau unique",
+    "slide2_text": "<p>Equestria OS est hautement personnalisable. Habitué à la barre des tâches en bas ? Ou voulez-vous un dock au centre ? Vous pouvez aussi changer tout le schéma de couleurs pour votre personnage préféré !</p>",
+    "s2_btn1": "🎨 Couleurs & Thèmes",
+    "s2_btn2": "📐 Barre des tâches",
+
+    "slide3_title": "Étape 3 : Logiciels & Mises à jour",
+    "slide3_text": "<p>Fini de chercher des installateurs sur internet ! Installez les meilleurs logiciels et mettez à jour tout votre système en un clic via <b>Essentials</b>.</p><p>Besoin d'une application spécifique parmi des milliers ? Passez simplement en mode App Store complet !</p>",
+    "s3_btn1": "📦 Ouvrir Essentials",
+
+    "slide4_title": "Étape 4 : Garder le système propre",
+    "slide4_text": "<p>Installer est facile, désinstaller encore plus. Si vous n'avez plus besoin d'un programme, utilisez le <b>Gestionnaire de paquets</b> pour le supprimer proprement.</p>",
+    "s4_btn1": "🗑️ Gestionnaire de paquets",
+
+    "slide5_title": "Étape 5 : Transfert intelligent de fichiers",
+    "slide5_text": "<p>Manque de place sur votre SSD rapide ? Notre outil <b>Relocator</b> vous permet de déplacer un jeu lourd vers un HDD en laissant un lien symbolique invisible. Les launchers ne remarqueront même pas que les fichiers ont bougé !</p>",
+    "s5_btn1": "🔗 Ouvrir Relocator",
+
+    "slide6_title": "Étape 6 : Sous le capot",
+    "slide6_text": "<p>Pour les utilisateurs avancés, nous avons créé des interrupteurs graphiques. Plus besoin du terminal pour gérer les services en arrière-plan (Systemd) ou créer un fichier Swap si vous manquez de RAM.</p>",
+    "s6_btn1": "⚙️ Services",
+    "s6_btn2": "💾 Gestionnaire de swap",
+
+    "slide7_title": "Vous êtes incroyable ! 🌟",
+    "slide7_text": "<p>Ce système est maintenant votre maison. Si vous oubliez quelque chose ou souhaitez configurer le démarrage automatique, consultez notre hub central.</p><p>Bonne expérience magique avec Equestria OS !</p>",
+    "s7_btn1": "🏠 Welcome Hub"
+}
