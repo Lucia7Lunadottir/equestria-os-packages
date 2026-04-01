@@ -97,5 +97,8 @@
   "ui.flatpak_init_btn": "Flatpak initialisieren",
   "ui.flatpak_not_installed_title": "Flatpak ist nicht installiert",
   "ui.flatpak_not_installed_desc": "Installieren Sie Flatpak, um auf tausende Flathub-Anwendungen zuzugreifen.",
-  "ui.flatpak_install_btn": "Flatpak installieren"
+  "ui.flatpak_install_btn": "Flatpak installieren",
+  "ui.source_updates": "Updates",
+  "ui.integrity_check": "Systemdateien prüfen",
+  "ui.cache_clean": "Paket-Cache leeren"
 }

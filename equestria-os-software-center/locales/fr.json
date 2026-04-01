@@ -97,5 +97,8 @@
   "ui.flatpak_init_btn": "Initialiser Flatpak",
   "ui.flatpak_not_installed_title": "Flatpak n'est pas installé",
   "ui.flatpak_not_installed_desc": "Installez Flatpak pour accéder à des milliers d'applications Flathub.",
-  "ui.flatpak_install_btn": "Installer Flatpak"
+  "ui.flatpak_install_btn": "Installer Flatpak",
+  "ui.source_updates": "Mises à jour",
+  "ui.integrity_check": "Vérifier les fichiers système",
+  "ui.cache_clean": "Nettoyer le cache des paquets"
 }

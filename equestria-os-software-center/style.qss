@@ -67,6 +67,32 @@ QPushButton#NavBtn:hover {
     border: 1px solid rgb(137, 180, 250);
 }
 
+QPushButton#IntegrityBtn {
+    background-color: rgb(137, 180, 250);
+    color: rgb(17, 17, 27);
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 14px;
+    border: none;
+}
+
+QPushButton#IntegrityBtn:hover {
+    background-color: rgb(116, 160, 230);
+}
+
+QPushButton#CacheCleanBtn {
+    background-color: rgb(250, 179, 135);
+    color: rgb(17, 17, 27);
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 14px;
+    border: none;
+}
+
+QPushButton#CacheCleanBtn:hover {
+    background-color: rgb(230, 155, 110);
+}
+
 QPushButton#UpdateAllBtn {
     background-color: rgb(166, 227, 161);
     color: rgb(17, 17, 27);
@@ -155,7 +181,7 @@ QPushButton#ListInstallBtn:hover, QPushButton#InstallSelectedBtn:hover {
     background-color: rgb(190, 140, 240);
 }
 
-QPushButton#InstallSelectedBtn:disabled {
+QPushButton#ListInstallBtn:disabled, QPushButton#InstallSelectedBtn:disabled {
     background-color: rgb(69, 71, 90);
     color: rgb(108, 112, 134);
 }
@@ -179,6 +205,26 @@ QPushButton#LangBtn[active="true"] {
     color: rgb(17, 17, 27);
     border: 1px solid rgb(203, 166, 247);
     font-weight: bold;
+}
+
+QScrollBar:horizontal {
+    background: transparent;
+    height: 8px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background: rgb(49, 50, 68);
+    min-width: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: rgb(69, 71, 90);
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
 }
 
 QScrollBar:vertical {

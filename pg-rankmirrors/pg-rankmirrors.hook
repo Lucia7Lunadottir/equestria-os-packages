@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Upgrade
+Type = Package
+Target = pacman-mirrorlist
+
+[Action]
+Description = Ranking pacman mirrors with reflector...
+When = PostTransaction
+Depends = reflector
+Exec = /usr/bin/pg-rankmirrors-backend auto-rank
