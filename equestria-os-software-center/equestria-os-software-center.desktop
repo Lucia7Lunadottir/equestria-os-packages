@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Equestria Software Center
+Comment=Установка программ и обновление Equestria OS
+# Путь к исполняемому скрипту
+Exec=python /usr/share/equestria-os-software-center/main.py
+# Имя иконки (без расширения, так как она будет в системных папках)
+Icon=equestria-os-software-center
+Terminal=false
+Type=Application
+Categories=System;Settings;
+# Это критично для правильного отображения иконки на панели задач
+StartupWMClass=equestria-os-software-center

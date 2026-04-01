@@ -1,0 +1,136 @@
+QWidget {
+    background-color: rgb(30, 30, 46);
+    color: rgb(205, 214, 244);
+    font-family: "Noto Sans", sans-serif;
+}
+
+/* Верхняя панель */
+QWidget#TopBar {
+    background-color: rgb(24, 24, 37);
+    border-bottom: 1px solid rgb(49, 50, 68);
+}
+QLabel#LogoLabel {
+    color: rgb(245, 194, 231);
+}
+
+/* Кнопки языков */
+QPushButton#LangBtn {
+    background-color: transparent;
+    color: rgb(180, 180, 200);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+}
+QPushButton#LangBtn:hover {
+    background-color: rgb(49, 50, 68);
+    color: rgb(220, 220, 255);
+}
+QPushButton#LangBtn[active="true"] {
+    background-color: rgb(245, 194, 231);
+    color: rgb(30, 30, 46);
+    font-weight: bold;
+    border: 1px solid rgb(245, 194, 231);
+}
+
+/* Слайды */
+QLabel#SlideTitle {
+    color: rgb(203, 166, 247);
+    font-size: 32px;
+    font-weight: bold;
+}
+QTextBrowser#SlideText {
+    background-color: transparent;
+    border: none;
+    font-size: 18px;
+}
+
+/* Синие кнопки внутри слайда */
+QPushButton#ActionBtn {
+    background-color: rgb(137, 180, 250);
+    color: rgb(24, 24, 37);
+    font-size: 15px;
+    font-weight: bold;
+    padding: 10px 20px;
+    margin: 0px 5px; /* Отступ между кнопками */
+    border-radius: 10px;
+    border: none;
+}
+QPushButton#ActionBtn:hover {
+    background-color: rgb(180, 190, 254);
+}
+
+/* Нижняя панель навигации */
+QWidget#BottomBar {
+    background-color: rgb(24, 24, 37);
+    border-top: 1px solid rgb(49, 50, 68);
+}
+
+QPushButton#NavBtnPrev {
+    background-color: transparent;
+    color: rgb(166, 173, 200);
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    padding: 8px 16px;
+}
+QPushButton#NavBtnPrev:hover {
+    color: rgb(205, 214, 244);
+}
+
+QPushButton#NavBtnNext {
+    background-color: rgb(166, 227, 161);
+    color: rgb(24, 24, 37);
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 8px 24px;
+}
+QPushButton#NavBtnNext:hover {
+    background-color: rgb(148, 226, 213);
+}
+
+QPushButton#NavBtnFinish {
+    background-color: rgb(245, 194, 231);
+    color: rgb(24, 24, 37);
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 8px 24px;
+}
+QPushButton#NavBtnFinish:hover {
+    background-color: rgb(255, 210, 245);
+}
+
+/* Скроллбар */
+QScrollBar:vertical {
+    background: rgb(30, 30, 46);
+    width: 6px;
+    margin: 0px;
+    border-radius: 3px;
+}
+QScrollBar::handle:vertical {
+    background: rgb(69, 71, 90);
+    min-height: 20px;
+    border-radius: 3px;
+}
+QScrollBar::handle:vertical:hover {
+    background: rgb(108, 112, 134);
+}
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+/* Точки прогресса */
+QLabel#ProgressDot {
+    color: rgb(69, 71, 90);
+    font-size: 20px;
+}
+QLabel#ProgressDot[active="true"] {
+    color: rgb(245, 194, 231);
+}
