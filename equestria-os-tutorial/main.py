@@ -6,7 +6,7 @@ import glob
 import shlex
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QStackedWidget, QTextBrowser, QLabel,
-                             QGraphicsDropShadowEffect, QSizePolicy)
+                             QGraphicsDropShadowEffect, QSizePolicy, QCheckBox)
 from PyQt6.QtGui import QFontDatabase, QFont, QPixmap, QPainter, QPainterPath, QColor, QIcon
 from PyQt6.QtCore import Qt
 
@@ -94,6 +94,8 @@ class TutorialApp(QMainWindow):
             {"title": "slide4_title", "text": "slide4_text", "image": "slide4.png", "actions": [
                 {"btn": "s4_btn1", "desktop": "equestria-os-package-manager.desktop"}
             ]},
+
+            {"title": "slide_exe_title", "text": "slide_exe_text", "image": "slide_exe.png", "actions": []},
 
             # Шаг 5: Перенос файлов (Relocator)
             {"title": "slide5_title", "text": "slide5_text", "image": "slide5.png", "actions": [
@@ -207,6 +209,17 @@ class TutorialApp(QMainWindow):
 
         self.bottom_layout.addStretch()
 
+        self.autostart_checkbox = QCheckBox()
+        self.autostart_checkbox.setObjectName("AutostartCheckbox")
+        self.autostart_checkbox.setChecked(self._autostart_enabled())
+        self.autostart_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.autostart_checkbox.stateChanged.connect(
+            lambda state: self._set_autostart(bool(state))
+        )
+        self.bottom_layout.addWidget(self.autostart_checkbox)
+
+        self.bottom_layout.addSpacing(24)
+
         self.btn_next = QPushButton("Next ➔")
         self.btn_next.setObjectName("NavBtnNext")
         self.btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -286,6 +299,33 @@ class TutorialApp(QMainWindow):
             "buttons": slide_buttons
         })
 
+    def _autostart_path(self):
+        return os.path.join(os.path.expanduser("~"), ".config", "autostart",
+                            "equestria-os-tutorial.desktop")
+
+    def _autostart_enabled(self):
+        return os.path.exists(self._autostart_path())
+
+    def _set_autostart(self, enabled: bool):
+        path = self._autostart_path()
+        if enabled:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(
+                    "[Desktop Entry]\n"
+                    "Type=Application\n"
+                    "Name=Equestria OS Tour\n"
+                    "Exec=python3 /opt/equestria-os-tutorial/main.py\n"
+                    "Icon=equestria-os-tutorial\n"
+                    "X-GNOME-Autostart-enabled=true\n"
+                    "Hidden=false\n"
+                )
+        else:
+            try:
+                os.remove(path)
+            except FileNotFoundError:
+                pass
+
     def launch_app(self, desktop_filename):
         """Умный запуск .desktop файла с парсингом Exec и отвязкой от терминала"""
         path = f"/usr/share/applications/{desktop_filename}"
@@ -352,6 +392,7 @@ class TutorialApp(QMainWindow):
 
     def update_ui_texts(self):
         self.logo_label.setText(self.t("app_title"))
+        self.autostart_checkbox.setText(self.t("autostart_label"))
         for lang, btn in self.lang_buttons.items():
             btn.setProperty("active", "true" if lang == self.current_lang else "false")
             btn.style().unpolish(btn)

@@ -3,6 +3,7 @@
     "btn_next": "Next ➔",
     "btn_prev": "← Back",
     "btn_close": "Finish Tour",
+    "autostart_label": "Run at startup",
 
     "slide0_title": "Welcome! 🐴✨",
     "slide0_text": "<p>Forget everything you knew about complex OSs. We've made this system as simple and friendly as possible.</p><p>This short tour will show you the basic buttons of your new system.</p>",
@@ -22,6 +23,9 @@
     "slide4_title": "Step 4: Keep it Clean",
     "slide4_text": "<p>Installing is easy, and uninstalling is even easier. If you no longer need a program, use the <b>Package Manager</b> to safely remove it.</p>",
     "s4_btn1": "🗑️ Package Manager",
+
+    "slide_exe_title": "Step 4.5: Double-click magic (.exe)",
+    "slide_exe_text": "<p>Downloaded a familiar <b>.exe</b> file? Just double-click it! Equestria OS can run Windows programs right out of the box thanks to our built-in compatibility layer.</p><p><i>Note: Compatibility technologies are evolving fast, but some specific or very heavy Windows programs might still have limitations.</i></p>",
 
     "slide5_title": "Step 5: Smart File Transfer",
     "slide5_text": "<p>Running out of space on your fast SSD? Our <b>Relocator</b> tool allows you to move a heavy game to an HDD, leaving an invisible symlink. Launchers won't even notice the files moved!</p>",

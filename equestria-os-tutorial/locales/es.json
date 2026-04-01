@@ -3,6 +3,7 @@
     "btn_next": "Siguiente ➔",
     "btn_prev": "← Atrás",
     "btn_close": "Finalizar tour",
+    "autostart_label": "Ejecutar al inicio del sistema",
 
     "slide0_title": "¡Bienvenido! 🐴✨",
     "slide0_text": "<p>Olvida todo lo que sabías sobre los sistemas operativos complejos. Hemos hecho este sistema lo más simple y amigable posible.</p><p>Este breve tour te mostrará las funciones principales de tu nuevo sistema.</p>",
@@ -22,6 +23,9 @@
     "slide4_title": "Paso 4: Mantener el orden",
     "slide4_text": "<p>Instalar es fácil, y desinstalar aún más fácil. Si ya no necesitas un programa, usa el <b>Gestor de paquetes</b> para eliminarlo por completo.</p>",
     "s4_btn1": "🗑️ Gestor de paquetes",
+
+    "slide_exe_title": "Paso 4.5: Magia del doble clic (.exe)",
+    "slide_exe_text": "<p>¿Descargaste un archivo <b>.exe</b> familiar? ¡Solo haz doble clic en él! Equestria OS puede ejecutar programas de Windows de forma nativa gracias a nuestra capa de compatibilidad integrada.</p><p><i>Nota: Las tecnologías evolucionan rápido, pero algunos programas muy específicos o pesados aún podrían tener limitaciones.</i></p>",
 
     "slide5_title": "Paso 5: Transferencia inteligente de archivos",
     "slide5_text": "<p>¿Poco espacio en tu SSD rápido? Nuestra herramienta <b>Relocator</b> te permite mover un juego pesado a un HDD dejando un enlace simbólico invisible. ¡Los lanzadores ni se enterarán de que los archivos se movieron!</p>",
