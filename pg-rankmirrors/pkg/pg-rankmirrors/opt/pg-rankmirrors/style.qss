@@ -84,3 +84,20 @@ QPushButton#SecondaryBtn:hover { background-color: rgb(69, 71, 90); border: 1px 
 /* Окно загрузки */
 QFrame#LoadingOverlay { background-color: rgba(30, 30, 46, 220); }
 QLabel#LoadingText { color: rgb(203, 166, 247); font-size: 18px; font-weight: bold; }
+
+/* Чекбокс автообновления */
+QCheckBox#AutoCheckbox {
+    color: rgb(205, 214, 244);
+    font-size: 13px;
+    spacing: 6px;
+}
+QCheckBox#AutoCheckbox::indicator {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    border: 1px solid rgb(69, 71, 90);
+    background-color: rgb(30, 30, 46);
+}
+QCheckBox#AutoCheckbox::indicator:checked {
+    background-color: rgb(166, 227, 161);
+    border: 1px solid rgb(166, 227, 161);
+}

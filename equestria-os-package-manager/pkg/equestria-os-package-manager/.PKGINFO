@@ -6,9 +6,9 @@ xdata = pkgtype=pkg
 pkgver = 2.2.0-1
 pkgdesc = Official Equestria OS Package Manager (Uninstall and Manage)
 url = https://psyche-games.com
-builddate = 1774698971
+builddate = 1775066275
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 3556150
+size = 3556161
 arch = any
 license = custom
 depend = python

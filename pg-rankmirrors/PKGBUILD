@@ -1,13 +1,15 @@
 # Maintainer: Equestria OS Team <info@psyche-games.com>
 
 pkgname=pg-rankmirrors
-pkgver=2.0.0
+pkgver=2.1.0
 pkgrel=1
 pkgdesc='Equestria OS — Mirror manager with country selection'
 arch=('any')
 license=('GPL3')
 url='https://psyche-games.com'
 depends=('python' 'python-pyqt6' 'reflector' 'polkit')
+install='pg-rankmirrors.install'
+backup=('etc/pg-rankmirrors.conf')
 
 package() {
     local appdir="$pkgdir/opt/$pkgname"
@@ -33,6 +35,10 @@ WRAPPER
     chmod 755 "$pkgdir/usr/bin/pg-rankmirrors"
 
     install -Dm644 "$startdir/pg-rankmirrors.desktop" "$pkgdir/usr/share/applications/pg-rankmirrors.desktop"
+
+    install -Dm644 "$startdir/pg-rankmirrors.service" "$pkgdir/usr/lib/systemd/system/pg-rankmirrors.service"
+    install -Dm644 "$startdir/pg-rankmirrors.timer"   "$pkgdir/usr/lib/systemd/system/pg-rankmirrors.timer"
+    install -Dm644 "$startdir/pg-rankmirrors.hook"    "$pkgdir/usr/share/libalpm/hooks/pg-rankmirrors.hook"
 
     # Уникальное имя иконки: pg-rankmirrors.png
     if [ -f "$startdir/EquestriaOS-Logo.png" ]; then

@@ -9,6 +9,30 @@ export LC_ALL=C
 
 MIRRORLIST="/etc/pacman.d/mirrorlist"
 BACKUP="/etc/pacman.d/mirrorlist.bak"
+CONFIG="/etc/pg-rankmirrors.conf"
+
+SaveConfig() {
+    echo "COUNTRIES=$1" > "$CONFIG"
+}
+
+AutoRank() {
+    [ ! -f "$CONFIG" ] && exit 0
+    source "$CONFIG"
+    [ -z "$COUNTRIES" ] && exit 0
+    RankMirrors "$COUNTRIES" >/dev/null 2>&1
+}
+
+EnableAuto() {
+    [ "$EUID" -ne 0 ] && { echo '{"error":"Root required"}'; exit 1; }
+    systemctl enable --now pg-rankmirrors.timer
+    echo '{"status":"enabled"}'
+}
+
+DisableAuto() {
+    [ "$EUID" -ne 0 ] && { echo '{"error":"Root required"}'; exit 1; }
+    systemctl disable --now pg-rankmirrors.timer
+    echo '{"status":"disabled"}'
+}
 
 ListCountries() {
     if ! command -v reflector &>/dev/null; then
@@ -66,10 +90,11 @@ RankMirrors() {
         $reflector_args \
         --protocol https \
         --sort rate \
-        --latest 10 \
+        --latest 20 \
         --save "$MIRRORLIST" 2>&1
 
     if [ $? -eq 0 ]; then
+        SaveConfig "$countries_arg"
         echo '{"status":"done"}'
     else
         cp "$BACKUP" "$MIRRORLIST" 2>/dev/null
@@ -91,5 +116,8 @@ case "$1" in
     current)        CurrentMirrors ;;
     rank)           RankMirrors "$2" ;;
     restore)        RestoreBackup ;;
-    *) echo "Usage: pg-rankmirrors-backend [list-countries|current|rank \"RU,DE\"|restore]"; exit 1 ;;
+    auto-rank)      AutoRank ;;
+    enable-auto)    EnableAuto ;;
+    disable-auto)   DisableAuto ;;
+    *) echo "Usage: pg-rankmirrors-backend [list-countries|current|rank \"RU,DE\"|restore|auto-rank|enable-auto|disable-auto]"; exit 1 ;;
 esac

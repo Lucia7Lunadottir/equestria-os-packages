@@ -97,5 +97,8 @@
   "ui.flatpak_init_btn": "初始化Flatpak",
   "ui.flatpak_not_installed_title": "未安装Flatpak",
   "ui.flatpak_not_installed_desc": "安装Flatpak以访问数千个Flathub应用程序。",
-  "ui.flatpak_install_btn": "安装Flatpak"
+  "ui.flatpak_install_btn": "安装Flatpak",
+  "ui.source_updates": "更新",
+  "ui.integrity_check": "检查系统文件",
+  "ui.cache_clean": "清理包缓存"
 }

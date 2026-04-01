@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                             QPushButton, QLineEdit, QScrollArea, QFrame)
+                             QPushButton, QLineEdit, QScrollArea, QFrame, QCheckBox)
 from PyQt6.QtCore import Qt
 
 class CountryRow(QFrame):
@@ -140,6 +140,9 @@ class Ui_RankMirrors:
         f_layout = QHBoxLayout(self.footer)
         f_layout.setContentsMargins(16, 12, 16, 12)
 
+        self.chk_auto = QCheckBox("Auto-update mirrors (weekly)")
+        self.chk_auto.setObjectName("AutoCheckbox")
+
         self.btn_restore = QPushButton("Restore backup")
         self.btn_restore.setObjectName("SecondaryBtn")
         self.btn_restore.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -148,6 +151,7 @@ class Ui_RankMirrors:
         self.btn_apply.setObjectName("PrimaryBtn")
         self.btn_apply.setCursor(Qt.CursorShape.PointingHandCursor)
 
+        f_layout.addWidget(self.chk_auto)
         f_layout.addStretch()
         f_layout.addWidget(self.btn_restore)
         f_layout.addWidget(self.btn_apply)

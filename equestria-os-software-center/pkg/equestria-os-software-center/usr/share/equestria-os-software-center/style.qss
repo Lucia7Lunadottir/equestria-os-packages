@@ -1,0 +1,291 @@
+QWidget#root {
+    background-color: rgb(26, 24, 41);
+}
+
+QWidget {
+    color: rgb(205, 214, 244);
+    font-family: "Noto Sans", sans-serif;
+    font-size: 14px;
+}
+
+/* ЗАГОЛОВОК ТЕПЕРЬ ПОДХВАТЫВАЕТ ШРИФТ ИЗ ПИТОНА */
+QLabel#TitleLabel {
+    font-family: {{TITLE_FONT}}, "Noto Sans", sans-serif;
+    color: rgb(245, 194, 231);
+    margin-bottom: 10px;
+    background: transparent;
+}
+
+QFrame#LeftPanel {
+    background-color: rgb(30, 28, 48);
+    border-radius: 15px;
+    border: 1px solid rgb(49, 50, 68);
+}
+
+QLabel#CategoryHeader {
+    color: rgb(137, 180, 250);
+    font-weight: bold;
+    padding-left: 5px;
+    margin-top: 10px;
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
+QListWidget#CategoryList {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+QListWidget#CategoryList::item {
+    padding: 10px;
+    border-radius: 8px;
+    color: rgb(186, 194, 222);
+}
+
+QListWidget#CategoryList::item:hover {
+    background-color: rgb(49, 50, 68);
+}
+
+QListWidget#CategoryList::item:selected {
+    background-color: rgb(137, 180, 250);
+    color: rgb(17, 17, 27);
+    font-weight: bold;
+}
+
+QPushButton#NavBtn {
+    background-color: rgb(49, 50, 68);
+    color: white;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: left;
+    border: 1px solid rgb(69, 71, 90);
+}
+
+QPushButton#NavBtn:hover {
+    background-color: rgb(69, 71, 90);
+    border: 1px solid rgb(137, 180, 250);
+}
+
+QPushButton#IntegrityBtn {
+    background-color: rgb(137, 180, 250);
+    color: rgb(17, 17, 27);
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 14px;
+    border: none;
+}
+
+QPushButton#IntegrityBtn:hover {
+    background-color: rgb(116, 160, 230);
+}
+
+QPushButton#UpdateAllBtn {
+    background-color: rgb(166, 227, 161);
+    color: rgb(17, 17, 27);
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 15px;
+    border: none;
+}
+
+QPushButton#UpdateAllBtn:hover {
+    background-color: rgb(148, 226, 213);
+}
+
+QFrame#RightPanel {
+    background-color: rgb(30, 28, 48);
+    border-radius: 15px;
+    border: 1px solid rgb(49, 50, 68);
+}
+
+QScrollArea {
+    background-color: transparent;
+    border: none;
+}
+
+QWidget#AppScrollContent, QWidget#ScrollContent {
+    background-color: transparent;
+}
+
+QLineEdit#SearchField, QComboBox#CategoryDropdown {
+    background-color: rgb(17, 17, 27);
+    border: 1px solid rgb(49, 50, 68);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: white;
+}
+
+QLineEdit#SearchField:focus {
+    border: 1px solid rgb(203, 166, 247);
+}
+
+QComboBox QAbstractItemView {
+    background-color: rgb(17, 17, 27);
+    color: white;
+    selection-background-color: rgb(49, 50, 68);
+    border: 1px solid rgb(49, 50, 68);
+    outline: none;
+}
+
+QFrame#AppRow, QFrame#PackageRow {
+    background-color: rgba(49, 50, 68, 0.3);
+    border-radius: 10px;
+    margin-bottom: 2px;
+    border: 1px solid transparent;
+}
+
+QFrame#AppRow:hover, QFrame#PackageRow:hover {
+    background-color: rgba(49, 50, 68, 0.6);
+    border: 1px solid rgb(69, 71, 90);
+}
+
+QPushButton#AppToggle {
+    background-color: rgb(17, 17, 27);
+    color: transparent;
+    border: 2px solid rgb(69, 71, 90);
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+QPushButton#AppToggle:checked {
+    background-color: rgb(245, 194, 231);
+    color: rgb(17, 17, 27);
+    border: 2px solid rgb(245, 194, 231);
+}
+
+QPushButton#ListInstallBtn, QPushButton#InstallSelectedBtn {
+    background-color: rgb(203, 166, 247);
+    color: rgb(17, 17, 27);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    border: none;
+}
+
+QPushButton#ListInstallBtn:hover, QPushButton#InstallSelectedBtn:hover {
+    background-color: rgb(190, 140, 240);
+}
+
+QPushButton#ListInstallBtn:disabled, QPushButton#InstallSelectedBtn:disabled {
+    background-color: rgb(69, 71, 90);
+    color: rgb(108, 112, 134);
+}
+
+QPushButton#LangBtn {
+    background-color: transparent;
+    color: rgb(147, 153, 178);
+    border: 1px solid rgb(49, 50, 68);
+    border-radius: 4px;
+    padding: 4px; /* Чуть увеличили отступ для сетки */
+    font-size: 10px;
+}
+
+QPushButton#LangBtn:hover {
+    background-color: rgb(49, 50, 68);
+    color: white;
+}
+
+QPushButton#LangBtn[active="true"] {
+    background-color: rgb(203, 166, 247);
+    color: rgb(17, 17, 27);
+    border: 1px solid rgb(203, 166, 247);
+    font-weight: bold;
+}
+
+QScrollBar:horizontal {
+    background: transparent;
+    height: 8px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background: rgb(49, 50, 68);
+    min-width: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: rgb(69, 71, 90);
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 8px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: rgb(49, 50, 68);
+    min-height: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: rgb(69, 71, 90);
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+/* Detail back button */
+QPushButton#DetailBackBtn {
+    background-color: transparent;
+    color: rgb(137, 180, 250);
+    border: 1px solid rgb(137, 180, 250);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-weight: bold;
+}
+QPushButton#DetailBackBtn:hover {
+    background-color: rgba(137, 180, 250, 0.15);
+}
+
+/* Detail action button (Install / Remove) */
+QPushButton#DetailActionBtn {
+    background-color: rgb(203, 166, 247);
+    color: rgb(17, 17, 27);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    font-size: 15px;
+    border: none;
+}
+QPushButton#DetailActionBtn:hover {
+    background-color: rgb(190, 140, 240);
+}
+QPushButton#DetailActionBtn:disabled {
+    background-color: rgb(69, 71, 90);
+    color: rgb(108, 112, 134);
+}
+
+/* Screenshot scroll area */
+QScrollArea#ScreenshotScroll {
+    background: transparent;
+    border: none;
+}
+
+/* Кнопки пагинации */
+QPushButton#PaginationBtn {
+    background-color: rgb(49, 50, 68);
+    color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-weight: bold;
+}
+QPushButton#PaginationBtn:hover {
+    background-color: rgb(69, 71, 90);
+    border: 1px solid rgb(137, 180, 250);
+}
+QPushButton#PaginationBtn:disabled {
+    background-color: rgb(24, 24, 37);
+    color: rgb(69, 71, 90);
+    border: 1px solid rgb(49, 50, 68);
+}

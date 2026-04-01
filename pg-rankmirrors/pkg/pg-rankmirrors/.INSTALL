@@ -1,0 +1,12 @@
+post_install() {
+    systemctl daemon-reload
+    systemctl enable --now pg-rankmirrors.timer
+}
+post_upgrade() {
+    systemctl daemon-reload
+    systemctl try-restart pg-rankmirrors.timer
+}
+post_remove() {
+    systemctl disable --now pg-rankmirrors.timer 2>/dev/null || true
+    systemctl daemon-reload
+}

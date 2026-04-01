@@ -1,5 +1,5 @@
 pkgname=equestria-os-software-center
-pkgver=1.0
+pkgver=1.2.0
 pkgrel=1
 pkgdesc="Центр программного обеспечения для Equestria OS (Essentials + App Store)"
 arch=('any')
@@ -7,7 +7,7 @@ url="https://github.com/equestria-os/equestria-os-software-center"
 license=('GPL')
 depends=('python' 'python-pyqt6' 'pacman' 'yay')
 
-# Список всех файлов, которые должны быть в папке рядом с PKGBUILD при сборке
+# Убрали 'locales' отсюда, так как это папка
 source=(
     'main.py'
     'ui_software.py'
@@ -15,17 +15,17 @@ source=(
     'equestria_cyrillic.ttf'
     'EquestriaApps.csv'
     'EquestriaLocalizations.csv'
-    'equestria-app-store.desktop'
+    'equestria-os-software-center.desktop'
     'equestria-os-software-center.png'
 )
 
+# Вернули 8 SKIP
 sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
 
 package() {
-    # Создаем папку приложения в /usr/share/
     install -d "$pkgdir/usr/share/equestria-os-software-center"
+    install -d "$pkgdir/usr/share/equestria-os-software-center/locales"
 
-    # Копируем код и ресурсы
     install -m644 main.py "$pkgdir/usr/share/equestria-os-software-center/main.py"
     install -m644 ui_software.py "$pkgdir/usr/share/equestria-os-software-center/ui_software.py"
     install -m644 style.qss "$pkgdir/usr/share/equestria-os-software-center/style.qss"
@@ -33,9 +33,9 @@ package() {
     install -m644 EquestriaApps.csv "$pkgdir/usr/share/equestria-os-software-center/EquestriaApps.csv"
     install -m644 EquestriaLocalizations.csv "$pkgdir/usr/share/equestria-os-software-center/EquestriaLocalizations.csv"
 
-    # Устанавливаем иконку в системную папку иконок
-    install -Dm644 equestria-os-software-center.png "$pkgdir/usr/share/pixmaps/equestria-os-software-center.png"
+    # ФИКС: Копируем файлы напрямую из твоей папки через $startdir
+    install -m644 "$startdir/locales/"*.json "$pkgdir/usr/share/equestria-os-software-center/locales/"
 
-    # Устанавливаем .desktop файл
-    install -Dm644 equestria-app-store.desktop "$pkgdir/usr/share/applications/equestria-os-software-center.desktop"
+    install -Dm644 equestria-os-software-center.png "$pkgdir/usr/share/pixmaps/equestria-os-software-center.png"
+    install -Dm644 equestria-os-software-center.desktop "$pkgdir/usr/share/applications/equestria-os-software-center.desktop"
 }

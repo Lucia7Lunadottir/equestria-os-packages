@@ -1,0 +1,8 @@
+[Unit]
+Description=Rank pacman mirrors with reflector (Equestria OS)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/pg-rankmirrors-backend auto-rank

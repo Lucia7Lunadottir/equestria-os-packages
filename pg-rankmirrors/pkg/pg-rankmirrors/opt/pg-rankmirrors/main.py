@@ -25,6 +25,7 @@ class main_app(QMainWindow, Ui_RankMirrors):
         self.search_field.textChanged.connect(self.filter_list)
         self.btn_apply.clicked.connect(self.on_apply_clicked)
         self.btn_restore.clicked.connect(self.on_restore_clicked)
+        self.chk_auto.toggled.connect(self.on_auto_toggled)
 
         # Данные
         self.all_countries = []
@@ -42,6 +43,7 @@ class main_app(QMainWindow, Ui_RankMirrors):
             self.setStyleSheet(open(os.path.join(self.base_path, "style.qss")).read())
 
         self.update_apply_button()
+        self._check_timer_state()
         self.load_data()
 
     def resizeEvent(self, event):
@@ -189,6 +191,24 @@ class main_app(QMainWindow, Ui_RankMirrors):
 
         # Перезагружаем список текущих зеркал в правой панели
         threading.Thread(target=lambda: self.mirrors_loaded.emit(self.run_command(["pg-rankmirrors-backend", "current"])), daemon=True).start()
+
+    def _check_timer_state(self):
+        try:
+            r = subprocess.run(["systemctl", "is-enabled", "pg-rankmirrors.timer"],
+                               capture_output=True, text=True)
+            enabled = r.stdout.strip() == "enabled"
+            self.chk_auto.blockSignals(True)
+            self.chk_auto.setChecked(enabled)
+            self.chk_auto.blockSignals(False)
+        except Exception:
+            pass
+
+    def on_auto_toggled(self, checked):
+        cmd = "enable-auto" if checked else "disable-auto"
+        threading.Thread(
+            target=lambda: self.run_command(["pkexec", "pg-rankmirrors-backend", cmd]),
+            daemon=True
+        ).start()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
