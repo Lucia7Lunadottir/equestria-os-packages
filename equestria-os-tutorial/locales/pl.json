@@ -3,6 +3,7 @@
     "btn_next": "Dalej ➔",
     "btn_prev": "← Wstecz",
     "btn_close": "Zakończ wycieczkę",
+    "autostart_label": "Uruchamiaj przy starcie systemu",
 
     "slide0_title": "Witaj! 🐴✨",
     "slide0_text": "<p>Zapomnij o wszystkim, co wiedziałeś o skomplikowanych systemach operacyjnych. Zrobiliśmy ten system tak prostym i przyjaznym, jak tylko się da.</p><p>Ta krótka wycieczka pokaże Ci główne funkcje Twojego nowego systemu.</p>",
@@ -22,6 +23,9 @@
     "slide4_title": "Krok 4: Porządek w systemie",
     "slide4_text": "<p>Instalowanie jest łatwe, a odinstalowywanie jeszcze prostsze. Jeśli program nie jest Ci już potrzebny, użyj <b>Menedżera pakietów</b>, aby usunąć go bez śladu.</p>",
     "s4_btn1": "🗑️ Menedżer pakietów",
+
+    "slide_exe_title": "Krok 4.5: Magia podwójnego kliknięcia (.exe)",
+    "slide_exe_text": "<p>Pobrałeś znajomy plik <b>.exe</b>? Po prostu kliknij go dwukrotnie! Equestria OS potrafi uruchamiać programy z Windowsa od razu po instalacji dzięki wbudowanej warstwie kompatybilności.</p><p><i>Uwaga: Technologie rozwijają się szybko, ale niektóre specyficzne lub bardzo ciężkie programy mogą jeszcze działać z ograniczeniami.</i></p>",
 
     "slide5_title": "Krok 5: Inteligentne przenoszenie plików",
     "slide5_text": "<p>Mało miejsca na szybkim SSD? Nasze narzędzie <b>Relocator</b> pozwala przenieść ciężką grę na HDD, pozostawiając niewidoczne dowiązanie symboliczne. Launchery nawet nie zauważą, że pliki się przeniosły!</p>",

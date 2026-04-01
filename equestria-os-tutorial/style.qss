@@ -126,6 +126,31 @@ QScrollBar::sub-page:vertical {
     background: none;
 }
 
+/* Чекбокс автостарта */
+QCheckBox#AutostartCheckbox {
+    color: rgb(166, 173, 200);
+    font-size: 13px;
+    spacing: 6px;
+}
+QCheckBox#AutostartCheckbox:hover {
+    color: rgb(205, 214, 244);
+}
+QCheckBox#AutostartCheckbox::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    background-color: transparent;
+}
+QCheckBox#AutostartCheckbox::indicator:checked {
+    background-color: rgb(166, 227, 161);
+    border-color: rgb(166, 227, 161);
+    image: url(none);
+}
+QCheckBox#AutostartCheckbox::indicator:hover {
+    border-color: rgb(137, 180, 250);
+}
+
 /* Точки прогресса */
 QLabel#ProgressDot {
     color: rgb(69, 71, 90);
