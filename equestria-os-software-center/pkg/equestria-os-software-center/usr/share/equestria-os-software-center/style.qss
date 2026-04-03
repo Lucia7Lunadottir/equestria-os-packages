@@ -80,6 +80,19 @@ QPushButton#IntegrityBtn:hover {
     background-color: rgb(116, 160, 230);
 }
 
+QPushButton#CacheCleanBtn {
+    background-color: rgb(250, 179, 135);
+    color: rgb(17, 17, 27);
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 14px;
+    border: none;
+}
+
+QPushButton#CacheCleanBtn:hover {
+    background-color: rgb(230, 155, 110);
+}
+
 QPushButton#UpdateAllBtn {
     background-color: rgb(166, 227, 161);
     color: rgb(17, 17, 27);

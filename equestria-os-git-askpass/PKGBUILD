@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-git-askpass
 pkgver=1.0.0
-pkgrel=1
+pkgrel=3
 pkgdesc="Native GUI Git credential interceptor for Equestria OS (fixes Unity Git errors)"
 arch=('any')
 license=('GPL')
@@ -35,4 +35,9 @@ package() {
 exec python3 /opt/equestria-os-git-askpass/equestria-os-git-askpass.py "\$@"
 EOF
     chmod 755 "$bindir/equestria-os-git-askpass"
+
+    # profile.d — для login shell (Unity Hub AppImage, скрипты-обёртки и т.д.)
+    install -Dm644 /dev/stdin "$pkgdir/etc/profile.d/equestria-os-git-askpass.sh" <<EOF
+export SSH_ASKPASS=/usr/bin/equestria-os-git-askpass
+EOF
 }

@@ -335,6 +335,29 @@ STRINGS = {
     "tt_set_label": {"en": "Change the partition label",                             "ru": "Изменить метку раздела"},
     "tt_format":    {"en": "Format with a new filesystem — ERASES ALL DATA",        "ru": "Форматировать с новой ФС — УНИЧТОЖАЕТ ВСЕ ДАННЫЕ"},
     "no_label":     {"en": "No Label",                                             "ru": "Без метки",                          "de": "Kein Name",                              "fr": "Sans nom",                               "es": "Sin nombre",                             "pt": "Sem nome",                               "pl": "Bez nazwy",                              "uk": "Без мітки",                              "zh": "无标签",                                 "ja": "ラベルなし"},
+    "fstab_issues":      {"en": "⚠  fstab Issues",
+                          "ru": "⚠  Проблемы fstab"},
+    "fstab_orphan_hint": {"en": "These /etc/fstab entries have no matching connected disk.\n"
+                                "Without 'nofail' they may block system boot.",
+                          "ru": "Эти записи /etc/fstab не имеют соответствующего подключённого диска.\n"
+                                "Без 'nofail' они могут блокировать загрузку системы."},
+    "fstab_orphan_warn": {"en": "Disk not connected — may block boot",
+                          "ru": "Диск не подключён — может блокировать загрузку"},
+    "fstab_orphan_rm":   {"en": "Remove from fstab",
+                          "ru": "Удалить из fstab"},
+    "fstab_add_nofail":  {"en": "Add nofail",
+                          "ru": "Добавить nofail"},
+    "fmt_rm_fstab_note": {"en": "(The existing fstab entry for this partition will be removed automatically)",
+                          "ru": "(Существующая запись fstab для этого раздела будет удалена автоматически)"},
+    "dlg_warning":      {"en": "Warning",                                     "ru": "Предупреждение",                     "de": "Warnung",                                "fr": "Avertissement",                          "es": "Advertencia",                            "pt": "Aviso",                                  "pl": "Ostrzeżenie",                            "uk": "Попередження",                           "zh": "警告",                                   "ja": "警告"},
+    "dlg_error":        {"en": "Error",                                        "ru": "Ошибка",                             "de": "Fehler",                                 "fr": "Erreur",                                 "es": "Error",                                  "pt": "Erro",                                   "pl": "Błąd",                                   "uk": "Помилка",                                "zh": "错误",                                   "ja": "エラー"},
+    "dlg_success":      {"en": "Success",                                      "ru": "Успешно",                            "de": "Erfolg",                                 "fr": "Succès",                                 "es": "Éxito",                                  "pt": "Sucesso",                                "pl": "Sukces",                                 "uk": "Успіх",                                  "zh": "成功",                                   "ja": "成功"},
+    "dlg_confirm_fmt":  {"en": "Confirm Format",                               "ru": "Подтвердите форматирование",         "de": "Format bestätigen",                      "fr": "Confirmer le formatage",                 "es": "Confirmar formato",                      "pt": "Confirmar formatação",                   "pl": "Potwierdź formatowanie",                 "uk": "Підтвердіть форматування",               "zh": "确认格式化",                             "ja": "フォーマットの確認"},
+    "warn_empty_mount": {"en": "Mount point and options cannot be empty!",     "ru": "Точка монтирования и опции не могут быть пустыми!", "de": "Einhängepunkt und Optionen dürfen nicht leer sein!", "fr": "Le point de montage et les options ne peuvent pas être vides !", "es": "¡El punto de montaje y las opciones no pueden estar vacíos!", "pt": "O ponto de montagem e as opções não podem estar vazios!", "pl": "Punkt montowania i opcje nie mogą być puste!", "uk": "Точка монтування та параметри не можуть бути порожніми!", "zh": "挂载点和选项不能为空！", "ja": "マウントポイントとオプションを入力してください！"},
+    "warn_no_mount":    {"en": "Specify mount point first!",                   "ru": "Сначала укажите точку монтирования!", "de": "Bitte zuerst Einhängepunkt angeben!",    "fr": "Veuillez d'abord spécifier un point de montage !", "es": "¡Primero especifique el punto de montaje!", "pt": "Especifique o ponto de montagem primeiro!", "pl": "Najpierw podaj punkt montowania!",       "uk": "Спочатку вкажіть точку монтування!",     "zh": "请先指定挂载点！",                       "ja": "最初にマウントポイントを指定してください！"},
+    "warn_no_label":    {"en": "Enter a label!",                               "ru": "Введите метку!",                     "de": "Bezeichnung eingeben!",                  "fr": "Entrez une étiquette !",                 "es": "¡Introduzca una etiqueta!",              "pt": "Digite um rótulo!",                      "pl": "Podaj etykietę!",                        "uk": "Введіть мітку!",                         "zh": "请输入标签！",                           "ja": "ラベルを入力してください！"},
+    "save_fstab":   {"en": "Save fstab",                                  "ru": "Сохранить fstab",                    "de": "fstab speichern",                        "fr": "Enregistrer fstab",                      "es": "Guardar fstab",                          "pt": "Salvar fstab",                           "pl": "Zapisz fstab",                           "uk": "Зберегти fstab",                         "zh": "保存 fstab",                             "ja": "fstab を保存"},
+    "tt_save_fstab":{"en": "Update mount point and options in /etc/fstab", "ru": "Обновить точку монтирования и опции в /etc/fstab"},
 }
 
 
@@ -425,6 +448,11 @@ class DiskManagerApp(QMainWindow):
         self.mount_now_btn.setToolTip(self.t("tt_mount_now"))
         self.umount_btn.setToolTip(self.t("tt_umount"))
         self.set_label_btn.setToolTip(self.t("tt_set_label"))
+        self.save_fstab_btn.setText(self.t("save_fstab"))
+        self.save_fstab_btn.setToolTip(self.t("tt_save_fstab"))
+
+        self._fstab_health_title.setText(self.t("fstab_issues"))
+        self._fstab_health_hint.setText(self.t("fstab_orphan_hint"))
 
         self._on_disk_selected()
 
@@ -559,6 +587,9 @@ class DiskManagerApp(QMainWindow):
         main_layout.addLayout(mount_row)
         main_layout.addWidget(self._make_divider())
 
+        # --- fstab Health ---
+        self._build_fstab_health_section(main_layout)
+
         # --- fstab / Automount ---
         self.lbl_mount = QLabel(self.t("mount_point"))
         self.lbl_mount.setObjectName("SectionLabel")
@@ -580,6 +611,13 @@ class DiskManagerApp(QMainWindow):
         self.automount_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.automount_btn.clicked.connect(self._toggle_automount)
         main_layout.addWidget(self.automount_btn)
+
+        self.save_fstab_btn = QPushButton(self.t("save_fstab"))
+        self.save_fstab_btn.setObjectName("AddSourceBtn")
+        self.save_fstab_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.save_fstab_btn.clicked.connect(self._save_fstab)
+        self.save_fstab_btn.setVisible(False)
+        main_layout.addWidget(self.save_fstab_btn)
         main_layout.addWidget(self._make_divider())
 
         # --- Permissions ---
@@ -709,6 +747,7 @@ class DiskManagerApp(QMainWindow):
 
         if not self.partitions:
             self.disk_combo.addItem("No suitable partitions found", None)
+            self._refresh_fstab_health()
             return
 
         for name, info in self.partitions.items():
@@ -722,6 +761,7 @@ class DiskManagerApp(QMainWindow):
                 if self.disk_combo.itemData(i) == current_dev:
                     self.disk_combo.setCurrentIndex(i)
                     break
+        self._refresh_fstab_health()
 
     def _parse_lsblk(self, devices):
         for dev in devices:
@@ -739,6 +779,122 @@ class DiskManagerApp(QMainWindow):
         elif fstype in ["ext4", "ext3"]:
             return "defaults,noatime"
         return "defaults"
+
+    # ------------------------------------------------------------------ fstab health
+
+    def _build_fstab_health_section(self, main_layout):
+        self._fstab_health_frame = QFrame()
+        self._fstab_health_frame.setObjectName("FstabHealthFrame")
+        health_layout = QVBoxLayout(self._fstab_health_frame)
+        health_layout.setContentsMargins(12, 10, 12, 10)
+        health_layout.setSpacing(6)
+
+        self._fstab_health_title = QLabel(self.t("fstab_issues"))
+        self._fstab_health_title.setObjectName("FstabHealthTitle")
+        health_layout.addWidget(self._fstab_health_title)
+
+        self._fstab_health_hint = QLabel(self.t("fstab_orphan_hint"))
+        self._fstab_health_hint.setObjectName("FstabHealthHint")
+        self._fstab_health_hint.setWordWrap(True)
+        health_layout.addWidget(self._fstab_health_hint)
+
+        self._fstab_health_body_widget = QWidget()
+        self._fstab_health_body = QVBoxLayout(self._fstab_health_body_widget)
+        self._fstab_health_body.setContentsMargins(0, 4, 0, 0)
+        self._fstab_health_body.setSpacing(6)
+        health_layout.addWidget(self._fstab_health_body_widget)
+
+        main_layout.addWidget(self._fstab_health_frame)
+        self._fstab_health_frame.setVisible(False)
+
+    def _parse_fstab_entries(self):
+        """Return list of (uuid, mountpoint, fstype, options) for UUID= entries in /etc/fstab."""
+        entries = []
+        try:
+            if not os.path.exists("/etc/fstab"):
+                return entries
+            with open("/etc/fstab") as f:
+                for line in f:
+                    stripped = line.strip()
+                    if stripped.startswith("#") or not stripped:
+                        continue
+                    if not stripped.startswith("UUID="):
+                        continue
+                    raw_parts = stripped.split()
+                    if len(raw_parts) >= 6:
+                        uuid = raw_parts[0][5:]
+                        mount = " ".join(raw_parts[1:-4]).replace("\\040", " ")
+                        fstype = raw_parts[-4]
+                        options = raw_parts[-3]
+                    elif len(raw_parts) >= 4:
+                        uuid = raw_parts[0][5:]
+                        mount = raw_parts[1].replace("\\040", " ")
+                        fstype = raw_parts[2]
+                        options = raw_parts[3]
+                    else:
+                        continue
+                    if fstype == "swap":
+                        continue
+                    entries.append((uuid, mount, fstype, options))
+        except Exception:
+            pass
+        return entries
+
+    def _get_orphaned_fstab_entries(self):
+        known_uuids = {info.get("uuid") for info in self.partitions.values() if info.get("uuid")}
+        return [(u, m, f, o) for u, m, f, o in self._parse_fstab_entries() if u not in known_uuids]
+
+    def _refresh_fstab_health(self):
+        while self._fstab_health_body.count():
+            item = self._fstab_health_body.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        orphaned = self._get_orphaned_fstab_entries()
+        self._fstab_health_frame.setVisible(bool(orphaned))
+        if not orphaned:
+            return
+
+        for uuid, mountpoint, fstype, options in orphaned:
+            entry_frame = QFrame()
+            entry_frame.setObjectName("OrphanEntryFrame")
+            entry_layout = QVBoxLayout(entry_frame)
+            entry_layout.setContentsMargins(8, 6, 8, 6)
+            entry_layout.setSpacing(4)
+
+            warn_lbl = QLabel(f"⚠  {self.t('fstab_orphan_warn')}")
+            warn_lbl.setObjectName("OrphanWarnLabel")
+            entry_layout.addWidget(warn_lbl)
+
+            short_uuid = uuid[:8] + "…" if len(uuid) > 8 else uuid
+            info_lbl = QLabel(f"UUID: {short_uuid}   →   {mountpoint}   ({fstype})")
+            info_lbl.setObjectName("OrphanInfoLabel")
+            info_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            info_lbl.setCursor(Qt.CursorShape.IBeamCursor)
+            entry_layout.addWidget(info_lbl)
+
+            btn_row = QHBoxLayout()
+            btn_row.addStretch()
+
+            if "nofail" not in options.split(","):
+                nofail_btn = QPushButton(self.t("fstab_add_nofail"))
+                nofail_btn.setObjectName("BrowseBtn")
+                nofail_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                nofail_btn.clicked.connect(
+                    lambda _, u=uuid: self._run_backend(["--add-nofail", u],
+                                                        f"Adding nofail to fstab entry {u[:8]}…"))
+                btn_row.addWidget(nofail_btn)
+
+            rm_btn = QPushButton(self.t("fstab_orphan_rm"))
+            rm_btn.setObjectName("DangerBtn")
+            rm_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            rm_btn.clicked.connect(
+                lambda _, u=uuid: self._run_backend(["--rm-fstab", u],
+                                                    f"Removing orphaned fstab entry {u[:8]}…"))
+            btn_row.addWidget(rm_btn)
+
+            entry_layout.addLayout(btn_row)
+            self._fstab_health_body.addWidget(entry_frame)
 
     # ------------------------------------------------------------------ UI update
 
@@ -835,15 +991,17 @@ class DiskManagerApp(QMainWindow):
             self.mount_input.setText(f"/mnt/{label}" if label else f"/mnt/{dev_name}")
             self.opts_widget.set_options(self._generate_default_opts(fstype))
 
+        self.save_fstab_btn.setVisible(is_in_fstab)
+
         # Pre-fill label input with current label
         self.label_input.setText(info.get("label") or "")
 
     # ------------------------------------------------------------------ backend runner
 
     def _run_backend(self, args, status=None):
-        for w in (self.automount_btn, self.perms_btn, self.mount_now_btn,
-                  self.umount_btn, self.format_btn, self.set_label_btn,
-                  self.recursive_cb, self.user_combo, self.disk_combo):
+        for w in (self.automount_btn, self.save_fstab_btn, self.perms_btn,
+                  self.mount_now_btn, self.umount_btn, self.format_btn,
+                  self.set_label_btn, self.recursive_cb, self.user_combo, self.disk_combo):
             w.setEnabled(False)
         self.prog_status_lbl.setText(status or self.t("applying"))
         self.progress_frame.setVisible(True)
@@ -853,19 +1011,34 @@ class DiskManagerApp(QMainWindow):
         self.worker.start()
 
     def _on_worker_done(self, success, message):
-        for w in (self.automount_btn, self.perms_btn, self.mount_now_btn,
-                  self.umount_btn, self.format_btn, self.set_label_btn,
-                  self.recursive_cb, self.user_combo, self.disk_combo):
+        for w in (self.automount_btn, self.save_fstab_btn, self.perms_btn,
+                  self.mount_now_btn, self.umount_btn, self.format_btn,
+                  self.set_label_btn, self.recursive_cb, self.user_combo, self.disk_combo):
             w.setEnabled(True)
         self.progress_frame.setVisible(False)
 
         if success:
-            QMessageBox.information(self, "Success", self.t("success"))
+            QMessageBox.information(self, self.t("dlg_success"), self.t("success"))
         else:
-            QMessageBox.critical(self, "Error", f"{self.t('err_elevate')}\n{message}")
+            QMessageBox.critical(self, self.t("dlg_error"), f"{self.t('err_elevate')}\n{message}")
         self._load_disks()
 
     # ------------------------------------------------------------------ actions
+
+    def _save_fstab(self):
+        dev_name = self.disk_combo.currentData()
+        if not dev_name:
+            return
+        info    = self.partitions[dev_name]
+        uuid    = info["uuid"]
+        fstype  = info["fstype"]
+        mount   = self.mount_input.text().strip()
+        options = self.opts_widget.get_options()
+        if not mount or not options:
+            QMessageBox.warning(self, self.t("dlg_warning"), self.t("warn_empty_mount"))
+            return
+        self._run_backend(["--add-fstab", uuid, mount, fstype, options],
+                          f"Saving fstab entry for {uuid[:8]}...")
 
     def _toggle_automount(self):
         dev_name = self.disk_combo.currentData()
@@ -881,7 +1054,7 @@ class DiskManagerApp(QMainWindow):
             self._run_backend(["--rm-fstab", uuid], f"Removing {uuid} from fstab...")
         else:
             if not mount or not options:
-                QMessageBox.warning(self, "Warning", "Mount point and options cannot be empty!")
+                QMessageBox.warning(self, self.t("dlg_warning"), self.t("warn_empty_mount"))
                 return
             self._run_backend(["--add-fstab", uuid, mount, fstype, options],
                               f"Adding {uuid} to fstab...")
@@ -892,7 +1065,7 @@ class DiskManagerApp(QMainWindow):
             return
         mount = self.mount_input.text().strip()
         if not mount:
-            QMessageBox.warning(self, "Warning", "Specify mount point first!")
+            QMessageBox.warning(self, self.t("dlg_warning"), self.t("warn_no_mount"))
             return
         self._run_backend(["--mount", dev_name, mount],
                           f"Mounting /dev/{dev_name} → {mount}...")
@@ -910,7 +1083,7 @@ class DiskManagerApp(QMainWindow):
     def _fix_permissions(self):
         mount = self.mount_input.text().strip()
         if not mount:
-            QMessageBox.warning(self, "Warning", "Specify mount point first!")
+            QMessageBox.warning(self, self.t("dlg_warning"), self.t("warn_no_mount"))
             return
         user = self.user_combo.currentText()
         args = ["--fix-perms", mount, user]
@@ -924,7 +1097,7 @@ class DiskManagerApp(QMainWindow):
             return
         label = self.label_input.text().strip()
         if not label:
-            QMessageBox.warning(self, "Warning", "Enter a label!")
+            QMessageBox.warning(self, self.t("dlg_warning"), self.t("warn_no_label"))
             return
         fstype = self.partitions[dev_name].get("fstype", "")
         self._run_backend(["--set-label", dev_name, fstype, label],
@@ -934,19 +1107,28 @@ class DiskManagerApp(QMainWindow):
         dev_name = self.disk_combo.currentData()
         if not dev_name:
             return
+        info   = self.partitions[dev_name]
         fstype = self.fs_combo.currentText()
         label  = self.format_label_input.text().strip()
+        uuid   = info.get("uuid", "")
+
+        is_in_fstab = any(u == uuid for u, _, _, _ in self._parse_fstab_entries())
 
         msg = self.t("confirm_fmt").format(dev=dev_name)
+        if is_in_fstab:
+            msg += f"\n\n{self.t('fmt_rm_fstab_note')}"
         reply = QMessageBox.question(
-            self, "Confirm Format", msg,
+            self, self.t("dlg_confirm_fmt"), msg,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
 
-        args = ["--format", dev_name, fstype]
+        if is_in_fstab and uuid:
+            args = ["--rm-fstab-and-format", uuid, dev_name, fstype]
+        else:
+            args = ["--format", dev_name, fstype]
         if label:
             args.append(label)
         self._run_backend(args, f"Formatting /dev/{dev_name} as {fstype}...")

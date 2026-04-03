@@ -5,9 +5,10 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from ui_pkg import Ui_PackageManager, PackageRow
 
 class PackageData:
-    def __init__(self, name, source):
+    def __init__(self, name, source, app_id=None):
         self.name = name
         self.source = source
+        self.app_id = app_id  # used for Flatpak uninstall
         self.category = "Drivers" if any(x in name.lower() for x in ["nvidia", "vulkan", "firmware"]) else "Software"
 
 class main_app(QMainWindow, Ui_PackageManager):
@@ -152,6 +153,27 @@ class main_app(QMainWindow, Ui_PackageManager):
             r2 = subprocess.run(["yay", "-Qmq"], capture_output=True, text=True)
             for l in r2.stdout.splitlines(): pkgs.append(PackageData(l.strip(), "aur"))
 
+            try:
+                r3 = subprocess.run(["flatpak", "list", "--app", "--columns=name,application"],
+                                     capture_output=True, text=True)
+                if r3.returncode == 0:
+                    for l in r3.stdout.splitlines():
+                        parts = l.split("\t")
+                        if len(parts) >= 2:
+                            pkgs.append(PackageData(parts[0].strip(), "flatpak", app_id=parts[1].strip()))
+            except FileNotFoundError:
+                pass
+
+            try:
+                r4 = subprocess.run(["snap", "list"], capture_output=True, text=True)
+                if r4.returncode == 0:
+                    for l in r4.stdout.splitlines()[1:]:
+                        parts = l.split()
+                        if parts:
+                            pkgs.append(PackageData(parts[0], "snap"))
+            except FileNotFoundError:
+                pass
+
             self.fetch_finished.emit(pkgs)
 
         threading.Thread(target=_fetch, daemon=True).start()
@@ -208,7 +230,13 @@ class main_app(QMainWindow, Ui_PackageManager):
         self.btn_confirm_delete.hide()
         self.btn_confirm_cancel.hide()
 
-        cmd = f"pkexec pacman -Rns --noconfirm {pkg_name}"
+        if self.pkg_to_delete.source == "flatpak":
+            app_id = self.pkg_to_delete.app_id or pkg_name
+            cmd = f"flatpak uninstall -y {app_id}"
+        elif self.pkg_to_delete.source == "snap":
+            cmd = f"pkexec snap remove {pkg_name}"
+        else:
+            cmd = f"pkexec pacman -Rns --noconfirm {pkg_name}"
 
         def _run():
             proc = subprocess.run(["/bin/bash", "-c", cmd])

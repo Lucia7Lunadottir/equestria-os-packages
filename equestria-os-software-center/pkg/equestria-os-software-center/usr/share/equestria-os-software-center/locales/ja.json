@@ -99,5 +99,6 @@
   "ui.flatpak_not_installed_desc": "Flatpakをインストールして、何千ものFlathubアプリにアクセスしてください。",
   "ui.flatpak_install_btn": "Flatpakをインストール",
   "ui.source_updates": "アップデート",
-  "ui.integrity_check": "システムファイルを確認"
+  "ui.integrity_check": "システムファイルを確認",
+  "ui.cache_clean": "パッケージキャッシュを削除"
 }

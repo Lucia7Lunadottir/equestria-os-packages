@@ -1,0 +1,33 @@
+[Desktop Entry]
+Name=Equestria Save Point
+Name[en]=Equestria Save Point
+Name[ru]=Equestria Save Point
+Name[de]=Equestria Save Point
+Name[fr]=Equestria Save Point
+Name[es]=Equestria Save Point
+Name[pt]=Equestria Save Point
+Name[pl]=Equestria Save Point
+Name[uk]=Equestria Save Point
+Name[zh]=Equestria Save Point
+Name[ja]=Equestria Save Point
+
+Comment=Create and restore system snapshots with Timeshift
+Comment[en]=Create and restore system snapshots with Timeshift
+Comment[ru]=Создание и восстановление системных снимков через Timeshift
+Comment[de]=Systemsnapshots mit Timeshift erstellen und wiederherstellen
+Comment[fr]=Créer et restaurer des snapshots système avec Timeshift
+Comment[es]=Crear y restaurar instantáneas del sistema con Timeshift
+Comment[pt]=Criar e restaurar snapshots do sistema com Timeshift
+Comment[pl]=Twórz i przywracaj migawki systemu za pomocą Timeshift
+Comment[uk]=Створення та відновлення системних знімків за допомогою Timeshift
+Comment[zh]=使用 Timeshift 创建和恢复系统快照
+Comment[ja]=Timeshift でシステムスナップショットを作成・復元する
+
+Exec=python3 /opt/equestria-os-save-point/main.py
+Path=/opt/equestria-os-save-point
+Icon=equestria-os-save-point
+Terminal=false
+Type=Application
+Categories=Settings;System;Qt;
+StartupNotify=true
+StartupWMClass=equestria-os-save-point

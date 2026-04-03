@@ -2,10 +2,10 @@
 
 pkgname=equestria-os-branding
 pkgver=1.2.2
-pkgrel=4
+pkgrel=6
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
-url="https://github.com/7Lucia7Lokidottir7"
+url="https://github.com/Lucia7Lunadottir"
 license=('custom')
 
 provides=('equestria-os-branding')
@@ -37,7 +37,13 @@ package() {
         cp -r "$startdir/cutiemarks/"* "$pkgdir/usr/share/equestria-os/cutiemarks/" 2>/dev/null || true
     fi
 
-    # 5. Только уникальные наши pixmaps
+    # 5. Cursor theme
+    if [ -d "$startdir/icons/Vimix-white-cursors" ]; then
+        install -d "$pkgdir/usr/share/icons"
+        cp -r "$startdir/icons/Vimix-white-cursors" "$pkgdir/usr/share/icons/"
+    fi
+
+    # 6. Только уникальные наши pixmaps
     install -d "$pkgdir/usr/share/pixmaps"
     for f in \
         equestria-os.png \

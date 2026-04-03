@@ -3,12 +3,12 @@
 pkgname = equestria-os-branding
 pkgbase = equestria-os-branding
 xdata = pkgtype=pkg
-pkgver = 1.2.2-4
+pkgver = 1.2.2-5
 pkgdesc = Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)
 url = https://github.com/7Lucia7Lokidottir7
-builddate = 1773017358
+builddate = 1775081876
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 23732275
+size = 27035261
 arch = any
 license = custom
 provides = equestria-os-branding

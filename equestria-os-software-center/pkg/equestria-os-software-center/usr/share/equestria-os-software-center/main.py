@@ -25,6 +25,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         super().__init__()
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.setupUi(self)
+        self.setWindowTitle("Equestria Software Center")
 
         self.current_lang = "ru"
         self.langs = []
@@ -222,6 +223,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.btn_next_page.clicked.connect(self.go_next_page)
         self.btn_update_sys.clicked.connect(self.execute_system_update)
         self.btn_integrity_check.clicked.connect(self.execute_integrity_check)
+        self.btn_cache_clean.clicked.connect(self.execute_cache_clean)
         self.btn_install_essentials.clicked.connect(self.install_selected_essentials)
 
         for i, lang in enumerate(self.langs):
@@ -254,6 +256,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.store_header.setText(self.t("ui.store_header"))
         self.btn_switch_store.setText(self.t("ui.search_all"))
         self.btn_integrity_check.setText(self.t("ui.integrity_check"))
+        self.btn_cache_clean.setText(self.t("ui.cache_clean"))
         self.btn_update_sys.setText(self.t("ui.update_all"))
         self.search_store.setPlaceholderText(self.t("ui.search_placeholder"))
         self.btn_prev_page.setText(self.t("ui.prev_page"))
@@ -726,22 +729,72 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
     def execute_integrity_check(self):
         cmd = (
-            "echo '=== System File Integrity Check (pacman -Qkk) ==='; echo; "
+            "echo '=== System File Integrity Check ==='; echo; "
+            "echo '[1/2] Pacman + AUR packages (pacman -Qkk)...'; echo; "
             "result=$(pacman -Qkk 2>&1 | grep -v ': 0 missing files, 0 altered files'); "
             "if [ -z \"$result\" ]; then "
-            "  echo 'All system files are intact.'; "
+            "  echo 'All pacman/AUR files are intact.'; "
             "else "
             "  echo 'Issues found:'; echo; echo \"$result\"; "
+            "fi; "
+            "echo; "
+            "if command -v flatpak >/dev/null 2>&1; then "
+            "  echo '[2/2] Flatpak (flatpak repair --user)...'; echo; "
+            "  flatpak repair --user; "
+            "else "
+            "  echo '[2/2] Flatpak not installed, skipping.'; "
             "fi; "
             "echo; read -rp 'Done. Press Enter to close...'"
         )
         subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
 
+    def execute_cache_clean(self):
+        cmd = (
+            "echo '=== Package Cache Cleanup ==='; echo; "
+            "echo '[1/3] Pacman cache...'; "
+            "if command -v paccache >/dev/null 2>&1; then "
+            "  pkexec bash -c 'rm -rf /var/cache/pacman/pkg/download-*; paccache -rvk2; paccache -rvuk0'; "
+            "else "
+            "  pkexec bash -c 'rm -rf /var/cache/pacman/pkg/download-*; pacman -Sc --noconfirm'; "
+            "fi; "
+            "echo; "
+            "if command -v yay >/dev/null 2>&1; then "
+            "  echo '[2/3] AUR build cache (yay)...'; "
+            "  yay -Sc --noconfirm; echo; "
+            "else "
+            "  echo '[2/3] yay not found, skipping AUR cache.'; echo; "
+            "fi; "
+            "if command -v flatpak >/dev/null 2>&1; then "
+            "  echo '[3/3] Flatpak unused runtimes...'; "
+            "  flatpak uninstall --unused -y; echo; "
+            "else "
+            "  echo '[3/3] Flatpak not installed, skipping.'; echo; "
+            "fi; "
+            "echo 'All done!'; echo; read -rp 'Press Enter to close...'"
+        )
+        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
+
     def execute_system_update(self):
-        subprocess.Popen(["konsole", "-e", "bash", "-c",
-                          "yay -Syu --noconfirm; "
-                          "if command -v flatpak >/dev/null; then flatpak update -y; fi; "
-                          "echo; read -rp 'Done. Press Enter to close...'"])
+        cmd = (
+            "LOG=$(mktemp /tmp/equestria_update.XXXXXX.log); "
+            "yay -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
+            "EXIT=${PIPESTATUS[0]}; "
+            "if [ $EXIT -ne 0 ] && grep -qE "
+            "'Operation too slow|failed to retrieve|не удалось получить' \"$LOG\"; then "
+            "  echo; echo '==> Mirror failure detected. Re-ranking mirrors...'; "
+            "  COUNTRY=$(curl -s --max-time 5 https://ipinfo.io/country 2>/dev/null | tr -d '\\n\\r'); "
+            "  [ -z \"$COUNTRY\" ] && COUNTRY='DE,US,FR,GB'; "
+            "  pkexec pg-rankmirrors-backend rank \"$COUNTRY\" "
+            "    && echo '==> Mirrors updated. Retrying update...' "
+            "    || echo '==> Mirror re-ranking failed, retrying anyway...'; "
+            "  echo; "
+            "  yay -Syu --noconfirm; "
+            "fi; "
+            "rm -f \"$LOG\"; "
+            "if command -v flatpak >/dev/null; then flatpak update -y; fi; "
+            "echo; read -rp 'Done. Press Enter to close...'"
+        )
+        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
 
 
 if __name__ == "__main__":
