@@ -99,5 +99,6 @@
   "ui.flatpak_not_installed_desc": "Установите Flatpak, чтобы получить доступ к тысячам приложений Flathub.",
   "ui.flatpak_install_btn": "Установить Flatpak",
   "ui.source_updates": "Обновления",
-  "ui.integrity_check": "Проверка системных файлов"
+  "ui.integrity_check": "Проверка системных файлов",
+  "ui.cache_clean": "Очистка кэша пакетов"
 }

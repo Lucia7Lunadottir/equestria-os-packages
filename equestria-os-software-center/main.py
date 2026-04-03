@@ -775,10 +775,26 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
 
     def execute_system_update(self):
-        subprocess.Popen(["konsole", "-e", "bash", "-c",
-                          "yay -Syu --noconfirm; "
-                          "if command -v flatpak >/dev/null; then flatpak update -y; fi; "
-                          "echo; read -rp 'Done. Press Enter to close...'"])
+        cmd = (
+            "LOG=$(mktemp /tmp/equestria_update.XXXXXX.log); "
+            "yay -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
+            "EXIT=${PIPESTATUS[0]}; "
+            "if [ $EXIT -ne 0 ] && grep -qE "
+            "'Operation too slow|failed to retrieve|не удалось получить' \"$LOG\"; then "
+            "  echo; echo '==> Mirror failure detected. Re-ranking mirrors...'; "
+            "  COUNTRY=$(curl -s --max-time 5 https://ipinfo.io/country 2>/dev/null | tr -d '\\n\\r'); "
+            "  [ -z \"$COUNTRY\" ] && COUNTRY='DE,US,FR,GB'; "
+            "  pkexec pg-rankmirrors-backend rank \"$COUNTRY\" "
+            "    && echo '==> Mirrors updated. Retrying update...' "
+            "    || echo '==> Mirror re-ranking failed, retrying anyway...'; "
+            "  echo; "
+            "  yay -Syu --noconfirm; "
+            "fi; "
+            "rm -f \"$LOG\"; "
+            "if command -v flatpak >/dev/null; then flatpak update -y; fi; "
+            "echo; read -rp 'Done. Press Enter to close...'"
+        )
+        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
 
 
 if __name__ == "__main__":

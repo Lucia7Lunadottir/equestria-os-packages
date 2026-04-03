@@ -1,16 +1,18 @@
 pkgname=equestria-os-software-center
-pkgver=1.2.0
-pkgrel=1
+pkgver=1.2.2
+pkgrel=2
 pkgdesc="Центр программного обеспечения для Equestria OS (Essentials + App Store)"
 arch=('any')
-url="https://github.com/equestria-os/equestria-os-software-center"
+url="https://psyche-games.com"
 license=('GPL')
 depends=('python' 'python-pyqt6' 'pacman' 'yay')
 
-# Убрали 'locales' отсюда, так как это папка
 source=(
     'main.py'
     'ui_software.py'
+    'models.py'
+    'utils.py'
+    'workers.py'
     'style.qss'
     'equestria_cyrillic.ttf'
     'EquestriaApps.csv'
@@ -19,8 +21,7 @@ source=(
     'equestria-os-software-center.png'
 )
 
-# Вернули 8 SKIP
-sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
 
 package() {
     install -d "$pkgdir/usr/share/equestria-os-software-center"
@@ -28,6 +29,9 @@ package() {
 
     install -m644 main.py "$pkgdir/usr/share/equestria-os-software-center/main.py"
     install -m644 ui_software.py "$pkgdir/usr/share/equestria-os-software-center/ui_software.py"
+    install -m644 models.py "$pkgdir/usr/share/equestria-os-software-center/models.py"
+    install -m644 utils.py "$pkgdir/usr/share/equestria-os-software-center/utils.py"
+    install -m644 workers.py "$pkgdir/usr/share/equestria-os-software-center/workers.py"
     install -m644 style.qss "$pkgdir/usr/share/equestria-os-software-center/style.qss"
     install -m644 equestria_cyrillic.ttf "$pkgdir/usr/share/equestria-os-software-center/equestria_cyrillic.ttf"
     install -m644 EquestriaApps.csv "$pkgdir/usr/share/equestria-os-software-center/EquestriaApps.csv"

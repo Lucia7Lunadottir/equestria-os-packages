@@ -3,12 +3,12 @@
 pkgname = equestria-os-software-center
 pkgbase = equestria-os-software-center
 xdata = pkgtype=pkg
-pkgver = 1.2.0-1
+pkgver = 1.2.2-1
 pkgdesc = Центр программного обеспечения для Equestria OS (Essentials + App Store)
 url = https://github.com/equestria-os/equestria-os-software-center
-builddate = 1775063186
+builddate = 1775099745
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 357852
+size = 378532
 arch = any
 license = GPL
 depend = python

@@ -2,10 +2,10 @@
 
 pkgname=equestria-os-welcome-hub
 pkgver=2.3.0
-pkgrel=1
+pkgrel=2
 pkgdesc="The official Equestria OS Welcome Center and Community Portal"
 arch=('any')
-url="https://github.com/7Lucia7Lokidottir7"
+url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
 depends=('python' 'python-pyqt6' 'xdg-utils')
 

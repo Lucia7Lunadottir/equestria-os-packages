@@ -6,15 +6,50 @@ Entry point for double-clicking .exe files.
 
 import sys
 import os
+import csv
 import json
 import hashlib
 import subprocess
 
-from PyQt6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QProgressBar
+from PyQt6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QProgressBar, QPushButton, QMessageBox
 from PyQt6.QtCore import Qt, QTimer
 
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
+SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
+
+# ── Localization ──────────────────────────────────────────────────────────────
+
+_locales: dict = {}
+_lang: str = "en"
+
+def _load_localization():
+    global _locales
+    csv_path = os.path.join(SYSTEM_PATH, "localization.csv")
+    if not os.path.exists(csv_path):
+        return
+    with open(csv_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            key = row["key"]
+            _locales[key] = {lang: text for lang, text in row.items() if lang != "key"}
+
+def _detect_language():
+    global _lang
+    lang = os.environ.get("LANG", "en")
+    for code in ("ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"):
+        if lang.startswith(code):
+            _lang = code
+            return
+    _lang = "en"
+
+def t(key: str, *args) -> str:
+    text = _locales.get(key, {}).get(_lang) or _locales.get(key, {}).get("en") or key
+    for i, val in enumerate(args):
+        text = text.replace(f"{{{i}}}", str(val))
+    return text
+
+# ─────────────────────────────────────────────────────────────────────────────
 
 def notify(title, text):
     try:
@@ -30,7 +65,6 @@ def notify(title, text):
 class SplashWindow(QDialog):
     def __init__(self, exe_name, log_path, proc):
         super().__init__()
-        # Делаем окно без рамок, поверх остальных окон
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         self.setFixedSize(450, 160)
         self.setStyleSheet("""
@@ -44,19 +78,28 @@ class SplashWindow(QDialog):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
 
-        self.lbl_title = QLabel(f"Запуск: {exe_name}")
+        self.lbl_title = QLabel(t("launcher.title", exe_name))
         self.lbl_title.setStyleSheet("font-size: 15px; font-weight: bold;")
 
-        self.lbl_status = QLabel("Инициализация UMU-Proton...")
+        self.lbl_status = QLabel(t("launcher.init"))
         self.lbl_status.setStyleSheet("color: rgb(180, 170, 210); font-size: 12px;")
         self.lbl_status.setWordWrap(True)
 
         self.progress = QProgressBar()
-        self.progress.setRange(0, 0)  # Бесконечный ползунок загрузки
+        self.progress.setRange(0, 0)
         self.progress.setStyleSheet("""
             QProgressBar { border: 1px solid rgb(69, 71, 90); border-radius: 4px; background: rgb(30, 30, 45); height: 10px; }
             QProgressBar::chunk { background-color: rgb(127, 127, 255); border-radius: 3px; }
         """)
+
+        self.btn_close = QPushButton(t("launcher.btn_close"))
+        self.btn_close.setStyleSheet("""
+            QPushButton { background-color: rgb(180, 60, 60); color: white; border: none;
+                          border-radius: 4px; padding: 6px 18px; font-size: 12px; }
+            QPushButton:hover { background-color: rgb(210, 80, 80); }
+        """)
+        self.btn_close.hide()
+        self.btn_close.clicked.connect(self.accept)
 
         layout.addStretch()
         layout.addWidget(self.lbl_title)
@@ -64,49 +107,59 @@ class SplashWindow(QDialog):
         layout.addWidget(self.lbl_status)
         layout.addSpacing(10)
         layout.addWidget(self.progress)
+        layout.addSpacing(6)
+        layout.addWidget(self.btn_close, alignment=Qt.AlignmentFlag.AlignRight)
         layout.addStretch()
 
-        # Открываем лог-файл для чтения на лету
         try:
             self.log_file = open(self.log_path, "r", encoding="utf-8", errors="ignore")
         except Exception:
             self.log_file = None
 
-        # Таймер проверяет логи каждые 200 мс
         self.timer = QTimer()
         self.timer.timeout.connect(self.check_log)
         self.timer.start(200)
 
-        # Если игра запускается слишком долго (например, зависла), скрываем окно через 60 секунд
+        # Если игра запускается слишком долго, скрываем окно через 60 секунд
         QTimer.singleShot(60000, self.accept)
 
+    def _show_crash(self, returncode):
+        self.setFixedSize(450, 190)
+        self.lbl_status.setStyleSheet("color: rgb(240, 100, 100); font-size: 12px;")
+        self.lbl_status.setText(t("launcher.crash_text", returncode))
+        self.progress.hide()
+        self.btn_close.show()
+        notify(t("launcher.notify_crash_title"), t("launcher.notify_crash_text", returncode))
+
     def check_log(self):
-        # Если процесс умер
         if self.proc.poll() is not None:
             self.timer.stop()
-            self.accept()
             if self.proc.returncode != 0:
-                notify("Ошибка запуска", f"Программа завершилась с кодом {self.proc.returncode}.\nПроверьте настройки или очистите кэш.")
+                self._show_crash(self.proc.returncode)
+            else:
+                self.accept()
             return
 
-        # Читаем новые строки лога
         if self.log_file:
             lines = self.log_file.readlines()
             for line in lines:
                 line = line.lower()
                 if "downloading" in line or "resuming" in line:
-                    self.lbl_status.setText("Скачивание библиотек (только при первом запуске)...")
+                    self.lbl_status.setText(t("launcher.downloading"))
                 elif "verifying integrity" in line:
-                    self.lbl_status.setText("Проверка файлов среды...")
+                    self.lbl_status.setText(t("launcher.verifying"))
                 elif "upgrading prefix" in line or "setting up" in line:
-                    self.lbl_status.setText("Настройка префикса Windows...")
+                    self.lbl_status.setText(t("launcher.setup_prefix"))
                 elif "running protonfixes" in line:
-                    self.lbl_status.setText("Применение патчей совместимости...")
+                    self.lbl_status.setText(t("launcher.protonfixes"))
                 elif "fsync: up and running" in line or "wineserver: starting" in line:
                     self.timer.stop()
-                    self.accept() # Игра запустилась! Закрываем загрузочный экран
+                    self.accept()
 
 def main():
+    _load_localization()
+    _detect_language()
+
     if len(sys.argv) < 2:
         sys.exit(1)
 
@@ -114,7 +167,7 @@ def main():
     exe_path = sys.argv[1]
 
     if not os.path.exists(exe_path):
-        notify("Ошибка", f"Файл не найден:\n{exe_path}")
+        notify(t("proton.msg_error_title"), f"{exe_path}")
         sys.exit(1)
 
     exe_name = os.path.basename(exe_path)
@@ -130,7 +183,6 @@ def main():
 
     os.makedirs(prefix_path, exist_ok=True)
 
-    # ── Среда запуска ──
     env = os.environ.copy()
     env["WINEPREFIX"] = prefix_path
     env["GAMEID"] = app_id
@@ -151,13 +203,20 @@ def main():
     else:
         cmd = ["umu-run", exe_path] + extra_args
 
-    # ── Пишем логи в файл, чтобы читать их в Splash экране ──
     log_path = os.path.join(APPS_DATA_DIR, f"{app_id}.log")
     log_out = open(log_path, "w", encoding="utf-8")
 
-    proc = subprocess.Popen(cmd, env=env, cwd=game_dir, stdout=log_out, stderr=subprocess.STDOUT)
+    try:
+        proc = subprocess.Popen(cmd, env=env, cwd=game_dir, stdout=log_out, stderr=subprocess.STDOUT)
+    except FileNotFoundError:
+        log_out.close()
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Critical)
+        msg.setWindowTitle(t("launcher.umu_missing_title"))
+        msg.setText(t("launcher.umu_missing_text"))
+        msg.exec()
+        sys.exit(1)
 
-    # Запускаем красивый экран загрузки
     splash = SplashWindow(exe_name, log_path, proc)
     splash.exec()
 

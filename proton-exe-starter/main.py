@@ -71,12 +71,13 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         return self.locales.get(key, {}).get(self.current_lang, key)
 
     def setup_lang_buttons(self):
-        langs = {"en": "🇬🇧", "ru": "🇷🇺", "de": "🇩🇪", "fr": "🇫🇷",
-                 "es": "🇪🇸", "pt": "🇵🇹", "pl": "🇵🇱", "uk": "🇺🇦",
-                 "zh": "🇨🇳", "ja": "🇯🇵"}
+        langs = {"en": "EN", "ru": "RU", "de": "DE", "fr": "FR",
+                 "es": "ES", "pt": "PT", "pl": "PL", "uk": "UK",
+                 "zh": "ZH", "ja": "JA"}
         for code, flag in langs.items():
             btn = QPushButton(flag)
             btn.setFixedSize(28, 28)
+            btn.setStyleSheet("padding: 0px; font-size: 10px;")
             btn.setToolTip(code.upper())
             btn.clicked.connect(lambda checked, c=code: self.change_language(c))
             self.lang_layout.addWidget(btn)

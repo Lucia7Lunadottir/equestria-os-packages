@@ -69,11 +69,18 @@ def main():
     print(f"Launching via UMU: {' '.join(cmd)}")
 
     # Чтобы консольный запуск тоже имел UI
-    from launcher import SplashWindow
+    from launcher import SplashWindow, t, _load_localization, _detect_language
+    _load_localization()
+    _detect_language()
+
     log_path = os.path.join(APPS_DATA_DIR, f"{app_id}.log")
     log_out = open(log_path, "w", encoding="utf-8")
 
-    proc = subprocess.Popen(cmd, env=env, cwd=game_dir, stdout=log_out, stderr=subprocess.STDOUT)
+    try:
+        proc = subprocess.Popen(cmd, env=env, cwd=game_dir, stdout=log_out, stderr=subprocess.STDOUT)
+    except FileNotFoundError:
+        log_out.close()
+        show_error(t("launcher.umu_missing_title"), t("launcher.umu_missing_text"))
 
     splash = SplashWindow(exe_name, log_path, proc)
     splash.exec()

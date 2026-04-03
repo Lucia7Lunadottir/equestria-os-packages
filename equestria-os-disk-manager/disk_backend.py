@@ -79,6 +79,26 @@ def set_label(device, fstype, label):
     sys.stdout.write(f"OK: Label set to '{label}' on {dev}\n")
 
 
+def add_nofail_to_fstab(uuid):
+    if not os.path.exists(FSTAB_PATH):
+        return
+    with open(FSTAB_PATH, 'r') as f:
+        lines = f.readlines()
+    new_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped.startswith("#") and f"UUID={uuid}" in stripped:
+            raw_parts = stripped.split()
+            if len(raw_parts) >= 6:
+                opts = raw_parts[-3]
+                if "nofail" not in opts.split(","):
+                    line = line.replace(opts, opts + ",nofail", 1)
+        new_lines.append(line)
+    with open(FSTAB_PATH, 'w') as f:
+        f.writelines(new_lines)
+    sys.stdout.write(f"OK: Added nofail to {uuid} in fstab\n")
+
+
 def format_partition(device, fstype, label=None):
     dev = f"/dev/{device}"
     if fstype == "ext4":
@@ -124,6 +144,11 @@ def main():
             set_label(args[1], args[2], args[3])
         elif cmd == "--format" and len(args) >= 3:
             format_partition(args[1], args[2], args[3] if len(args) >= 4 else None)
+        elif cmd == "--rm-fstab-and-format" and len(args) >= 4:
+            remove_from_fstab(args[1])
+            format_partition(args[2], args[3], args[4] if len(args) >= 5 else None)
+        elif cmd == "--add-nofail" and len(args) == 2:
+            add_nofail_to_fstab(args[1])
         else:
             sys.stderr.write("Invalid arguments\n")
             sys.exit(1)

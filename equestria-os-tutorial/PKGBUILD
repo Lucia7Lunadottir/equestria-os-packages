@@ -2,10 +2,10 @@
 
 pkgname=equestria-os-tutorial
 pkgver=1.4.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Interactive tour for new Equestria OS users"
 arch=('any')
-url="https://github.com/7Lucia7Lokidottir7"
+url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
 depends=('python' 'python-pyqt6')
 

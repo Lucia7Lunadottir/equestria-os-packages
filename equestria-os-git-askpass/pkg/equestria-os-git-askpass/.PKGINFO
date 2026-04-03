@@ -3,12 +3,12 @@
 pkgname = equestria-os-git-askpass
 pkgbase = equestria-os-git-askpass
 xdata = pkgtype=pkg
-pkgver = 1.0.0-1
+pkgver = 1.0.0-2
 pkgdesc = Native GUI Git credential interceptor for Equestria OS (fixes Unity Git errors)
 url = 
-builddate = 1774304572
+builddate = 1775100796
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 183573
+size = 183626
 arch = any
 license = GPL
 depend = python

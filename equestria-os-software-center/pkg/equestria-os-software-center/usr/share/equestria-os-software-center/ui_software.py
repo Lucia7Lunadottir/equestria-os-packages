@@ -500,6 +500,12 @@ class Ui_SoftwareCenter:
         self.btn_integrity_check.setMinimumHeight(45)
         left_layout.addWidget(self.btn_integrity_check)
 
+        self.btn_cache_clean = QPushButton("Clean Package Cache")
+        self.btn_cache_clean.setObjectName("CacheCleanBtn")
+        self.btn_cache_clean.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_cache_clean.setMinimumHeight(45)
+        left_layout.addWidget(self.btn_cache_clean)
+
         self.btn_update_sys = QPushButton("Update System")
         self.btn_update_sys.setObjectName("UpdateAllBtn")
         self.btn_update_sys.setCursor(Qt.CursorShape.PointingHandCursor)

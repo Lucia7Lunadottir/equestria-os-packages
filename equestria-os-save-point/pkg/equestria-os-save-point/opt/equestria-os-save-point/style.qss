@@ -1,0 +1,266 @@
+/* Base background */
+QWidget#root { background-color: rgb(26, 24, 41); }
+
+QLabel#TitleLabel {
+    font-size: 26px; color: rgb(240, 240, 240); font-weight: bold; margin-bottom: 10px;
+}
+
+QLabel#StatusLabel {
+    color: rgb(160, 150, 190); font-size: 13px; padding: 2px 0;
+}
+
+QLabel#SettingsLabel {
+    color: rgb(150, 140, 175); font-size: 13px; background: transparent;
+}
+
+QLabel#RepoSizeLabel {
+    color: rgb(120, 110, 155); font-size: 13px; background: transparent;
+}
+
+QSpinBox#KeepLastSpin {
+    background-color: rgb(40, 35, 60); color: white;
+    border: 1px solid rgb(100, 80, 150); border-radius: 6px;
+    padding: 2px 6px; font-size: 13px;
+}
+QSpinBox#KeepLastSpin:focus {
+    border: 1px solid rgb(160, 120, 220);
+}
+QSpinBox#KeepLastSpin::up-button, QSpinBox#KeepLastSpin::down-button {
+    background-color: rgb(60, 50, 85); border: none; width: 18px;
+}
+QSpinBox#KeepLastSpin::up-button:hover, QSpinBox#KeepLastSpin::down-button:hover {
+    background-color: rgb(90, 70, 130);
+}
+
+/* Snapshot list */
+QScrollArea#SnapshotList {
+    background-color: rgb(30, 28, 48); border-radius: 12px; border: 1px solid rgb(50, 45, 75);
+}
+#ScrollContent { background-color: rgb(30, 28, 48); }
+
+QFrame#SnapshotRow {
+    border-bottom: 1px solid rgb(50, 45, 70); background-color: transparent;
+}
+QFrame#SnapshotRow:hover {
+    background-color: rgb(50, 42, 78);
+}
+QFrame#SnapshotRow[selected="true"] {
+    background-color: rgb(70, 50, 110); border-left: 3px solid rgb(180, 130, 255);
+}
+
+/* Thumbnail — стиль для случая с реальным изображением */
+QLabel#SnapThumb {
+    border-radius: 6px;
+    border: 1px solid rgb(55, 50, 75);
+}
+
+/* =========================================
+ *  ACTION BUTTONS
+ * ========================================= */
+
+QPushButton#CreateBtn {
+    background-color: rgb(80, 55, 130); color: white;
+    border-radius: 8px; padding: 6px 22px; font-weight: bold;
+    border: 1px solid rgb(110, 80, 170);
+    min-width: 130px;
+}
+QPushButton#CreateBtn:hover {
+    background-color: rgb(110, 75, 170); border: 1px solid rgb(140, 100, 210);
+}
+QPushButton#CreateBtn:disabled {
+    background-color: rgb(50, 45, 70); color: rgb(100, 95, 120);
+    border: 1px solid rgb(60, 55, 85);
+}
+
+QPushButton#RestoreBtn {
+    background-color: rgb(55, 95, 55); color: white;
+    border-radius: 8px; padding: 6px 22px; font-weight: bold;
+    border: 1px solid rgb(70, 130, 70);
+    min-width: 160px;
+}
+QPushButton#RestoreBtn:hover {
+    background-color: rgb(70, 130, 70); border: 1px solid rgb(90, 160, 90);
+}
+QPushButton#RestoreBtn:disabled {
+    background-color: rgb(40, 50, 40); color: rgb(90, 100, 90);
+    border: 1px solid rgb(50, 60, 50);
+}
+
+QPushButton#RefreshBtn {
+    background-color: rgb(45, 42, 68); color: rgb(200, 190, 220);
+    border-radius: 8px; padding: 6px 18px; font-weight: bold;
+    border: 1px solid rgb(80, 75, 110);
+    min-width: 110px;
+}
+QPushButton#RefreshBtn:hover {
+    background-color: rgb(65, 60, 95); color: white;
+}
+QPushButton#RefreshBtn:disabled {
+    background-color: rgb(35, 33, 52); color: rgb(90, 85, 110);
+}
+
+QPushButton#DeleteBtn {
+    background-color: rgb(90, 40, 40); color: rgb(255, 180, 180);
+    border-radius: 8px; padding: 6px 18px; font-weight: bold;
+    border: 1px solid rgb(140, 60, 60);
+    min-width: 110px;
+}
+QPushButton#DeleteBtn:hover {
+    background-color: rgb(140, 50, 50); color: white;
+    border: 1px solid rgb(180, 80, 80);
+}
+QPushButton#DeleteBtn:disabled {
+    background-color: rgb(40, 30, 30); color: rgb(80, 60, 60);
+    border: 1px solid rgb(55, 40, 40);
+}
+
+QPushButton#SettingsBtn {
+    background-color: rgb(45, 42, 68); color: rgb(200, 190, 220);
+    border-radius: 8px; font-size: 17px;
+    border: 1px solid rgb(80, 75, 110);
+}
+QPushButton#SettingsBtn:hover {
+    background-color: rgb(65, 60, 95); color: white;
+}
+
+/* =========================================
+ *  SETTINGS DIALOG
+ * ========================================= */
+QDialog#SettingsDialog {
+    background-color: rgb(26, 24, 41);
+}
+
+QLabel#SettingsDialogTitle {
+    color: rgb(240, 240, 240); font-size: 18px; font-weight: bold;
+    background: transparent; padding-bottom: 2px;
+}
+
+QFrame#SettingsSep {
+    color: rgb(70, 65, 100);
+    background-color: rgb(70, 65, 100);
+    max-height: 1px;
+}
+
+QFrame#HookBox {
+    background-color: rgb(35, 32, 52);
+    border: 1px solid rgb(60, 55, 85);
+    border-radius: 8px;
+    padding: 2px;
+}
+
+QCheckBox#HookCheck {
+    color: white; font-size: 14px; font-weight: bold;
+    background: transparent; spacing: 8px;
+}
+QCheckBox#HookCheck::indicator {
+    width: 18px; height: 18px;
+    image: url({{BASE_PATH}}/icons/cb_unchecked.svg);
+}
+QCheckBox#HookCheck::indicator:hover {
+    image: url({{BASE_PATH}}/icons/cb_unchecked_hover.svg);
+}
+QCheckBox#HookCheck::indicator:checked {
+    image: url({{BASE_PATH}}/icons/cb_checked.svg);
+}
+QCheckBox#HookCheck::indicator:checked:hover {
+    image: url({{BASE_PATH}}/icons/cb_checked.svg);
+}
+
+QLabel#HookNote {
+    color: rgb(185, 175, 210); font-size: 13px; background: transparent;
+    padding-top: 2px; line-height: 140%;
+}
+
+QPushButton#DeleteRepoBtn {
+    background-color: rgb(90, 40, 40); color: rgb(255, 180, 180);
+    border-radius: 5px; padding: 2px 12px; font-size: 12px;
+    border: 1px solid rgb(140, 60, 60);
+}
+QPushButton#DeleteRepoBtn:hover {
+    background-color: rgb(140, 50, 50); color: white;
+    border-color: rgb(180, 80, 80);
+}
+
+QLineEdit#RepoEdit {
+    background-color: rgb(40, 35, 60); color: rgb(220, 210, 240);
+    border: 1px solid rgb(100, 80, 150); border-radius: 6px;
+    padding: 5px 10px; font-size: 13px;
+}
+QLineEdit#RepoEdit:focus {
+    border: 1px solid rgb(160, 120, 220);
+}
+
+/* =========================================
+ *  PROGRESS DIALOG
+ * ========================================= */
+QDialog#ProgressDialog {
+    background-color: rgb(26, 24, 41);
+}
+QLabel#ProgressTitle {
+    color: white; font-size: 15px; font-weight: bold; background: transparent;
+}
+QPlainTextEdit#ProgressOutput {
+    background-color: rgb(18, 16, 28);
+    color: rgb(200, 190, 220);
+    border: 1px solid rgb(60, 55, 85);
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 12px;
+    padding: 4px;
+}
+QProgressBar#ProgressBar {
+    background-color: rgb(40, 35, 60);
+    border: 1px solid rgb(80, 70, 110);
+    border-radius: 4px;
+    max-height: 8px;
+    text-align: center;
+}
+QProgressBar#ProgressBar::chunk {
+    background-color: rgb(140, 100, 220);
+    border-radius: 4px;
+}
+
+/* =========================================
+ *  LANG BUTTONS
+ * ========================================= */
+QPushButton#LangBtn {
+    background-color: transparent; color: rgb(180, 180, 200);
+    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 2px 6px;
+}
+QPushButton#LangBtn:hover {
+    background-color: rgb(49, 50, 68); color: rgb(220, 220, 255);
+}
+QPushButton#LangBtn[active="true"] {
+    background-color: rgb(203, 166, 247); color: rgb(30, 30, 46);
+    font-weight: bold; border: 1px solid rgb(203, 166, 247);
+}
+
+/* =========================================
+ *  MODAL OVERLAY & BOX
+ * ========================================= */
+QFrame#ModalOverlay {
+    background-color: rgba(15, 12, 25, 220);
+}
+#ModalBox {
+    background-color: rgb(35, 30, 50);
+    border: 2px solid rgb(120, 90, 180);
+    border-radius: 12px;
+}
+
+QPushButton#ModalOkBtn {
+    background-color: rgb(55, 95, 55); color: white;
+    border-radius: 8px; padding: 8px 15px; font-weight: bold;
+    border: 1px solid rgb(70, 130, 70);
+}
+QPushButton#ModalOkBtn:hover {
+    background-color: rgb(70, 130, 70); border: 1px solid rgb(90, 160, 90);
+}
+
+QPushButton#ModalCancelBtn {
+    background-color: rgb(80, 75, 100); color: white;
+    border-radius: 8px; padding: 8px 15px; font-weight: bold;
+    border: 1px solid rgb(80, 75, 100);
+}
+QPushButton#ModalCancelBtn:hover {
+    background-color: rgb(110, 105, 130); border: 1px solid rgb(110, 105, 130);
+}

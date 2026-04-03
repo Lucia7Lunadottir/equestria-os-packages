@@ -1,0 +1,61 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-save-point
+pkgver=1.0.2
+pkgrel=2
+pkgdesc='Equestria OS Save Point — system snapshot manager (Btrfs/Restic/Timeshift)'
+arch=('any')
+url='https://psyche-games.com'
+license=('custom')
+depends=('python' 'python-pyqt6' 'qt6-imageformats' 'polkit' 'restic')
+optdepends=('btrfs-progs: native Btrfs CoW snapshot backend (used automatically on Btrfs systems)'
+            'timeshift: rsync-mode fallback backend (installs its own GUI)'
+            'spectacle: desktop screenshots on KDE'
+            'grim: desktop screenshots on Wayland'
+            'scrot: desktop screenshots on X11'
+            'ffmpeg: screenshot resize/WebP conversion'
+            'imagemagick: screenshot resize/WebP conversion (alternative to ffmpeg)')
+
+package() {
+    install -d "$pkgdir/opt/$pkgname"
+    install -d "$pkgdir/opt/$pkgname/icons"
+    install -d "$pkgdir/opt/$pkgname/locales"
+    install -d "$pkgdir/usr/share/applications"
+    install -d "$pkgdir/usr/share/pixmaps"
+
+    # Python app
+    cp "$startdir/main.py"    "$pkgdir/opt/$pkgname/"
+    cp "$startdir/backend.py" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/ui_pkg.py"  "$pkgdir/opt/$pkgname/"
+    cp "$startdir/screenshot.py" "$pkgdir/opt/$pkgname/"
+    cp "$startdir/hooks.py"      "$pkgdir/opt/$pkgname/"
+    cp "$startdir/utils.py"      "$pkgdir/opt/$pkgname/"
+    cp "$startdir/style.qss"  "$pkgdir/opt/$pkgname/"
+    cp "$startdir/equestria_cyrillic.ttf"       "$pkgdir/opt/$pkgname/"
+    cp "$startdir/equestria-os-save-point.png"  "$pkgdir/opt/$pkgname/"
+
+    # Checkbox icons
+    cp "$startdir/icons/"*.svg "$pkgdir/opt/$pkgname/icons/"
+
+    # Hook scripts — also kept in /opt as source for Settings dialog reinstall
+    install -Dm755 "$startdir/pacman-snapshot.sh"        "$pkgdir/opt/$pkgname/pacman-snapshot.sh"
+    install -Dm644 "$startdir/flatpak-hook.sh"           "$pkgdir/opt/$pkgname/flatpak-hook.sh"
+    install -Dm644 "$startdir/equestria-save-point.hook" "$pkgdir/opt/$pkgname/equestria-save-point.hook"
+
+    # Hooks enabled by default (safe — script exits silently until repo is init'd)
+    install -Dm644 "$startdir/equestria-save-point.hook" \
+        "$pkgdir/etc/pacman.d/hooks/equestria-save-point.hook"
+    install -Dm644 "$startdir/flatpak-hook.sh" \
+        "$pkgdir/etc/profile.d/60-equestria-save-point.sh"
+
+    cp "$startdir/locales/"*.json "$pkgdir/opt/$pkgname/locales/"
+
+    if [ -f "$startdir/start.sh" ]; then
+        install -Dm755 "$startdir/start.sh" "$pkgdir/opt/$pkgname/start.sh"
+    fi
+
+    chmod 755 "$pkgdir/opt/$pkgname/main.py"
+
+    install -Dm644 "$startdir/equestria-os-save-point.desktop" "$pkgdir/usr/share/applications/"
+    install -Dm644 "$startdir/equestria-os-save-point.png"     "$pkgdir/usr/share/pixmaps/equestria-os-save-point.png"
+}

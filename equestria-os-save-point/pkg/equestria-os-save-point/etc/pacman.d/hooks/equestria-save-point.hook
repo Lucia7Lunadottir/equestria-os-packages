@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Creating Equestria Save Point…
+When = PreTransaction
+Exec = /opt/equestria-os-save-point/pacman-snapshot.sh auto:pacman

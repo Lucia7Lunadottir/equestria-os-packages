@@ -2,10 +2,10 @@
 
 pkgname=equestria-os-relocator
 pkgver=1.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="GUI tool to move files/folders and create symlinks at the original location"
 arch=('any')
-url="https://github.com/7Lucia7Lokidottir7"
+url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
 depends=('python' 'python-pyqt6' 'polkit')
 optdepends=('kdesu: alternative privilege elevation')

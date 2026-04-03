@@ -276,6 +276,40 @@ QLineEdit#SmallEdit {
 }
 QLineEdit#SmallEdit:focus { border: 1px solid rgb(203, 166, 247); }
 
+/* fstab health / orphaned entries panel */
+QFrame#FstabHealthFrame {
+    border: 1px solid rgb(249, 226, 175);
+    border-radius: 8px;
+    background-color: rgb(34, 32, 22);
+}
+QLabel#FstabHealthTitle {
+    color: rgb(249, 226, 175);
+    font-size: 13px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+QLabel#FstabHealthHint {
+    color: rgb(166, 153, 110);
+    font-size: 12px;
+    font-family: sans-serif;
+}
+QFrame#OrphanEntryFrame {
+    background-color: rgb(40, 36, 24);
+    border: 1px solid rgb(100, 88, 50);
+    border-radius: 6px;
+}
+QLabel#OrphanWarnLabel {
+    color: rgb(249, 226, 175);
+    font-size: 12px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+QLabel#OrphanInfoLabel {
+    color: rgb(200, 196, 170);
+    font-size: 12px;
+    font-family: monospace;
+}
+
 /* Format / danger zone */
 QFrame#DangerFrame {
     border: 1px solid rgb(243, 139, 168);

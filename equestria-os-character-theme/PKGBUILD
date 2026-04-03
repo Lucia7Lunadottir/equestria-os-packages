@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-character-theme
 pkgver=2.0.3
-pkgrel=1
+pkgrel=2
 pkgdesc='Customizing the visual style and characters of Equestria OS'
 arch=('any')
 url='https://psyche-games.com'

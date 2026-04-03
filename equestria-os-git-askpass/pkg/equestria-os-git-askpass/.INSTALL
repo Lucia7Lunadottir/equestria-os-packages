@@ -1,14 +1,34 @@
+_set_env_var() {
+    local key="$1" val="$2" file="/etc/environment"
+    if grep -q "^${key}=" "$file" 2>/dev/null; then
+        sed -i "s|^${key}=.*|${key}=${val}|" "$file"
+    else
+        echo "${key}=${val}" >> "$file"
+    fi
+}
+
+_unset_env_var() {
+    local key="$1" file="/etc/environment"
+    sed -i "/^${key}=/d" "$file"
+}
+
 post_install() {
-    # Устанавливаем перехватчик глобально для всей системы
+    # Git HTTPS
     git config --system core.askPass /usr/bin/equestria-os-git-askpass
-    echo "Equestria OS: Git GUI interceptor activated."
+
+    # SSH
+    _set_env_var SSH_ASKPASS /usr/bin/equestria-os-git-askpass
+
+    echo "Equestria OS: Git/SSH GUI askpass activated."
+    echo "NOTE: Please log out and log back in for SSH askpass to take effect."
 }
 
 post_upgrade() {
     git config --system core.askPass /usr/bin/equestria-os-git-askpass
+    _set_env_var SSH_ASKPASS /usr/bin/equestria-os-git-askpass
 }
 
 pre_remove() {
-    # Убираем за собой при удалении пакета
     git config --system --unset core.askPass || true
+    _unset_env_var SSH_ASKPASS
 }
