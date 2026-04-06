@@ -77,6 +77,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         for code, flag in langs.items():
             btn = QPushButton(flag)
             btn.setFixedSize(28, 28)
+            btn.setStyleSheet("padding: 0px; font-size: 10px;")
             btn.setToolTip(code.upper())
             btn.clicked.connect(lambda checked, c=code: self.change_language(c))
             self.lang_layout.addWidget(btn)

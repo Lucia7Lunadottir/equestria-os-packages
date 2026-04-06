@@ -1,1 +1,1 @@
-/home/lucial/equestria-packages/equestria-os-git-askpass/equestria-os-git-askpass.py
+/home/lucial/Git Projects/equestria-packages/equestria-os-git-askpass/equestria-os-git-askpass.py

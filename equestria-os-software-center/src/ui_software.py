@@ -1,1 +1,1 @@
-/home/lucial/equestria-packages/equestria-os-software-center/ui_software.py
+/home/lucial/Git Projects/equestria-packages/equestria-os-software-center/ui_software.py

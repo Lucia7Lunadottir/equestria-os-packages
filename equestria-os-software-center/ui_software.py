@@ -288,11 +288,12 @@ class AppDetailWidget(QWidget):
         main_layout.addWidget(self.scroll_screenshots)
         main_layout.addStretch()
 
-    def load_package_group(self, alts_dict, default_source, t_func, installed_set, flatpak_installed_set, upgradable_set, on_install, on_remove, on_source_changed):
+    def load_package_group(self, alts_dict, default_source, t_func, installed_set, flatpak_installed_set, upgradable_set, on_install, on_remove, on_source_changed, flatpak_upgradable_set=None):
         self.alts_dict = alts_dict
         self.t_func = t_func
         self.installed_set = installed_set
         self.flatpak_installed_set = flatpak_installed_set
+        self.flatpak_upgradable_set = flatpak_upgradable_set or set()
         self.upgradable_set = upgradable_set
         self.on_install = on_install
         self.on_remove = on_remove
@@ -378,7 +379,7 @@ class AppDetailWidget(QWidget):
 
         if pkg_data.source_type == "flatpak":
             is_installed = bool(pkg_data.app_id and pkg_data.app_id in self.flatpak_installed_set)
-            is_upgradable = False
+            is_upgradable = bool(pkg_data.app_id and pkg_data.app_id in self.flatpak_upgradable_set)
         else:
             is_upgradable = pkg_data.name in self.upgradable_set
             is_installed = pkg_data.name in self.installed_set

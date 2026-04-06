@@ -1,4 +1,4 @@
-# 🦄 Equestria OS - Custom Packages Repository
+# 🦄 Equestria OS - Custom Packages Repository (Is not completed)
 
 Welcome to the official package repository for **Equestria OS**! 
 

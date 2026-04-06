@@ -3,10 +3,10 @@
 pkgname = equestria-os-welcome-hub
 pkgbase = equestria-os-welcome-hub
 xdata = pkgtype=pkg
-pkgver = 2.3.0-1
+pkgver = 2.3.0-2
 pkgdesc = The official Equestria OS Welcome Center and Community Portal
-url = https://github.com/7Lucia7Lokidottir7
-builddate = 1775016369
+url = https://github.com/Lucia7Lunadottir
+builddate = 1775229677
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 479365
 arch = any

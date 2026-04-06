@@ -325,6 +325,32 @@ class LocalAppStreamLoader(QThread):
         return urls
 
 
+class AURUpgradableLoader(QThread):
+    """Fetches upgradable AUR package names via `yay -Qu --aur`.
+
+    Runs in background after startup to avoid slowing down the UI.
+    """
+    finished = pyqtSignal(set)
+
+    def run(self):
+        pkgs = set()
+        if not shutil.which("yay"):
+            self.finished.emit(pkgs)
+            return
+        try:
+            res = subprocess.run(
+                ["yay", "-Qu", "--aur"],
+                capture_output=True, text=True, timeout=30
+            )
+            for line in res.stdout.splitlines():
+                parts = line.split()
+                if parts:
+                    pkgs.add(parts[0])
+        except Exception:
+            pass
+        self.finished.emit(pkgs)
+
+
 class PacmanInfoLoader(QThread):
     """Fetches a single package description via `pacman -Si`.
 

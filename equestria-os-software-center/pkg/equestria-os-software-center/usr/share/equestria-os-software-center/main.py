@@ -8,13 +8,13 @@ import shutil
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem,
                               QPushButton, QLabel, QVBoxLayout, QWidget)
 from PyQt6.QtGui import QIcon, QFontDatabase, QFont
-from PyQt6.QtCore import Qt, QThread, QTimer, QFileSystemWatcher
+from PyQt6.QtCore import Qt, QThread, QTimer, QFileSystemWatcher, QProcess
 
 from models import EssentialData, StoreData
 from utils import (FLATPAK_APPSTREAM, cleanup_screenshot_cache,
-                   normalize_key, merge_packages, _GENERIC_PACMAN_DESC)
+                   normalize_key, merge_packages, _GENERIC_PACMAN_DESC, guess_cat)
 from workers import (AppStoreLoader, FlatpakLoader,
-                     AURSearchThread, AURPopularLoader,
+                     AURSearchThread, AURPopularLoader, AURUpgradableLoader,
                      ScreenshotDownloadThread, LocalAppStreamLoader,
                      PacmanInfoLoader)
 from ui_software import Ui_SoftwareCenter, EssentialAppRow, StoreAppRow, AppDetailWidget
@@ -39,6 +39,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.flatpak_upgradable = set()
         self.installed_packages = set()
         self.upgradable_packages = set()
+        self.aur_installed = {}
         self.selected_essentials = set()
 
         self.filtered_store_packages = []
@@ -53,6 +54,8 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self._aur_search_gen = 0
         self._aur_popular_cached = []
         self._aur_query_cache = {}
+        self._aur_all_search_thread = None
+        self._aur_all_search_gen = 0
         self._screenshot_threads = []
         self._screenshot_gen = 0
         self._pacman_info_thread = None
@@ -75,15 +78,81 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             self.flatpak_loader.finished.connect(self.on_flatpak_loaded)
             self.flatpak_loader.start()
 
+        self._aur_popular_thread = AURPopularLoader()
+        self._aur_popular_thread.finished.connect(self._on_aur_popular_loaded)
+        self._aur_popular_thread.start()
+
+        self._aur_upgradable_loader = AURUpgradableLoader()
+        self._aur_upgradable_loader.finished.connect(self._on_aur_upgradable_loaded)
+        self._aur_upgradable_loader.start()
+
         self._flatpak_watcher = QFileSystemWatcher()
         flatpak_dir = os.path.dirname(FLATPAK_APPSTREAM)
         if os.path.exists(flatpak_dir):
             self._flatpak_watcher.addPath(flatpak_dir)
         self._flatpak_watcher.directoryChanged.connect(self._on_flatpak_dir_changed)
 
+        # Убираем старый init_pacman_databases_if_needed() и запуск лоадеров отсюда
+        if self.needs_pacman_init():
+            self.run_pacman_init()
+        else:
+            self.start_loaders()
+
     # -------------------------------------------------------------------------
     # Startup helpers
     # -------------------------------------------------------------------------
+
+    def needs_pacman_init(self):
+        """Проверяет кэш pacman. Возвращает True, если баз нет."""
+        sync_dir = "/var/lib/pacman/sync"
+        return not os.path.exists(sync_dir) or not any(f.endswith('.db') for f in os.listdir(sync_dir))
+
+    def run_pacman_init(self):
+        """Запускает обновление баз в konsole и ждет завершения."""
+        self.store_loading_lbl.setText("Initialising database... Please wait for Konsole.")
+        self.store_loading_lbl.show()
+
+        cmd = (
+            "echo 'First start loading: initializing pacman database...'; "
+            "pkexec pacman -Sy --noconfirm; "
+            "echo; read -rp 'Database has been updated! Press Enter to close...'"
+        )
+
+        # Используем QProcess, чтобы поймать момент закрытия терминала
+        self._init_process = QProcess(self)
+        self._init_process.finished.connect(self.start_loaders)
+        self._init_process.start("konsole", ["-e", "bash", "-c", cmd])
+
+    def start_loaders(self):
+        """Запускает все рабочие потоки для получения данных."""
+        self.store_loading_lbl.setText(self.t("ui.loading"))
+
+        self.loader = AppStoreLoader()
+        self.loader.finished.connect(self.on_store_loaded)
+        self.loader.start()
+
+        if shutil.which("flatpak") and os.path.exists(FLATPAK_APPSTREAM):
+            self.flatpak_loader = FlatpakLoader()
+            self.flatpak_loader.finished.connect(self.on_flatpak_loaded)
+            self.flatpak_loader.start()
+
+        self._aur_popular_thread = AURPopularLoader()
+        self._aur_popular_thread.finished.connect(self._on_aur_popular_loaded)
+        self._aur_popular_thread.start()
+
+        self._aur_upgradable_loader = AURUpgradableLoader()
+        self._aur_upgradable_loader.finished.connect(self._on_aur_upgradable_loaded)
+        self._aur_upgradable_loader.start()
+
+        self._flatpak_watcher = QFileSystemWatcher()
+        flatpak_dir = os.path.dirname(FLATPAK_APPSTREAM)
+        if os.path.exists(flatpak_dir):
+            self._flatpak_watcher.addPath(flatpak_dir)
+        self._flatpak_watcher.directoryChanged.connect(self._on_flatpak_dir_changed)
+
+
+
+
 
     def init_resources(self):
         self.custom_font_family = "sans-serif"
@@ -117,6 +186,13 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             self.installed_packages = set(res.stdout.splitlines())
             res_upd = subprocess.run(["pacman", "-Qu"], capture_output=True, text=True)
             self.upgradable_packages = {line.split()[0] for line in res_upd.stdout.splitlines() if line}
+
+            res_foreign = subprocess.run(["pacman", "-Qm"], capture_output=True, text=True)
+            self.aur_installed = {}
+            for line in res_foreign.stdout.splitlines():
+                parts = line.split()
+                if len(parts) >= 2:
+                    self.aur_installed[parts[0]] = parts[1]
 
             self.flatpak_upgradable = set()
             if shutil.which("flatpak"):
@@ -281,6 +357,11 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
     def _rebuild_merged(self):
         self._merged_packages = merge_packages(self.store_packages, self.flatpak_packages)
+        if self._aur_popular_cached:
+            pacman_names = {normalize_key(p.name) for p in self.store_packages}
+            for aur_pkg in self._aur_popular_cached:
+                if normalize_key(aur_pkg.name) not in pacman_names:
+                    self._merged_packages.append(aur_pkg)
 
     def on_store_loaded(self, packages):
         self.store_packages = packages
@@ -331,6 +412,15 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             self._aur_debounce_timer.start(500)
         else:
             self.filter_store()
+            if self._current_source == "all" and text.strip():
+                if self._aur_debounce_timer:
+                    self._aur_debounce_timer.stop()
+                self._aur_debounce_timer = QTimer()
+                self._aur_debounce_timer.setSingleShot(True)
+                self._aur_debounce_timer.timeout.connect(
+                    lambda t=text.strip(): self._trigger_aur_search_for_all(t)
+                )
+                self._aur_debounce_timer.start(600)
 
     def filter_store(self):
         source = self._current_source
@@ -363,8 +453,13 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         else:
             self._filter_packages(self.store_packages, source)
 
+    @staticmethod
+    def _norm(s):
+        return s.lower().replace('-', ' ').replace('_', ' ').replace('.', ' ')
+
     def _filter_packages(self, packages, source="all"):
-        query = self.search_store.text().lower()
+        query = self.search_store.text().lower().strip()
+        query_norm = self._norm(query)
         cat = self.combo_store.currentText()
         self.filtered_store_packages = []
 
@@ -386,11 +481,25 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
             if source == "updates" and pkg.status != "upgradable":
                 continue
-            if query and query not in pkg.name.lower() and query not in pkg.desc.lower():
-                continue
+            if query:
+                name_norm = self._norm(pkg.name)
+                desc_norm = self._norm(pkg.desc)
+                if (query not in pkg.name.lower() and query_norm not in name_norm
+                        and query not in pkg.desc.lower() and query_norm not in desc_norm):
+                    continue
             if cat != "All" and pkg.category != cat:
                 continue
             self.filtered_store_packages.append(pkg)
+
+        if source == "updates":
+            covered = {p.name for p in self.filtered_store_packages}
+            for name, version in self.aur_installed.items():
+                if name not in self.upgradable_packages or name in covered:
+                    continue
+                pkg = StoreData(name, version, "AUR package", "AUR", source_type="aur")
+                pkg.status = "upgradable"
+                pkg.category = guess_cat(name)
+                self.filtered_store_packages.append(pkg)
 
         self.current_page = 1
         self.render_store_page()
@@ -412,6 +521,15 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             self.filtered_store_packages = list(pkgs)
             self.current_page = 1
             self.render_store_page()
+        else:
+            self._rebuild_merged()
+            if self._current_source == "all":
+                self.filter_store()
+
+    def _on_aur_upgradable_loaded(self, pkgs):
+        if pkgs:
+            self.upgradable_packages |= pkgs
+            self.filter_store()
 
     def _trigger_aur_search(self, query):
         if not query:
@@ -431,12 +549,52 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     def _on_aur_results(self, pkgs, gen, query=None):
         if query:
             self._aur_query_cache[query] = pkgs
-        if gen != self._aur_search_gen:
+        if gen != self._aur_search_gen or self._current_source != "aur":
             return
         self.aur_packages = pkgs
         self.filtered_store_packages = list(pkgs)
         self.current_page = 1
         self.render_store_page()
+
+    def _trigger_aur_search_for_all(self, query):
+        if self._current_source != "all" or not query:
+            return
+        if query in self._aur_query_cache:
+            self._append_aur_to_all(self._aur_query_cache[query])
+            return
+        self._aur_all_search_gen += 1
+        gen = self._aur_all_search_gen
+        self._aur_all_search_thread = AURSearchThread(query)
+        self._aur_all_search_thread.finished.connect(
+            lambda pkgs, g=gen, q=query: self._on_aur_results_for_all(pkgs, g, q)
+        )
+        self._aur_all_search_thread.start()
+
+    def _on_aur_results_for_all(self, pkgs, gen, query):
+        if gen != self._aur_all_search_gen or self._current_source != "all":
+            return
+        if query != self.search_store.text().strip():
+            return
+        self._aur_query_cache[query] = pkgs
+        self._append_aur_to_all(pkgs)
+
+    def _append_aur_to_all(self, aur_pkgs):
+        if self._current_source != "all":
+            return
+        existing = {normalize_key(p.name) for p in self.filtered_store_packages}
+        added = False
+        for pkg in aur_pkgs:
+            if normalize_key(pkg.name) not in existing:
+                if pkg.name in self.upgradable_packages:
+                    pkg.status = "upgradable"
+                elif pkg.name in self.installed_packages:
+                    pkg.status = "installed"
+                else:
+                    pkg.status = "available"
+                self.filtered_store_packages.append(pkg)
+                added = True
+        if added:
+            self.render_store_page()
 
     # -------------------------------------------------------------------------
     # Rendering
@@ -604,6 +762,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             installed_set=self.installed_packages,
             flatpak_installed_set=self.flatpak_installed,
             upgradable_set=self.upgradable_packages,
+            flatpak_upgradable_set=self.flatpak_upgradable,
             on_install=self.install_package,
             on_remove=self.remove_package,
             on_source_changed=self._load_detail_content,
@@ -706,11 +865,17 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
     def install_package(self, pkg):
         if pkg.source_type == "flatpak":
-            cmd = f"flatpak install -y flathub {pkg.app_id}; echo; read -rp 'Done. Press Enter to close...'"
+            if getattr(pkg, 'status', '') == "upgradable":
+                cmd = f"flatpak update -y {pkg.app_id}; echo; read -rp 'Done. Press Enter to close...'"
+            else:
+                cmd = f"flatpak install -y flathub {pkg.app_id}; echo; read -rp 'Done. Press Enter to close...'"
         elif pkg.source_type == "aur":
             cmd = f"yay -S --noconfirm {pkg.name}; echo; read -rp 'Done. Press Enter to close...'"
         else:
-            cmd = f"pkexec pacman -S --noconfirm {pkg.name}; echo; read -rp 'Done. Press Enter to close...'"
+            if getattr(pkg, 'status', '') == "upgradable":
+                cmd = f"pkexec pacman -Syu --noconfirm {pkg.name}; echo; read -rp 'Done. Press Enter to close...'"
+            else:
+                cmd = f"pkexec pacman -S --noconfirm {pkg.name}; echo; read -rp 'Done. Press Enter to close...'"
         subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
 
     def remove_package(self, pkg):
@@ -760,7 +925,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "echo; "
             "if command -v yay >/dev/null 2>&1; then "
             "  echo '[2/3] AUR build cache (yay)...'; "
-            "  yay -Sc --noconfirm; echo; "
+            "  yay -Sc --noconfirm; "
+            "  echo 'Removing yay build directory (~/.cache/yay)...'; "
+            "  rm -rf ~/.cache/yay/; echo 'Done.'; echo; "
             "else "
             "  echo '[2/3] yay not found, skipping AUR cache.'; echo; "
             "fi; "

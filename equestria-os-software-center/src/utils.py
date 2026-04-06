@@ -1,1 +1,1 @@
-/home/lucial/equestria-packages/equestria-os-software-center/utils.py
+/home/lucial/Git Projects/equestria-packages/equestria-os-software-center/utils.py

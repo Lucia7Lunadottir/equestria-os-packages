@@ -7,7 +7,7 @@ fi
 
 echo "🐎 Запуск автоматического обновления репозитория Equestria OS..."
 
-BASE_DIR="$HOME/equestria-packages"
+BASE_DIR="$HOME/Git Projects/equestria-packages"
 REPO_DIR="$BASE_DIR/docs/x86_64"
 DB_NAME="equestria-os.db.tar.gz"
 

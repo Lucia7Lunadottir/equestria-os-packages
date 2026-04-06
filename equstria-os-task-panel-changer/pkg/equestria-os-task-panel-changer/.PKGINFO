@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 1.2.1-1
 pkgdesc = Task panel style manager for Equestria OS (KDE Plasma 6)
 url = https://psyche-games.com
-builddate = 1774497846
+builddate = 1775229691
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 1818990
 arch = any
