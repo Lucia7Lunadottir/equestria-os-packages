@@ -37,47 +37,23 @@ PYTHON_EXCLUDES = [
     'tkinter', 'unittest', 'numpy', 'scipy', 'pandas', 'matplotlib',
 ]
 
-# System libs present on Equestria OS (Arch/KDE based) - safe to exclude from bundle
-EXCLUDED_SYSTEM_LIBS = [
-    'libKF6BreezeIcons',    # 24.9MB - KDE Breeze icon theme (always on KDE)
-    'libicudata',           # 31.6MB - ICU Unicode data (system-wide)
-    'libx265',              # 20.5MB - H.265 video codec (multimedia only)
-    'libaom',               #  8.5MB - AV1 codec (multimedia only)
-    'libSvtAv1Enc',         #  5.1MB - AV1 encoder (multimedia only)
-    'librav1e',             #  3.2MB - AV1 codec (multimedia only)
-    'libdav1d',             #  1.7MB - AV1 decoder (multimedia only)
-    'libx264',              #  1.8MB - H.264 codec (multimedia only)
-    'libjxl',               #  4.1MB - JPEG XL codec
-    'libQt6Quick',          #  7.2MB - Qt Quick (QtQml excluded)
-    'libQt6Qml',            #  5.5MB - Qt QML (excluded)
-    'libQt6Pdf',            #  3.9MB - Qt PDF (excluded)
-    'libQt6QuickTemplates2',#  2.4MB - Qt Quick controls
-    'libQt6QuickControls2',
-    'libglycin',            #  4.0MB - GNOME image loader
-    'libheif',              # H.265 image format
-    'libde265',             # H.265 decoder
-]
-
-
-def make_spec(name, src_dir, entry, datas, console=False):
+def make_spec(name, src_dir, entry, datas, console=False, extra_hiddenimports=None):
     """Generate a PyInstaller spec file for a project."""
     entry_path = os.path.join(src_dir, entry)
     datas_repr = repr(datas)
     excludes_repr = repr(PYTHON_EXCLUDES)
-    excl_libs_repr = repr(EXCLUDED_SYSTEM_LIBS)
+    hidden_repr = repr(extra_hiddenimports or [])
     windowed = 'True' if not console else 'False'
 
     spec_content = f'''# -*- mode: python ; coding: utf-8 -*-
 # Auto-generated spec for {name}
-
-EXCLUDED_SYSTEM_LIBS = {excl_libs_repr}
 
 a = Analysis(
     [{entry_path!r}],
     pathex=[{src_dir!r}],
     binaries=[],
     datas={datas_repr},
-    hiddenimports=[],
+    hiddenimports={hidden_repr},
     hookspath=[],
     hooksconfig={{}},
     runtime_hooks=[],
@@ -85,9 +61,14 @@ a = Analysis(
     noarchive=False,
 )
 
-# Filter out large system libs - Equestria OS (Arch/KDE) has them system-wide
-a.binaries = [(n, p, t) for n, p, t in a.binaries
-              if not any(exc in n for exc in EXCLUDED_SYSTEM_LIBS)]
+# Exclude system-provided .so files from the bundle.
+# Equestria OS (Arch/KDE) always has Qt6, KDE libs, codecs, ICU etc. system-wide.
+# Keep only Python site-packages bindings (PyQt6 .abi3.so, numpy _core, etc.)
+a.binaries = [
+    (n, p, t) for n, p, t in a.binaries
+    if "/site-packages/" in (p or "")
+    or (not (p or "").startswith("/usr/lib/") and not (p or "").startswith("/usr/local/lib/"))
+]
 
 pyz = PYZ(a.pure)
 
@@ -113,7 +94,7 @@ exe = EXE(
     return spec_path
 
 
-def build(name, src_dir, entry, datas=None, console=False):
+def build(name, src_dir, entry, datas=None, console=False, extra_hiddenimports=None):
     """Build a single project using a generated spec file."""
     entry_path = os.path.join(src_dir, entry)
     if not os.path.exists(entry_path):
@@ -132,7 +113,7 @@ def build(name, src_dir, entry, datas=None, console=False):
             print(f"  [WARN] Missing asset: {src}")
     datas = valid_datas
 
-    spec_path = make_spec(name, src_dir, entry, datas, console)
+    spec_path = make_spec(name, src_dir, entry, datas, console, extra_hiddenimports)
 
     cmd = [
         PYINSTALLER,
