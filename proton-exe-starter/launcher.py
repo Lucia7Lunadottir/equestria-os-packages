@@ -18,7 +18,7 @@ from PyQt6.QtCore import Qt, QTimer
 
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
-SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
+SYSTEM_PATH = sys._MEIPASS if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
 
 _locales: dict = {}
 _lang: str = "en"

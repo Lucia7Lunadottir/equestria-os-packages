@@ -2,42 +2,71 @@
 
 pkgname=equestria-os-proton-starter
 pkgver=1.5.1
-pkgrel=2
+pkgrel=3
 pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton)"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('umu-launcher' 'lib32-glibc' 'lib32-gcc-libs' 'xdg-utils' 'desktop-file-utils' 'xdg-desktop-portal-kde')
+
+# Runtime: Qt6 native libs are NOT bundled — linked from system qt6-base
+depends=(
+    'qt6-base'
+    'umu-launcher'
+    'lib32-glibc'
+    'lib32-gcc-libs'
+    'xdg-utils'
+    'desktop-file-utils'
+    'xdg-desktop-portal-kde'
+    'libxcb'
+    'libx11'
+)
 optdepends=(
     'lib32-mesa: 32-bit OpenGL support for AMD/Intel/Nouveau'
     'lib32-vulkan-radeon: 32-bit Vulkan support for AMD GPUs'
     'lib32-vulkan-intel: 32-bit Vulkan support for Intel GPUs'
     'lib32-nvidia-utils: 32-bit OpenGL/Vulkan support for NVIDIA GPUs'
 )
+makedepends=('python-pyinstaller' 'python-pyqt6')
 install="$pkgname.install"
 
+build() {
+    cd "$startdir"
+    pyinstaller proton-starter.spec \
+        --distpath "$srcdir/dist" \
+        --workpath "$srcdir/build" \
+        --noconfirm
+}
+
 package() {
-    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
+    local _bundle="$srcdir/dist/equestria-proton-starter"
+    local _dest="$pkgdir/usr/lib/equestria-proton-starter"
 
-    # proton-exe-starter (main.py) → settings app
-    install -Dm755 "$_bins/proton-exe-starter" "$pkgdir/usr/bin/equestria-proton-settings"
-    # proton-launcher (launcher.py) → .exe file opener
-    install -Dm755 "$_bins/proton-launcher"    "$pkgdir/usr/bin/equestria-proton-run"
-    # proton-cleaner (cleaner.py) → cache cleaner
-    install -Dm755 "$_bins/proton-cleaner"     "$pkgdir/usr/bin/equestria-proton-cleaner"
+    # Install the unified PyInstaller bundle
+    install -dm755 "$_dest"
+    cp -r "$_bundle/." "$_dest/"
+    chmod -R u=rwX,go=rX "$_dest"
+    chmod 755 "$_dest/equestria-proton-starter"
 
+    # Three entry points via symlinks (dispatch.py checks argv[0])
+    install -dm755 "$pkgdir/usr/bin"
+    ln -s "/usr/lib/equestria-proton-starter/equestria-proton-starter" \
+        "$pkgdir/usr/bin/equestria-proton-settings"
+    ln -s "/usr/lib/equestria-proton-starter/equestria-proton-starter" \
+        "$pkgdir/usr/bin/equestria-proton-run"
+    ln -s "/usr/lib/equestria-proton-starter/equestria-proton-starter" \
+        "$pkgdir/usr/bin/equestria-proton-cleaner"
+
+    # Icon
     install -Dm644 "$startdir/EquestriaOS-Logo.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-proton-starter.png"
 
+    # Desktop files
     install -Dm644 "$startdir/equestria-os-proton-run.desktop" \
         "$pkgdir/usr/share/applications/equestria-os-proton-run.desktop"
-
     install -Dm644 "$startdir/equestria-os-proton-cleaner.desktop" \
         "$pkgdir/usr/share/applications/equestria-os-proton-cleaner.desktop"
-
     install -Dm755 "$startdir/equestria-os-proton.desktop" \
         "$pkgdir/usr/share/kio/servicemenus/equestria-os-proton.desktop"
-
     install -Dm644 "$startdir/mimeapps.list" \
         "$pkgdir/usr/share/applications/mimeapps.list"
 }
