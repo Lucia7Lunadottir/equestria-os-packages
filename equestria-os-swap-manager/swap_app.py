@@ -58,8 +58,12 @@ class SwapWorker(QThread):
             self.finished.emit(False, "No elevation tool found.")
             return
 
-        backend_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "swap_backend.py")
-        inner = [sys.executable, backend_script] + self.command_args
+        if getattr(sys, 'frozen', False):
+            backend_script = os.path.join(os.path.dirname(sys.executable), "equestria-os-swap-backend")
+            inner = [backend_script] + self.command_args
+        else:
+            backend_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "swap_backend.py")
+            inner = [sys.executable, backend_script] + self.command_args
 
         cmd = [elevator, "--"] + inner if os.path.basename(elevator) == "kdesu" else [elevator] + inner
 

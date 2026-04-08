@@ -5,7 +5,10 @@ import sys
 
 from core import check_writable
 
-BACKEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backend.py")
+if getattr(sys, 'frozen', False):
+    BACKEND = os.path.join(os.path.dirname(sys.executable), "equestria-os-relocator-backend")
+else:
+    BACKEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backend.py")
 
 
 def find_elevator() -> str | None:
@@ -26,6 +29,9 @@ def needs_elevation(paths: list) -> bool:
 
 def start_elevated(elevator: str, sources: list, destination: str):
     """Start the backend script under elevator. Returns a Popen object."""
-    inner = [sys.executable, BACKEND] + sources + ["--dest", destination]
+    if getattr(sys, 'frozen', False):
+        inner = [BACKEND] + sources + ["--dest", destination]
+    else:
+        inner = [sys.executable, BACKEND] + sources + ["--dest", destination]
     cmd = [elevator, "--"] + inner if os.path.basename(elevator) == "kdesu" else [elevator] + inner
     return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)

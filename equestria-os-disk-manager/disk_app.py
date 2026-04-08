@@ -374,8 +374,12 @@ class DiskWorker(QThread):
             self.finished.emit(False, "No elevation tool found.")
             return
 
-        backend_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disk_backend.py")
-        inner = [sys.executable, backend_script] + self.command_args
+        if getattr(sys, 'frozen', False):
+            backend_script = os.path.join(os.path.dirname(sys.executable), "equestria-os-disk-backend")
+            inner = [backend_script] + self.command_args
+        else:
+            backend_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "disk_backend.py")
+            inner = [sys.executable, backend_script] + self.command_args
         if os.path.basename(elevator) == "kdesu":
             cmd = [elevator, "--"] + inner
         else:
