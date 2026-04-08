@@ -15,11 +15,14 @@ package() {
     install -Dm755 "$_bins/equestria-os-character-theme" \
         "$pkgdir/usr/bin/equestria-os-character-theme"
 
+    install -d "$pkgdir/usr/share/applications"
     sed "s|^Exec=.*|Exec=equestria-os-character-theme|" \
         "$startdir/equestria-theme-switcher.desktop" \
         > "$pkgdir/usr/share/applications/equestria-theme-switcher.desktop"
     chmod 644 "$pkgdir/usr/share/applications/equestria-theme-switcher.desktop"
 
-    install -Dm644 "$startdir/EquestriaOS-Logo.png" \
+    if [ -f "$startdir/EquestriaOS-Logo.png" ]; then
+        install -Dm644 "$startdir/EquestriaOS-Logo.png" \
         "$pkgdir/usr/share/pixmaps/equestria-theme-switcher.png"
+    fi
 }

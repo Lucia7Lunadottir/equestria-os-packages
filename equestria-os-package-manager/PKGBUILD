@@ -15,6 +15,7 @@ package() {
     install -Dm755 "$_bins/equestria-os-package-manager" \
         "$pkgdir/usr/bin/equestria-os-package-manager"
 
+    install -d "$pkgdir/usr/share/applications"
     sed "s|^Exec=.*|Exec=equestria-os-package-manager|" \
         "$startdir/equestria-os-package-manager.desktop" \
         > "$pkgdir/usr/share/applications/equestria-os-package-manager.desktop"

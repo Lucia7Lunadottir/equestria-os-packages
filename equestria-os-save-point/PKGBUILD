@@ -24,6 +24,7 @@ package() {
     install -Dm755 "$_bins/equestria-os-save-point" \
         "$pkgdir/usr/bin/equestria-os-save-point"
 
+    install -d "$pkgdir/usr/share/applications"
     sed "s|^Exec=.*|Exec=equestria-os-save-point|" \
         "$startdir/equestria-os-save-point.desktop" \
         > "$pkgdir/usr/share/applications/equestria-os-save-point.desktop"
@@ -32,7 +33,6 @@ package() {
     install -Dm644 "$startdir/equestria-os-save-point.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-save-point.png"
 
-    # Pacman hook and scripts (not part of the binary)
     install -Dm755 "$startdir/pacman-snapshot.sh" \
         "$pkgdir/usr/lib/equestria-os-save-point/pacman-snapshot.sh"
     install -Dm644 "$startdir/flatpak-hook.sh" \

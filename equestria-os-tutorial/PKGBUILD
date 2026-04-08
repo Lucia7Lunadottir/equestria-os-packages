@@ -14,7 +14,7 @@ package() {
 
     install -Dm755 "$_bins/equestria-os-tutorial" "$pkgdir/usr/bin/equestria-os-tutorial"
 
-    # Patch Exec= to call the binary
+    install -d "$pkgdir/usr/share/applications"
     sed "s|^Exec=.*|Exec=equestria-os-tutorial|" "$startdir/equestria-os-tutorial.desktop" \
         > "$pkgdir/usr/share/applications/equestria-os-tutorial.desktop"
     chmod 644 "$pkgdir/usr/share/applications/equestria-os-tutorial.desktop"
