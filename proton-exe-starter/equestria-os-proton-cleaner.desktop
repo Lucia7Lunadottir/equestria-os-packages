@@ -1,0 +1,27 @@
+[Desktop Entry]
+Type=Application
+Name=Proton Cache Cleaner
+Name[ru]=Очистка кэша Proton
+Name[de]=Proton Cache-Bereinigung
+Name[fr]=Nettoyeur de cache Proton
+Name[es]=Limpiador de caché Proton
+Name[pt]=Limpador de Cache Proton
+Name[pl]=Czyszczenie pamięci Proton
+Name[uk]=Очищення кешу Proton
+Name[zh_CN]=Proton 缓存清理
+Name[ja]=Proton キャッシュクリーナー
+Comment=Clean Wine prefixes and shader caches for Proton applications
+Comment[ru]=Очистка Wine-префиксов и кэша шейдеров для приложений Proton
+Comment[de]=Wine-Präfixe und Shader-Caches für Proton-Anwendungen bereinigen
+Comment[fr]=Nettoyer les préfixes Wine et les caches de shaders des applications Proton
+Comment[es]=Limpiar prefijos Wine y cachés de shaders de aplicaciones Proton
+Comment[pt]=Limpar prefixos Wine e caches de shaders de aplicativos Proton
+Comment[pl]=Czyszczenie prefiksów Wine i cache shaderów aplikacji Proton
+Comment[uk]=Очищення Wine-префіксів та кешу шейдерів для застосунків Proton
+Comment[zh_CN]=清理 Proton 应用程序的 Wine 前缀和着色器缓存
+Comment[ja]=Proton アプリケーションの Wine プレフィックスとシェーダーキャッシュをクリア
+Exec=equestria-proton-cleaner
+Icon=equestria-os-proton-starter
+Categories=System;Utility;
+Keywords=proton;wine;cache;shader;clean;
+StartupNotify=true
