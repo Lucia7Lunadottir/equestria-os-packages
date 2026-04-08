@@ -2,41 +2,20 @@
 
 pkgname=equestria-os-task-panel-changer
 pkgver=1.2.2
-pkgrel=1
-pkgdesc='Task panel style manager for Equestria OS (KDE Plasma 6)'
-arch=('any')
-url='https://psyche-games.com'
-license=('custom')
-depends=('python' 'python-pyqt6')
+pkgrel=2
+pkgdesc="Task panel style manager for Equestria OS (KDE Plasma 6)"
+arch=('x86_64')
+url="https://github.com/Lucia7Lunadottir"
+license=('GPL')
+depends=()
 install="$pkgname.install"
 
 package() {
-    local appdir="$pkgdir/opt/$pkgname"
+    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
 
-    install -d "$appdir"
-    install -d "$pkgdir/usr/bin"
-    install -d "$pkgdir/usr/share/applications"
+    install -Dm755 "$_bins/equestria-os-task-panel-changer" \
+        "$pkgdir/usr/bin/equestria-os-task-panel-changer"
 
-    # Python-скрипты и ресурсы интерфейса
-    install -Dm644 "$startdir/main.py"                "$appdir/main.py"
-    install -Dm644 "$startdir/ui.py"                  "$appdir/ui.py"
-    install -Dm644 "$startdir/style.qss"              "$appdir/style.qss"
-    install -Dm644 "$startdir/plasma_utils.py"              "$appdir/plasma_utils.py"
-    install -Dm644 "$startdir/widgets.py"              "$appdir/widgets.py"
-    install -Dm644 "$startdir/equestria_cyrillic.ttf" "$appdir/equestria_cyrillic.ttf"
-    install -Dm644 "$startdir/localization.csv"       "$appdir/localization.csv"
-
-    # Данные приложения
-    install -Dm644 "$startdir/presets.json"           "$appdir/presets.json"
-    cp -r "$startdir/MLP Cutiemarks"                  "$appdir/"
-
-
-    # Запускатель /usr/bin/equestria-os-task-panel-changer
-    printf '#!/bin/bash\nexec python3 /opt/%s/main.py "$@"\n' "$pkgname" \
-        > "$pkgdir/usr/bin/$pkgname"
-    chmod 755 "$pkgdir/usr/bin/$pkgname"
-
-    # Ярлык рабочего стола
     install -Dm644 "$startdir/equestria-os-task-panel-changer.desktop" \
         "$pkgdir/usr/share/applications/equestria-os-task-panel-changer.desktop"
 }

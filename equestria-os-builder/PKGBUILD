@@ -2,29 +2,17 @@
 
 pkgname=equestria-os-builder
 pkgver=1.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="GUI frontend for PyInstaller — build any Python app into a standalone executable"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-makedepends=('python' 'python-pyqt6' 'pyinstaller')
 depends=()
 
-build() {
-    cd "$startdir"
-    pyinstaller \
-        --onefile \
-        --noconfirm \
-        --name equestria-os-builder \
-        --distpath "$srcdir/dist" \
-        --workpath "$srcdir/work" \
-        --specpath "$srcdir" \
-        --collect-all PyQt6 \
-        main.py
-}
-
 package() {
-    install -Dm755 "$srcdir/dist/equestria-os-builder" \
+    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
+
+    install -Dm755 "$_bins/equestria-os-builder" \
         "$pkgdir/usr/bin/equestria-os-builder"
 
     install -Dm644 "$startdir/equestria-os-builder.desktop" \

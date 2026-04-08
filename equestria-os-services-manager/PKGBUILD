@@ -2,33 +2,23 @@
 
 pkgname=equestria-os-services-manager
 pkgver=2.1.0
-pkgrel=1
-pkgdesc='Official Equestria OS Service Manager (Enable, Disable, Start, Stop)'
-arch=('any')
-url='https://psyche-games.com'
-license=('custom')
-depends=('python' 'python-pyqt6' 'polkit')
+pkgrel=2
+pkgdesc="Official Equestria OS Service Manager (Enable, Disable, Start, Stop)"
+arch=('x86_64')
+url="https://github.com/Lucia7Lunadottir"
+license=('GPL')
+depends=('polkit')
 
 package() {
-    install -d "$pkgdir/opt/$pkgname"
-    install -d "$pkgdir/usr/share/applications"
-    install -d "$pkgdir/usr/share/pixmaps"
+    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
 
-    cp "$startdir/main.py"              "$pkgdir/opt/$pkgname/"
-    cp "$startdir/ui_services.py"       "$pkgdir/opt/$pkgname/"
-    cp "$startdir/style.qss"            "$pkgdir/opt/$pkgname/"
-    cp "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/"
-    cp "$startdir/equestria-os-services-manager.png" "$pkgdir/opt/$pkgname/"
+    install -Dm755 "$_bins/equestria-os-services-manager" \
+        "$pkgdir/usr/bin/equestria-os-services-manager"
 
-    if [ -f "$startdir/start.sh" ]; then
-        cp "$startdir/start.sh" "$pkgdir/opt/$pkgname/"
-        chmod 755 "$pkgdir/opt/$pkgname/start.sh"
-    fi
-
-    chmod 755 "$pkgdir/opt/$pkgname/main.py"
-
-    install -Dm644 "$startdir/equestria-os-services-manager.desktop" \
-        "$pkgdir/usr/share/applications/"
+    sed "s|^Exec=.*|Exec=equestria-os-services-manager|" \
+        "$startdir/equestria-os-services-manager.desktop" \
+        > "$pkgdir/usr/share/applications/equestria-os-services-manager.desktop"
+    chmod 644 "$pkgdir/usr/share/applications/equestria-os-services-manager.desktop"
 
     install -Dm644 "$startdir/equestria-os-services-manager.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-services-manager.png"

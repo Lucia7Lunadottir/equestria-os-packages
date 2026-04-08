@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-disk-manager
 pkgver=1.1.0
-pkgrel=2
+pkgrel=3
 pkgdesc="GUI tool for managing disks: mount, fstab, permissions, labels, format"
-arch=('any')
+arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('python' 'python-pyqt6' 'polkit')
+depends=('polkit')
 optdepends=(
     'kdesu: alternative privilege elevation'
     'ntfs-3g: NTFS read/write support and ntfslabel'
@@ -16,40 +16,15 @@ optdepends=(
     'dosfstools: FAT32 format and label support (mkfs.vfat, fatlabel)'
 )
 
-post_install() {
-    kbuildsycoca6 --noincremental || true
-}
-
 package() {
-    install -d "$pkgdir/opt/$pkgname"
-    install -d "$pkgdir/usr/bin"
-    install -d "$pkgdir/usr/share/applications"
-    install -d "$pkgdir/usr/share/pixmaps"
+    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
 
-    # Python files
-    install -Dm644 "$startdir/disk_app.py"     "$pkgdir/opt/$pkgname/disk_app.py"
-    install -Dm644 "$startdir/disk_backend.py" "$pkgdir/opt/$pkgname/disk_backend.py"
-    install -Dm644 "$startdir/core.py"         "$pkgdir/opt/$pkgname/core.py"
-    install -Dm644 "$startdir/privilege.py"    "$pkgdir/opt/$pkgname/privilege.py"
-    install -Dm644 "$startdir/style.qss"       "$pkgdir/opt/$pkgname/style.qss"
+    install -Dm755 "$_bins/equestria-os-disk-manager" "$pkgdir/usr/bin/equestria-disk-manager"
+    install -Dm755 "$_bins/equestria-os-disk-backend"  "$pkgdir/usr/bin/equestria-os-disk-backend"
 
-    # Assets
-    install -Dm644 "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/equestria_cyrillic.ttf"
-    install -Dm644 "$startdir/equestria-os-disk-manager.png"   "$pkgdir/opt/$pkgname/equestria-os-disk-manager.png"
-
-    # Wrapper script
-    cat > "$pkgdir/usr/bin/equestria-disk-manager" <<'EOF'
-#!/bin/bash
-cd /opt/equestria-os-disk-manager
-python3 disk_app.py "$@"
-EOF
-    chmod 755 "$pkgdir/usr/bin/equestria-disk-manager"
-
-    # Desktop entry
     install -Dm644 "$startdir/equestria-os-disk-manager.desktop" \
         "$pkgdir/usr/share/applications/equestria-os-disk-manager.desktop"
 
-    # Icon
     install -Dm644 "$startdir/equestria-os-disk-manager.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-disk-manager.png"
 }

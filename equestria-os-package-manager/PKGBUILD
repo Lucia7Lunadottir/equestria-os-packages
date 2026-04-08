@@ -2,33 +2,24 @@
 
 pkgname=equestria-os-package-manager
 pkgver=2.2.1
-pkgrel=2
-pkgdesc='Official Equestria OS Package Manager (Uninstall and Manage)'
-arch=('any')
-url='https://psyche-games.com'
-license=('custom')
-depends=('python' 'python-pyqt6' 'polkit')
+pkgrel=3
+pkgdesc="Official Equestria OS Package Manager (Uninstall and Manage)"
+arch=('x86_64')
+url="https://github.com/Lucia7Lunadottir"
+license=('GPL')
+depends=('polkit')
 
 package() {
-    install -d "$pkgdir/opt/$pkgname"
-    install -d "$pkgdir/usr/share/applications"
-    install -d "$pkgdir/usr/share/pixmaps"
+    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
 
-    cp "$startdir/main.py" "$pkgdir/opt/$pkgname/"
-    cp "$startdir/ui_pkg.py" "$pkgdir/opt/$pkgname/"
-    cp "$startdir/style.qss" "$pkgdir/opt/$pkgname/"
-    cp "$startdir/equestria_cyrillic.ttf" "$pkgdir/opt/$pkgname/"
-    cp "$startdir/equestria-os-package-manager.png" "$pkgdir/opt/$pkgname/"
+    install -Dm755 "$_bins/equestria-os-package-manager" \
+        "$pkgdir/usr/bin/equestria-os-package-manager"
 
-    if [ -f "$startdir/start.sh" ]; then
-        cp "$startdir/start.sh" "$pkgdir/opt/$pkgname/"
-        chmod 755 "$pkgdir/opt/$pkgname/start.sh"
-    fi
+    sed "s|^Exec=.*|Exec=equestria-os-package-manager|" \
+        "$startdir/equestria-os-package-manager.desktop" \
+        > "$pkgdir/usr/share/applications/equestria-os-package-manager.desktop"
+    chmod 644 "$pkgdir/usr/share/applications/equestria-os-package-manager.desktop"
 
-    chmod 755 "$pkgdir/opt/$pkgname/main.py"
-
-    install -Dm644 "$startdir/equestria-os-package-manager.desktop" "$pkgdir/usr/share/applications/"
-
-    # Уникальное имя иконки: equestria-os-package-manager.png
-    install -Dm644 "$startdir/equestria-os-package-manager.png" "$pkgdir/usr/share/pixmaps/equestria-os-package-manager.png"
+    install -Dm644 "$startdir/equestria-os-package-manager.png" \
+        "$pkgdir/usr/share/pixmaps/equestria-os-package-manager.png"
 }

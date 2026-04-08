@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-proton-starter
 pkgver=1.5.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton)"
-arch=('any')
+arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('python' 'python-pyqt6' 'libnotify' 'xdg-utils' 'desktop-file-utils' 'xdg-desktop-portal-kde' 'lib32-glibc' 'lib32-gcc-libs' 'umu-launcher')
+depends=('umu-launcher' 'lib32-glibc' 'lib32-gcc-libs' 'xdg-utils' 'desktop-file-utils' 'xdg-desktop-portal-kde')
 optdepends=(
     'lib32-mesa: 32-bit OpenGL support for AMD/Intel/Nouveau'
     'lib32-vulkan-radeon: 32-bit Vulkan support for AMD GPUs'
@@ -17,62 +17,27 @@ optdepends=(
 install="$pkgname.install"
 
 package() {
-    local optdir="$pkgdir/opt/$pkgname"
-    local bindir="$pkgdir/usr/bin"
+    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
 
-    install -d "$optdir"
-    install -d "$bindir"
-    install -d "$pkgdir/usr/share/applications"
-    install -d "$pkgdir/usr/share/kio/servicemenus"
+    # proton-exe-starter (main.py) → settings app
+    install -Dm755 "$_bins/proton-exe-starter" "$pkgdir/usr/bin/equestria-proton-settings"
+    # proton-launcher (launcher.py) → .exe file opener
+    install -Dm755 "$_bins/proton-launcher"    "$pkgdir/usr/bin/equestria-proton-run"
+    # proton-cleaner (cleaner.py) → cache cleaner
+    install -Dm755 "$_bins/proton-cleaner"     "$pkgdir/usr/bin/equestria-proton-cleaner"
 
-    # Python source
-    install -Dm644 "$startdir/launcher.py"         "$optdir/launcher.py"
-    install -Dm644 "$startdir/main.py"             "$optdir/main.py"
-    install -Dm644 "$startdir/proton_runner.py"    "$optdir/proton_runner.py"
-    install -Dm644 "$startdir/ui.py"               "$optdir/ui.py"
-    install -Dm644 "$startdir/style.qss"           "$optdir/style.qss"
-    install -Dm644 "$startdir/localization.csv"    "$optdir/localization.csv"
-    install -Dm644 "$startdir/cleaner.py"          "$optdir/cleaner.py"
-
-    # Icon
     install -Dm644 "$startdir/EquestriaOS-Logo.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-proton-starter.png"
 
-    # Wrapper scripts
-    cat > "$bindir/equestria-proton-run" <<'EOF'
-#!/bin/bash
-exec python3 /opt/equestria-os-proton-starter/launcher.py "$@"
-EOF
-    chmod 755 "$bindir/equestria-proton-run"
-
-    cat > "$bindir/equestria-proton-settings" <<'EOF'
-#!/bin/bash
-exec python3 /opt/equestria-os-proton-starter/main.py "$@"
-EOF
-    chmod 755 "$bindir/equestria-proton-settings"
-
-    cat > "$bindir/equestria-proton-cleaner" <<'EOF'
-#!/bin/bash
-exec python3 /opt/equestria-os-proton-starter/cleaner.py "$@"
-EOF
-    chmod 755 "$bindir/equestria-proton-cleaner"
-
-    # Application desktop (default handler — double-click)
     install -Dm644 "$startdir/equestria-os-proton-run.desktop" \
         "$pkgdir/usr/share/applications/equestria-os-proton-run.desktop"
 
-    # Start menu entry for Cache Cleaner
     install -Dm644 "$startdir/equestria-os-proton-cleaner.desktop" \
         "$pkgdir/usr/share/applications/equestria-os-proton-cleaner.desktop"
 
-    # KDE service menu — must be executable or Dolphin will refuse to run it
     install -Dm755 "$startdir/equestria-os-proton.desktop" \
         "$pkgdir/usr/share/kio/servicemenus/equestria-os-proton.desktop"
 
-    # Vendor-level MIME defaults — makes .exe open with our launcher out of the box
     install -Dm644 "$startdir/mimeapps.list" \
         "$pkgdir/usr/share/applications/mimeapps.list"
-
-
-
 }
