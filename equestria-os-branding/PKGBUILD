@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team <info@psyche-games.com>
 
 pkgname=equestria-os-branding
-pkgver=1.2.2
-pkgrel=6
+pkgver=1.3.0
+pkgrel=2
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -31,19 +31,37 @@ package() {
         cp -r "$startdir/look-and-feel/Equestria-OS" "$pkgdir/usr/share/plasma/look-and-feel/"
     fi
 
-    # 4. Cutiemarks
+    # 4. Plasma Lockscreen — файлы хранятся в нашей директории, применяются
+    #    через pacman-хук (см. hooks/equestria-os-lockscreen.hook).
+    #    KDE Plasma 6 не поддерживает lockscreen через look-and-feel,
+    #    поэтому используем хук, который автоматически копирует файлы
+    #    после установки/обновления plasma-desktop или этого пакета.
+    if [ -d "$startdir/plasma-lockscreen" ]; then
+        install -d "$pkgdir/usr/share/equestria-os/plasma-lockscreen"
+        cp -r "$startdir/plasma-lockscreen/"* "$pkgdir/usr/share/equestria-os/plasma-lockscreen/"
+    fi
+
+    # 4a. Скрипт применения lockscreen
+    install -Dm755 "$startdir/scripts/apply-lockscreen.sh" \
+        "$pkgdir/usr/lib/equestria-os/apply-lockscreen.sh"
+
+    # 4b. Pacman хук — запускается после install/upgrade plasma-desktop или этого пакета
+    install -Dm644 "$startdir/hooks/equestria-os-lockscreen.hook" \
+        "$pkgdir/usr/share/libalpm/hooks/equestria-os-lockscreen.hook"
+
+    # 5. Cutiemarks
     install -d "$pkgdir/usr/share/equestria-os/cutiemarks"
     if [ -d "$startdir/cutiemarks" ]; then
         cp -r "$startdir/cutiemarks/"* "$pkgdir/usr/share/equestria-os/cutiemarks/" 2>/dev/null || true
     fi
 
-    # 5. Cursor theme
+    # 6. Cursor theme
     if [ -d "$startdir/icons/Vimix-white-cursors" ]; then
         install -d "$pkgdir/usr/share/icons"
         cp -r "$startdir/icons/Vimix-white-cursors" "$pkgdir/usr/share/icons/"
     fi
 
-    # 6. Только уникальные наши pixmaps
+    # 7. Только уникальные наши pixmaps
     install -d "$pkgdir/usr/share/pixmaps"
     for f in \
         equestria-os.png \

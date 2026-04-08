@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = plasma-desktop
+Target = equestria-os-branding
+
+[Action]
+Description = Applying Equestria OS lockscreen customization...
+When = PostTransaction
+Exec = /usr/lib/equestria-os/apply-lockscreen.sh

@@ -1,5 +1,7 @@
 import os
 import shutil
+import configparser
+import subprocess
 
 PLASMA_CONFIG = os.path.expanduser("~/.config/plasma-org.kde.plasma.desktop-appletsrc")
 PLASMA_SHELLRC = os.path.expanduser("~/.config/plasmashellrc")
@@ -74,7 +76,6 @@ def generate_script_from_panels(panels_config):
         floatP   = p.get("floating", False)
 
         vis      = p.get("visibilityMode", "none")
-        # Жесткая защита и конвертация старых названий из Plasma 5 -> Plasma 6
         if vis == "windowsbelow": vis = "dodgewindows"
         if vis == "windowscover": vis = "windowsgobelow"
         if p.get("autohide", False) and vis == "none":
@@ -127,10 +128,9 @@ def generate_script_from_panels(panels_config):
     return "".join(parts)
 
 def generate_panel_svg(hex_color, opacity_float):
-    """Generate a Plasma 6-compatible panel-background.svg with proper hints."""
     c = hex_color
     op = f"{opacity_float:.2f}"
-    r = 8  # corner radius for floating
+    r = 8
 
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -191,3 +191,61 @@ def generate_panel_svg(hex_color, opacity_float):
         '  <rect id="hint-compose-over-border" width="0" height="0" fill="none" fill-opacity="0"/>\n'
         '</svg>\n'
     )
+
+def apply_system_theme_fixes():
+    """
+    Программно исправляет проблему черного текста на системных экранах
+    и купирует баг с неконтролируемой яркостью демона PowerDevil.
+    Не требует вмешательства в системные QML-исходники ОС.
+    """
+    kdeglobals_path = os.path.expanduser("~/.config/kdeglobals")
+    config = configparser.ConfigParser()
+    config.optionxform = str
+
+    if os.path.exists(kdeglobals_path):
+        config.read(kdeglobals_path)
+
+    if 'Colors:Complementary' not in config:
+        config.add_section('Colors:Complementary')
+
+    config.set('Colors:Complementary', 'BackgroundNormal', '0,0,0')
+    config.set('Colors:Complementary', 'ForegroundNormal', '255,255,255')
+    config.set('Colors:Complementary', 'ForegroundInactive', '200,200,200')
+
+    try:
+        with open(kdeglobals_path, 'w', encoding='utf-8') as f:
+            config.write(f)
+    except OSError:
+        pass
+
+    desktop_theme_dir = os.path.expanduser("~/.local/share/plasma/desktoptheme/default")
+    os.makedirs(desktop_theme_dir, exist_ok=True)
+
+    theme_rc_path = os.path.join(desktop_theme_dir, "metadata.desktop")
+    if not os.path.exists(theme_rc_path):
+        try:
+            with open(theme_rc_path, 'w', encoding='utf-8') as f:
+                f.write("\nName=Equestria Fallback\nX-KDE-PluginInfo-Name=default\n")
+        except OSError:
+            pass
+
+    settings_path = os.path.join(desktop_theme_dir, "settings")
+    try:
+        with open(settings_path, 'w', encoding='utf-8') as f:
+            f.write("baseTheme=breeze\nShutdown Dialog=breeze\nLockScreen=breeze\n")
+    except OSError:
+        pass
+
+    try:
+        subprocess.run(
+            ["systemctl", "--user", "restart", "plasma-powerdevil.service"],
+            check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+    except Exception:
+        pass
+
+    qdbus = find_qdbus()
+    try:
+        subprocess.run(f"{qdbus} org.kde.KWin /KWin reconfigure", shell=True, check=False)
+    except Exception:
+        pass

@@ -3,12 +3,12 @@
 pkgname = equestria-os-task-panel-changer
 pkgbase = equestria-os-task-panel-changer
 xdata = pkgtype=pkg
-pkgver = 1.2.1-1
+pkgver = 1.2.2-1
 pkgdesc = Task panel style manager for Equestria OS (KDE Plasma 6)
 url = https://psyche-games.com
-builddate = 1775229691
+builddate = 1775635376
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 1818990
+size = 1825566
 arch = any
 license = custom
 depend = python

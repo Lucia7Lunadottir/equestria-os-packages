@@ -766,21 +766,145 @@ class TaskPanelApp(QMainWindow):
             json.dump(metadata, f, indent=4)
 
         if self.panel_is_dark:
-            txt = "255,255,255"
+            txt = "252,252,252"
+            txt_inactive = "161,169,177"
             bg = "36,36,36"
+            bg_alt = "41,44,48"
             view_bg = "49,54,59"
+            view_bg_alt = "29,31,34"
+            wm_bg = "39,44,49"
+            wm_blend = "252,252,252"
+            wm_fg = "252,252,252"
+            wm_ibg = "32,36,40"
+            wm_iblend = "161,169,177"
+            wm_ifg = "161,169,177"
+            header_bg = "41,44,48"
+            header_bg_alt = "32,35,38"
+            sel_fg = "252,252,252"
+            sel_link = "253,188,75"
+            color_scheme = "Breeze Dark"
         else:
             txt = "35,38,41"
+            txt_inactive = "112,125,138"
             bg = "239,240,241"
+            bg_alt = "227,229,231"
             view_bg = "252,252,252"
+            view_bg_alt = "247,247,247"
+            wm_bg = "227,229,231"
+            wm_blend = "227,229,231"
+            wm_fg = "35,38,41"
+            wm_ibg = "239,240,241"
+            wm_iblend = "239,240,241"
+            wm_ifg = "112,125,138"
+            header_bg = "222,224,226"
+            header_bg_alt = "239,240,241"
+            sel_fg = "255,255,255"
+            sel_link = "41,128,185"
+            color_scheme = "Breeze Light"
 
-        colors_data = (
-            f"[Colors:Window]\nForegroundNormal={txt}\nBackgroundNormal={bg}\n"
-            f"[Colors:View]\nForegroundNormal={txt}\nBackgroundNormal={view_bg}\n"
-            f"[Colors:Button]\nForegroundNormal={txt}\nBackgroundNormal={bg}\n"
-            f"[Colors:Tooltip]\nForegroundNormal={txt}\nBackgroundNormal={bg}\n"
-            f"[Colors:Complementary]\nForegroundNormal={txt}\nBackgroundNormal={bg}\n"
-        )
+        lnk = "29,153,243"
+        neg = "218,68,83"
+        neu = "246,116,0"
+        pos = "39,174,96"
+        vis = "155,89,182"
+
+        # Full Breeze-compatible colors file — incomplete files cause
+        # KWin/kscreenlocker to compute wrong colors for the lockscreen.
+        colors_data = "\n".join([
+            f"[General]",
+            f"ColorScheme={color_scheme}",
+            f"Name=EquestriaPanel",
+            f"shadeSortColumn=true",
+            f"",
+            f"[KDE]",
+            f"contrast=4",
+            f"",
+            f"[Colors:Window]",
+            f"BackgroundNormal={bg}",
+            f"BackgroundAlternate={bg_alt}",
+            f"ForegroundNormal={txt}",
+            f"ForegroundInactive={txt_inactive}",
+            f"ForegroundLink={lnk}",
+            f"ForegroundNegative={neg}",
+            f"ForegroundNeutral={neu}",
+            f"ForegroundPositive={pos}",
+            f"ForegroundVisited={vis}",
+            f"",
+            f"[Colors:View]",
+            f"BackgroundNormal={view_bg}",
+            f"BackgroundAlternate={view_bg_alt}",
+            f"ForegroundNormal={txt}",
+            f"ForegroundInactive={txt_inactive}",
+            f"ForegroundLink={lnk}",
+            f"ForegroundNegative={neg}",
+            f"ForegroundNeutral={neu}",
+            f"ForegroundPositive={pos}",
+            f"ForegroundVisited={vis}",
+            f"",
+            f"[Colors:Button]",
+            f"BackgroundNormal={bg}",
+            f"BackgroundAlternate={bg_alt}",
+            f"ForegroundNormal={txt}",
+            f"ForegroundInactive={txt_inactive}",
+            f"ForegroundLink={lnk}",
+            f"ForegroundNegative={neg}",
+            f"ForegroundNeutral={neu}",
+            f"ForegroundPositive={pos}",
+            f"ForegroundVisited={vis}",
+            f"",
+            f"[Colors:Tooltip]",
+            f"BackgroundNormal={bg}",
+            f"BackgroundAlternate={bg_alt}",
+            f"ForegroundNormal={txt}",
+            f"ForegroundInactive={txt_inactive}",
+            f"ForegroundLink={lnk}",
+            f"ForegroundNegative={neg}",
+            f"ForegroundNeutral={neu}",
+            f"ForegroundPositive={pos}",
+            f"ForegroundVisited={vis}",
+            f"",
+            # Complementary: always dark bg + white fg — used by lockscreen and logout dialog.
+            # Must match Breeze structure exactly so KWin computes correct colors.
+            f"[Colors:Complementary]",
+            f"BackgroundNormal=42,46,50",
+            f"BackgroundAlternate=27,30,32",
+            f"ForegroundNormal=252,252,252",
+            f"ForegroundInactive=161,169,177",
+            f"ForegroundLink=29,153,243",
+            f"ForegroundNegative=218,68,83",
+            f"ForegroundNeutral=246,116,0",
+            f"ForegroundPositive=39,174,96",
+            f"ForegroundVisited=155,89,182",
+            f"",
+            f"[Colors:Header]",
+            f"BackgroundNormal={header_bg}",
+            f"BackgroundAlternate={header_bg_alt}",
+            f"ForegroundNormal={txt}",
+            f"ForegroundInactive={txt_inactive}",
+            f"ForegroundLink={lnk}",
+            f"ForegroundNegative={neg}",
+            f"ForegroundNeutral={neu}",
+            f"ForegroundPositive={pos}",
+            f"ForegroundVisited={vis}",
+            f"",
+            f"[Colors:Selection]",
+            f"BackgroundAlternate={bg_alt}",
+            f"ForegroundNormal={sel_fg}",
+            f"ForegroundInactive={txt_inactive}",
+            f"ForegroundLink={sel_link}",
+            f"ForegroundNegative={neg}",
+            f"ForegroundNeutral={neu}",
+            f"ForegroundPositive={pos}",
+            f"ForegroundVisited={vis}",
+            f"",
+            f"[WM]",
+            f"activeBackground={wm_bg}",
+            f"activeBlend={wm_blend}",
+            f"activeForeground={wm_fg}",
+            f"inactiveBackground={wm_ibg}",
+            f"inactiveBlend={wm_iblend}",
+            f"inactiveForeground={wm_ifg}",
+        ]) + "\n"
         with open(os.path.join(theme_dir, "colors"), "w", encoding="utf-8") as f:
             f.write(colors_data)
 
@@ -798,6 +922,8 @@ class TaskPanelApp(QMainWindow):
         cfg = configparser.ConfigParser()
         cfg.read(plasmarc)
         current_theme = cfg.get("Theme", "name", fallback=None)
+
+        plasma_utils.apply_system_theme_fixes()
 
         cache_clear = "rm -rf ~/.cache/ksvg/ 2>/dev/null; rm -f ~/.cache/plasma_theme_*.kcache 2>/dev/null; "
         if current_theme == "EquestriaPanel":
