@@ -23,7 +23,7 @@ Comment[pl]=Interaktywna wycieczka dla nowych użytkowników Equestria OS
 Comment[zh]=面向 Equestria OS 新用户的交互式导览
 Comment[ja]=Equestria OS 新規ユーザー向けのインタラクティブなツアー
 
-Exec=python3 /opt/equestria-os-tutorial/main.py
+Exec=equestria-os-tutorial
 Path=/opt/equestria-os-tutorial
 Icon=equestria-os-tutorial
 Terminal=false

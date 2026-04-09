@@ -23,7 +23,7 @@ Comment[uk]=Керування пакетами pacman та AUR
 Comment[zh]=管理pacman和AUR软件包
 Comment[ja]=pacmanおよびAURパッケージを管理する
 
-Exec=python3 /opt/equestria-os-package-manager/main.py
+Exec=equestria-os-package-manager
 Path=/opt/equestria-os-package-manager
 Icon=equestria-os-package-manager
 Terminal=false

@@ -3,16 +3,14 @@
 pkgname = equestria-os-disk-manager
 pkgbase = equestria-os-disk-manager
 xdata = pkgtype=pkg
-pkgver = 1.1.0-2
+pkgver = 1.1.0-4
 pkgdesc = GUI tool for managing disks: mount, fstab, permissions, labels, format
 url = https://github.com/Lucia7Lunadottir
-builddate = 1775229506
+builddate = 1775690906
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 3506447
-arch = any
+size = 12563217
+arch = x86_64
 license = GPL
-depend = python
-depend = python-pyqt6
 depend = polkit
 optdepend = kdesu: alternative privilege elevation
 optdepend = ntfs-3g: NTFS read/write support and ntfslabel

@@ -88,6 +88,9 @@ echo ""
 echo "🗃️  Шаг 3/4 — Обновление репозитория pacman..."
 
 # Копируем все свежие .pkg.tar.zst (и Python, и остальные)
+# Корневые пакеты (calamares, yay и т.д.)
+cp -u "$BASE_DIR"/*.pkg.tar.zst "$REPO_DIR/" 2>/dev/null
+# Пакеты из поддиректорий
 for dir in "$BASE_DIR"/*/; do
     [[ "$dir" == *"/docs/"* ]] && continue
     cp -u "$dir"*.pkg.tar.zst "$REPO_DIR/" 2>/dev/null

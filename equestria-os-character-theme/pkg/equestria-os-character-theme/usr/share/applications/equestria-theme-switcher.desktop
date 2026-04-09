@@ -24,7 +24,7 @@ Comment[uk]=Перемикання тем персонажів EG у Equestria O
 Comment[zh]=在EquestriaOS中切换EG角色主题
 Comment[ja]=EquestriaOSでEGキャラクターテーマを切り替える
 
-Exec=python /opt/equestria-os-character-theme/main.py
+Exec=equestria-os-character-theme
 Icon=equestria-os-logo
 Terminal=false
 Type=Application

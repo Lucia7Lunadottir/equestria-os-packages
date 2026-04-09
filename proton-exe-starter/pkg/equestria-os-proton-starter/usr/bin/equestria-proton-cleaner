@@ -1,2 +1,1 @@
-#!/bin/bash
-exec python3 /opt/equestria-os-proton-starter/cleaner.py "$@"
+/usr/lib/equestria-proton-starter/equestria-proton-starter

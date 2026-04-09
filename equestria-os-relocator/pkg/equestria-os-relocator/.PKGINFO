@@ -3,15 +3,13 @@
 pkgname = equestria-os-relocator
 pkgbase = equestria-os-relocator
 xdata = pkgtype=pkg
-pkgver = 1.0.0-2
+pkgver = 1.0.0-3
 pkgdesc = GUI tool to move files/folders and create symlinks at the original location
 url = https://github.com/Lucia7Lunadottir
-builddate = 1775229548
+builddate = 1775677036
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 546423
-arch = any
+size = 70536111
+arch = x86_64
 license = GPL
-depend = python
-depend = python-pyqt6
 depend = polkit
 optdepend = kdesu: alternative privilege elevation

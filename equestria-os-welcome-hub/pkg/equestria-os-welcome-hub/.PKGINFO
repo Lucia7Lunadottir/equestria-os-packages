@@ -3,14 +3,12 @@
 pkgname = equestria-os-welcome-hub
 pkgbase = equestria-os-welcome-hub
 xdata = pkgtype=pkg
-pkgver = 2.3.0-2
+pkgver = 2.3.0-3
 pkgdesc = The official Equestria OS Welcome Center and Community Portal
 url = https://github.com/Lucia7Lunadottir
-builddate = 1775229677
+builddate = 1775677049
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 479365
-arch = any
+size = 61617054
+arch = x86_64
 license = GPL
-depend = python
-depend = python-pyqt6
 depend = xdg-utils

@@ -3,15 +3,13 @@
 pkgname = equestria-os-software-center
 pkgbase = equestria-os-software-center
 xdata = pkgtype=pkg
-pkgver = 1.3.1-1
+pkgver = 1.3.1-2
 pkgdesc = Центр программного обеспечения для Equestria OS
-url = https://psyche-games.com
-builddate = 1775331554
+url = https://github.com/Lucia7Lunadottir
+builddate = 1775677048
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 386922
-arch = any
+size = 61435149
+arch = x86_64
 license = GPL
-depend = python
-depend = python-pyqt6
 depend = pacman
 depend = yay
