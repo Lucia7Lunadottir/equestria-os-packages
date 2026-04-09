@@ -8,4 +8,4 @@ Target = *
 [Action]
 Description = Creating Equestria Save Point…
 When = PreTransaction
-Exec = /opt/equestria-os-save-point/pacman-snapshot.sh auto:pacman
+Exec = /usr/lib/equestria-os-save-point/pacman-snapshot.sh auto:pacman
