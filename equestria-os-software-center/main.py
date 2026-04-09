@@ -154,6 +154,23 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
 
 
+    def closeEvent(self, event):
+        threads = [
+            getattr(self, '_aur_search_thread', None),
+            getattr(self, '_aur_popular_thread', None),
+            getattr(self, '_aur_all_search_thread', None),
+            getattr(self, '_aur_upgradable_loader', None),
+            getattr(self, '_pacman_info_thread', None),
+            getattr(self, 'loader', None),
+            getattr(self, 'flatpak_loader', None),
+        ]
+        threads += getattr(self, '_screenshot_threads', [])
+        for t in threads:
+            if t is not None and t.isRunning():
+                t.quit()
+                t.wait(500)
+        event.accept()
+
     def init_resources(self):
         self.custom_font_family = "sans-serif"
         f_path = os.path.join(self.base_path, "equestria_cyrillic.ttf")
