@@ -34,7 +34,6 @@ Name[pt_PT]=Gerenciador de espelhos
 Name[ru_RU]=Менеджер зеркал
 Name[uk_UA]=Менеджер дзеркал
 Name[zh_CN]=镜像管理器
-Path=/opt/pg-rankmirrors
 StartupNotify=true
 Terminal=false
 Type=Application

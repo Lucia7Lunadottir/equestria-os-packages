@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-welcome-hub
 pkgbase = equestria-os-welcome-hub
-pkgver = 2.3.0-4
+pkgver = 2.3.0-5
 pkgarch = x86_64
-pkgbuild_sha256sum = e356844aed0edbac261bb434dfa56bde4df6de902326f353fb526d9e28fcedda
+pkgbuild_sha256sum = 4b1b19f5492983d93e919e39a4898b6bfcba73e52c10ce4c615b69991a9f632d
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775775062
+builddate = 1775776920
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-welcome-hub
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-welcome-hub
 buildtool = makepkg

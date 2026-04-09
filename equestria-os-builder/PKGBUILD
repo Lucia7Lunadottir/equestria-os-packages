@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-builder
 pkgver=1.0.0
-pkgrel=2
+pkgrel=3
 pkgdesc="GUI frontend for PyInstaller — build any Python app into a standalone executable"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"

@@ -64,9 +64,12 @@ a = Analysis(
 # Exclude system-provided .so files from the bundle.
 # Equestria OS (Arch/KDE) always has Qt6, KDE libs, codecs, ICU etc. system-wide.
 # Keep only Python site-packages bindings (PyQt6 .abi3.so, numpy _core, etc.)
+# Exception: libpython must always be bundled — PyInstaller loads it from the
+# temp dir at runtime and cannot fall back to the system copy.
 a.binaries = [
     (n, p, t) for n, p, t in a.binaries
     if "/site-packages/" in (p or "")
+    or "libpython" in (n or "").lower()
     or (not (p or "").startswith("/usr/lib/") and not (p or "").startswith("/usr/local/lib/"))
 ]
 

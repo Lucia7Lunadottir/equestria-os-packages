@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-rename-helper
 pkgver=1.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Bulk file renaming utility with Find and Replace"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"

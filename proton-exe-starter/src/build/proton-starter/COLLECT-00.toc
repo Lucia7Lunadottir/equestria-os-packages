@@ -2,12 +2,6 @@
    '/mnt/NewBaseD/FromSystem/Git '
    'Projects/equestria-packages/proton-exe-starter/src/build/proton-starter/equestria-proton-starter',
    'EXECUTABLE'),
-  ('python3.14/lib-dynload/_struct.cpython-314-x86_64-linux-gnu.so',
-   '/usr/lib/python3.14/lib-dynload/_struct.cpython-314-x86_64-linux-gnu.so',
-   'EXTENSION'),
-  ('python3.14/lib-dynload/zlib.cpython-314-x86_64-linux-gnu.so',
-   '/usr/lib/python3.14/lib-dynload/zlib.cpython-314-x86_64-linux-gnu.so',
-   'EXTENSION'),
   ('PyQt6/QtNetwork.abi3.so',
    '/usr/lib/python3.14/site-packages/PyQt6/QtNetwork.abi3.so',
    'EXTENSION'),

@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-relocator
 pkgbase = equestria-os-relocator
-pkgver = 1.0.0-4
+pkgver = 1.0.0-5
 pkgarch = x86_64
-pkgbuild_sha256sum = c7a8ea1af96a34ebdab8d9e8cc472808be30a573f1303d644a094ff05822f7b6
+pkgbuild_sha256sum = 40ff9818369c0dc77717dc4bd8ee0c7bf808abf88368ba3f2fc752f61fafe185
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775775102
+builddate = 1775776893
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-relocator
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-relocator
 buildtool = makepkg

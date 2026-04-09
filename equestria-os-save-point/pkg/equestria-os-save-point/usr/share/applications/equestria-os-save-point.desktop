@@ -24,7 +24,6 @@ Comment[zh]=使用 Timeshift 创建和恢复系统快照
 Comment[ja]=Timeshift でシステムスナップショットを作成・復元する
 
 Exec=equestria-os-save-point
-Path=/opt/equestria-os-save-point
 Icon=equestria-os-save-point
 Terminal=false
 Type=Application

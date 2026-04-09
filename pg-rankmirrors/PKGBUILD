@@ -2,7 +2,7 @@
 
 pkgname=pg-rankmirrors
 pkgver=2.1.0
-pkgrel=2
+pkgrel=3
 pkgdesc='Equestria OS — Mirror manager with country selection'
 arch=('x86_64')
 license=('GPL3')

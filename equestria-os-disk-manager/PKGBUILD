@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-disk-manager
 pkgver=1.1.0
-pkgrel=4
+pkgrel=5
 pkgdesc="GUI tool for managing disks: mount, fstab, permissions, labels, format"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"

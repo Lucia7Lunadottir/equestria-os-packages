@@ -24,7 +24,6 @@ Comment[zh]=管理pacman和AUR软件包
 Comment[ja]=pacmanおよびAURパッケージを管理する
 
 Exec=equestria-os-package-manager
-Path=/opt/equestria-os-package-manager
 Icon=equestria-os-package-manager
 Terminal=false
 Type=Application

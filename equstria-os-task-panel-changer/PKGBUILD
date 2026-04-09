@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-task-panel-changer
 pkgver=1.2.2
-pkgrel=2
+pkgrel=3
 pkgdesc="Task panel style manager for Equestria OS (KDE Plasma 6)"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"

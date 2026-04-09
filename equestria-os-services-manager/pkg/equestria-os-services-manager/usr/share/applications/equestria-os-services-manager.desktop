@@ -24,7 +24,6 @@ Comment[zh]=启用、禁用、启动和停止系统服务
 Comment[ja]=システムサービスの有効化・無効化・起動・停止
 
 Exec=equestria-os-services-manager
-Path=/opt/equestria-os-services-manager
 Icon=equestria-os-services-manager
 Terminal=false
 Type=Application

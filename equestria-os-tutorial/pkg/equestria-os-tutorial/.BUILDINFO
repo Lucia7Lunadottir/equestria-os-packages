@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-tutorial
 pkgbase = equestria-os-tutorial
-pkgver = 1.4.0-4
+pkgver = 1.4.0-5
 pkgarch = x86_64
-pkgbuild_sha256sum = 2f74c38d8910fdf0d6e6a3ed7d78d96b9dd7ed278244642508dd7c591b52f109
+pkgbuild_sha256sum = ea71eddde58c28b129a57f3a665b91fa269a6d3ac2dc1c12745c1c2f7754c219
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775775087
+builddate = 1775776897
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-tutorial
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-tutorial
 buildtool = makepkg
