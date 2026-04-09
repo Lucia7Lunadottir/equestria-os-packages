@@ -963,7 +963,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "LOG=$(mktemp /tmp/equestria_update.XXXXXX.log); "
             # Step 1: official + custom repos via pacman — never blocked by AUR
             "echo '==> [1/2] Updating repositories...'; echo; "
-            "pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
+            "pkexec pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
             "EXIT=${PIPESTATUS[0]}; "
             "if [ $EXIT -ne 0 ] && grep -qE "
             "'Operation too slow|failed to retrieve|не удалось получить' \"$LOG\"; then "
@@ -972,7 +972,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "  [ -z \"$COUNTRY\" ] && COUNTRY='DE,US,FR,GB'; "
             "  pkexec pg-rankmirrors-backend rank \"$COUNTRY\" "
             "    && echo '==> Mirrors updated. Retrying...' || true; "
-            "  echo; pacman -Syu --noconfirm; "
+            "  echo; pkexec pacman -Syu --noconfirm; "
             "fi; "
             # Step 2: AUR — each package individually so one broken dep can't block others
             "echo; echo '==> [2/2] Updating AUR packages...'; echo; "
@@ -980,7 +980,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "if [ -n \"$AUR_PKGS\" ]; then "
             "  for pkg in $AUR_PKGS; do "
             "    echo \"-- $pkg\"; "
-            "    yay -S --noconfirm --nodiffmenu --noeditpkgbuild \"$pkg\" "
+            "    yay -S --noconfirm \"$pkg\" "
             "      || echo \"==> Warning: $pkg skipped (build/dependency error)\"; "
             "    echo; "
             "  done; "
