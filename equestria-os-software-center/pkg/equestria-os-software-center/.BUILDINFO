@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-software-center
 pkgbase = equestria-os-software-center
-pkgver = 1.3.1-6
+pkgver = 1.3.1-7
 pkgarch = x86_64
-pkgbuild_sha256sum = dcba053c97b2c1ee61fd94b01e22a7dd827e07514fa1e57ef3951bc83e7e56bc
+pkgbuild_sha256sum = 53d9c40c9af9b540e340ad6acc6112bc5dc3bcffb8f3f9e58c00d7a090645f14
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775754683
+builddate = 1775755188
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-software-center
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-software-center
 buildtool = makepkg
