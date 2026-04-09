@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-git-askpass
 pkgver=1.0.0
-pkgrel=4
+pkgrel=5
 pkgdesc="Native GUI Git credential interceptor for Equestria OS (fixes Unity Git errors)"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"

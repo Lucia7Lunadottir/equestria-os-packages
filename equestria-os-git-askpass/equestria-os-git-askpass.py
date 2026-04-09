@@ -59,10 +59,25 @@ class AskPassDialog(QDialog):
         self.lbl_prompt.setWordWrap(True)
         layout.addWidget(self.lbl_prompt)
 
+        _secret_keywords = ("password", "token", "passphrase", "secret", "пароль")
+        self._is_secret = any(kw in prompt_text.lower() for kw in _secret_keywords)
+
+        input_row = QHBoxLayout()
         self.txt_input = QLineEdit()
-        if "password" in prompt_text.lower() or "token" in prompt_text.lower():
+        if self._is_secret:
             self.txt_input.setEchoMode(QLineEdit.EchoMode.Password)
-        layout.addWidget(self.txt_input)
+        input_row.addWidget(self.txt_input)
+
+        if self._is_secret:
+            self.btn_toggle = QPushButton("👁")
+            self.btn_toggle.setFixedWidth(36)
+            self.btn_toggle.setCheckable(True)
+            self.btn_toggle.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            self.btn_toggle.setToolTip(t_str("askpass.show_password", "Show / Hide"))
+            self.btn_toggle.toggled.connect(self._toggle_visibility)
+            input_row.addWidget(self.btn_toggle)
+
+        layout.addLayout(input_row)
 
         layout.addStretch()
 
@@ -79,6 +94,12 @@ class AskPassDialog(QDialog):
         self.btn_ok.clicked.connect(self.accept)
         self.btn_cancel.clicked.connect(self.reject)
         self.txt_input.returnPressed.connect(self.btn_ok.click)
+
+    def _toggle_visibility(self, checked):
+        if checked:
+            self.txt_input.setEchoMode(QLineEdit.EchoMode.Normal)
+        else:
+            self.txt_input.setEchoMode(QLineEdit.EchoMode.Password)
 
     def get_value(self):
         return self.txt_input.text()
