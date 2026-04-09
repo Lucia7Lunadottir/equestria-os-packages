@@ -961,7 +961,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     def execute_system_update(self):
         cmd = (
             "LOG=$(mktemp /tmp/equestria_update.XXXXXX.log); "
-            "yay -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
+            # Step 1: official + custom repos via pacman — never blocked by AUR
+            "echo '==> [1/2] Updating repositories...'; echo; "
+            "pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
             "EXIT=${PIPESTATUS[0]}; "
             "if [ $EXIT -ne 0 ] && grep -qE "
             "'Operation too slow|failed to retrieve|не удалось получить' \"$LOG\"; then "
@@ -969,13 +971,24 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "  COUNTRY=$(curl -s --max-time 5 https://ipinfo.io/country 2>/dev/null | tr -d '\\n\\r'); "
             "  [ -z \"$COUNTRY\" ] && COUNTRY='DE,US,FR,GB'; "
             "  pkexec pg-rankmirrors-backend rank \"$COUNTRY\" "
-            "    && echo '==> Mirrors updated. Retrying update...' "
-            "    || echo '==> Mirror re-ranking failed, retrying anyway...'; "
-            "  echo; "
-            "  yay -Syu --noconfirm; "
+            "    && echo '==> Mirrors updated. Retrying...' || true; "
+            "  echo; pacman -Syu --noconfirm; "
+            "fi; "
+            # Step 2: AUR — each package individually so one broken dep can't block others
+            "echo; echo '==> [2/2] Updating AUR packages...'; echo; "
+            "AUR_PKGS=$(yay -Qua 2>/dev/null | awk '{print $1}'); "
+            "if [ -n \"$AUR_PKGS\" ]; then "
+            "  for pkg in $AUR_PKGS; do "
+            "    echo \"-- $pkg\"; "
+            "    yay -S --noconfirm --nodiffmenu --noeditpkgbuild \"$pkg\" "
+            "      || echo \"==> Warning: $pkg skipped (build/dependency error)\"; "
+            "    echo; "
+            "  done; "
+            "else "
+            "  echo 'AUR packages are up to date.'; "
             "fi; "
             "rm -f \"$LOG\"; "
-            "if command -v flatpak >/dev/null; then flatpak update -y; fi; "
+            "if command -v flatpak >/dev/null; then echo; flatpak update -y; fi; "
             "echo; read -rp 'Done. Press Enter to close...'"
         )
         subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
