@@ -961,30 +961,35 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     def execute_system_update(self):
         cmd = (
             "LOG=$(mktemp /tmp/equestria_update.XXXXXX.log); "
-            "yay -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
+            # --- Step 1: official repos only (never blocked by AUR issues) ---
+            "echo '==> [1/2] Updating official repositories...'; echo; "
+            "yay -Syu --noconfirm --noaur 2>&1 | tee \"$LOG\"; "
             "EXIT=${PIPESTATUS[0]}; "
-            # --- AUR packages not found in AUR anymore → retry ignoring them ---
-            "if [ $EXIT -ne 0 ] && grep -q 'could not find all required packages' \"$LOG\"; then "
-            "  SKIP=$(grep 'could not find all required packages' \"$LOG\" "
-            "         | grep -oP 'packages:\\s*\\K.*' | tr ' ' ','); "
-            "  echo; echo \"==> Skipping unresolvable AUR packages: $SKIP\"; "
-            "  yay -Syu --noconfirm --ignore \"$SKIP\" 2>&1 | tee -a \"$LOG\"; "
-            "  EXIT=${PIPESTATUS[0]}; "
-            "fi; "
-            # --- Mirror failure → re-rank and retry ---
+            # --- Mirror failure on official repos → re-rank and retry ---
             "if [ $EXIT -ne 0 ] && grep -qE "
             "'Operation too slow|failed to retrieve|не удалось получить' \"$LOG\"; then "
             "  echo; echo '==> Mirror failure detected. Re-ranking mirrors...'; "
             "  COUNTRY=$(curl -s --max-time 5 https://ipinfo.io/country 2>/dev/null | tr -d '\\n\\r'); "
             "  [ -z \"$COUNTRY\" ] && COUNTRY='DE,US,FR,GB'; "
             "  pkexec pg-rankmirrors-backend rank \"$COUNTRY\" "
-            "    && echo '==> Mirrors updated. Retrying update...' "
+            "    && echo '==> Mirrors updated. Retrying...' "
             "    || echo '==> Mirror re-ranking failed, retrying anyway...'; "
             "  echo; "
-            "  yay -Syu --noconfirm; "
+            "  yay -Syu --noconfirm --noaur; "
             "fi; "
-            "rm -f \"$LOG\"; "
-            "if command -v flatpak >/dev/null; then flatpak update -y; fi; "
+            # --- Step 2: AUR only, skip orphaned packages not found in AUR ---
+            "echo; echo '==> [2/2] Updating AUR packages...'; echo; "
+            "AUR_LOG=$(mktemp /tmp/equestria_aur.XXXXXX.log); "
+            "yay -Sua --noconfirm 2>&1 | tee \"$AUR_LOG\"; "
+            "AUR_EXIT=${PIPESTATUS[0]}; "
+            "if [ $AUR_EXIT -ne 0 ] && grep -q 'could not find all required packages' \"$AUR_LOG\"; then "
+            "  SKIP=$(grep 'could not find all required packages' \"$AUR_LOG\" "
+            "         | grep -oP 'packages:\\s*\\K.*' | tr ' ' ','); "
+            "  echo; echo \"==> Skipping AUR packages no longer in AUR: $SKIP\"; "
+            "  yay -Sua --noconfirm --ignore \"$SKIP\"; "
+            "fi; "
+            "rm -f \"$LOG\" \"$AUR_LOG\"; "
+            "if command -v flatpak >/dev/null; then echo; flatpak update -y; fi; "
             "echo; read -rp 'Done. Press Enter to close...'"
         )
         subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
