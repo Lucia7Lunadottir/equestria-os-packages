@@ -961,9 +961,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     def execute_system_update(self):
         cmd = (
             "LOG=$(mktemp /tmp/equestria_update.XXXXXX.log); "
-            # --- Step 1: official repos only (never blocked by AUR issues) ---
+            # --- Step 1: official repos only via pacman (never blocked by AUR) ---
             "echo '==> [1/2] Updating official repositories...'; echo; "
-            "yay -Syu --noconfirm --noaur 2>&1 | tee \"$LOG\"; "
+            "pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
             "EXIT=${PIPESTATUS[0]}; "
             # --- Mirror failure on official repos → re-rank and retry ---
             "if [ $EXIT -ne 0 ] && grep -qE "
@@ -975,16 +975,16 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "    && echo '==> Mirrors updated. Retrying...' "
             "    || echo '==> Mirror re-ranking failed, retrying anyway...'; "
             "  echo; "
-            "  yay -Syu --noconfirm --noaur; "
+            "  pacman -Syu --noconfirm; "
             "fi; "
-            # --- Step 2: AUR only, skip orphaned packages not found in AUR ---
+            # --- Step 2: AUR only, skip packages no longer in AUR ---
             "echo; echo '==> [2/2] Updating AUR packages...'; echo; "
             "AUR_LOG=$(mktemp /tmp/equestria_aur.XXXXXX.log); "
             "yay -Sua --noconfirm 2>&1 | tee \"$AUR_LOG\"; "
             "AUR_EXIT=${PIPESTATUS[0]}; "
             "if [ $AUR_EXIT -ne 0 ] && grep -q 'could not find all required packages' \"$AUR_LOG\"; then "
             "  SKIP=$(grep 'could not find all required packages' \"$AUR_LOG\" "
-            "         | grep -oP 'packages:\\s*\\K.*' | tr ' ' ','); "
+            "         | grep -oP 'packages:\\s*\\K.*' | tr -s ' ' '\\n' | grep -v '^$' | tr '\\n' ',' | sed 's/,$//'); "
             "  echo; echo \"==> Skipping AUR packages no longer in AUR: $SKIP\"; "
             "  yay -Sua --noconfirm --ignore \"$SKIP\"; "
             "fi; "
