@@ -3,11 +3,11 @@
 pkgname = equestria-os-tutorial
 pkgbase = equestria-os-tutorial
 xdata = pkgtype=pkg
-pkgver = 1.4.0-3
+pkgver = 1.4.0-4
 pkgdesc = Interactive tour for new Equestria OS users
 url = https://github.com/Lucia7Lunadottir
-builddate = 1775677038
+builddate = 1775775087
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 66806986
+size = 12731658
 arch = x86_64
 license = GPL

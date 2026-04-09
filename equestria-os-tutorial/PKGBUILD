@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-tutorial
 pkgver=1.4.0
-pkgrel=3
+pkgrel=4
 pkgdesc="Interactive tour for new Equestria OS users"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"

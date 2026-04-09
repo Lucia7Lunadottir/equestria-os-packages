@@ -86,12 +86,12 @@ class main_app(QMainWindow, Ui_WelcomeHub):
 
         categories = [
             ("cat.system", [
-                Item(self.t("app.tutorial"), "python3 /opt/equestria-os-tutorial/main.py", "command"),
-                Item(self.t("app.theme"), "python3 /opt/equestria-os-character-theme/main.py", "command"),
-                Item(self.t("app.panel"), "python3 /opt/equestria-os-task-panel-changer/main.py", "command"),
-                Item(self.t("app.essentials"), "python3 /opt/equestria-os-essentials/main.py", "command"),
-                Item(self.t("app.store"), "python3 /opt/equestria-os-app-store/main.py", "command"),
-                Item(self.t("app.pkgs"), "python3 /opt/equestria-os-package-manager/main.py", "command")
+                Item(self.t("app.tutorial"), "equestria-os-tutorial", "command"),
+                Item(self.t("app.theme"), "equestria-os-character-theme", "command"),
+                Item(self.t("app.panel"), "equestria-os-task-panel-changer", "command"),
+                Item(self.t("app.essentials"), "equestria-os-software-center", "command"),
+                Item(self.t("app.store"), "equestria-os-software-center", "command"),
+                Item(self.t("app.pkgs"), "equestria-os-package-manager", "command")
             ]),
             ("cat.music", [
                 Item("Jyc Row", "https://www.youtube.com/@JycRow"),

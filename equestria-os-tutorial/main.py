@@ -315,7 +315,7 @@ class TutorialApp(QMainWindow):
                     "[Desktop Entry]\n"
                     "Type=Application\n"
                     "Name=Equestria OS Tour\n"
-                    "Exec=python3 /opt/equestria-os-tutorial/main.py\n"
+                    "Exec=equestria-os-tutorial\n"
                     "Icon=equestria-os-tutorial\n"
                     "X-GNOME-Autostart-enabled=true\n"
                     "Hidden=false\n"

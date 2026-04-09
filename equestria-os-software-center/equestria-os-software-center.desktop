@@ -2,7 +2,7 @@
 Name=Equestria Software Center
 Comment=Установка программ и обновление Equestria OS
 # Путь к исполняемому скрипту
-Exec=python /usr/share/equestria-os-software-center/main.py
+Exec=equestria-os-software-center
 # Имя иконки (без расширения, так как она будет в системных папках)
 Icon=equestria-os-software-center
 Terminal=false

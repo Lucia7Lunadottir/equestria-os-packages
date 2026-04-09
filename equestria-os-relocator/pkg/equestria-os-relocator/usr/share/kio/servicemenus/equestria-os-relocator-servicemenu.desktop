@@ -9,4 +9,4 @@ X-KDE-Priority=TopLevel
 Name=Relocate with Equestria OS Relocator
 Name[ru]=Переместить (Equestria OS Relocator)
 Icon=equestria-os-relocator
-Exec=python3 /opt/equestria-os-relocator/main.py %F
+Exec=equestria-relocator %F

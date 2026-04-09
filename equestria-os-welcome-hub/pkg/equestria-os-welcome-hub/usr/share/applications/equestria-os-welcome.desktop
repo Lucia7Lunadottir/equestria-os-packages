@@ -23,8 +23,7 @@ Comment[uk]=Екран вітання та швидкі налаштування
 Comment[zh]=Equestria OS的欢迎界面和快速设置
 Comment[ja]=Equestria OSのウェルカム画面とクイック設定
 
-Exec=python3 /opt/equestria-os-welcome-hub/welcome_hub.py
-Path=/opt/equestria-os-welcome-hub
+Exec=equestria-welcome
 Icon=equestria-os-welcome-hub
 Terminal=false
 Type=Application
