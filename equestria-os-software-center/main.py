@@ -963,6 +963,15 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "LOG=$(mktemp /tmp/equestria_update.XXXXXX.log); "
             "yay -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
             "EXIT=${PIPESTATUS[0]}; "
+            # --- AUR packages not found in AUR anymore → retry ignoring them ---
+            "if [ $EXIT -ne 0 ] && grep -q 'could not find all required packages' \"$LOG\"; then "
+            "  SKIP=$(grep 'could not find all required packages' \"$LOG\" "
+            "         | grep -oP 'packages:\\s*\\K.*' | tr ' ' ','); "
+            "  echo; echo \"==> Skipping unresolvable AUR packages: $SKIP\"; "
+            "  yay -Syu --noconfirm --ignore \"$SKIP\" 2>&1 | tee -a \"$LOG\"; "
+            "  EXIT=${PIPESTATUS[0]}; "
+            "fi; "
+            # --- Mirror failure → re-rank and retry ---
             "if [ $EXIT -ne 0 ] && grep -qE "
             "'Operation too slow|failed to retrieve|не удалось получить' \"$LOG\"; then "
             "  echo; echo '==> Mirror failure detected. Re-ranking mirrors...'; "
