@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-services-manager
 pkgbase = equestria-os-services-manager
-pkgver = 2.1.0-3
+pkgver = 2.1.0-4
 pkgarch = x86_64
-pkgbuild_sha256sum = 286f98cf93187f45111708e1a96834120b31612ced666c3617abeeee0f20d935
+pkgbuild_sha256sum = 42c5219a25ba3fd7c436a4e9142572ebca5988de8e84fed7ebc6b04f0a98da6a
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775776912
+builddate = 1775799742
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-services-manager
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-services-manager
 buildtool = makepkg

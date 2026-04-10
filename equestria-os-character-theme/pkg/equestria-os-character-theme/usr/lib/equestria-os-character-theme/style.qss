@@ -1,0 +1,107 @@
+QWidget#root {
+    background-color: rgb(18, 18, 28);
+}
+
+QLabel[cssClass="title"] {
+    font-family: "Equestria Cyrillic", "Noto Sans", sans-serif;
+    font-size: 24px;
+    color: rgb(220, 200, 255);
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+QLabel[cssClass="subtitle"] {
+    font-family: "Equestria Cyrillic", "Noto Sans", sans-serif;
+    font-size: 13px;
+    color: rgb(140, 130, 160);
+    margin-bottom: 20px;
+}
+
+/* Character Buttons */
+QPushButton[cssClass="char-btn"] {
+    background-color: rgb(30, 25, 45);
+    border-radius: 16px;
+    border: 2px solid transparent;
+    padding: 8px;
+}
+
+QPushButton[cssClass="char-btn"]:hover {
+    background-color: rgb(40, 35, 60);
+}
+
+QLabel[cssClass="char-name"] {
+    font-family: "Equestria Cyrillic", "Noto Sans", sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: rgb(230, 220, 255);
+}
+
+/* Status Bar & Panels */
+QWidget[cssClass="status-bar"] {
+    background-color: rgb(25, 22, 38);
+    border-radius: 12px;
+}
+
+QLabel[cssClass="status-label"] {
+    font-family: "Equestria Cyrillic", "Noto Sans", sans-serif;
+    font-size: 13px;
+    color: rgb(180, 170, 210);
+}
+
+/* Action Buttons */
+QPushButton[cssClass="open-terminal-btn"] {
+    font-family: "Equestria Cyrillic", "Noto Sans", sans-serif;
+    background-color: rgb(100, 60, 160);
+    border: 1px solid rgb(140, 90, 200);
+    border-radius: 8px;
+    color: white;
+    padding: 6px 16px;
+    font-size: 12px;
+}
+
+QPushButton[cssClass="open-terminal-btn"]:hover {
+    background-color: rgb(120, 80, 180);
+}
+
+/* Language Buttons */
+QPushButton[cssClass="lang-button"] {
+    font-family: "Equestria Cyrillic", "Noto Sans", sans-serif;
+    background-color: transparent;
+    color: rgb(180, 170, 210);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-size: 11px;
+}
+
+QPushButton[cssClass="lang-button"]:hover {
+    background-color: rgb(40, 35, 60);
+    color: rgb(220, 200, 255);
+}
+
+QPushButton[cssClass="lang-button"][active="true"] {
+    background-color: rgb(100, 60, 160);
+    color: white;
+    border: 1px solid rgb(140, 90, 200);
+    font-weight: bold;
+}
+
+/* Editor Fields */
+QWidget[cssClass="editor-scroll"] {
+    background-color: rgb(25, 22, 38);
+    border-radius: 12px;
+}
+
+QLabel[cssClass="editor-label"] {
+    font-family: "Equestria Cyrillic", "Noto Sans", sans-serif;
+    min-width: 150px;
+    color: rgb(180, 170, 210);
+}
+
+QLineEdit[cssClass="editor-input"] {
+    background-color: rgb(15, 12, 20);
+    border: 1px solid rgb(40, 35, 60);
+    border-radius: 4px;
+    color: white;
+    padding: 4px;
+}

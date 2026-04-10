@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-git-askpass
 pkgbase = equestria-os-git-askpass
-pkgver = 1.0.0-6
+pkgver = 1.0.0-7
 pkgarch = x86_64
-pkgbuild_sha256sum = 086a409bf04f3d20611f8a49c0394a0a709d9ec406773f0e2a452959d99f2d53
+pkgbuild_sha256sum = 5d495fb55f05919305ff50daeb8229e6d6c53aad0d34e4f930beebab6dc60a71
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775776901
+builddate = 1775799748
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-git-askpass
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-git-askpass
 buildtool = makepkg

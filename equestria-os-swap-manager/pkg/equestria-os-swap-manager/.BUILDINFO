@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-swap-manager
 pkgbase = equestria-os-swap-manager
-pkgver = 1.0.0-5
+pkgver = 1.0.0-6
 pkgarch = x86_64
-pkgbuild_sha256sum = f7b9d6ac40721d215a4e1e4552c687483a07e22646c372e4f672a3d9519016f6
+pkgbuild_sha256sum = b2f34ab4d2711916ff239904bb0468a10c4790ff1dbdd8f95b02f0dd0ad7bbf1
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775776888
+builddate = 1775799737
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-swap-manager
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-swap-manager
 buildtool = makepkg

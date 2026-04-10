@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-task-panel-changer
 pkgbase = equestria-os-task-panel-changer
-pkgver = 1.2.2-3
+pkgver = 1.2.2-4
 pkgarch = x86_64
-pkgbuild_sha256sum = 7403b89164a2026d9e195e2100b3080f3b2c60e670b95c1a4b0a0a50f2570cb9
+pkgbuild_sha256sum = c94201a41f9c2e73c9db9811c99f279126f68a56a6721fa10776a093b9c9a870
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775776927
+builddate = 1775799746
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equstria-os-task-panel-changer
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equstria-os-task-panel-changer
 buildtool = makepkg

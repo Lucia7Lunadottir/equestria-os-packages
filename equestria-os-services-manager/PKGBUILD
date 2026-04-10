@@ -2,18 +2,26 @@
 
 pkgname=equestria-os-services-manager
 pkgver=2.1.0
-pkgrel=3
+pkgrel=4
 pkgdesc="Official Equestria OS Service Manager (Enable, Disable, Start, Stop)"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('polkit')
+depends=('polkit' 'python-pyqt6')
 
 package() {
-    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
+    local _lib="$pkgdir/usr/lib/$pkgname"
+    install -dm755 "$_lib"
 
-    install -Dm755 "$_bins/equestria-os-services-manager" \
-        "$pkgdir/usr/bin/equestria-os-services-manager"
+    for f in main.py ui_services.py style.qss equestria_cyrillic.ttf equestria-os-services-manager.png; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-services-manager" << 'EOF'
+#!/bin/bash
+cd /usr/lib/equestria-os-services-manager/
+exec python3 main.py "$@"
+EOF
 
     install -d "$pkgdir/usr/share/applications"
     sed "s|^Exec=.*|Exec=equestria-os-services-manager|" \

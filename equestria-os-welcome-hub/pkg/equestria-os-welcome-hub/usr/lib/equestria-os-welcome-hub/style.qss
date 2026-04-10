@@ -1,0 +1,85 @@
+/* Базовый контейнер */
+QWidget#root { background-color: rgb(30, 30, 46); }
+
+/* Боковая панель */
+QFrame#Sidebar {
+    background-color: rgb(24, 24, 37);
+    border-right: 1px solid rgb(69, 71, 90);
+}
+
+QLabel#SidebarTitle {
+    color: rgb(245, 194, 231);
+    qproperty-alignment: 'AlignCenter';
+}
+
+/* Навигация */
+QPushButton#NavBtn {
+    background-color: transparent; color: rgb(205, 214, 244);
+    /* Хак KDE: жесткая рамка в цвет фона, чтобы кнопка не стала системной */
+    border: 1px solid rgb(24, 24, 37);
+    padding: 10px 12px; font-size: 14px; text-align: left; border-radius: 8px;
+    font-family: sans-serif;
+}
+QPushButton#NavBtn:hover {
+    background-color: rgb(49, 50, 68);
+    border: 1px solid rgb(49, 50, 68);
+}
+QPushButton#NavBtn[active="true"] {
+    background-color: rgb(245, 194, 231); color: rgb(30, 30, 46); font-weight: bold;
+    border: 1px solid rgb(245, 194, 231);
+}
+
+/* Карточки элементов */
+QPushButton#ItemCard {
+    background-color: rgb(49, 50, 68); color: rgb(205, 214, 244);
+    margin-bottom: 8px; padding: 15px; border-radius: 10px;
+    /* Хак KDE + Анти-прыжок текста (резервируем 4px слева) */
+    border: 1px solid rgb(49, 50, 68);
+    border-left: 4px solid rgb(49, 50, 68);
+    font-size: 14px; text-align: left;
+    font-family: sans-serif;
+}
+QPushButton#ItemCard:hover {
+    background-color: rgb(69, 71, 90);
+    border: 1px solid rgb(69, 71, 90);
+    border-left: 4px solid rgb(245, 194, 231); /* Появляется розовая полоска */
+}
+
+/* Языки */
+QPushButton[cssClass="lang-button"] {
+    background-color: transparent; color: rgb(180, 180, 200);
+    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 4px; font-size: 11px;
+    font-family: sans-serif;
+}
+QPushButton[cssClass="lang-button"]:hover {
+    background-color: rgb(49, 50, 68); color: rgb(220, 220, 255);
+}
+QPushButton[cssClass="lang-button"][active="true"] {
+    background-color: rgb(203, 166, 247); color: rgb(30, 30, 46); font-weight: bold;
+    border: 1px solid rgb(203, 166, 247);
+}
+
+/* Безопасный чекбокс (без SVG) */
+/* --- Кастомная кнопка-галочка автозапуска --- */
+QPushButton#AutostartToggle {
+    background-color: rgb(24, 24, 37);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    color: transparent; /* Скрываем текст ✔, когда выключено */
+    font-family: sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    padding-bottom: 2px;
+}
+QPushButton#AutostartToggle:checked {
+    background-color: rgb(245, 194, 231);
+    border: 1px solid rgb(245, 194, 231);
+    color: rgb(30, 30, 46); /* Проявляем галочку ✔ темным цветом на розовом фоне */
+}
+
+/* Область контента */
+QLabel#CategoryTitle {
+    color: rgb(137, 180, 250); margin-bottom: 16px; font-weight: bold;
+}
+QScrollArea { background-color: transparent; border: none; }
+QWidget#content_widget { background-color: transparent; }

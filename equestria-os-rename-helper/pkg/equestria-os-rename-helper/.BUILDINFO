@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-rename-helper
 pkgbase = equestria-os-rename-helper
-pkgver = 1.0.0-2
+pkgver = 1.0.0-3
 pkgarch = x86_64
-pkgbuild_sha256sum = 00fd4a64a3e8d9e133cd822dfc007203bedcfc49c97511131b0067c7e225e083
+pkgbuild_sha256sum = a5b75610a17f5e5609e9a191e9225fc4159a02265dcf67004d7567b7da605c45
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775776959
+builddate = 1775799740
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-rename-helper
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-rename-helper
 buildtool = makepkg

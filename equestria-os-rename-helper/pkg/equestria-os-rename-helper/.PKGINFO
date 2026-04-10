@@ -3,11 +3,12 @@
 pkgname = equestria-os-rename-helper
 pkgbase = equestria-os-rename-helper
 xdata = pkgtype=pkg
-pkgver = 1.0.0-2
+pkgver = 1.0.0-3
 pkgdesc = Bulk file renaming utility with Find and Replace
 url = https://github.com/Lucia7Lunadottir
-builddate = 1775776959
+builddate = 1775799740
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 9293672
+size = 115202
 arch = x86_64
 license = GPL
+depend = python-pyqt6

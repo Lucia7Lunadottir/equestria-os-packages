@@ -2,19 +2,27 @@
 
 pkgname=pg-rankmirrors
 pkgver=2.1.0
-pkgrel=3
+pkgrel=4
 pkgdesc='Equestria OS — Mirror manager with country selection'
 arch=('x86_64')
 license=('GPL3')
 url='https://psyche-games.com'
-depends=('reflector' 'polkit')
+depends=('reflector' 'polkit' 'python-pyqt6')
 install='pg-rankmirrors.install'
 
 package() {
-    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
+    local _lib="$pkgdir/usr/lib/$pkgname"
+    install -dm755 "$_lib"
 
-    install -Dm755 "$_bins/pg-rankmirrors" \
-        "$pkgdir/usr/bin/pg-rankmirrors"
+    for f in main.py ui_mirrors.py style.qss equestria_cyrillic.ttf EquestriaOS-Logo.png; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/pg-rankmirrors" << 'EOF'
+#!/bin/bash
+cd /usr/lib/pg-rankmirrors/
+exec python3 main.py "$@"
+EOF
 
     install -Dm755 "$startdir/pg-rankmirrors-backend" \
         "$pkgdir/usr/bin/pg-rankmirrors-backend"
@@ -29,7 +37,6 @@ package() {
     install -Dm644 "$startdir/pg-rankmirrors.timer"   "$pkgdir/usr/lib/systemd/system/pg-rankmirrors.timer"
     install -Dm644 "$startdir/pg-rankmirrors.hook"    "$pkgdir/usr/share/libalpm/hooks/pg-rankmirrors.hook"
 
-    if [ -f "$startdir/EquestriaOS-Logo.png" ]; then
-        install -Dm644 "$startdir/EquestriaOS-Logo.png" "$pkgdir/usr/share/pixmaps/pg-rankmirrors.png"
-    fi
+    install -Dm644 "$startdir/EquestriaOS-Logo.png" \
+        "$pkgdir/usr/share/pixmaps/pg-rankmirrors.png"
 }

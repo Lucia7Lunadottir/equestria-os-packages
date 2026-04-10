@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-save-point
 pkgver=1.0.2
-pkgrel=5
+pkgrel=6
 pkgdesc="Equestria OS Save Point — system snapshot manager (Btrfs/Restic/Timeshift)"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('restic')
+depends=('restic' 'python-pyqt6')
 optdepends=(
     'btrfs-progs: native Btrfs CoW snapshot backend'
     'timeshift: rsync-mode fallback backend'
@@ -19,10 +19,21 @@ optdepends=(
 )
 
 package() {
-    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
+    local _lib="$pkgdir/usr/lib/$pkgname"
+    install -dm755 "$_lib"
 
-    install -Dm755 "$_bins/equestria-os-save-point" \
-        "$pkgdir/usr/bin/equestria-os-save-point"
+    for f in main.py backend.py hooks.py screenshot.py ui_pkg.py utils.py style.qss equestria_cyrillic.ttf equestria-os-save-point.png; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    cp -a "$startdir/icons" "$_lib/"
+    cp -a "$startdir/locales" "$_lib/"
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-save-point" << 'EOF'
+#!/bin/bash
+cd /usr/lib/equestria-os-save-point/
+exec python3 main.py "$@"
+EOF
 
     install -d "$pkgdir/usr/share/applications"
     sed "s|^Exec=.*|Exec=equestria-os-save-point|" \
@@ -34,9 +45,9 @@ package() {
         "$pkgdir/usr/share/pixmaps/equestria-os-save-point.png"
 
     install -Dm755 "$startdir/pacman-snapshot.sh" \
-        "$pkgdir/usr/lib/equestria-os-save-point/pacman-snapshot.sh"
+        "$_lib/pacman-snapshot.sh"
     install -Dm644 "$startdir/flatpak-hook.sh" \
-        "$pkgdir/usr/lib/equestria-os-save-point/flatpak-hook.sh"
+        "$_lib/flatpak-hook.sh"
     install -Dm644 "$startdir/equestria-save-point.hook" \
         "$pkgdir/etc/pacman.d/hooks/equestria-save-point.hook"
     install -Dm644 "$startdir/flatpak-hook.sh" \

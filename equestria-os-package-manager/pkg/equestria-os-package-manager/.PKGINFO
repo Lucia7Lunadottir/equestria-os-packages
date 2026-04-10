@@ -3,12 +3,13 @@
 pkgname = equestria-os-package-manager
 pkgbase = equestria-os-package-manager
 xdata = pkgtype=pkg
-pkgver = 2.2.1-4
+pkgver = 2.2.1-5
 pkgdesc = Official Equestria OS Package Manager (Uninstall and Manage)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1775776905
+builddate = 1775799744
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 12733469
+size = 3557266
 arch = x86_64
 license = GPL
 depend = polkit
+depend = python-pyqt6

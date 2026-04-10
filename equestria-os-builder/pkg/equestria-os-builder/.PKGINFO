@@ -3,11 +3,13 @@
 pkgname = equestria-os-builder
 pkgbase = equestria-os-builder
 xdata = pkgtype=pkg
-pkgver = 1.0.0-3
+pkgver = 1.0.0-4
 pkgdesc = GUI frontend for PyInstaller — build any Python app into a standalone executable
 url = https://github.com/Lucia7Lunadottir
-builddate = 1775776931
+builddate = 1775799745
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 9250350
+size = 30635
 arch = x86_64
 license = GPL
+depend = python-pyqt6
+optdepend = python-pyinstaller: required to actually build apps

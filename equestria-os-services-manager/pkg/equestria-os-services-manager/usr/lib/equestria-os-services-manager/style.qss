@@ -1,0 +1,183 @@
+/* ── Base ─────────────────────────────────────────────────────────────── */
+QWidget#root { background-color: rgb(26, 24, 41); }
+
+QLabel#TitleLabel {
+    font-size: 26px; color: rgb(240, 240, 240); font-weight: bold;
+    margin-bottom: 6px;
+}
+
+/* ── Search & filter ──────────────────────────────────────────────────── */
+QLineEdit#SearchField, QComboBox#CategoryDropdown {
+    border-radius: 8px; background-color: rgb(40, 35, 60); color: white;
+    padding: 8px 12px; border: 1px solid rgb(100, 75, 155);
+}
+QLineEdit#SearchField:focus {
+    border-color: rgb(160, 120, 220);
+}
+QComboBox QAbstractItemView {
+    background-color: rgb(40, 35, 60); color: white;
+    selection-background-color: rgb(65, 55, 95);
+    border: 1px solid rgb(100, 75, 155); outline: none;
+}
+
+/* ── Scroll area ──────────────────────────────────────────────────────── */
+QScrollArea#ServiceList {
+    background-color: rgb(30, 28, 48); border-radius: 12px;
+    border: 1px solid rgb(50, 45, 75);
+}
+#ScrollContent { background-color: rgb(30, 28, 48); }
+
+/* Скрыть полосу прокрутки по умолчанию, показать при наведении */
+QScrollBar:vertical {
+    background: transparent; width: 6px; margin: 0;
+}
+QScrollBar::handle:vertical {
+    background: rgb(90, 80, 120); border-radius: 3px; min-height: 20px;
+}
+QScrollBar::handle:vertical:hover { background: rgb(130, 110, 180); }
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+
+/* ── Service row ──────────────────────────────────────────────────────── */
+QFrame#ServiceRow {
+    border-bottom: 1px solid rgb(45, 42, 65);
+    background-color: transparent;
+}
+QFrame#ServiceRow:hover { background-color: rgb(48, 42, 70); }
+
+QLabel#SvcDisplayName {
+    color: rgb(230, 225, 245); font-weight: bold; font-size: 14px;
+    background: transparent;
+}
+QLabel#SvcTechName {
+    color: rgb(130, 120, 160); font-size: 11px; background: transparent;
+}
+
+/* ── Status dot ───────────────────────────────────────────────────────── */
+QLabel[dotState="active"]   { color: rgb(166, 227, 161); font-size: 17px; }
+QLabel[dotState="inactive"] { color: rgb(70, 65, 95);    font-size: 17px; }
+QLabel[dotState="failed"]   { color: rgb(243, 139, 168); font-size: 17px; }
+
+/* ── Badges ───────────────────────────────────────────────────────────── */
+QLabel#Badge {
+    border-radius: 4px; padding: 2px 6px;
+    font-size: 11px; font-weight: bold;
+}
+
+QLabel#Badge[badgeState="running"] {
+    background-color: rgba(166, 227, 161, 35); color: rgb(166, 227, 161);
+    border: 1px solid rgba(166, 227, 161, 110);
+}
+QLabel#Badge[badgeState="stopped"] {
+    background-color: rgba(75, 70, 100, 70); color: rgb(130, 120, 155);
+    border: 1px solid rgba(110, 100, 135, 70);
+}
+QLabel#Badge[badgeState="failed"] {
+    background-color: rgba(243, 139, 168, 35); color: rgb(243, 139, 168);
+    border: 1px solid rgba(243, 139, 168, 110);
+}
+QLabel#Badge[badgeState="activating"] {
+    background-color: rgba(250, 179, 135, 35); color: rgb(250, 179, 135);
+    border: 1px solid rgba(250, 179, 135, 110);
+}
+QLabel#Badge[badgeState="enabled"] {
+    background-color: rgba(137, 180, 250, 35); color: rgb(137, 180, 250);
+    border: 1px solid rgba(137, 180, 250, 110);
+}
+QLabel#Badge[badgeState="disabled"] {
+    background-color: rgba(75, 70, 100, 70); color: rgb(130, 120, 155);
+    border: 1px solid rgba(110, 100, 135, 70);
+}
+QLabel#Badge[badgeState="static"] {
+    background-color: rgba(203, 166, 247, 30); color: rgb(180, 145, 230);
+    border: 1px solid rgba(180, 145, 230, 90);
+}
+QLabel#Badge[badgeState="masked"] {
+    background-color: rgba(210, 100, 120, 30); color: rgb(190, 90, 110);
+    border: 1px solid rgba(190, 90, 110, 80);
+}
+
+/* ── Action buttons ───────────────────────────────────────────────────── */
+QPushButton#BtnAction {
+    border-radius: 5px; padding: 4px 8px;
+    font-size: 12px; font-weight: bold;
+    border: 1px solid transparent;
+}
+
+QPushButton#BtnAction[btnAction="start"] {
+    background-color: rgba(166, 227, 161, 28); color: rgb(166, 227, 161);
+    border-color: rgba(166, 227, 161, 95);
+}
+QPushButton#BtnAction[btnAction="start"]:hover {
+    background-color: rgba(166, 227, 161, 65);
+}
+
+QPushButton#BtnAction[btnAction="stop"] {
+    background-color: rgba(250, 179, 135, 28); color: rgb(250, 179, 135);
+    border-color: rgba(250, 179, 135, 95);
+}
+QPushButton#BtnAction[btnAction="stop"]:hover {
+    background-color: rgba(250, 179, 135, 65);
+}
+
+QPushButton#BtnAction[btnAction="enable"] {
+    background-color: rgba(137, 180, 250, 28); color: rgb(137, 180, 250);
+    border-color: rgba(137, 180, 250, 95);
+}
+QPushButton#BtnAction[btnAction="enable"]:hover {
+    background-color: rgba(137, 180, 250, 65);
+}
+
+QPushButton#BtnAction[btnAction="disable"] {
+    background-color: rgba(75, 70, 100, 60); color: rgb(145, 135, 170);
+    border-color: rgba(115, 105, 140, 75);
+}
+QPushButton#BtnAction[btnAction="disable"]:hover {
+    background-color: rgba(100, 92, 125, 80);
+}
+
+QPushButton#BtnAction[btnAction="na"]:disabled {
+    background-color: rgba(45, 42, 65, 40); color: rgb(75, 70, 95);
+    border-color: rgba(75, 70, 95, 40);
+}
+
+/* ── Language buttons ─────────────────────────────────────────────────── */
+QPushButton#LangBtn {
+    background-color: transparent; color: rgb(170, 165, 195);
+    border: 1px solid rgb(65, 62, 88); border-radius: 4px;
+    padding: 2px 6px;
+}
+QPushButton#LangBtn:hover {
+    background-color: rgb(50, 47, 70); color: rgb(215, 210, 245);
+}
+QPushButton#LangBtn[active="true"] {
+    background-color: rgb(203, 166, 247); color: rgb(28, 26, 42);
+    font-weight: bold; border: 1px solid rgb(203, 166, 247);
+}
+
+/* ── Modal ────────────────────────────────────────────────────────────── */
+QFrame#ModalOverlay {
+    background-color: rgba(12, 10, 22, 215);
+}
+#ModalBox {
+    background-color: rgb(36, 32, 52);
+    border: 2px solid rgb(115, 85, 175);
+    border-radius: 12px;
+}
+
+QPushButton#ModalConfirmBtn {
+    background-color: rgb(100, 50, 140); color: white;
+    border-radius: 7px; padding: 8px 15px; font-weight: bold;
+    border: 1px solid rgb(100, 50, 140);
+}
+QPushButton#ModalConfirmBtn:hover {
+    background-color: rgb(138, 68, 188); border-color: rgb(138, 68, 188);
+}
+
+QPushButton#ModalCancelBtn {
+    background-color: rgb(72, 68, 95); color: white;
+    border-radius: 7px; padding: 8px 15px; font-weight: bold;
+    border: 1px solid rgb(72, 68, 95);
+}
+QPushButton#ModalCancelBtn:hover {
+    background-color: rgb(100, 95, 125); border-color: rgb(100, 95, 125);
+}

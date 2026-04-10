@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-proton-starter
 pkgbase = equestria-os-proton-starter
-pkgver = 1.5.1-4
+pkgver = 1.5.1-5
 pkgarch = x86_64
-pkgbuild_sha256sum = b4fa164c0691acd23a0b71c81446ce7a6c1367e18a33c81d49e50f00c341e5c7
+pkgbuild_sha256sum = 3c7b28afe93a2ae6bf9dffcaca679bf3e399c46e087e85ecee0e4705a6fa7381
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775776934
+builddate = 1775799751
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/proton-exe-starter
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/proton-exe-starter
 buildtool = makepkg

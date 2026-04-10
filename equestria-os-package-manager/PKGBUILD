@@ -2,18 +2,26 @@
 
 pkgname=equestria-os-package-manager
 pkgver=2.2.1
-pkgrel=4
+pkgrel=5
 pkgdesc="Official Equestria OS Package Manager (Uninstall and Manage)"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('polkit')
+depends=('polkit' 'python-pyqt6')
 
 package() {
-    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
+    local _lib="$pkgdir/usr/lib/$pkgname"
+    install -dm755 "$_lib"
 
-    install -Dm755 "$_bins/equestria-os-package-manager" \
-        "$pkgdir/usr/bin/equestria-os-package-manager"
+    for f in main.py ui_pkg.py style.qss equestria_cyrillic.ttf equestria-os-package-manager.png; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-package-manager" << 'EOF'
+#!/bin/bash
+cd /usr/lib/equestria-os-package-manager/
+exec python3 main.py "$@"
+EOF
 
     install -d "$pkgdir/usr/share/applications"
     sed "s|^Exec=.*|Exec=equestria-os-package-manager|" \

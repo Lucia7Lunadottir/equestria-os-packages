@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-character-theme
 pkgbase = equestria-os-character-theme
-pkgver = 2.0.3-4
+pkgver = 2.0.3-5
 pkgarch = x86_64
-pkgbuild_sha256sum = 0bd51ea3a524f640097b2d56c49602eb157d4f61c4b52bd5b6f1a6d7d2ffd7ba
+pkgbuild_sha256sum = ac7fb5e1c13de218c03bc439667c9b9c9e66ecb8609ff6034ad9e4a4a416988a
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775776923
+builddate = 1775799818
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-character-theme
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-character-theme
 buildtool = makepkg

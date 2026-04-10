@@ -2,15 +2,14 @@
 
 pkgname=equestria-os-proton-starter
 pkgver=1.5.1
-pkgrel=4
+pkgrel=5
 pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton)"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
 
-# Runtime: Qt6 native libs are NOT bundled — linked from system qt6-base
 depends=(
-    'qt6-base'
+    'python-pyqt6'
     'umu-launcher'
     'lib32-glibc'
     'lib32-gcc-libs'
@@ -26,41 +25,38 @@ optdepends=(
     'lib32-vulkan-intel: 32-bit Vulkan support for Intel GPUs'
     'lib32-nvidia-utils: 32-bit OpenGL/Vulkan support for NVIDIA GPUs'
 )
-makedepends=('python-pyinstaller' 'python-pyqt6')
 install="$pkgname.install"
 
-build() {
-    cd "$startdir"
-    pyinstaller proton-starter.spec \
-        --distpath "$srcdir/dist" \
-        --workpath "$srcdir/build" \
-        --noconfirm
-}
-
 package() {
-    local _bundle="$srcdir/dist/equestria-proton-starter"
-    local _dest="$pkgdir/usr/lib/equestria-proton-starter"
+    local _lib="$pkgdir/usr/lib/equestria-proton-starter"
+    install -dm755 "$_lib"
 
-    # Install the unified PyInstaller bundle
-    install -dm755 "$_dest"
-    cp -r "$_bundle/." "$_dest/"
-    chmod -R u=rwX,go=rX "$_dest"
-    chmod 755 "$_dest/equestria-proton-starter"
+    for f in dispatch.py main.py launcher.py cleaner.py proton_runner.py ui.py style.qss localization.csv EquestriaOS-Logo.png; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
 
-    # Three entry points via symlinks (dispatch.py checks argv[0])
-    install -dm755 "$pkgdir/usr/bin"
-    ln -s "/usr/lib/equestria-proton-starter/equestria-proton-starter" \
-        "$pkgdir/usr/bin/equestria-proton-settings"
-    ln -s "/usr/lib/equestria-proton-starter/equestria-proton-starter" \
-        "$pkgdir/usr/bin/equestria-proton-run"
-    ln -s "/usr/lib/equestria-proton-starter/equestria-proton-starter" \
-        "$pkgdir/usr/bin/equestria-proton-cleaner"
+    # Three entry points, each calling the appropriate module directly
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-proton-settings" << 'EOF'
+#!/bin/bash
+cd /usr/lib/equestria-proton-starter/
+exec python3 main.py "$@"
+EOF
 
-    # Icon
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-proton-run" << 'EOF'
+#!/bin/bash
+cd /usr/lib/equestria-proton-starter/
+exec python3 launcher.py "$@"
+EOF
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-proton-cleaner" << 'EOF'
+#!/bin/bash
+cd /usr/lib/equestria-proton-starter/
+exec python3 cleaner.py "$@"
+EOF
+
     install -Dm644 "$startdir/EquestriaOS-Logo.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-proton-starter.png"
 
-    # Desktop files
     install -Dm644 "$startdir/equestria-os-proton-run.desktop" \
         "$pkgdir/usr/share/applications/equestria-os-proton-run.desktop"
     install -Dm644 "$startdir/equestria-os-proton-cleaner.desktop" \

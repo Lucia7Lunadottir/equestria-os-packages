@@ -2,19 +2,27 @@
 
 pkgname=equestria-os-git-askpass
 pkgver=1.0.0
-pkgrel=6
+pkgrel=7
 pkgdesc="Native GUI Git credential interceptor for Equestria OS (fixes Unity Git errors)"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('git')
+depends=('git' 'python-pyqt6')
 install="$pkgname.install"
 
 package() {
-    local _bins="$(dirname "$startdir")/../equestria-packages-builds/bins"
+    local _lib="$pkgdir/usr/lib/$pkgname"
+    install -dm755 "$_lib"
 
-    install -Dm755 "$_bins/equestria-os-git-askpass" \
-        "$pkgdir/usr/bin/equestria-os-git-askpass"
+    for f in equestria-os-git-askpass.py style.qss localization.csv EquestriaOS-Logo.png; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-git-askpass" << 'EOF'
+#!/bin/bash
+cd /usr/lib/equestria-os-git-askpass/
+exec python3 equestria-os-git-askpass.py "$@"
+EOF
 
     install -Dm644 "$startdir/EquestriaOS-Logo.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-git-askpass.png"

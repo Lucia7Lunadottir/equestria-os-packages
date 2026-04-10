@@ -1,11 +1,11 @@
 format = 2
 pkgname = pg-rankmirrors
 pkgbase = pg-rankmirrors
-pkgver = 2.1.0-3
+pkgver = 2.1.0-4
 pkgarch = x86_64
-pkgbuild_sha256sum = f066132d95b65ab0f62459ee6dec58fb2b229699b3044f4164df24e90cf34cf2
+pkgbuild_sha256sum = 1114a0ee125f4833cb61ef95772d2546d9c195d13665368c816aa48fdbbd0dd9
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775776963
+builddate = 1775799749
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/pg-rankmirrors
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/pg-rankmirrors
 buildtool = makepkg

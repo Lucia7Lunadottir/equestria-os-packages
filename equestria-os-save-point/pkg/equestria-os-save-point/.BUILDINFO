@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-save-point
 pkgbase = equestria-os-save-point
-pkgver = 1.0.2-5
+pkgver = 1.0.2-6
 pkgarch = x86_64
-pkgbuild_sha256sum = c270e15a017567e8635703487e6d2915e26307a47f093681d7b29fae0252164e
+pkgbuild_sha256sum = 45cf1e2f17c6a3a76f970097bb9982d5c3429ac2a64c3ecff3455ef6de8debf5
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775776909
+builddate = 1775799741
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-save-point
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-save-point
 buildtool = makepkg

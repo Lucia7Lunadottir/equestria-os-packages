@@ -1,1 +1,3 @@
-/usr/lib/equestria-proton-starter/equestria-proton-starter
+#!/bin/bash
+cd /usr/lib/equestria-proton-starter/
+exec python3 launcher.py "$@"

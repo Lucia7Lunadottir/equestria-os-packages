@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-os-disk-manager
 pkgbase = equestria-os-disk-manager
-pkgver = 1.1.0-5
+pkgver = 1.1.0-6
 pkgarch = x86_64
-pkgbuild_sha256sum = 5f21df1b3a76a0e88d9bfb79ea0e8317b4a609bfe40fc19312ed61c6d8fd38e0
+pkgbuild_sha256sum = efdc04eec1e1c8645c29308d92c045d9b5801ff4ba18e0f2c8bc7e59f28ddc94
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1775776883
+builddate = 1775799735
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-disk-manager
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-os-disk-manager
 buildtool = makepkg
