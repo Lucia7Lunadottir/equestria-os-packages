@@ -1,0 +1,8 @@
+[Unit]
+Description=Create daily Equestria Save Point
+Wants=local-fs.target
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/equestria-os-save-point/pacman-snapshot.sh D

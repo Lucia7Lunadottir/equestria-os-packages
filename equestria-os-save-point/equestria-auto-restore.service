@@ -1,0 +1,9 @@
+[Unit]
+Description=Equestria OS Auto-Recovery
+DefaultDependencies=no
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/lib/equestria-os-save-point/auto-restore.py
+ExecStartPost=/usr/bin/systemctl reboot --force

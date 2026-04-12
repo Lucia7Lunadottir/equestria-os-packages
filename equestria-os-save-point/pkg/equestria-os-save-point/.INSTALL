@@ -1,0 +1,13 @@
+post_install() {
+    systemctl daemon-reload
+    systemctl enable --now equestria-save-point-daily.timer
+}
+
+post_upgrade() {
+    systemctl daemon-reload
+    systemctl enable --now equestria-save-point-daily.timer
+}
+
+pre_remove() {
+    systemctl disable --now equestria-save-point-daily.timer
+}
