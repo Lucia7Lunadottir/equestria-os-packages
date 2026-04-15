@@ -467,6 +467,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             return
         if source == "all":
             self._filter_packages(self._merged_packages, source)
+            query = self.search_store.text().strip()
+            if query and query in self._aur_query_cache:
+                self._append_aur_to_all(self._aur_query_cache[query])
         else:
             self._filter_packages(self.store_packages, source)
 
@@ -598,10 +601,13 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     def _append_aur_to_all(self, aur_pkgs):
         if self._current_source != "all":
             return
+        cat = self.combo_store.currentText()
         existing = {normalize_key(p.name) for p in self.filtered_store_packages}
         added = False
         for pkg in aur_pkgs:
             if normalize_key(pkg.name) not in existing:
+                if cat != "All" and pkg.category != cat:
+                    continue
                 if pkg.name in self.upgradable_packages:
                     pkg.status = "upgradable"
                 elif pkg.name in self.installed_packages:

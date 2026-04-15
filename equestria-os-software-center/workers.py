@@ -215,8 +215,8 @@ class AURSearchThread(QThread):
             req = Request(url, headers={'User-Agent': 'equestria-os-software-center/1.0'})
             with urlopen(req, timeout=8) as resp:
                 data = json.loads(resp.read().decode())
-            results = sorted(data.get('results', [])[:100],
-                             key=lambda x: x.get('NumVotes', 0), reverse=True)
+            results = sorted(data.get('results', []),
+                             key=lambda x: x.get('NumVotes', 0), reverse=True)[:100]
             for item in results:
                 pkg = StoreData(
                     item.get('Name', ''),
