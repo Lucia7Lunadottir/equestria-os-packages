@@ -1,0 +1,112 @@
+{
+  "ru": {
+    "title": "Создание ярлыка", "app_name": "Имя приложения:", "desc": "Описание (Comment):",
+    "langs": "Языки:", "no_locs": "Локализаций нет", "add_trans": "Добавить перевод",
+    "pre_args": "Пре-аргументы (python3, wine):",
+    "exec": "Путь к файлу (Exec):", "browse": "Обзор", "args": "Аргументы запуска:",
+    "icon": "Иконка (Icon):", "choose": "Выбрать", "category": "Категория в меню:",
+    "btn_install": "Установить в Пуск", "btn_save_as": "Сохранить как...",
+    "btn_clear": "Очистить форму", "add_loc_title": "Добавить локализацию",
+    "loc_lang_ph": "Код страны (ru, en...)", "loc_name_ph": "Локализованное имя",
+    "loc_desc_ph": "Локализованное описание", "btn_save": "Сохранить", "btn_cancel": "Отмена"
+  },
+  "en": {
+    "title": "Create Shortcut", "app_name": "App Name:", "desc": "Description (Comment):",
+    "langs": "Languages:", "no_locs": "No localizations", "add_trans": "Add translation",
+    "pre_args": "Pre-arguments (python3, wine):",
+    "exec": "Executable Path:", "browse": "Browse", "args": "Launch Arguments:",
+    "icon": "Icon:", "choose": "Choose", "category": "Menu Category:",
+    "btn_install": "Install to Start", "btn_save_as": "Save as...",
+    "btn_clear": "Clear Form", "add_loc_title": "Add Localization",
+    "loc_lang_ph": "Country Code (en, ru...)", "loc_name_ph": "Localized Name",
+    "loc_desc_ph": "Localized Description", "btn_save": "Save", "btn_cancel": "Cancel"
+  },
+  "de": {
+    "title": "Verknüpfung erstellen", "app_name": "App-Name:", "desc": "Beschreibung:",
+    "langs": "Sprachen:", "no_locs": "Keine Übersetzungen", "add_trans": "Übersetzung hinzufügen",
+    "pre_args": "Vorab-Argumente (python3, wine):",
+    "exec": "Ausführungspfad:", "browse": "Durchsuchen", "args": "Startargumente:",
+    "icon": "Symbol:", "choose": "Wählen", "category": "Menükategorie:",
+    "btn_install": "Im Startmenü installieren", "btn_save_as": "Speichern unter...",
+    "btn_clear": "Formular leeren", "add_loc_title": "Lokalisierung hinzufügen",
+    "loc_lang_ph": "Ländercode (de, en...)", "loc_name_ph": "Lokalisierter Name",
+    "loc_desc_ph": "Lokalisierte Beschreibung", "btn_save": "Speichern", "btn_cancel": "Abbrechen"
+  },
+  "es": {
+    "title": "Crear Acceso Directo", "app_name": "Nombre de la App:", "desc": "Descripción:",
+    "langs": "Idiomas:", "no_locs": "Sin traducciones", "add_trans": "Añadir traducción",
+    "pre_args": "Pre-argumentos (python3, wine):",
+    "exec": "Ruta del ejecutable:", "browse": "Explorar", "args": "Argumentos:",
+    "icon": "Icono:", "choose": "Elegir", "category": "Categoría del Menú:",
+    "btn_install": "Instalar en Inicio", "btn_save_as": "Guardar como...",
+    "btn_clear": "Limpiar formulario", "add_loc_title": "Añadir Localización",
+    "loc_lang_ph": "Código de país (es, en...)", "loc_name_ph": "Nombre localizado",
+    "loc_desc_ph": "Descripción localizada", "btn_save": "Guardar", "btn_cancel": "Cancelar"
+  },
+  "fr": {
+    "title": "Créer un Raccourci", "app_name": "Nom de l'App:", "desc": "Description:",
+    "langs": "Langues:", "no_locs": "Aucune traduction", "add_trans": "Ajouter traduction",
+    "pre_args": "Pré-arguments (python3, wine):",
+    "exec": "Chemin de l'exécutable:", "browse": "Parcourir", "args": "Arguments:",
+    "icon": "Icône:", "choose": "Choisir", "category": "Catégorie de Menu:",
+    "btn_install": "Installer dans Démarrer", "btn_save_as": "Enregistrer sous...",
+    "btn_clear": "Effacer le formulaire", "add_loc_title": "Ajouter Localisation",
+    "loc_lang_ph": "Code pays (fr, en...)", "loc_name_ph": "Nom localisé",
+    "loc_desc_ph": "Description localisée", "btn_save": "Enregistrer", "btn_cancel": "Annuler"
+  },
+  "ja": {
+    "title": "ショートカットの作成", "app_name": "アプリ名:", "desc": "説明:",
+    "langs": "言語:", "no_locs": "翻訳なし", "add_trans": "翻訳を追加",
+    "pre_args": "プレ引数 (python3, wine):",
+    "exec": "実行パス:", "browse": "参照", "args": "起動引数:",
+    "icon": "アイコン:", "choose": "選択", "category": "メニューカテゴリ:",
+    "btn_install": "スタートに追加", "btn_save_as": "名前を付けて保存...",
+    "btn_clear": "クリア", "add_loc_title": "ローカライズを追加",
+    "loc_lang_ph": "国コード (ja, en...)", "loc_name_ph": "ローカライズ名",
+    "loc_desc_ph": "ローカライズ説明", "btn_save": "保存", "btn_cancel": "キャンセル"
+  },
+  "pl": {
+    "title": "Utwórz Skrót", "app_name": "Nazwa App:", "desc": "Opis:",
+    "langs": "Języki:", "no_locs": "Brak tłumaczeń", "add_trans": "Dodaj tłumaczenie",
+    "pre_args": "Pre-argumenty (python3, wine):",
+    "exec": "Ścieżka do pliku:", "browse": "Przeglądaj", "args": "Argumenty:",
+    "icon": "Ikona:", "choose": "Wybierz", "category": "Kategoria Menu:",
+    "btn_install": "Zainstaluj w Start", "btn_save_as": "Zapisz jako...",
+    "btn_clear": "Wyczyść", "add_loc_title": "Dodaj Lokalizację",
+    "loc_lang_ph": "Kod kraju (pl, en...)", "loc_name_ph": "Lokalna nazwa",
+    "loc_desc_ph": "Lokalny opis", "btn_save": "Zapisz", "btn_cancel": "Anuluj"
+  },
+  "pt": {
+    "title": "Criar Atalho", "app_name": "Nome do App:", "desc": "Descrição:",
+    "langs": "Idiomas:", "no_locs": "Sem traduções", "add_trans": "Adicionar tradução",
+    "pre_args": "Pré-argumentos (python3, wine):",
+    "exec": "Caminho do Executável:", "browse": "Procurar", "args": "Argumentos:",
+    "icon": "Ícone:", "choose": "Escolher", "category": "Categoria do Menu:",
+    "btn_install": "Instalar no Iniciar", "btn_save_as": "Salvar como...",
+    "btn_clear": "Limpar", "add_loc_title": "Adicionar Localização",
+    "loc_lang_ph": "Código do país (pt, en...)", "loc_name_ph": "Nome localizado",
+    "loc_desc_ph": "Descrição localizada", "btn_save": "Salvar", "btn_cancel": "Cancelar"
+  },
+  "uk": {
+    "title": "Створити Ярлик", "app_name": "Ім'я додатка:", "desc": "Опис (Comment):",
+    "langs": "Мови:", "no_locs": "Локалізацій немає", "add_trans": "Додати переклад",
+    "pre_args": "Пре-аргументи (python3, wine):",
+    "exec": "Шлях до файлу (Exec):", "browse": "Огляд", "args": "Аргументи запуску:",
+    "icon": "Іконка (Icon):", "choose": "Вибрати", "category": "Категорія в меню:",
+    "btn_install": "Встановити в Пуск", "btn_save_as": "Зберегти як...",
+    "btn_clear": "Очистити форму", "add_loc_title": "Додати локалізацію",
+    "loc_lang_ph": "Код країни (uk, en...)", "loc_name_ph": "Локалізоване ім'я",
+    "loc_desc_ph": "Локалізований опис", "btn_save": "Зберегти", "btn_cancel": "Скасувати"
+  },
+  "zh": {
+    "title": "创建快捷方式", "app_name": "应用名称:", "desc": "描述:",
+    "langs": "语言:", "no_locs": "无翻译", "add_trans": "添加翻译",
+    "pre_args": "前置参数 (python3, wine):",
+    "exec": "执行路径:", "browse": "浏览", "args": "启动参数:",
+    "icon": "图标:", "choose": "选择", "category": "菜单分类:",
+    "btn_install": "安装到开始菜单", "btn_save_as": "另存为...",
+    "btn_clear": "清除表单", "add_loc_title": "添加本地化",
+    "loc_lang_ph": "国家代码 (zh, en...)", "loc_name_ph": "本地化名称",
+    "loc_desc_ph": "本地化描述", "btn_save": "保存", "btn_cancel": "取消"
+  }
+}

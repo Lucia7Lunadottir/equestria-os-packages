@@ -1,0 +1,27 @@
+[Desktop Entry]
+Type=Application
+Name=Desktop File Editor
+Name[ru]=Редактор .desktop файлов
+Name[de]=Desktop-Datei-Editor
+Name[es]=Editor de archivos .desktop
+Name[fr]=Éditeur de fichiers .desktop
+Name[ja]=.desktop ファイルエディタ
+Name[pl]=Edytor plików .desktop
+Name[pt]=Editor de arquivos .desktop
+Name[uk]=Редактор .desktop файлів
+Name[zh]=Desktop 文件编辑器
+Comment=Create and edit .desktop shortcut files
+Comment[ru]=Создание и редактирование файлов ярлыков .desktop
+Comment[de]=Erstellen und Bearbeiten von .desktop-Verknüpfungsdateien
+Comment[es]=Crea y edita archivos de acceso directo .desktop
+Comment[fr]=Créer et modifier des fichiers de raccourcis .desktop
+Comment[ja]=.desktop ショートカットファイルの作成と編集
+Comment[pl]=Tworzenie i edycja plików skrótów .desktop
+Comment[pt]=Criar e editar arquivos de atalho .desktop
+Comment[uk]=Створення та редагування файлів ярликів .desktop
+Comment[zh]=创建和编辑 .desktop 快捷方式文件
+Exec=desktop-editor
+Icon=desktop-editor-ui
+Categories=Utility;System;Settings;
+Terminal=false
+StartupWMClass=desktop-editor-ui
