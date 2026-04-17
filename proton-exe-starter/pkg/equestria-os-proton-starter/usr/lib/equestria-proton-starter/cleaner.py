@@ -131,12 +131,14 @@ class AppCard(QWidget):
         layout.addStretch()
 
         self.btn_shaders = QPushButton(t("cleaner.btn_clear_shaders"))
-        self.btn_shaders.setFixedWidth(150)
+        self.btn_shaders.setMinimumWidth(130)
+        self.btn_shaders.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self.btn_shaders.clicked.connect(self._clear_shaders)
 
         self.btn_prefix = QPushButton(t("cleaner.btn_clear_prefix"))
         self.btn_prefix.setObjectName("btnDanger")
-        self.btn_prefix.setFixedWidth(150)
+        self.btn_prefix.setMinimumWidth(130)
+        self.btn_prefix.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self.btn_prefix.clicked.connect(self._clear_prefix)
 
         layout.addWidget(self.btn_shaders)

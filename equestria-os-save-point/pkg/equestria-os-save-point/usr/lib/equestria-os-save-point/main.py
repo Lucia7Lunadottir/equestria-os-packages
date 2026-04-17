@@ -293,13 +293,14 @@ class main_app(QMainWindow, Ui_SavePoint):
 
     def _tag_info(self, tag_code: str) -> tuple:
         mapping = {
-            "D": ("tag.daily",    "#3a6fcc"),
-            "W": ("tag.weekly",   "#7a42c0"),
-            "M": ("tag.monthly",  "#b89020"),
-            "B": ("tag.boot",     "#c06030"),
-            "O": ("tag.ondemand", "#2e8c50"),
-            "R": ("tag.restic",   "#1e7a8a"),
-            "S": ("tag.snapshot", "#1a6a5a"),
+            "D": ("tag.daily",     "#3a6fcc"),
+            "W": ("tag.weekly",    "#7a42c0"),
+            "M": ("tag.monthly",   "#b89020"),
+            "B": ("tag.boot",      "#c06030"),
+            "O": ("tag.ondemand",  "#2e8c50"),
+            "R": ("tag.restic",    "#1e7a8a"),
+            "S": ("tag.snapshot",  "#1a6a5a"),
+            "P": ("tag.protected", "#c07800"),
         }
         key, color = mapping.get(tag_code.upper(), (None, "#505070"))
         return (self.t(key) if key else tag_code), color
@@ -332,7 +333,7 @@ class main_app(QMainWindow, Ui_SavePoint):
     def on_select(self, snap, row_widget):
         self.selected_snapshot = snap
         self.btn_restore.setEnabled(True)
-        self.btn_delete.setEnabled(True)
+        self.btn_delete.setEnabled(not snap.protected)
         for i in range(self.list_layout.count()):
             w = self.list_layout.itemAt(i).widget()
             if isinstance(w, SnapshotRow):
@@ -461,6 +462,8 @@ class main_app(QMainWindow, Ui_SavePoint):
 
     def delete_snapshot(self):
         if not self.selected_snapshot:
+            return
+        if self.selected_snapshot.protected:
             return
         from PyQt6.QtWidgets import QMessageBox
         snap = self.selected_snapshot

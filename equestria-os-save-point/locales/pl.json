@@ -22,6 +22,7 @@
   "tag.ondemand": "Ręczny",
   "tag.restic": "Kopia zapasowa",
   "tag.snapshot": "Migawka",
+  "tag.protected": "Dzienny (chroniony)",
   "setup.title": "✨ Konfiguracja początkowa",
   "setup.desc": "Repozytorium kopii zapasowej nie zostało jeszcze zainicjalizowane.\n\nKliknij Inicjalizuj, aby utworzyć nowe repozytorium Restic na dysku systemowym. To jednokrotny krok, który trwa zaledwie kilka sekund.",
   "setup.btn": "Inicjalizuj",

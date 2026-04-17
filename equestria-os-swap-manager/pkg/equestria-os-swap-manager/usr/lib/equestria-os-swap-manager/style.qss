@@ -57,7 +57,7 @@ QPushButton {
     background-color: #313244; /* Catppuccin Surface1 */
     border: none;
     border-radius: 6px;
-    padding: 8px 16px;
+    padding: 5px 14px;
     font-weight: bold;
     color: #cdd6f4;
 }
@@ -98,7 +98,7 @@ QPushButton#DangerBtn:hover {
 /* Кнопка Обновить */
 QPushButton#BrowseBtn {
     padding: 4px 10px;
-    font-size: 16px;
+    font-size: 13px;
 }
 
 /* Языковые кнопки */

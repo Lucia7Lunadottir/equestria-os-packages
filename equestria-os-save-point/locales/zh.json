@@ -22,6 +22,7 @@
   "tag.ondemand": "手动",
   "tag.restic": "备份",
   "tag.snapshot": "快照",
+  "tag.protected": "每日（受保护）",
   "setup.title": "✨ 首次设置",
   "setup.desc": "备份存储库尚未初始化。\n\n单击初始化以在系统驱动器上创建新的 Restic 存储库。这是一个一次性步骤，只需几秒钟。",
   "setup.btn": "初始化",

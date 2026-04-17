@@ -98,6 +98,14 @@ class SnapshotRow(QFrame):
             "color: rgb(120, 110, 160); font-size: 12px; background: transparent;")
         right.addWidget(lbl_num, 0, Qt.AlignmentFlag.AlignRight)
 
+        if snap_data.protected:
+            lbl_lock = QLabel("[protected]")
+            lbl_lock.setAlignment(Qt.AlignmentFlag.AlignRight)
+            lbl_lock.setStyleSheet(
+                "color: #c07800; font-size: 10px; font-style: italic;"
+                " background: transparent;")
+            right.addWidget(lbl_lock, 0, Qt.AlignmentFlag.AlignRight)
+
         self.lbl_size = QLabel("")
         self.lbl_size.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.lbl_size.setStyleSheet(

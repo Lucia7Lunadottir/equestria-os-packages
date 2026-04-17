@@ -1,0 +1,32 @@
+[Desktop Entry]
+Name=Equestria OS Settings
+Name[en]=Equestria OS Settings
+Name[ru]=Настройки Equestria OS
+Name[de]=Equestria OS Einstellungen
+Name[fr]=Paramètres Equestria OS
+Name[es]=Configuración de Equestria OS
+Name[pt]=Configurações do Equestria OS
+Name[pl]=Ustawienia Equestria OS
+Name[uk]=Налаштування Equestria OS
+Name[zh]=Equestria OS 设置
+Name[ja]=Equestria OS 設定
+
+Comment=Unified settings panel for Equestria OS
+Comment[en]=Unified settings panel for Equestria OS
+Comment[ru]=Единая панель системных настроек Equestria OS
+Comment[de]=Einheitliches Systemeinstellungsfenster für Equestria OS
+Comment[fr]=Panneau de paramètres système unifié pour Equestria OS
+Comment[es]=Panel de configuración del sistema unificado para Equestria OS
+Comment[pt]=Painel de configurações do sistema unificado para Equestria OS
+Comment[pl]=Ujednolicony panel ustawień systemowych Equestria OS
+Comment[uk]=Єдина панель системних налаштувань Equestria OS
+Comment[zh]=Equestria OS 统一系统设置面板
+Comment[ja]=Equestria OS 統合システム設定パネル
+
+Exec=equestria-os-settings
+Icon=equestria-os-settings
+Terminal=false
+Type=Application
+Categories=Settings;System;Qt;
+StartupNotify=true
+StartupWMClass=equestria-os-settings

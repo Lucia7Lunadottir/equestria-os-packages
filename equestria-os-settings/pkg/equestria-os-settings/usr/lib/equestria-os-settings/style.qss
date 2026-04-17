@@ -1,0 +1,305 @@
+/* ============================================================
+ *  Equestria OS Settings — stylesheet
+ * ============================================================ */
+
+QWidget#root {
+    background-color: rgb(26, 24, 41);
+}
+
+/* ============================================================
+ *  HEADER
+ * ============================================================ */
+
+QFrame#Header {
+    background-color: rgb(30, 28, 46);
+    border-bottom: 1px solid rgb(50, 47, 72);
+}
+
+QLabel#AppTitle {
+    color: rgb(240, 240, 255);
+    background: transparent;
+}
+
+QPushButton#KDESettingsBtn {
+    background-color: rgb(50, 47, 72);
+    color: rgb(200, 190, 220);
+    border: 1px solid rgb(80, 75, 110);
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 13px;
+}
+QPushButton#KDESettingsBtn:hover {
+    background-color: rgb(70, 65, 100);
+    color: white;
+    border-color: rgb(120, 110, 160);
+}
+
+/* ============================================================
+ *  LANG BUTTONS
+ * ============================================================ */
+
+QPushButton#LangBtn {
+    background-color: transparent;
+    color: rgb(180, 180, 200);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 10px;
+}
+QPushButton#LangBtn:hover {
+    background-color: rgb(49, 50, 68);
+    color: rgb(220, 220, 255);
+}
+QPushButton#LangBtn[active="true"] {
+    background-color: rgb(203, 166, 247);
+    color: rgb(30, 30, 46);
+    font-weight: bold;
+    border: 1px solid rgb(203, 166, 247);
+}
+
+/* ============================================================
+ *  SIDEBAR
+ * ============================================================ */
+
+QWidget#Sidebar {
+    background-color: rgb(30, 28, 46);
+    border-right: 1px solid rgb(50, 47, 72);
+}
+
+QListWidget#SidebarList {
+    background-color: rgb(30, 28, 46);
+    border: none;
+    outline: none;
+    padding: 4px 0;
+}
+
+QListWidget#SidebarList::item {
+    border: none;
+    outline: none;
+}
+
+QListWidget#SidebarList::item:selected {
+    background-color: transparent;
+}
+
+QScrollBar:vertical {
+    background: rgb(30, 28, 46);
+    width: 6px;
+    border: none;
+}
+QScrollBar::handle:vertical {
+    background: rgb(80, 75, 110);
+    border-radius: 3px;
+    min-height: 20px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+/* ============================================================
+ *  SPLITTER
+ * ============================================================ */
+
+QSplitter::handle {
+    background-color: rgb(50, 47, 72);
+    width: 1px;
+}
+
+/* ============================================================
+ *  CONTENT AREA
+ * ============================================================ */
+
+QStackedWidget#ContentStack {
+    background-color: rgb(26, 24, 41);
+}
+
+QWidget#ContentPage {
+    background-color: rgb(26, 24, 41);
+}
+
+QLabel#ModTitle {
+    color: rgb(240, 240, 255);
+    font-size: 22px;
+    font-weight: bold;
+    background: transparent;
+}
+
+QLabel#ModDesc {
+    color: rgb(160, 150, 190);
+    font-size: 14px;
+    background: transparent;
+    max-width: 480px;
+}
+
+QFrame#StatusBox {
+    background-color: rgb(35, 32, 52);
+    border: 1px solid rgb(60, 55, 85);
+    border-radius: 8px;
+    min-width: 280px;
+    max-width: 420px;
+}
+
+QLabel#StatusText {
+    color: rgb(185, 175, 210);
+    font-size: 13px;
+    background: transparent;
+}
+
+QPushButton#LaunchBtn {
+    background-color: rgb(80, 55, 130);
+    color: white;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-weight: bold;
+    font-size: 14px;
+    border: 1px solid rgb(110, 80, 170);
+}
+QPushButton#LaunchBtn:hover {
+    background-color: rgb(110, 75, 170);
+    border: 1px solid rgb(140, 100, 210);
+}
+
+/* ============================================================
+ *  INLINE MODULE WIDGETS
+ * ============================================================ */
+
+QLabel#SectionTitle {
+    color: rgb(203, 166, 247);
+    font-size: 15px;
+    font-weight: bold;
+    background: transparent;
+    margin-top: 8px;
+}
+
+QLabel#FieldLabel {
+    color: rgb(200, 195, 220);
+    font-size: 13px;
+    background: transparent;
+}
+
+QLabel#FieldHint {
+    color: rgb(120, 115, 150);
+    font-size: 12px;
+    background: transparent;
+}
+
+QFrame#InlineCard {
+    background-color: rgb(35, 32, 52);
+    border: 1px solid rgb(60, 55, 85);
+    border-radius: 10px;
+}
+
+QCheckBox {
+    color: rgb(210, 205, 230);
+    font-size: 13px;
+    background: transparent;
+    spacing: 8px;
+}
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    image: url({{BASE_PATH}}/icons/cb_unchecked.svg);
+}
+QCheckBox::indicator:hover {
+    image: url({{BASE_PATH}}/icons/cb_unchecked_hover.svg);
+}
+QCheckBox::indicator:checked {
+    image: url({{BASE_PATH}}/icons/cb_checked.svg);
+}
+
+QComboBox {
+    background-color: rgb(40, 35, 60);
+    color: rgb(220, 210, 240);
+    border: 1px solid rgb(100, 80, 150);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 13px;
+    min-width: 180px;
+}
+QComboBox:focus {
+    border: 1px solid rgb(160, 120, 220);
+}
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+QComboBox QAbstractItemView {
+    background-color: rgb(40, 35, 60);
+    color: rgb(220, 210, 240);
+    border: 1px solid rgb(100, 80, 150);
+    selection-background-color: rgb(80, 60, 130);
+}
+
+QLineEdit {
+    background-color: rgb(40, 35, 60);
+    color: rgb(220, 210, 240);
+    border: 1px solid rgb(100, 80, 150);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 13px;
+}
+QLineEdit:focus {
+    border: 1px solid rgb(160, 120, 220);
+}
+
+QPushButton#ActionBtn {
+    background-color: rgb(45, 42, 68);
+    color: rgb(200, 190, 220);
+    border-radius: 6px;
+    padding: 6px 18px;
+    font-size: 13px;
+    border: 1px solid rgb(80, 75, 110);
+}
+QPushButton#ActionBtn:hover {
+    background-color: rgb(65, 60, 95);
+    color: white;
+}
+QPushButton#ActionBtn:disabled {
+    background-color: rgb(35, 33, 52);
+    color: rgb(90, 85, 110);
+}
+
+QPushButton#DeleteBtn {
+    background-color: rgb(90, 40, 40);
+    color: rgb(255, 180, 180);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    border: 1px solid rgb(140, 60, 60);
+}
+QPushButton#DeleteBtn:hover {
+    background-color: rgb(140, 50, 50);
+    color: white;
+    border-color: rgb(180, 80, 80);
+}
+
+QPushButton#OpenAppBtn {
+    background-color: transparent;
+    color: rgb(180, 160, 220);
+    border: 1px solid rgb(80, 70, 115);
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 12px;
+}
+QPushButton#OpenAppBtn:hover {
+    background-color: rgb(45, 42, 68);
+    color: rgb(210, 190, 245);
+}
+
+QScrollArea {
+    background-color: transparent;
+    border: none;
+}
+QScrollArea > QWidget > QWidget {
+    background-color: transparent;
+}
+
+QLabel#MirrorText {
+    color: rgb(170, 165, 195);
+    font-size: 12px;
+    font-family: monospace;
+    background-color: rgb(20, 18, 33);
+    border: 1px solid rgb(50, 47, 72);
+    border-radius: 6px;
+    padding: 8px 12px;
+}

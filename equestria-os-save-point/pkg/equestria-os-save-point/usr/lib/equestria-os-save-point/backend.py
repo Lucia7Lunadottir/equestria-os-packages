@@ -72,13 +72,14 @@ def _dir_size(path: str) -> int:
 
 class SnapshotData:
     """Unified snapshot descriptor shared by all backends."""
-    def __init__(self, num, date_str, snapshot_id, tags, comment, fs_id=None):
+    def __init__(self, num, date_str, snapshot_id, tags, comment, fs_id=None, protected=False):
         self.num         = num
         self.date_str    = date_str
         self.snapshot_id = snapshot_id   # ID used to restore
         self.tags        = tags          # single-char code for badge
         self.comment     = comment
         self.fs_id       = fs_id or snapshot_id  # YYYY-MM-DD_HH-MM-SS for screenshot lookup
+        self.protected   = protected     # True = daily protected, cannot be deleted
 
 
 # ── Detection ─────────────────────────────────────────────────────────────────
@@ -202,7 +203,8 @@ def _parse_timeshift(output: str) -> list[SnapshotData]:
 
 # ── Btrfs native backend ──────────────────────────────────────────────────────
 
-BTRFS_SNAP_DIR = "/.snapshots"
+BTRFS_SNAP_DIR   = "/.snapshots"
+BTRFS_DAILY_DIR  = "/.snapshots/daily"
 
 
 class BtrfsBackend:
@@ -211,11 +213,13 @@ class BtrfsBackend:
     Requires: btrfs-progs (always present on Btrfs systems).
 
     Snapshots are stored as read-only subvolumes under snap_dir (default /.snapshots).
+    Protected daily snapshots live in snap_dir/daily/ and cannot be deleted via the GUI.
     Restore swaps the root subvolume at the Btrfs top-level; reboot needed.
     """
 
     def __init__(self, snap_dir: str = None):
-        self.snap_dir = snap_dir or BTRFS_SNAP_DIR
+        self.snap_dir  = snap_dir or BTRFS_SNAP_DIR
+        self.daily_dir = os.path.join(self.snap_dir, "daily")
 
     def list_snapshots(self) -> tuple[list[SnapshotData], str]:
         if not os.path.isdir(self.snap_dir):
@@ -246,6 +250,30 @@ class BtrfsBackend:
             except ValueError:
                 date_str = name
             result.append(SnapshotData(str(i), date_str, name, "S", "", fs_id=name))
+
+        # Append protected daily snapshots from snap_dir/daily/
+        # Name format: daily-YYYY-MM-DD_HH-MM-SS
+        pat_daily = re.compile(r"^daily-(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})$")
+        if os.path.isdir(self.daily_dir):
+            try:
+                daily_entries = sorted(os.listdir(self.daily_dir), reverse=True)
+            except Exception:
+                daily_entries = []
+            for name in daily_entries:
+                m = pat_daily.match(name)
+                if not m:
+                    continue
+                ts = m.group(1)   # YYYY-MM-DD_HH-MM-SS
+                try:
+                    dt       = datetime.strptime(ts, "%Y-%m-%d_%H-%M-%S")
+                    date_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    date_str = ts
+                snap_id = "daily/" + name
+                result.append(SnapshotData(
+                    str(len(result)), date_str, snap_id, "P", "",
+                    fs_id=ts, protected=True))
+
         return result, ""
 
     def create_cmd(self) -> str:
@@ -257,6 +285,12 @@ class BtrfsBackend:
 
     def restore_cmd(self, snap_id: str) -> str:
         snap_rel = self.snap_dir.lstrip("/")   # e.g. ".snapshots"
+        # For daily protected snapshots snap_id is "daily/daily-YYYY-MM-DD";
+        # resolve the path relative to snap_dir.
+        if snap_id.startswith("daily/"):
+            snap_rel_full = snap_rel + "/" + snap_id
+        else:
+            snap_rel_full = snap_rel + "/" + snap_id
         # findmnt gives the subvolume path within the Btrfs volume, e.g. "/@" → "@"
         # We create a writable snapshot from the selected snapshot, rename it
         # to the current root subvolume name, and rename the old root aside.
@@ -269,7 +303,7 @@ class BtrfsBackend:
             f"mount -o subvol=/ \"$DEV\" \"$MNT\"; "
             f"SUBVOL=$(findmnt -n -o FSROOT /); "
             f"SUBVOL=${{SUBVOL#/}}; "
-            f"SNAP_PATH=\"$MNT/$SUBVOL/{snap_rel}/{snap_id}\"; "
+            f"SNAP_PATH=\"$MNT/$SUBVOL/{snap_rel_full}\"; "
             f"NEW=\"$MNT/${{SUBVOL}}_restore_$(date +%Y%m%d%H%M%S)\"; "
             f"btrfs subvolume snapshot \"$SNAP_PATH\" \"$NEW\"; "
             f"OLD=\"$MNT/${{SUBVOL}}_old_$(date +%Y%m%d%H%M%S)\"; "
@@ -291,6 +325,8 @@ class BtrfsBackend:
         return " && ".join(cmds)
 
     def delete_cmd(self, snap_id: str) -> str:
+        if snap_id.startswith("daily/"):
+            return "echo 'Protected daily snapshot cannot be deleted'"
         path = shlex.quote(os.path.join(self.snap_dir, snap_id))
         return f"btrfs subvolume delete {path}"
 
@@ -371,9 +407,13 @@ class ResticBackend:
                 except Exception:
                     date_str = raw_time[:19]
                     fs_id    = snap_id
-                comment = ", ".join(s.get("tags") or [])
+                tags_list    = s.get("tags") or []
+                is_protected = "daily-protected" in tags_list
+                comment      = ", ".join(tags_list)
                 result.append(SnapshotData(
-                    str(i), date_str, snap_id, "R", comment, fs_id=fs_id))
+                    str(i), date_str, snap_id,
+                    "P" if is_protected else "R",
+                    comment, fs_id=fs_id, protected=is_protected))
             return result[::-1], ""   # newest first
         except Exception as e:
             if isinstance(e, FileNotFoundError):
@@ -397,7 +437,7 @@ class ResticBackend:
         k = shlex.quote(self.key)
         return (
             f"restic -r {r} --password-file {k} "
-            f"forget --keep-last {keep_last} --prune"
+            f"forget --keep-last {keep_last} --keep-tag daily-protected --prune"
         )
 
     def get_repo_size(self) -> str:

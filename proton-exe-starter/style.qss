@@ -41,6 +41,41 @@ QLineEdit {
     padding: 4px;
 }
 
+/* Scrollbar */
+QScrollBar:vertical {
+    background: rgb(25, 22, 38);
+    width: 8px;
+    border-radius: 4px;
+    margin: 0;
+}
+QScrollBar::handle:vertical {
+    background: rgb(80, 65, 120);
+    border-radius: 4px;
+    min-height: 24px;
+}
+QScrollBar::handle:vertical:hover { background: rgb(110, 90, 160); }
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical { height: 0; }
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical { background: none; }
+
+QScrollBar:horizontal {
+    background: rgb(25, 22, 38);
+    height: 8px;
+    border-radius: 4px;
+    margin: 0;
+}
+QScrollBar::handle:horizontal {
+    background: rgb(80, 65, 120);
+    border-radius: 4px;
+    min-width: 24px;
+}
+QScrollBar::handle:horizontal:hover { background: rgb(110, 90, 160); }
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal { width: 0; }
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal { background: none; }
+
 /* Стили для кнопок переключения языка */
 QPushButton[cssClass="lang-button"] {
     background-color: transparent;

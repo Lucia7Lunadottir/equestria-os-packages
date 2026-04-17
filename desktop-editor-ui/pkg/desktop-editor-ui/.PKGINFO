@@ -3,10 +3,10 @@
 pkgname = desktop-editor-ui
 pkgbase = desktop-editor-ui
 xdata = pkgtype=pkg
-pkgver = 1.0.0-4
+pkgver = 1.0.0-5
 pkgdesc = Утилита для быстрого создания и редактирования .desktop файлов
 url = 
-builddate = 1776266182
+builddate = 1776446467
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 385694
 arch = any

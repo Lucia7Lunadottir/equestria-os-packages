@@ -7,6 +7,6 @@ Exec=equestria-os-software-center
 Icon=equestria-os-software-center
 Terminal=false
 Type=Application
-Categories=System;Settings;
+Categories=X-EquestriaOS;System;Settings;
 # Это критично для правильного отображения иконки на панели задач
 StartupWMClass=equestria-os-software-center

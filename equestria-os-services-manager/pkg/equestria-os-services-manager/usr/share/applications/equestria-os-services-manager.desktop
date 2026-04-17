@@ -27,6 +27,6 @@ Exec=equestria-os-services-manager
 Icon=equestria-os-services-manager
 Terminal=false
 Type=Application
-Categories=Settings;System;Qt;
+Categories=X-EquestriaOS;Settings;System;Qt;
 StartupNotify=true
 StartupWMClass=equestria-os-services-manager

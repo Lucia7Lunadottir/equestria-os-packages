@@ -22,6 +22,6 @@ Comment[zh_CN]=清理 Proton 应用程序的 Wine 前缀和着色器缓存
 Comment[ja]=Proton アプリケーションの Wine プレフィックスとシェーダーキャッシュをクリア
 Exec=equestria-proton-cleaner
 Icon=equestria-os-proton-starter
-Categories=System;Utility;
+Categories=X-EquestriaOS;System;Utility;
 Keywords=proton;wine;cache;shader;clean;
 StartupNotify=true

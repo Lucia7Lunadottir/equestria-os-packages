@@ -22,6 +22,7 @@
   "tag.ondemand": "Manual",
   "tag.restic": "Backup",
   "tag.snapshot": "Instantâneo",
+  "tag.protected": "Diário (protegido)",
   "setup.title": "✨ Configuração inicial",
   "setup.desc": "O repositório de backup ainda não foi inicializado.\n\nClique em Inicializar para criar um novo repositório Restic em seu disco do sistema. Esta é uma etapa única e leva apenas alguns segundos.",
   "setup.btn": "Inicializar",

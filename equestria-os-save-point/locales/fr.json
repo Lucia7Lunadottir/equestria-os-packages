@@ -22,6 +22,7 @@
   "tag.ondemand": "Manuel",
   "tag.restic": "Sauvegarde",
   "tag.snapshot": "Instantané",
+  "tag.protected": "Quotidien (protégé)",
   "setup.title": "✨ Configuration initiale",
   "setup.desc": "Le référentiel de sauvegarde n'a pas encore été initialisé.\n\nCliquez sur Initialiser pour créer un nouveau référentiel Restic sur votre lecteur système. Cette étape ne se fait qu'une seule fois et ne prend que quelques secondes.",
   "setup.btn": "Initialiser",

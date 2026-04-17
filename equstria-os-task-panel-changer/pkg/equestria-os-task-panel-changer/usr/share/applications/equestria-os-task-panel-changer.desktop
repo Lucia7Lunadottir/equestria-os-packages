@@ -28,6 +28,6 @@ Exec=equestria-os-task-panel-changer
 Icon=equestria-os-logo
 Terminal=false
 Type=Application
-Categories=Settings;DesktopSettings;Qt;
+Categories=X-EquestriaOS;Settings;DesktopSettings;Qt;
 StartupNotify=true
 StartupWMClass=equestria-os-task-panel-changer

@@ -6,12 +6,17 @@ from ui_services import Ui_ServicesManager, ServiceRow
 
 
 class ServiceData:
-    def __init__(self, name, unit_file_state=""):
+    def __init__(self, name, unit_file_state="", scope="system"):
         self.name = name
+        self.scope = scope  # "system" or "user"
         self.description = ""
         self.active_state = "inactive"
         self.sub_state = "dead"
         self.unit_file_state = unit_file_state
+
+    @property
+    def uid(self):
+        return f"{self.scope}:{self.name}"
 
     @property
     def is_running(self):
@@ -28,22 +33,22 @@ class ServiceData:
         return self.name.removesuffix(".service")
 
 
-def _fetch_all_services():
+def _fetch_scope(scope):
+    """Fetch all services for the given scope ('system' or 'user')."""
+    flag = ["--user"] if scope == "user" else ["--system"]
     services = {}
 
-    # All service unit files (includes disabled, static, masked, generated)
     r1 = subprocess.run(
-        ["systemctl", "list-unit-files", "--type=service", "--no-pager", "--no-legend"],
+        ["systemctl"] + flag + ["list-unit-files", "--type=service", "--no-pager", "--no-legend"],
         capture_output=True, text=True
     )
     for line in r1.stdout.splitlines():
         parts = line.split()
         if len(parts) >= 2 and parts[0].endswith(".service"):
-            services[parts[0]] = ServiceData(name=parts[0], unit_file_state=parts[1])
+            services[parts[0]] = ServiceData(name=parts[0], unit_file_state=parts[1], scope=scope)
 
-    # All loaded units with runtime state and description
     r2 = subprocess.run(
-        ["systemctl", "list-units", "--all", "--type=service", "--no-pager", "--no-legend", "--full"],
+        ["systemctl"] + flag + ["list-units", "--all", "--type=service", "--no-pager", "--no-legend", "--full"],
         capture_output=True, text=True
     )
     for line in r2.stdout.splitlines():
@@ -51,7 +56,6 @@ def _fetch_all_services():
         if not line:
             continue
 
-        # Some systemd versions prefix lines with a status glyph (● ✗ ▷ ○)
         tokens = line.split(None, 5)
         if not tokens:
             continue
@@ -77,18 +81,26 @@ def _fetch_all_services():
             if desc:
                 services[name].description = desc
         else:
-            svc = ServiceData(name=name, unit_file_state="transient")
+            svc = ServiceData(name=name, unit_file_state="transient", scope=scope)
             svc.active_state = active
             svc.sub_state = sub
             svc.description = desc
             services[name] = svc
 
-    return sorted(services.values(), key=lambda s: s.name)
+    return services
 
 
-def _refresh_single(svc_name):
+def _fetch_all_services():
+    system = _fetch_scope("system")
+    user = _fetch_scope("user")
+    all_svcs = list(system.values()) + list(user.values())
+    return sorted(all_svcs, key=lambda s: (s.scope, s.name))
+
+
+def _refresh_single(svc_name, scope="system"):
+    flag = ["--user"] if scope == "user" else ["--system"]
     r = subprocess.run(
-        ["systemctl", "show", svc_name, "--no-pager",
+        ["systemctl"] + flag + ["show", svc_name, "--no-pager",
          "--property=Description,ActiveState,SubState,UnitFileState"],
         capture_output=True, text=True
     )
@@ -159,6 +171,10 @@ LANGS = {
 
     "search.ph":  {"en": "Search services...", "ru": "Поиск сервисов...", "de": "Dienste suchen...", "fr": "Rechercher...", "es": "Buscar servicios...", "pt": "Buscar serviços...", "pl": "Szukaj usług...", "uk": "Пошук сервісів...", "zh": "搜索服务...", "ja": "サービスを検索..."},
     "loading":    {"en": "Loading services...", "ru": "Загрузка сервисов...", "de": "Lade Dienste...", "fr": "Chargement...", "es": "Cargando...", "pt": "Carregando...", "pl": "Ładowanie usług...", "uk": "Завантаження...", "zh": "正在加载服务...", "ja": "読み込み中..."},
+
+    "scope.all":    {"en": "All Scopes",  "ru": "Все",                    "de": "Alle",        "fr": "Tous",         "es": "Todos",    "pt": "Todos",    "pl": "Wszystkie",   "uk": "Всі",             "zh": "全部范围", "ja": "すべて"},
+    "scope.system": {"en": "System",      "ru": "Системные",              "de": "System",      "fr": "Système",      "es": "Sistema",  "pt": "Sistema",  "pl": "Systemowe",   "uk": "Системні",        "zh": "系统",     "ja": "システム"},
+    "scope.user":   {"en": "User",        "ru": "Пользовательские",       "de": "Benutzer",    "fr": "Utilisateur",  "es": "Usuario",  "pt": "Usuário",  "pl": "Użytkownika", "uk": "Користувачеві",   "zh": "用户",     "ja": "ユーザー"},
 }
 
 
@@ -237,11 +253,14 @@ class ServicesApp(QMainWindow, Ui_ServicesManager):
             "tip.disable_btn":   self.t("tip.disable_btn"),
             "tip.start_btn":     self.t("tip.start_btn"),
             "tip.stop_btn":      self.t("tip.stop_btn"),
+            "scope.system":      self.t("scope.system"),
+            "scope.user":        self.t("scope.user"),
         }
 
     def setup_logic(self):
         self.search_field.textChanged.connect(self.apply_filters)
         self.category_dropdown.currentTextChanged.connect(self.apply_filters)
+        self.scope_dropdown.currentTextChanged.connect(self.apply_filters)
         self.btn_confirm_cancel.clicked.connect(self.modal_overlay.hide)
         self.btn_confirm_ok.clicked.connect(self.execute_action)
 
@@ -284,6 +303,13 @@ class ServicesApp(QMainWindow, Ui_ServicesManager):
         ])
         self.category_dropdown.blockSignals(False)
 
+        self.scope_dropdown.blockSignals(True)
+        self.scope_dropdown.clear()
+        self.scope_dropdown.addItems([
+            self.t("scope.all"), self.t("scope.system"), self.t("scope.user"),
+        ])
+        self.scope_dropdown.blockSignals(False)
+
         labels = self._row_labels()
         for row in self._rows.values():
             row.update_labels(labels)
@@ -310,17 +336,25 @@ class ServicesApp(QMainWindow, Ui_ServicesManager):
         for svc in self.all_services:
             row = ServiceRow(svc, labels, self._confirm_start_stop, self._confirm_enable_disable)
             self.list_layout.addWidget(row)
-            self._rows[svc.name] = row
+            self._rows[svc.uid] = row
 
         self.apply_filters()
 
     def apply_filters(self):
         query = self.search_field.text().lower()
         cat = self.category_dropdown.currentText()
+        scope_filter = self.scope_dropdown.currentText()
 
-        for svc_name, row in self._rows.items():
+        for svc_uid, row in self._rows.items():
             svc = row.svc_data
             text_ok = not query or query in svc.name.lower() or query in svc.description.lower()
+
+            if scope_filter == self.t("scope.system"):
+                scope_ok = svc.scope == "system"
+            elif scope_filter == self.t("scope.user"):
+                scope_ok = svc.scope == "user"
+            else:
+                scope_ok = True
 
             if cat == self.t("cat.all"):
                 cat_ok = True
@@ -337,7 +371,7 @@ class ServicesApp(QMainWindow, Ui_ServicesManager):
             else:
                 cat_ok = True
 
-            row.setVisible(text_ok and cat_ok)
+            row.setVisible(text_ok and scope_ok and cat_ok)
 
     def _confirm_start_stop(self, svc):
         action = "stop" if svc.active_state == "active" else "start"
@@ -365,26 +399,30 @@ class ServicesApp(QMainWindow, Ui_ServicesManager):
         self.btn_confirm_ok.hide()
         self.btn_confirm_cancel.hide()
 
-        cmd = ["pkexec", "systemctl", action, svc.name]
+        if svc.scope == "user":
+            cmd = ["systemctl", "--user", action, svc.name]
+        else:
+            cmd = ["pkexec", "systemctl", action, svc.name]
 
         def _run():
             proc = subprocess.run(cmd, capture_output=True)
-            self.action_finished.emit(proc.returncode == 0, svc.name)
+            self.action_finished.emit(proc.returncode == 0, svc.uid)
 
         threading.Thread(target=_run, daemon=True).start()
 
-    def on_action_finished(self, success, svc_name):
+    def on_action_finished(self, success, svc_uid):
         self.modal_overlay.hide()
         self.btn_confirm_ok.show()
         self.btn_confirm_cancel.show()
         if success:
-            self._refresh_service_async(svc_name)
+            self._refresh_service_async(svc_uid)
 
-    def _refresh_service_async(self, svc_name):
+    def _refresh_service_async(self, svc_uid):
         def _run():
-            props = _refresh_single(svc_name)
+            scope, _, svc_name = svc_uid.partition(":")
+            props = _refresh_single(svc_name, scope)
             for svc in self.all_services:
-                if svc.name == svc_name:
+                if svc.uid == svc_uid:
                     if "ActiveState" in props:
                         svc.active_state = props["ActiveState"]
                     if "SubState" in props:
@@ -394,13 +432,13 @@ class ServicesApp(QMainWindow, Ui_ServicesManager):
                     if props.get("Description"):
                         svc.description = props["Description"]
                     break
-            self.row_updated.emit(svc_name)
+            self.row_updated.emit(svc_uid)
 
         threading.Thread(target=_run, daemon=True).start()
 
-    def _on_row_updated(self, svc_name):
-        if svc_name in self._rows:
-            self._rows[svc_name].refresh(self._row_labels())
+    def _on_row_updated(self, svc_uid):
+        if svc_uid in self._rows:
+            self._rows[svc_uid].refresh(self._row_labels())
             self.apply_filters()
 
 

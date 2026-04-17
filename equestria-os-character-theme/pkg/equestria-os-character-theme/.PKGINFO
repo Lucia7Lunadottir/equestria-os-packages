@@ -3,12 +3,12 @@
 pkgname = equestria-os-character-theme
 pkgbase = equestria-os-character-theme
 xdata = pkgtype=pkg
-pkgver = 2.0.3-5
+pkgver = 2.0.3-6
 pkgdesc = Customizing the visual style and characters of Equestria OS
 url = https://github.com/Lucia7Lunadottir
-builddate = 1775799818
+builddate = 1776446445
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 24897884
+size = 24897898
 arch = x86_64
 license = GPL
 depend = python-pyqt6

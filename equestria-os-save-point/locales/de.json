@@ -22,6 +22,7 @@
   "tag.ondemand": "Manuell",
   "tag.restic": "Sicherung",
   "tag.snapshot": "Abbild",
+  "tag.protected": "Täglich (geschützt)",
   "setup.title": "✨ Erstmalige Einrichtung",
   "setup.desc": "Das Sicherungs-Repository wurde noch nicht initialisiert.\n\nKlicken Sie auf Initialisieren, um ein neues Restic-Repository auf Ihrem Systemlaufwerk zu erstellen. Dies ist ein einmaliger Schritt und dauert nur wenige Sekunden.",
   "setup.btn": "Initialisieren",

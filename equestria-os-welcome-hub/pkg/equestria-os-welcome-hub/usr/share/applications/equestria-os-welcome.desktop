@@ -27,6 +27,6 @@ Exec=equestria-welcome
 Icon=equestria-os-welcome-hub
 Terminal=false
 Type=Application
-Categories=System;Utility;Qt;
+Categories=X-EquestriaOS;System;Utility;Qt;
 StartupNotify=true
 StartupWMClass=equestria-welcome-hub

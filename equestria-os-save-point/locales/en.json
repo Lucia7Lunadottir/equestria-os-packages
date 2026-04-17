@@ -22,6 +22,7 @@
   "tag.ondemand": "On-demand",
   "tag.restic": "Backup",
   "tag.snapshot": "Snapshot",
+  "tag.protected": "Daily (protected)",
   "setup.title": "✨ First Run Setup",
   "setup.desc": "The backup repository has not been initialised yet.\n\nClick Initialise to create a new Restic repository on your system drive. This is a one-time step and takes only a few seconds.",
   "setup.btn": "Initialise",

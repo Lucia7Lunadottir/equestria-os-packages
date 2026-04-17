@@ -90,7 +90,11 @@ class ServiceRow(QFrame):
         svc = self.svc_data
 
         self.lbl_display.setText(svc.display_name)
-        self.lbl_tech.setText(svc.name)
+        if svc.scope == "user":
+            scope_tag = labels.get("scope.user", "User")
+            self.lbl_tech.setText(f"{svc.name}  [{scope_tag}]")
+        else:
+            self.lbl_tech.setText(svc.name)
 
         # Dot state
         if svc.active_state == "failed":
@@ -185,11 +189,16 @@ class Ui_ServicesManager:
         self.search_field.setObjectName("SearchField")
         self.search_field.setPlaceholderText("Search services...")
 
+        self.scope_dropdown = QComboBox()
+        self.scope_dropdown.setObjectName("CategoryDropdown")
+        self.scope_dropdown.setFixedWidth(160)
+
         self.category_dropdown = QComboBox()
         self.category_dropdown.setObjectName("CategoryDropdown")
         self.category_dropdown.setFixedWidth(190)
 
         filter_box.addWidget(self.search_field, 1)
+        filter_box.addWidget(self.scope_dropdown)
         filter_box.addWidget(self.category_dropdown)
         self.main_layout.addLayout(filter_box)
 

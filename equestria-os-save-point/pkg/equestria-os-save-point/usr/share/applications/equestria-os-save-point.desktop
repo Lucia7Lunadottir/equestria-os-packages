@@ -27,6 +27,6 @@ Exec=equestria-os-save-point
 Icon=equestria-os-save-point
 Terminal=false
 Type=Application
-Categories=Settings;System;Qt;
+Categories=X-EquestriaOS;Settings;System;Qt;
 StartupNotify=true
 StartupWMClass=equestria-os-save-point
