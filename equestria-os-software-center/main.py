@@ -69,30 +69,6 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.setup_logic()
         self.update_ui_texts()
 
-        self.loader = AppStoreLoader()
-        self.loader.finished.connect(self.on_store_loaded)
-        self.loader.start()
-
-        if shutil.which("flatpak") and os.path.exists(FLATPAK_APPSTREAM):
-            self.flatpak_loader = FlatpakLoader()
-            self.flatpak_loader.finished.connect(self.on_flatpak_loaded)
-            self.flatpak_loader.start()
-
-        self._aur_popular_thread = AURPopularLoader()
-        self._aur_popular_thread.finished.connect(self._on_aur_popular_loaded)
-        self._aur_popular_thread.start()
-
-        self._aur_upgradable_loader = AURUpgradableLoader()
-        self._aur_upgradable_loader.finished.connect(self._on_aur_upgradable_loaded)
-        self._aur_upgradable_loader.start()
-
-        self._flatpak_watcher = QFileSystemWatcher()
-        flatpak_dir = os.path.dirname(FLATPAK_APPSTREAM)
-        if os.path.exists(flatpak_dir):
-            self._flatpak_watcher.addPath(flatpak_dir)
-        self._flatpak_watcher.directoryChanged.connect(self._on_flatpak_dir_changed)
-
-        # Убираем старый init_pacman_databases_if_needed() и запуск лоадеров отсюда
         if self.needs_pacman_init():
             self.run_pacman_init()
         else:

@@ -25,6 +25,6 @@ Comment[zh]=创建和编辑 .desktop 快捷方式文件
 Exec=/ПРОПИШИ/ЗДЕСЬ/ПОЛНЫЙ/ПУТЬ/desktop_editor_ui.py
 # Укажи полный абсолютный путь к иконке
 Icon=/ПРОПИШИ/ЗДЕСЬ/ПОЛНЫЙ/ПУТЬ/desktop-editor-ui.png
-Categories=Utility;System;Settings;
+Categories=X-EquestriaOS;Utility;System;Settings;
 Terminal=false
 StartupWMClass=desktop-editor-ui

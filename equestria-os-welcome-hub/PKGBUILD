@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-welcome-hub
 pkgver=2.3.0
-pkgrel=6
+pkgrel=7
 pkgdesc="The official Equestria OS Welcome Center and Community Portal"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"

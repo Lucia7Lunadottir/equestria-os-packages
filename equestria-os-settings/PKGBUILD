@@ -1,0 +1,72 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-settings
+pkgver=1.0.0
+pkgrel=2
+pkgdesc="Unified settings panel for Equestria OS — all system tools in one place"
+arch=('x86_64')
+url="https://github.com/Lucia7Lunadottir"
+license=('GPL')
+depends=('python-pyqt6')
+optdepends=(
+    'equestria-os-disk-manager: disk management module'
+    'equestria-os-package-manager: package removal module'
+    'equestria-os-proton-starter: Proton/Wine settings module'
+    'pg-rankmirrors: mirror ranking module'
+    'pg-update: auto-update notification settings'
+    'equestria-os-services-manager: systemd service management module'
+    'equestria-os-save-point: system snapshot management module'
+    'equestria-os-task-panel-changer: taskbar style module'
+    'equestria-os-tutorial: interactive OS tour module'
+    'equestria-os-character-theme: character theme switcher module'
+    'equestria-os-software-center: software installation module'
+    'equestria-os-swap-manager: swap and memory pressure management module'
+    'plasma-workspace: Open KDE System Settings button'
+)
+
+package() {
+    local _lib="$pkgdir/usr/lib/$pkgname"
+    install -dm755 "$_lib"
+
+    # Core Python files
+    for f in main.py app.py base_module.py style.qss \
+              equestria_cyrillic.ttf equestria-os-settings.png; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    # Modules
+    install -dm755 "$_lib/modules"
+    for f in "$startdir"/modules/*.py; do
+        install -Dm644 "$f" "$_lib/modules/$(basename $f)"
+    done
+
+    # Locales
+    install -dm755 "$_lib/locales"
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$_lib/locales/$(basename $f)"
+    done
+
+    # Icons
+    install -dm755 "$_lib/icons"
+    for f in "$startdir"/icons/*; do
+        install -Dm644 "$f" "$_lib/icons/$(basename $f)"
+    done
+
+    # /usr/bin wrapper
+    install -dm755 "$pkgdir/usr/bin"
+    cat > "$pkgdir/usr/bin/$pkgname" << 'WRAPPER'
+#!/bin/bash
+cd /usr/lib/equestria-os-settings/
+exec python3 main.py "$@"
+WRAPPER
+    chmod 755 "$pkgdir/usr/bin/$pkgname"
+
+    # Desktop entry
+    install -Dm644 "$startdir/$pkgname.desktop" \
+        "$pkgdir/usr/share/applications/$pkgname.desktop"
+
+    # Icon
+    install -Dm644 "$startdir/$pkgname.png" \
+        "$pkgdir/usr/share/pixmaps/$pkgname.png"
+
+}

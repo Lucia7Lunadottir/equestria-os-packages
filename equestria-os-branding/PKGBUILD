@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-branding
 pkgver=1.3.0
-pkgrel=2
+pkgrel=3
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -72,4 +72,10 @@ package() {
             install -Dm644 "$startdir/pixmaps/$f" "$pkgdir/usr/share/pixmaps/$f"
         fi
     done
+
+    # 8. App submenu — groups all Equestria OS tools under one entry in the app menu
+    install -Dm644 "$startdir/equestria-os.directory" \
+        "$pkgdir/usr/share/desktop-directories/equestria-os.directory"
+    install -Dm644 "$startdir/equestria-os.menu" \
+        "$pkgdir/etc/xdg/menus/applications-merged/equestria-os.menu"
 }

@@ -2,7 +2,7 @@
 
 pkgname=desktop-editor-ui
 pkgver=1.0.0
-pkgrel=4
+pkgrel=5
 pkgdesc="Утилита для быстрого создания и редактирования .desktop файлов"
 arch=('any')
 depends=('python-pyqt6')

@@ -27,6 +27,6 @@ Exec=equestria-os-package-manager
 Icon=equestria-os-package-manager
 Terminal=false
 Type=Application
-Categories=Settings;System;PackageManager;Qt;
+Categories=X-EquestriaOS;Settings;System;PackageManager;Qt;
 StartupNotify=true
 StartupWMClass=equestria-os-package-manager

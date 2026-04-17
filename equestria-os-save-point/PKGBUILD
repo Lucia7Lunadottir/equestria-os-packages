@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-save-point
-pkgver=1.1.0
-pkgrel=7
+pkgver=1.2.0
+pkgrel=2
 pkgdesc="Equestria OS Save Point — system snapshot manager (Btrfs/Restic/Timeshift)"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"
