@@ -3,12 +3,12 @@
 pkgname = equestria-os-settings
 pkgbase = equestria-os-settings
 xdata = pkgtype=pkg
-pkgver = 1.0.0-4
+pkgver = 1.0.0-5
 pkgdesc = Unified settings panel for Equestria OS — all system tools in one place
 url = https://github.com/Lucia7Lunadottir
-builddate = 1776447515
+builddate = 1776448992
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 284376
+size = 284562
 arch = x86_64
 license = GPL
 depend = python-pyqt6

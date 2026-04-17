@@ -294,7 +294,9 @@ class SettingsWindow(QMainWindow):
         if os.path.exists(qss_path):
             with open(qss_path, encoding="utf-8") as f:
                 qss = f.read().replace("{{BASE_PATH}}", base_path.replace("\\", "/").replace(" ", "%20"))
-            self.setStyleSheet(qss)
+            # Apply at application level so the cascade reaches all descendants
+            # including widgets inside QScrollArea / QStackedWidget in inline modules.
+            QApplication.instance().setStyleSheet(qss)
 
         # --- Discover modules ---
         self._modules: list[BaseModule] = self._discover_modules()

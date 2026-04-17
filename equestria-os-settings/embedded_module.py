@@ -36,7 +36,7 @@ import os
 import sys
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QLabel, QPushButton, QSizePolicy, QWidget
+from PyQt6.QtWidgets import QCheckBox, QLabel, QPushButton, QSizePolicy, QWidget
 
 from base_module import BaseModule
 
@@ -130,6 +130,11 @@ class EmbeddedAppModule(BaseModule):
         # it directly to the window widget instead.
         self._apply_embedded_style()
 
+        # Ensure all QCheckBox widgets in the embedded app use the settings
+        # app's custom SVG checkmark icons.  Appending same-specificity rules
+        # after the app's own stylesheet means they win via cascade order.
+        self._inject_checkmark_icons()
+
         # Remove the embedded app's own language selector so it doesn't
         # duplicate the language buttons already in the settings header.
         self._hide_lang_ui()
@@ -183,6 +188,66 @@ class EmbeddedAppModule(BaseModule):
             self._win.setStyleSheet(raw)
         except OSError:
             pass
+
+    # ── Checkmark icon injection ──────────────────────────────────────────────
+
+    def _inject_checkmark_icons(self) -> None:
+        """
+        Append custom SVG checkmark rules to the embedded app's stylesheet so
+        all QCheckBox widgets use the settings app's icon set.
+
+        Strategy: for each QCheckBox found in the embedded window, generate
+        rules with the SAME CSS specificity as any existing indicator rules
+        (e.g. QCheckBox#Name::indicator) but placed LATER in the stylesheet.
+        In Qt QSS, equal-specificity rules resolve by source order — the later
+        rule wins.  This overrides patterns like ``image: url(none)`` without
+        needing !important (unsupported in Qt QSS).
+        """
+        settings_dir = os.path.dirname(os.path.abspath(__file__))
+        icons_dir = os.path.join(settings_dir, "icons")
+        cb_u  = os.path.join(icons_dir, "cb_unchecked.svg")
+        cb_uh = os.path.join(icons_dir, "cb_unchecked_hover.svg")
+        cb_c  = os.path.join(icons_dir, "cb_checked.svg")
+
+        if not os.path.exists(cb_c):
+            return
+
+        def _q(p: str) -> str:
+            return p.replace("\\", "/").replace(" ", "%20")
+
+        u, uh, c = _q(cb_u), _q(cb_uh), _q(cb_c)
+
+        extra_parts: list[str] = []
+        seen: set[str] = set()
+
+        for cb in self._win.findChildren(QCheckBox):
+            name = cb.objectName()
+            selector = f"QCheckBox#{name}" if name else "QCheckBox"
+            if selector in seen:
+                continue
+            seen.add(selector)
+            extra_parts.append(f"""
+{selector}::indicator {{
+    width: 18px; height: 18px;
+    image: url({u});
+    background-color: transparent;
+    border: none;
+}}
+{selector}::indicator:hover {{
+    image: url({uh});
+    background-color: transparent;
+    border: none;
+}}
+{selector}::indicator:checked {{
+    image: url({c});
+    background-color: transparent;
+    border: none;
+}}""")
+
+        if not extra_parts:
+            return
+
+        self._win.setStyleSheet(self._win.styleSheet() + "\n" + "\n".join(extra_parts))
 
     # ── Language UI hiding ────────────────────────────────────────────────────
 
