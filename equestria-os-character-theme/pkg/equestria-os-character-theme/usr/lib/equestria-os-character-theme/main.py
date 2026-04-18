@@ -84,7 +84,9 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             # Если это дефолтный файл/папка есть в системе, копируем его
             if os.path.exists(src):
                 if os.path.isdir(src):
-                    shutil.copytree(src, dst, dirs_exist_ok=True)
+                    # Копируем только если папки ещё нет — иначе блокируем UI
+                    if not os.path.exists(dst):
+                        shutil.copytree(src, dst, dirs_exist_ok=True)
                 else:
                     # Если файла у пользователя еще нет, копируем
                     if not os.path.exists(dst):
@@ -120,7 +122,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
     def detect_kde_dark_mode(self):
         # Читаем конфигурацию KDE, чтобы понять, какая тема сейчас активна
         try:
-            res = subprocess.run(["kreadconfig6", "--file", "kdeglobals", "--group", "Colors:Window", "--key", "BackgroundNormal"], capture_output=True, text=True)
+            res = subprocess.run(["kreadconfig6", "--file", "kdeglobals", "--group", "Colors:Window", "--key", "BackgroundNormal"], capture_output=True, text=True, timeout=3)
             if res.stdout.strip():
                 r, g, b = map(int, res.stdout.strip().split(','))
                 # Вычисляем яркость: если фон темный, значит включена темная тема

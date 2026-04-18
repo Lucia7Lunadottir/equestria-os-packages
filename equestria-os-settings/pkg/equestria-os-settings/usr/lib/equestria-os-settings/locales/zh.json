@@ -2,11 +2,9 @@
   "app.title": "⚙ Equestria OS 设置",
   "header.kde_btn": "打开 KDE 系统设置 ↗",
   "welcome.hint": "从侧边栏选择一个部分",
-
   "category.system": "系统",
   "category.software": "软件",
   "category.appearance": "外观",
-
   "module.auto_update.name": "自动更新",
   "module.auto_update.desc": "配置自动更新通知",
   "module.mirrors.name": "镜像管理",
@@ -21,8 +19,8 @@
   "module.software_center.desc": "安装推荐的应用程序",
   "module.packages.name": "软件包管理",
   "module.packages.desc": "查看和删除已安装的软件包",
-  "module.proton.name": "Proton / Wine",
-  "module.proton.desc": "Windows 应用程序兼容性设置",
+  "module.proton.name": "Windows 游戏与软件",
+  "module.proton.desc": "在 Linux 上运行 Windows 游戏和程序",
   "module.character_theme.name": "角色主题",
   "module.character_theme.desc": "颜色、壁纸和 Konsole 主题",
   "module.task_panel.name": "任务栏",
@@ -31,13 +29,11 @@
   "module.tutorial.desc": "Equestria OS 交互式导览",
   "module.swap_manager.name": "交换空间管理器",
   "module.swap_manager.desc": "交换文件和内存压力设置",
-
   "launch.open_btn": "打开 {0} ↗",
   "launch.not_installed": "未安装",
   "launch.install_hint": "安装 {0} 以使用此模块",
   "launch.install_btn": "安装",
   "launch.status_loading": "加载状态…",
-
   "auto_update.enable": "启用更新通知",
   "auto_update.interval_label": "检查间隔：",
   "auto_update.interval_30min": "每30分钟",
@@ -55,15 +51,12 @@
   "auto_update.checking": "检查中…",
   "auto_update.status_active": "定时器：活跃",
   "auto_update.status_inactive": "定时器：未活跃",
-
   "mirrors.current": "当前镜像",
   "mirrors.country_label": "国家代码：",
   "mirrors.rank_btn": "排列镜像",
   "mirrors.open_btn": "打开镜像管理器 ↗",
-
   "proton.defaults_title": "所有应用的默认设置",
-  "proton.open_btn": "打开 Proton Starter ↗",
-
+  "proton.open_btn": "打开 Windows 应用启动器 ↗",
   "cleaner.section_title": "缓存清理",
   "cleaner.group_apps": "应用前缀",
   "cleaner.group_global": "全局 GPU 缓存",
@@ -86,5 +79,9 @@
   "cleaner.msg_error_title": "错误",
   "cleaner.msg_confirm_shaders": "清除 \"{0}\" 的着色器缓存？\n大小：{1}",
   "cleaner.msg_confirm_prefix": "删除 \"{0}\" 的整个 Wine 前缀？\n\n此操作无法撤销。",
-  "cleaner.msg_confirm_mesa": "清除所有 Mesa/GPU 着色器缓存目录？\n\n游戏将在下次启动时重建着色器。"
+  "cleaner.msg_confirm_mesa": "清除所有 Mesa/GPU 着色器缓存目录？\n\n游戏将在下次启动时重建着色器。",
+  "proton.cb_dxvk": "DXVK — DirectX → Vulkan（大多数游戏需要）",
+  "proton.cb_vkd3d": "VKD3D-Proton — DirectX 12 支持",
+  "proton.cb_esync": "Esync — 更好的性能",
+  "proton.cb_fsync": "Fsync — 最佳性能（Linux 5.16+）"
 }

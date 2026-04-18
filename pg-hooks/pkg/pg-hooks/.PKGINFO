@@ -6,8 +6,8 @@ xdata = pkgtype=pkg
 pkgver = 1.0.0-1
 pkgdesc = Pacman hooks for Equestria OS — maintains distro branding after system updates
 url = https://psyche-games.com
-builddate = 1772144125
-packager = Unknown Packager
+builddate = 1776468195
+packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 3673
 arch = any
 license = GPL3

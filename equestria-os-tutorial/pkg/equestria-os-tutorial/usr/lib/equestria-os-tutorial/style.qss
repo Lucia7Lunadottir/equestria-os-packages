@@ -136,19 +136,15 @@ QCheckBox#AutostartCheckbox:hover {
     color: rgb(205, 214, 244);
 }
 QCheckBox#AutostartCheckbox::indicator {
-    width: 16px;
-    height: 16px;
-    border: 1px solid rgb(69, 71, 90);
-    border-radius: 4px;
-    background-color: transparent;
-}
-QCheckBox#AutostartCheckbox::indicator:checked {
-    background-color: rgb(166, 227, 161);
-    border-color: rgb(166, 227, 161);
-    image: url(none);
+    width: 18px;
+    height: 18px;
+    image: url({{BASE_PATH}}/assets/cb_unchecked.svg);
 }
 QCheckBox#AutostartCheckbox::indicator:hover {
-    border-color: rgb(137, 180, 250);
+    image: url({{BASE_PATH}}/assets/cb_unchecked_hover.svg);
+}
+QCheckBox#AutostartCheckbox::indicator:checked {
+    image: url({{BASE_PATH}}/assets/cb_checked.svg);
 }
 
 /* Точки прогресса */

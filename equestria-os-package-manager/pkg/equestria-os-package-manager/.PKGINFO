@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 2.2.1-6
 pkgdesc = Official Equestria OS Package Manager (Uninstall and Manage)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1776446442
+builddate = 1776468177
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 3557280
 arch = x86_64

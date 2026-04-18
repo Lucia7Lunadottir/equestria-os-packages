@@ -417,6 +417,8 @@ class TutorialApp(QMainWindow):
             return
         with open(qss_path, "r", encoding="utf-8") as f:
             css = f.read()
+        base = self.base_path.replace("\\", "/").replace(" ", "%20")
+        css = css.replace("{{BASE_PATH}}", base)
         # QSS всегда побеждает setFont(), поэтому инжектируем шрифт прямо в CSS
         if self.custom_font_family != "sans-serif":
             f = self.custom_font_family

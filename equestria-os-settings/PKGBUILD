@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-settings
-pkgver=1.0.0
-pkgrel=5
+pkgver=1.1.0
+pkgrel=1
 pkgdesc="Unified settings panel for Equestria OS — all system tools in one place"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"
@@ -29,7 +29,7 @@ package() {
     install -dm755 "$_lib"
 
     # Core Python files
-    for f in main.py app.py base_module.py style.qss \
+    for f in main.py app.py base_module.py embedded_module.py style.qss \
               equestria_cyrillic.ttf equestria-os-settings.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
@@ -37,19 +37,19 @@ package() {
     # Modules
     install -dm755 "$_lib/modules"
     for f in "$startdir"/modules/*.py; do
-        install -Dm644 "$f" "$_lib/modules/$(basename $f)"
+        install -Dm644 "$f" "$_lib/modules/$(basename "$f")"
     done
 
     # Locales
     install -dm755 "$_lib/locales"
     for f in "$startdir"/locales/*.json; do
-        install -Dm644 "$f" "$_lib/locales/$(basename $f)"
+        install -Dm644 "$f" "$_lib/locales/$(basename "$f")"
     done
 
     # Icons
     install -dm755 "$_lib/icons"
     for f in "$startdir"/icons/*; do
-        install -Dm644 "$f" "$_lib/icons/$(basename $f)"
+        install -Dm644 "$f" "$_lib/icons/$(basename "$f")"
     done
 
     # /usr/bin wrapper

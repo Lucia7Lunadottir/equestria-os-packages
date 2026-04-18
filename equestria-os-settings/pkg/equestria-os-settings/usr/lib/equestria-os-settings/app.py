@@ -69,17 +69,35 @@ class SidebarDelegate(QStyledItemDelegate):
             icon = index.data(Qt.ItemDataRole.UserRole + 2) or ""
             text = index.data(Qt.ItemDataRole.DisplayRole) or ""
 
-            icon_rect = option.rect.adjusted(16, 0, 0, 0)
-            painter.drawText(icon_rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
-                             f"{icon}  {text}")
+            full_text = f"{icon}  {text}"
+            icon_rect = option.rect.adjusted(16, 6, -8, -6)
+            painter.drawText(
+                icon_rect,
+                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+                | Qt.TextFlag.TextWordWrap,
+                full_text,
+            )
 
         painter.restore()
 
     def sizeHint(self, option, index):
+        from PyQt6.QtCore import QSize, QRect
         item_type = index.data(Qt.ItemDataRole.UserRole + 1)
         if item_type == _ITEM_TYPE_CATEGORY:
-            return __import__('PyQt6.QtCore', fromlist=['QSize']).QSize(220, 30)
-        return __import__('PyQt6.QtCore', fromlist=['QSize']).QSize(220, 40)
+            return QSize(220, 30)
+        icon = index.data(Qt.ItemDataRole.UserRole + 2) or ""
+        text = index.data(Qt.ItemDataRole.DisplayRole) or ""
+        full_text = f"{icon}  {text}"
+        font = QFont(option.font)
+        font.setPointSize(11)
+        from PyQt6.QtGui import QFontMetrics
+        fm = QFontMetrics(font)
+        # Available width: sidebar width minus left padding (16) and right margin (8)
+        avail_w = 220 - 16 - 8
+        br = fm.boundingRect(QRect(0, 0, avail_w, 0),
+                             Qt.AlignmentFlag.AlignLeft | Qt.TextFlag.TextWordWrap,
+                             full_text)
+        return QSize(220, max(40, br.height() + 16))
 
 
 # ---------------------------------------------------------------------------
@@ -290,13 +308,12 @@ class SettingsWindow(QMainWindow):
         self.current_lang = self._detect_lang()
 
         # --- Load QSS ---
+        self._qss = ""
         qss_path = os.path.join(base_path, "style.qss")
         if os.path.exists(qss_path):
             with open(qss_path, encoding="utf-8") as f:
-                qss = f.read().replace("{{BASE_PATH}}", base_path.replace("\\", "/").replace(" ", "%20"))
-            # Apply at application level so the cascade reaches all descendants
-            # including widgets inside QScrollArea / QStackedWidget in inline modules.
-            QApplication.instance().setStyleSheet(qss)
+                self._qss = f.read().replace("{{BASE_PATH}}", base_path.replace("\\", "/").replace(" ", "%20"))
+            self.setStyleSheet(self._qss)
 
         # --- Discover modules ---
         self._modules: list[BaseModule] = self._discover_modules()
@@ -432,7 +449,8 @@ class SettingsWindow(QMainWindow):
     def _build_sidebar(self) -> QWidget:
         container = QWidget()
         container.setObjectName("Sidebar")
-        container.setFixedWidth(220)
+        container.setMinimumWidth(160)
+        container.setMaximumWidth(400)
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
@@ -508,6 +526,21 @@ class SettingsWindow(QMainWindow):
         # Build or retrieve cached widget
         if module.module_id not in self._widget_map:
             widget = module.get_widget()
+            # For inline (non-embedded) modules, force QStyleSheetStyle on
+            # the root widget AND every descendant.  Setting the stylesheet
+            # only on the root is not enough: Kvantum intercepts QPushButton,
+            # QComboBox, QLineEdit rendering even when a parent has a
+            # stylesheet.  Setting it directly on each child widget forces Qt
+            # to create a per-widget QStyleSheetStyle, which always wins over
+            # the application-level Kvantum QStyle.
+            # Widgets that already have their own stylesheet (e.g. a QComboBox
+            # with hand-written inline styles) are left untouched.
+            from embedded_module import EmbeddedAppModule
+            if self._qss and not isinstance(module, EmbeddedAppModule):
+                widget.setStyleSheet(self._qss)
+                for child in widget.findChildren(QWidget):
+                    if not child.styleSheet():
+                        child.setStyleSheet(self._qss)
             self._stack.addWidget(widget)
             self._widget_map[module.module_id] = widget
 

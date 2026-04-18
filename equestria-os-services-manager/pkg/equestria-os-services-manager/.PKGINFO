@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 2.2.0-2
 pkgdesc = Official Equestria OS Service Manager (Enable, Disable, Start, Stop)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1776446439
+builddate = 1776468183
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 3506348
 arch = x86_64

@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 20260407-1
 pkgdesc = Digital trust keys for Equestria OS
 url = https://github.com/Lucia7Lunadottir
-builddate = 1775615518
+builddate = 1776468175
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 2334
 arch = any

@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 1.1.0-7
 pkgdesc = GUI tool for managing disks: mount, fstab, permissions, labels, format
 url = https://github.com/Lucia7Lunadottir
-builddate = 1776446431
+builddate = 1776468173
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 3506781
 arch = x86_64

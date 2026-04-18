@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-tutorial
-pkgver=1.4.0
-pkgrel=7
+pkgver=1.4.1
+pkgrel=1
 pkgdesc="Interactive tour for new Equestria OS users"
 arch=('x86_64')
 url="https://github.com/Lucia7Lunadottir"

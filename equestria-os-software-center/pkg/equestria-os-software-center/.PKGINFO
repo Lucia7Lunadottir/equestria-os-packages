@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 1.3.2-12
 pkgdesc = Центр программного обеспечения для Equestria OS
 url = https://github.com/Lucia7Lunadottir
-builddate = 1776446424
+builddate = 1776468186
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 461579
 arch = x86_64

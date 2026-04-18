@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 1.0.0-5
 pkgdesc = Утилита для быстрого создания и редактирования .desktop файлов
 url = 
-builddate = 1776446467
+builddate = 1776468167
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 385694
 arch = any

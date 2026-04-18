@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 1.0.0-7
 pkgdesc = Native GUI Git credential interceptor for Equestria OS (fixes Unity Git errors)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1775799748
+builddate = 1776468174
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 362730
 arch = x86_64
