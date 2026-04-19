@@ -1,0 +1,4 @@
+*.run
+src/
+pkg/
+*.pkg.tar.zst

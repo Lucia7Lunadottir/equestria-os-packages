@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team <your@email.here>
 
 pkgname=pg-gpu-sync
-pkgver=2.0.0
+pkgver=2.1.0
 pkgrel=1
 pkgdesc='NVIDIA GPU driver manager with boot-time detection and KDE compositor config (Equestria OS)'
 arch=('any')
@@ -13,7 +13,7 @@ optdepends=(
     'linux-headers: required for DKMS with linux kernel'
     'linux-lts-headers: required for DKMS with linux-lts kernel'
     'nvidia-open-dkms: open kernel modules for Turing+ GPUs'
-    'nvidia-dkms: proprietary kernel modules for Maxwell/Pascal/Volta GPUs'
+    'equestria-nvidia-dkms: proprietary kernel modules for Maxwell/Pascal/Volta GPUs'
     'nvidia-utils: userspace libraries and tools'
     'nvidia-settings: GUI settings panel'
 )

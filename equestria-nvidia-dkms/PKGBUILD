@@ -1,0 +1,98 @@
+# Maintainer: Equestria OS Team
+#
+# Proprietary NVIDIA kernel modules (DKMS) for Maxwell / Pascal / Volta GPUs.
+#
+# nvidia-open-dkms does NOT support pre-Turing architectures — GP10X / GM10X
+# are compiled out (RMCFG_CHIP_GP10X = 0) since Arch dropped proprietary
+# nvidia-dkms at driver 580. This package restores that support.
+#
+# Compatible with: nvidia-utils (same version) from official Arch repos.
+# Conflicts with:  nvidia-open-dkms / nvidia-open / nvidia-open-lts
+#                  (they support Turing+ only)
+#
+# Supported GPUs:
+#   GTX 10xx (Pascal / GP10x)    ← GTX 1060, 1070, 1080, Titan X
+#   GTX 9xx / 750 (Maxwell / GM) ← GTX 950, 960, 970, 980
+#   Titan V / Quadro GV (Volta)  ← GV100
+#   And all Turing+ as fallback  ← though nvidia-open-dkms is preferred there
+
+pkgname=equestria-nvidia-dkms
+pkgver=595.58.03
+pkgrel=1
+pkgdesc='Proprietary NVIDIA kernel modules (DKMS) for Maxwell/Pascal/Volta — Equestria OS'
+arch=('x86_64')
+url='https://www.nvidia.com'
+license=('LicenseRef-NVIDIA-proprietary')
+depends=('dkms' "nvidia-utils=${pkgver}" 'libglvnd')
+optdepends=('linux-headers: build modules for linux kernel'
+            'linux-lts-headers: build modules for linux-lts kernel')
+conflicts=('nvidia-open-dkms' 'nvidia-open' 'nvidia-open-lts'
+           'nvidia-dkms' 'nvidia' 'nvidia-lts')
+provides=('NVIDIA-MODULE' 'nvidia-dkms')
+install=equestria-nvidia-dkms.install
+
+_pkg="NVIDIA-Linux-x86_64-${pkgver}"
+source=("https://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/${_pkg}.run")
+sha256sums=('SKIP')
+noextract=("${_pkg}.run")
+
+prepare() {
+    # NVIDIA .run uses unquoted $0 in tail internally — breaks on paths with spaces.
+    # Work around by copying to /tmp (no spaces), extracting there, then copying back.
+    local _tmpdir="/tmp/equestria-nvidia-build"
+    rm -rf "$_tmpdir"
+    mkdir -p "$_tmpdir"
+    cp "${srcdir}/${_pkg}.run" "$_tmpdir/${_pkg}.run"
+    sh "$_tmpdir/${_pkg}.run" --extract-only --target "$_tmpdir/${_pkg}"
+    cp -a "$_tmpdir/${_pkg}" "${srcdir}/${_pkg}"
+    rm -rf "$_tmpdir"
+
+    # Substitute the real version into the .install script
+    sed -i "s/NVIDIA_DKMS_VER/${pkgver}/g" \
+        "${startdir}/equestria-nvidia-dkms.install"
+}
+
+package() {
+    local _src="${srcdir}/${_pkg}"
+    local _dkmsdir="${pkgdir}/usr/src/nvidia-${pkgver}"
+
+    # ── Kernel module source for DKMS ─────────────────────────
+    install -dm755 "${_dkmsdir}"
+    cp -a "${_src}/kernel/." "${_dkmsdir}/"
+
+    # ── dkms.conf ─────────────────────────────────────────────
+    # The proprietary driver Makefile uses SYSSRC= for the kernel tree.
+    # All modules are built in the root of kernel/ (no subdirectories).
+    cat > "${_dkmsdir}/dkms.conf" <<DKMSEOF
+PACKAGE_NAME="nvidia"
+PACKAGE_VERSION="${pkgver}"
+
+BUILT_MODULE_NAME[0]="nvidia"
+BUILT_MODULE_LOCATION[0]=""
+DEST_MODULE_LOCATION[0]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[1]="nvidia-modeset"
+BUILT_MODULE_LOCATION[1]=""
+DEST_MODULE_LOCATION[1]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[2]="nvidia-uvm"
+BUILT_MODULE_LOCATION[2]=""
+DEST_MODULE_LOCATION[2]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[3]="nvidia-drm"
+BUILT_MODULE_LOCATION[3]=""
+DEST_MODULE_LOCATION[3]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[4]="nvidia-peermem"
+BUILT_MODULE_LOCATION[4]=""
+DEST_MODULE_LOCATION[4]="/kernel/drivers/video"
+
+MAKE[0]="make SYSSRC=\${kernel_source_dir} NV_EXCLUDE_BUILD_MODULES=''"
+CLEAN="make clean"
+AUTOINSTALL="yes"
+DKMSEOF
+
+    # ── License ───────────────────────────────────────────────
+    install -Dm644 "${_src}/LICENSE" \
+        "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

@@ -1,0 +1,13 @@
+post_install() {
+    dkms add -m nvidia -v 595.58.03 --rpm_safe_upgrade 2>/dev/null || true
+}
+
+post_upgrade() {
+    local old_ver="$2"
+    [ -n "$old_ver" ] && dkms remove -m nvidia -v "$old_ver" --all 2>/dev/null || true
+    dkms add -m nvidia -v 595.58.03 --rpm_safe_upgrade 2>/dev/null || true
+}
+
+pre_remove() {
+    dkms remove -m nvidia -v 595.58.03 --all 2>/dev/null || true
+}
