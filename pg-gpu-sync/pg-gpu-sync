@@ -108,6 +108,20 @@ SelectDriver() {
         return
     fi
 
+    # Auto mode fast path: if nvidia-lts is already installed and the GPU is supported
+    # by the standard proprietary driver (Maxwell through Blackwell), use it as-is.
+    # This avoids unnecessary package swaps that require internet during offline install.
+    if [ "$AUTO" = yes ] && IsInstalled "nvidia-lts"; then
+        case "$GPU_FAMILY" in
+            TU*|GA*|AD*|GB*|GN*)
+                DRIVER_TYPE="proprietary"; DRIVER_PKG="nvidia-lts"
+                DRIVER_UTILS_PKG="nvidia-utils"; GPU_GENERATION="modern"; return ;;
+            GM*|GP*|GV*)
+                DRIVER_TYPE="proprietary"; DRIVER_PKG="nvidia-lts"
+                DRIVER_UTILS_PKG="nvidia-utils"; GPU_GENERATION="legacy"; return ;;
+        esac
+    fi
+
     case "$GPU_FAMILY" in
         TU*|GA*|AD*|GB*|GN*)
             # Turing and newer → open-source kernel modules (GSP firmware)
@@ -143,7 +157,7 @@ SelectDriver() {
                 DRIVER_PKG="nvidia-open-dkms"
                 DRIVER_UTILS_PKG="nvidia-utils"
             elif [ "$AUTO" = yes ]; then
-                Note "No NVIDIA GPU detected — skipping NVIDIA driver setup."
+                Note "No NVIDIA GPU detected — will clean up NVIDIA packages."
                 DRIVER_TYPE="skip"
             else
                 DIE "No NVIDIA GPU detected.\n       Use --force to override, or --nouveau for the nouveau driver."
@@ -688,7 +702,31 @@ Main() {
     # 2. Choose the right driver
     SelectDriver
 
-    [ "$DRIVER_TYPE" = "skip" ] && { SaveGpuState; Info "Skipping NVIDIA driver installation."; exit 0; }
+    if [ "$DRIVER_TYPE" = "skip" ]; then
+        SaveGpuState
+        # On non-NVIDIA systems: remove leftover NVIDIA packages and clean mkinitcpio
+        if [ "$AUTO" = yes ] && [ "$DRY_RUN" = no ]; then
+            local nvidia_pkgs=(nvidia-lts nvidia-open-dkms nvidia-open nvidia-dkms nvidia-utils lib32-nvidia-utils nvidia-settings)
+            local to_remove=()
+            for p in "${nvidia_pkgs[@]}"; do IsInstalled "$p" && to_remove+=("$p"); done
+            if [ ${#to_remove[@]} -gt 0 ]; then
+                Info "No NVIDIA GPU — removing NVIDIA packages: ${to_remove[*]}"
+                pacman -Rns --noconfirm "${to_remove[@]}" 2>/dev/null || \
+                    Warn "Some NVIDIA packages could not be removed (dependency conflict). Skipping."
+            fi
+            local conf=/etc/mkinitcpio.conf
+            if [ -f "$conf" ] && grep -q "nvidia" "$conf"; then
+                Info "Removing NVIDIA modules from $conf"
+                sed -i 's/ nvidia nvidia_modeset nvidia_uvm nvidia_drm//g' "$conf"
+                sed -i 's/nvidia nvidia_modeset nvidia_uvm nvidia_drm //g' "$conf"
+                sed -i 's/\bnvidia\b//g; s/\bnvidia_modeset\b//g; s/\bnvidia_uvm\b//g; s/\bnvidia_drm\b//g' "$conf"
+                sed -i 's/MODULES=(  */MODULES=(/g; s/  *)/)/g; s/   */ /g' "$conf"
+                mkinitcpio -P 2>/dev/null || Warn "mkinitcpio reported issues."
+            fi
+        fi
+        Info "No NVIDIA GPU — driver setup complete."
+        exit 0
+    fi
 
     # Fast path in --auto mode: skip if GPU hasn't changed
     if [ "$AUTO" = yes ] && [ "$DRY_RUN" = no ]; then
