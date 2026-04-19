@@ -1,0 +1,22 @@
+{
+  "title": "🐴  Equestria OS — Mirror Manager",
+  "select_countries": "Select countries to search mirrors:",
+  "search_placeholder": "🔍 Search for a country...",
+  "selected_count": "Selected countries: {0}",
+  "current_mirrors": "Current mirrors:",
+  "loading": "Loading...",
+  "auto_update": "Auto-update mirrors (weekly)",
+  "btn_restore": "Restore backup",
+  "btn_apply": "✓ Apply",
+  "wait": "⏳ Please wait...",
+  "loading_countries": "⏳ Loading country list...",
+  "ranking": "⏳ Ranking mirrors (this may take a few minutes)...",
+  "restoring": "⏳ Restoring backup...",
+  "no_mirrors": "No mirrors configured.",
+  "unexpected_json": "Unexpected JSON format.",
+  "loaded_n_countries": "Loaded {0} countries.",
+  "mirrors_updated": "✓ Mirrors updated successfully!",
+  "backup_restored": "✓ Backup restored.",
+  "parse_error": "Done (could not parse backend response).",
+  "mirrors_count": "{0} mirrors"
+}

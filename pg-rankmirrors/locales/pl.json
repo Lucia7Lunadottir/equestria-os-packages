@@ -1,0 +1,22 @@
+{
+  "title": "🐴  Equestria OS — Menedżer serwerów lustrzanych",
+  "select_countries": "Wybierz kraje do wyszukiwania serwerów:",
+  "search_placeholder": "🔍 Szukaj kraju...",
+  "selected_count": "Wybrane kraje: {0}",
+  "current_mirrors": "Aktualne serwery lustrzane:",
+  "loading": "Ładowanie...",
+  "auto_update": "Automatyczna aktualizacja serwerów (co tydzień)",
+  "btn_restore": "Przywróć kopię zapasową",
+  "btn_apply": "✓ Zastosuj",
+  "wait": "⏳ Proszę czekać...",
+  "loading_countries": "⏳ Ładowanie listy krajów...",
+  "ranking": "⏳ Rankowanie serwerów (może to potrwać kilka minut)...",
+  "restoring": "⏳ Przywracanie kopii zapasowej...",
+  "no_mirrors": "Brak skonfigurowanych serwerów lustrzanych.",
+  "unexpected_json": "Nieoczekiwany format JSON.",
+  "loaded_n_countries": "Załadowano krajów: {0}.",
+  "mirrors_updated": "✓ Serwery lustrzane zaktualizowane pomyślnie!",
+  "backup_restored": "✓ Kopia zapasowa przywrócona.",
+  "parse_error": "Gotowe (nie można przetworzyć odpowiedzi backendu).",
+  "mirrors_count": "{0} serwerów"
+}

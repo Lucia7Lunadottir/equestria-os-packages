@@ -1,0 +1,22 @@
+{
+  "title": "🐴  Equestria OS — 镜像管理器",
+  "select_countries": "选择要搜索镜像的国家：",
+  "search_placeholder": "🔍 搜索国家...",
+  "selected_count": "已选国家：{0}",
+  "current_mirrors": "当前镜像：",
+  "loading": "加载中...",
+  "auto_update": "自动更新镜像（每周）",
+  "btn_restore": "恢复备份",
+  "btn_apply": "✓ 应用",
+  "wait": "⏳ 请稍候...",
+  "loading_countries": "⏳ 正在加载国家列表...",
+  "ranking": "⏳ 正在对镜像排名（可能需要几分钟）...",
+  "restoring": "⏳ 正在恢复备份...",
+  "no_mirrors": "未配置镜像。",
+  "unexpected_json": "意外的 JSON 格式。",
+  "loaded_n_countries": "已加载 {0} 个国家。",
+  "mirrors_updated": "✓ 镜像更新成功！",
+  "backup_restored": "✓ 备份已恢复。",
+  "parse_error": "完成（无法解析后端响应）。",
+  "mirrors_count": "{0} 个镜像"
+}

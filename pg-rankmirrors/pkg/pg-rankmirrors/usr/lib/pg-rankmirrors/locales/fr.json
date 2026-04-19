@@ -1,0 +1,22 @@
+{
+  "title": "🐴  Equestria OS — Gestionnaire de miroirs",
+  "select_countries": "Sélectionnez les pays pour rechercher des miroirs :",
+  "search_placeholder": "🔍 Rechercher un pays...",
+  "selected_count": "Pays sélectionnés : {0}",
+  "current_mirrors": "Miroirs actuels :",
+  "loading": "Chargement...",
+  "auto_update": "Mise à jour automatique des miroirs (hebdomadaire)",
+  "btn_restore": "Restaurer la sauvegarde",
+  "btn_apply": "✓ Appliquer",
+  "wait": "⏳ Veuillez patienter...",
+  "loading_countries": "⏳ Chargement de la liste des pays...",
+  "ranking": "⏳ Classement des miroirs (cela peut prendre quelques minutes)...",
+  "restoring": "⏳ Restauration de la sauvegarde...",
+  "no_mirrors": "Aucun miroir configuré.",
+  "unexpected_json": "Format JSON inattendu.",
+  "loaded_n_countries": "{0} pays chargés.",
+  "mirrors_updated": "✓ Miroirs mis à jour avec succès !",
+  "backup_restored": "✓ Sauvegarde restaurée.",
+  "parse_error": "Terminé (impossible d'analyser la réponse du backend).",
+  "mirrors_count": "{0} miroirs"
+}

@@ -1,0 +1,16 @@
+[
+  { "pkg": "pg-update",                      "icon": "🔄", "name_key": "pkg.pg_update.name",       "desc_key": "pkg.pg_update.desc" },
+  { "pkg": "pg-rankmirrors",                 "icon": "🌐", "name_key": "pkg.pg_rankmirrors.name",  "desc_key": "pkg.pg_rankmirrors.desc" },
+  { "pkg": "pg-hooks",                       "icon": "🔗", "name_key": "pkg.pg_hooks.name",        "desc_key": "pkg.pg_hooks.desc" },
+  { "pkg": "pg-gpu-sync",                    "icon": "🖥",  "name_key": "pkg.pg_gpu_sync.name",    "desc_key": "pkg.pg_gpu_sync.desc" },
+  { "pkg": "equestria-os-disk-manager",      "icon": "💾", "name_key": "pkg.disk_manager.name",    "desc_key": "pkg.disk_manager.desc" },
+  { "pkg": "equestria-os-save-point",        "icon": "💿", "name_key": "pkg.save_point.name",      "desc_key": "pkg.save_point.desc" },
+  { "pkg": "equestria-os-services-manager",  "icon": "⚙",  "name_key": "pkg.services.name",       "desc_key": "pkg.services.desc" },
+  { "pkg": "equestria-os-swap-manager",      "icon": "🧮", "name_key": "pkg.swap_manager.name",    "desc_key": "pkg.swap_manager.desc" },
+  { "pkg": "equestria-os-software-center",   "icon": "🏪", "name_key": "pkg.software_center.name", "desc_key": "pkg.software_center.desc" },
+  { "pkg": "equestria-os-package-manager",   "icon": "📦", "name_key": "pkg.package_manager.name", "desc_key": "pkg.package_manager.desc" },
+  { "pkg": "equestria-os-character-theme",   "icon": "🎨", "name_key": "pkg.character_theme.name", "desc_key": "pkg.character_theme.desc" },
+  { "pkg": "equestria-os-tutorial",          "icon": "📖", "name_key": "pkg.tutorial.name",        "desc_key": "pkg.tutorial.desc" },
+  { "pkg": "equestria-os-proton-starter",    "icon": "🎮", "name_key": "pkg.proton_exe.name",      "desc_key": "pkg.proton_exe.desc" },
+  { "pkg": "equestria-os-settings",         "icon": "⚙",  "name_key": "pkg.settings.name",        "desc_key": "pkg.settings.desc" }
+]

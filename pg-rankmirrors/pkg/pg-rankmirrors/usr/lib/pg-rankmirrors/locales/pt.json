@@ -1,0 +1,22 @@
+{
+  "title": "🐴  Equestria OS — Gerenciador de espelhos",
+  "select_countries": "Selecione países para pesquisar espelhos:",
+  "search_placeholder": "🔍 Pesquisar um país...",
+  "selected_count": "Países selecionados: {0}",
+  "current_mirrors": "Espelhos atuais:",
+  "loading": "Carregando...",
+  "auto_update": "Atualizar espelhos automaticamente (semanalmente)",
+  "btn_restore": "Restaurar backup",
+  "btn_apply": "✓ Aplicar",
+  "wait": "⏳ Aguarde...",
+  "loading_countries": "⏳ Carregando lista de países...",
+  "ranking": "⏳ Classificando espelhos (isso pode levar alguns minutos)...",
+  "restoring": "⏳ Restaurando backup...",
+  "no_mirrors": "Nenhum espelho configurado.",
+  "unexpected_json": "Formato JSON inesperado.",
+  "loaded_n_countries": "{0} países carregados.",
+  "mirrors_updated": "✓ Espelhos atualizados com sucesso!",
+  "backup_restored": "✓ Backup restaurado.",
+  "parse_error": "Concluído (não foi possível analisar a resposta do backend).",
+  "mirrors_count": "{0} espelhos"
+}

@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team <info@psyche-games.com>
 
 pkgname=pg-rankmirrors
-pkgver=2.1.0
+pkgver=2.1.1
 pkgrel=5
 pkgdesc='Equestria OS — Mirror manager with country selection'
 arch=('x86_64')
@@ -16,6 +16,12 @@ package() {
 
     for f in main.py ui_mirrors.py style.qss equestria_cyrillic.ttf EquestriaOS-Logo.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    # Locales
+    install -dm755 "$_lib/locales"
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$_lib/locales/$(basename "$f")"
     done
 
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/pg-rankmirrors" << 'EOF'

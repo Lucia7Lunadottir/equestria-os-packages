@@ -1,0 +1,22 @@
+{
+  "title": "🐴  Equestria OS — ミラーマネージャー",
+  "select_countries": "ミラーを検索する国を選択：",
+  "search_placeholder": "🔍 国を検索...",
+  "selected_count": "選択した国：{0}",
+  "current_mirrors": "現在のミラー：",
+  "loading": "読み込み中...",
+  "auto_update": "ミラーを自動更新（毎週）",
+  "btn_restore": "バックアップを復元",
+  "btn_apply": "✓ 適用",
+  "wait": "⏳ お待ちください...",
+  "loading_countries": "⏳ 国リストを読み込み中...",
+  "ranking": "⏳ ミラーをランク付け中（数分かかる場合があります）...",
+  "restoring": "⏳ バックアップを復元中...",
+  "no_mirrors": "ミラーが設定されていません。",
+  "unexpected_json": "予期しない JSON 形式。",
+  "loaded_n_countries": "{0} か国を読み込みました。",
+  "mirrors_updated": "✓ ミラーが正常に更新されました！",
+  "backup_restored": "✓ バックアップが復元されました。",
+  "parse_error": "完了（バックエンドの応答を解析できませんでした）。",
+  "mirrors_count": "{0} ミラー"
+}

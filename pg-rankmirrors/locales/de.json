@@ -1,0 +1,22 @@
+{
+  "title": "🐴  Equestria OS — Spiegelserver-Manager",
+  "select_countries": "Länder für die Spiegelsuche auswählen:",
+  "search_placeholder": "🔍 Land suchen...",
+  "selected_count": "Ausgewählte Länder: {0}",
+  "current_mirrors": "Aktuelle Spiegelserver:",
+  "loading": "Laden...",
+  "auto_update": "Spiegelserver automatisch aktualisieren (wöchentlich)",
+  "btn_restore": "Sicherung wiederherstellen",
+  "btn_apply": "✓ Anwenden",
+  "wait": "⏳ Bitte warten...",
+  "loading_countries": "⏳ Länderliste wird geladen...",
+  "ranking": "⏳ Spiegelserver werden bewertet (kann einige Minuten dauern)...",
+  "restoring": "⏳ Sicherung wird wiederhergestellt...",
+  "no_mirrors": "Keine Spiegelserver konfiguriert.",
+  "unexpected_json": "Unerwartetes JSON-Format.",
+  "loaded_n_countries": "{0} Länder geladen.",
+  "mirrors_updated": "✓ Spiegelserver erfolgreich aktualisiert!",
+  "backup_restored": "✓ Sicherung wiederhergestellt.",
+  "parse_error": "Fertig (Backend-Antwort konnte nicht geparst werden).",
+  "mirrors_count": "{0} Spiegelserver"
+}
