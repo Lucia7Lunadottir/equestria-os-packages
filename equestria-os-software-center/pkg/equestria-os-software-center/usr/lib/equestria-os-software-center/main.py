@@ -947,6 +947,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "echo '==> [1/2] Updating repositories...'; echo; "
             "pkexec pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
             "EXIT=${PIPESTATUS[0]}; "
+            # Mirror failure → re-rank and retry
             "if [ $EXIT -ne 0 ] && grep -qE "
             "'Operation too slow|failed to retrieve|не удалось получить' \"$LOG\"; then "
             "  echo; echo '==> Mirror failure detected. Re-ranking mirrors...'; "
@@ -954,7 +955,18 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "  [ -z \"$COUNTRY\" ] && COUNTRY='DE,US,FR,GB'; "
             "  pkexec pg-rankmirrors-backend rank \"$COUNTRY\" "
             "    && echo '==> Mirrors updated. Retrying...' || true; "
-            "  echo; pkexec pacman -Syu --noconfirm; "
+            "  echo; pkexec pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; EXIT=${PIPESTATUS[0]}; "
+            "fi; "
+            # Package conflict → remove conflicting package and retry
+            "if [ $EXIT -ne 0 ] && grep -q 'are in conflict' \"$LOG\"; then "
+            "  echo; echo '==> Package conflict detected. Resolving automatically...'; "
+            "  CONFLICT_PKGS=$(grep -oP '(?<=Remove )[^?]+' \"$LOG\" | tr -d ' ' | tr '\\n' ' '); "
+            "  if [ -n \"$CONFLICT_PKGS\" ]; then "
+            "    echo \"==> Removing conflicting packages: $CONFLICT_PKGS\"; "
+            "    pkexec pacman -Rdd --noconfirm $CONFLICT_PKGS; "
+            "    echo '==> Retrying update...'; echo; "
+            "    pkexec pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; EXIT=${PIPESTATUS[0]}; "
+            "  fi; "
             "fi; "
             # Step 2: AUR — each package individually so one broken dep can't block others
             "echo; echo '==> [2/2] Updating AUR packages...'; echo; "

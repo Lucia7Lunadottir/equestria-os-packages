@@ -70,7 +70,7 @@ class AskPassDialog(QDialog):
 
         if self._is_secret:
             self.btn_toggle = QPushButton("👁")
-            self.btn_toggle.setFixedWidth(36)
+            self.btn_toggle.setFixedWidth(46)
             self.btn_toggle.setCheckable(True)
             self.btn_toggle.setFocusPolicy(Qt.FocusPolicy.NoFocus)
             self.btn_toggle.setToolTip(t_str("askpass.show_password", "Show / Hide"))

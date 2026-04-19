@@ -5,8 +5,8 @@
   "category.system": "System",
   "category.software": "Oprogramowanie",
   "category.appearance": "Wygląd",
-  "module.auto_update.name": "Automatyczne aktualizacje",
-  "module.auto_update.desc": "Konfiguracja automatycznych powiadomień o aktualizacjach",
+  "module.auto_update.name": "Aktualizacje",
+  "module.auto_update.desc": "Powiadomienia o aktualizacjach i automatyczna instalacja",
   "module.mirrors.name": "Serwery lustrzane",
   "module.mirrors.desc": "Wybierz i uszereguj serwery lustrzane pacman według kraju",
   "module.services.name": "Usługi",
@@ -122,5 +122,14 @@
   "proton.cb_esync": "Esync — lepsza wydajność",
   "proton.cb_fsync": "Fsync — najlepsza wydajność (Linux 5.16+)",
   "pkg.settings.name": "Panel ustawień",
-  "pkg.settings.desc": "Ujednolicony panel sterowania wszystkimi narzędziami Equestria OS"
+  "pkg.settings.desc": "Ujednolicony panel sterowania wszystkimi narzędziami Equestria OS",
+  "auto_update.notif_title": "Powiadomienia o aktualizacjach",
+  "auto_update.warning_title": "⚠  Automatyczna instalacja jest ryzykowna",
+  "auto_update.warning_text": "Arch Linux nie jest przeznaczony do w pełni automatycznych aktualizacji. Aktualizacje jądra wymagają restartu. Pakiety AUR mogą nie zbudować się bez interwencji. Niektóre aktualizacje wymagają ręcznych kroków. Włączaj tylko jeśli rozumiesz ryzyko.",
+  "auto_update.auto_install_title": "Automatyczna instalacja aktualizacji",
+  "auto_update.auto_install": "Instaluj aktualizacje automatycznie",
+  "auto_update.auto_install_hint": "Uruchamia pacman -Syu według harmonogramu przez timer systemd użytkownika. Wymaga aktywnego agenta polkit (Plasma zapewnia go automatycznie).",
+  "auto_update.status_autoinst_on": "Auto-install: aktywny",
+  "auto_update.status_autoinst_off": "Auto-install: wyłączony",
+  "auto_update.update_system": "Aktualizuj system"
 }

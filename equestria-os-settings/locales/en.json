@@ -5,8 +5,8 @@
   "category.system": "System",
   "category.software": "Software",
   "category.appearance": "Appearance",
-  "module.auto_update.name": "Auto-Update",
-  "module.auto_update.desc": "Configure automatic update notifications",
+  "module.auto_update.name": "Updates",
+  "module.auto_update.desc": "Update notifications and auto-install settings",
   "module.mirrors.name": "Mirror Manager",
   "module.mirrors.desc": "Select and rank pacman mirrors by country",
   "module.services.name": "Services",
@@ -122,5 +122,14 @@
   "proton.cb_esync": "Esync — better performance",
   "proton.cb_fsync": "Fsync — best performance (Linux 5.16+)",
   "pkg.settings.name": "Settings Panel",
-  "pkg.settings.desc": "Unified control panel for all Equestria OS tools"
+  "pkg.settings.desc": "Unified control panel for all Equestria OS tools",
+  "auto_update.notif_title": "Update Notifications",
+  "auto_update.warning_title": "⚠  Auto-installing updates is risky",
+  "auto_update.warning_text": "Arch Linux is not designed for fully automatic updates. Kernel updates require a reboot. AUR packages may fail to build without user interaction. Some updates require manual steps (conffiles, DB schemas, etc.). Only enable this if you understand the risks and regularly check your system.",
+  "auto_update.auto_install_title": "Automatic Update Installation",
+  "auto_update.auto_install": "Install updates automatically",
+  "auto_update.auto_install_hint": "Runs pacman -Syu on schedule via a systemd user timer. Requires an active polkit agent (Plasma provides one automatically).",
+  "auto_update.status_autoinst_on": "Auto-install: active",
+  "auto_update.status_autoinst_off": "Auto-install: disabled",
+  "auto_update.update_system": "Update system"
 }

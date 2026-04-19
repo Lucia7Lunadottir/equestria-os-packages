@@ -5,8 +5,8 @@
   "category.system": "System",
   "category.software": "Software",
   "category.appearance": "Erscheinungsbild",
-  "module.auto_update.name": "Auto-Update",
-  "module.auto_update.desc": "Automatische Update-Benachrichtigungen konfigurieren",
+  "module.auto_update.name": "Updates",
+  "module.auto_update.desc": "Update-Benachrichtigungen und automatische Installation",
   "module.mirrors.name": "Spiegelserver",
   "module.mirrors.desc": "Pacman-Spiegelserver nach Land auswählen und sortieren",
   "module.services.name": "Dienste",
@@ -122,5 +122,14 @@
   "proton.cb_esync": "Esync — bessere Leistung",
   "proton.cb_fsync": "Fsync — beste Leistung (Linux 5.16+)",
   "pkg.settings.name": "Einstellungsbereich",
-  "pkg.settings.desc": "Einheitliche Systemsteuerung für alle Equestria-OS-Werkzeuge"
+  "pkg.settings.desc": "Einheitliche Systemsteuerung für alle Equestria-OS-Werkzeuge",
+  "auto_update.notif_title": "Update-Benachrichtigungen",
+  "auto_update.warning_title": "⚠  Automatische Updates sind riskant",
+  "auto_update.warning_text": "Arch Linux ist nicht für vollautomatische Updates ausgelegt. Kernel-Updates erfordern einen Neustart. AUR-Pakete können ohne Benutzereingriff fehlschlagen. Manche Updates erfordern manuelle Schritte. Nur aktivieren, wenn Sie die Risiken verstehen.",
+  "auto_update.auto_install_title": "Automatische Update-Installation",
+  "auto_update.auto_install": "Updates automatisch installieren",
+  "auto_update.auto_install_hint": "Führt pacman -Syu nach Zeitplan über einen systemd-Benutzer-Timer aus. Erfordert einen aktiven Polkit-Agent (Plasma stellt einen bereit).",
+  "auto_update.status_autoinst_on": "Auto-Install: aktiv",
+  "auto_update.status_autoinst_off": "Auto-Install: deaktiviert",
+  "auto_update.update_system": "System aktualisieren"
 }

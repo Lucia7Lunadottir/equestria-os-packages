@@ -5,8 +5,8 @@
   "category.system": "Система",
   "category.software": "Программы",
   "category.appearance": "Оформление",
-  "module.auto_update.name": "Авто-обновление",
-  "module.auto_update.desc": "Настройка автоматических уведомлений об обновлениях",
+  "module.auto_update.name": "Обновления",
+  "module.auto_update.desc": "Уведомления об обновлениях и настройки авто-обновления",
   "module.mirrors.name": "Зеркала",
   "module.mirrors.desc": "Выбор и ранжирование зеркал pacman по стране",
   "module.services.name": "Службы",
@@ -122,5 +122,14 @@
   "proton.cb_esync": "Esync — лучшая производительность",
   "proton.cb_fsync": "Fsync — максимальная производительность (Linux 5.16+)",
   "pkg.settings.name": "Панель настроек",
-  "pkg.settings.desc": "Единая панель управления всеми инструментами Equestria OS"
+  "pkg.settings.desc": "Единая панель управления всеми инструментами Equestria OS",
+  "auto_update.notif_title": "Уведомления об обновлениях",
+  "auto_update.warning_title": "⚠  Авто-установка обновлений опасна",
+  "auto_update.warning_text": "Arch Linux не предназначен для полностью автоматических обновлений. Обновление ядра требует перезагрузки. Пакеты AUR могут не собраться без участия пользователя. Некоторые обновления требуют ручных действий (confile, схемы БД и т.д.). Включайте только если понимаете риски и регулярно проверяете систему.",
+  "auto_update.auto_install_title": "Авто-установка обновлений",
+  "auto_update.auto_install": "Устанавливать обновления автоматически",
+  "auto_update.auto_install_hint": "Запускает pacman -Syu по расписанию через системный таймер. Требует активного polkit-агента (Plasma предоставляет его автоматически).",
+  "auto_update.status_autoinst_on": "Авто-установка: активна",
+  "auto_update.status_autoinst_off": "Авто-установка: отключена",
+  "auto_update.update_system": "Обновить систему"
 }

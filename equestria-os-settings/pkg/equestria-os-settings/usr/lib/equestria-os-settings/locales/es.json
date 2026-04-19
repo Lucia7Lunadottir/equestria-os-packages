@@ -5,8 +5,8 @@
   "category.system": "Sistema",
   "category.software": "Software",
   "category.appearance": "Apariencia",
-  "module.auto_update.name": "Actualización automática",
-  "module.auto_update.desc": "Configurar notificaciones de actualización automática",
+  "module.auto_update.name": "Actualizaciones",
+  "module.auto_update.desc": "Notificaciones de actualizaciones e instalación automática",
   "module.mirrors.name": "Gestión de espejos",
   "module.mirrors.desc": "Seleccionar y clasificar espejos de pacman por país",
   "module.services.name": "Servicios",
@@ -122,5 +122,14 @@
   "proton.cb_esync": "Esync — mejor rendimiento",
   "proton.cb_fsync": "Fsync — máximo rendimiento (Linux 5.16+)",
   "pkg.settings.name": "Panel de ajustes",
-  "pkg.settings.desc": "Panel de control unificado para todas las herramientas de Equestria OS"
+  "pkg.settings.desc": "Panel de control unificado para todas las herramientas de Equestria OS",
+  "auto_update.notif_title": "Notificaciones de actualizaciones",
+  "auto_update.warning_title": "⚠  La instalación automática es arriesgada",
+  "auto_update.warning_text": "Arch Linux no está diseñado para actualizaciones completamente automáticas. Las actualizaciones del kernel requieren reinicio. Los paquetes AUR pueden fallar sin intervención. Algunas actualizaciones requieren pasos manuales. Actívalo solo si entiendes los riesgos.",
+  "auto_update.auto_install_title": "Instalación automática de actualizaciones",
+  "auto_update.auto_install": "Instalar actualizaciones automáticamente",
+  "auto_update.auto_install_hint": "Ejecuta pacman -Syu según programa mediante un temporizador systemd de usuario. Requiere un agente polkit activo (Plasma lo proporciona).",
+  "auto_update.status_autoinst_on": "Auto-install: activo",
+  "auto_update.status_autoinst_off": "Auto-install: desactivado",
+  "auto_update.update_system": "Actualizar el sistema"
 }

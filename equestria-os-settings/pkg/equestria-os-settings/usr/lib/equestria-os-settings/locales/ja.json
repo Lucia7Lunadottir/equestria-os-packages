@@ -5,8 +5,8 @@
   "category.system": "システム",
   "category.software": "ソフトウェア",
   "category.appearance": "外観",
-  "module.auto_update.name": "自動更新",
-  "module.auto_update.desc": "自動更新通知の設定",
+  "module.auto_update.name": "アップデート",
+  "module.auto_update.desc": "アップデート通知と自動インストール設定",
   "module.mirrors.name": "ミラー管理",
   "module.mirrors.desc": "国別にpacmanミラーを選択・並び替え",
   "module.services.name": "サービス",
@@ -122,5 +122,14 @@
   "proton.cb_esync": "Esync — パフォーマンス向上",
   "proton.cb_fsync": "Fsync — 最大パフォーマンス（Linux 5.16+）",
   "pkg.settings.name": "設定パネル",
-  "pkg.settings.desc": "Equestria OS のすべてのツールを統合したコントロールパネル"
+  "pkg.settings.desc": "Equestria OS のすべてのツールを統合したコントロールパネル",
+  "auto_update.notif_title": "アップデート通知",
+  "auto_update.warning_title": "⚠  自動インストールはリスクがあります",
+  "auto_update.warning_text": "Arch Linux は完全自動更新向けに設計されていません。カーネル更新には再起動が必要です。AUR パッケージはユーザー操作なしに失敗する場合があります。一部の更新は手動対応が必要です。リスクを理解した上でのみ有効にしてください。",
+  "auto_update.auto_install_title": "自動アップデートのインストール",
+  "auto_update.auto_install": "アップデートを自動的にインストール",
+  "auto_update.auto_install_hint": "systemd ユーザータイマーで pacman -Syu をスケジュール実行します。アクティブな polkit エージェントが必要です（Plasma は自動的に提供します）。",
+  "auto_update.status_autoinst_on": "自動インストール：有効",
+  "auto_update.status_autoinst_off": "自動インストール：無効",
+  "auto_update.update_system": "システムを更新"
 }
