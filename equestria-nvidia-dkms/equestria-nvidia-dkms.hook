@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = nvidia-utils
+
+[Action]
+Description = Updating proprietary NVIDIA kernel source (equestria-nvidia-dkms)...
+When = PostTransaction
+Exec = /usr/lib/equestria-nvidia-dkms/equestria-nvidia-dkms-update
+Depends = bash

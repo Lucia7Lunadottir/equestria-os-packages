@@ -1,0 +1,113 @@
+#!/bin/bash
+# ================================================================
+#  equestria-nvidia-dkms-update — Equestria OS
+#
+#  Вызывается:
+#    1. Pacman-хуком при обновлении nvidia-utils (авто)
+#    2. .install post_install при первой установке пакета
+#
+#  При обновлении nvidia-utils через pacman -Syu:
+#    → скачивает новый .run от NVIDIA
+#    → обновляет DKMS исходник
+#    → пересобирает модули ядра
+#
+#  Initramfs пересобирает pg-nvidia-hook (уже настроен).
+#  Используй --no-initramfs чтобы пропустить mkinitcpio
+#  (когда хук сделает это сам).
+# ================================================================
+
+set -euo pipefail
+
+NO_INITRAMFS=no
+[[ "${1:-}" == "--no-initramfs" ]] && NO_INITRAMFS=yes
+
+_GRN='\033[0;32m'; _YEL='\033[1;33m'; _RED='\033[0;31m'; _RST='\033[0m'
+Info() { echo -e "${_GRN}[equestria-nvidia-dkms]${_RST} $*"; }
+Warn() { echo -e "${_YEL}[equestria-nvidia-dkms]${_RST} WARNING: $*" >&2; }
+Die()  { echo -e "${_RED}[equestria-nvidia-dkms]${_RST} ERROR: $*" >&2; exit 1; }
+
+# ── Версия nvidia-utils (только что установленная) ────────────────
+NEW_VER=$(pacman -Q nvidia-utils 2>/dev/null | awk '{print $2}' | cut -d- -f1)
+[ -z "$NEW_VER" ] && Die "nvidia-utils не установлен."
+
+# ── Версия уже установленного DKMS исходника ─────────────────────
+OLD_VER=$(dkms status nvidia 2>/dev/null | grep -oP 'nvidia/\K[^,]+' | head -1 || true)
+
+if [ "$NEW_VER" = "$OLD_VER" ]; then
+    Info "Уже актуально (${NEW_VER}) — пропускаем."
+    exit 0
+fi
+
+Info "Обновление: ${OLD_VER:-нет} → ${NEW_VER}"
+
+# ── Скачать новый .run от NVIDIA ─────────────────────────────────
+TMPDIR=$(mktemp -d /tmp/equestria-nvidia-XXXXXX)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+RUN_URL="https://download.nvidia.com/XFree86/Linux-x86_64/${NEW_VER}/NVIDIA-Linux-x86_64-${NEW_VER}.run"
+RUN_FILE="$TMPDIR/NVIDIA-Linux-x86_64-${NEW_VER}.run"
+
+Info "Загрузка NVIDIA ${NEW_VER} (~400 МБ)..."
+if ! curl -fL --progress-bar "$RUN_URL" -o "$RUN_FILE"; then
+    Die "Не удалось скачать $RUN_URL"
+fi
+
+# ── Извлечь исходник ядра ─────────────────────────────────────────
+Info "Извлечение исходника..."
+sh "$RUN_FILE" --extract-only --target "$TMPDIR/src"
+
+# ── Установить новый DKMS исходник ───────────────────────────────
+DKMS_SRC="/usr/src/nvidia-${NEW_VER}"
+install -dm755 "$DKMS_SRC"
+cp -a "$TMPDIR/src/kernel/." "$DKMS_SRC/"
+
+cat > "$DKMS_SRC/dkms.conf" <<DKMSEOF
+PACKAGE_NAME="nvidia"
+PACKAGE_VERSION="${NEW_VER}"
+
+BUILT_MODULE_NAME[0]="nvidia"
+BUILT_MODULE_LOCATION[0]=""
+DEST_MODULE_LOCATION[0]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[1]="nvidia-modeset"
+BUILT_MODULE_LOCATION[1]=""
+DEST_MODULE_LOCATION[1]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[2]="nvidia-uvm"
+BUILT_MODULE_LOCATION[2]=""
+DEST_MODULE_LOCATION[2]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[3]="nvidia-drm"
+BUILT_MODULE_LOCATION[3]=""
+DEST_MODULE_LOCATION[3]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[4]="nvidia-peermem"
+BUILT_MODULE_LOCATION[4]=""
+DEST_MODULE_LOCATION[4]="/kernel/drivers/video"
+
+MAKE[0]="make SYSSRC=\${kernel_source_dir} NV_EXCLUDE_BUILD_MODULES=''"
+CLEAN="make clean"
+AUTOINSTALL="yes"
+DKMSEOF
+
+# ── Удалить старый DKMS исходник ─────────────────────────────────
+if [ -n "$OLD_VER" ]; then
+    Info "Удаление старой версии (${OLD_VER})..."
+    dkms remove -m nvidia -v "$OLD_VER" --all 2>/dev/null || true
+    rm -rf "/usr/src/nvidia-${OLD_VER}"
+fi
+
+# ── Собрать модули для всех установленных ядер ───────────────────
+Info "Добавление nvidia/${NEW_VER} в DKMS..."
+dkms add -m nvidia -v "$NEW_VER"
+
+Info "Сборка модулей ядра (займёт несколько минут)..."
+dkms install -m nvidia -v "$NEW_VER" --all
+
+# ── Пересобрать initramfs (если не делает хук) ───────────────────
+if [ "$NO_INITRAMFS" = no ]; then
+    Info "Пересборка initramfs..."
+    mkinitcpio -P
+fi
+
+Info "Готово. NVIDIA ${NEW_VER} установлен."
