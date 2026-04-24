@@ -3,12 +3,12 @@
 pkgname = pg-gpu-sync
 pkgbase = pg-gpu-sync
 xdata = pkgtype=pkg
-pkgver = 2.0.0-1
+pkgver = 2.1.0-1
 pkgdesc = NVIDIA GPU driver manager with boot-time detection and KDE compositor config (Equestria OS)
 url = https://psyche-games.com
-builddate = 1776599456
+builddate = 1776602399
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 29364
+size = 30329
 arch = any
 license = GPL3
 depend = bash
@@ -18,6 +18,6 @@ optdepend = dkms: required for DKMS driver packages
 optdepend = linux-headers: required for DKMS with linux kernel
 optdepend = linux-lts-headers: required for DKMS with linux-lts kernel
 optdepend = nvidia-open-dkms: open kernel modules for Turing+ GPUs
-optdepend = nvidia-dkms: proprietary kernel modules for Maxwell/Pascal/Volta GPUs
+optdepend = equestria-nvidia-dkms: proprietary kernel modules for Maxwell/Pascal/Volta GPUs
 optdepend = nvidia-utils: userspace libraries and tools
 optdepend = nvidia-settings: GUI settings panel

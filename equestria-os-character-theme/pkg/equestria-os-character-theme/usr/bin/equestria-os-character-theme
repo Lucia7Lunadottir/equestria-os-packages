@@ -1,3 +1,0 @@
-#!/bin/bash
-cd /usr/lib/equestria-os-character-theme/
-exec python3 main.py "$@"

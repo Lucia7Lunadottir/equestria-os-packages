@@ -1,3 +1,0 @@
-#!/bin/bash
-cd /usr/lib/equestria-os-git-askpass/
-exec python3 equestria-os-git-askpass.py "$@"

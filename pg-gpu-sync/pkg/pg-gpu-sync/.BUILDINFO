@@ -1,11 +1,11 @@
 format = 2
 pkgname = pg-gpu-sync
 pkgbase = pg-gpu-sync
-pkgver = 2.0.0-1
+pkgver = 2.1.0-1
 pkgarch = any
-pkgbuild_sha256sum = 9522e229fea47ae21ee54a6b2a6ea1c155cffba638f0a5da9def7e71dfa82068
+pkgbuild_sha256sum = c74d0de1c79e25e9f638263247a0fe0fa4ecf9c21b07c977306db1289f4926e1
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1776599456
+builddate = 1776602399
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/pg-gpu-sync
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/pg-gpu-sync
 buildtool = makepkg

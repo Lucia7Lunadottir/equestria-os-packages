@@ -108,20 +108,6 @@ SelectDriver() {
         return
     fi
 
-    # Auto mode fast path: if nvidia-lts is already installed and the GPU is supported
-    # by the standard proprietary driver (Maxwell through Blackwell), use it as-is.
-    # This avoids unnecessary package swaps that require internet during offline install.
-    if [ "$AUTO" = yes ] && IsInstalled "nvidia-lts"; then
-        case "$GPU_FAMILY" in
-            TU*|GA*|AD*|GB*|GN*)
-                DRIVER_TYPE="proprietary"; DRIVER_PKG="nvidia-lts"
-                DRIVER_UTILS_PKG="nvidia-utils"; GPU_GENERATION="modern"; return ;;
-            GM*|GP*|GV*)
-                DRIVER_TYPE="proprietary"; DRIVER_PKG="nvidia-lts"
-                DRIVER_UTILS_PKG="nvidia-utils"; GPU_GENERATION="legacy"; return ;;
-        esac
-    fi
-
     case "$GPU_FAMILY" in
         TU*|GA*|AD*|GB*|GN*)
             # Turing and newer → open-source kernel modules (GSP firmware)
@@ -131,12 +117,25 @@ SelectDriver() {
             GPU_GENERATION="modern"
             ;;
         GM*|GP*|GV*)
-            # Maxwell / Pascal / Volta → proprietary closed-source driver
-            # nvidia-open-dkms is UNSTABLE on pre-Turing — causes kernel panics
-            DRIVER_TYPE="proprietary"
-            DRIVER_PKG="nvidia-dkms"
-            DRIVER_UTILS_PKG="nvidia-utils"
+            # Maxwell / Pascal / Volta → proprietary closed-source driver required.
+            # nvidia-open-dkms does NOT support pre-Turing (GP10X/GM10X compiled out).
+            # Try: equestria-nvidia-dkms (Equestria repo) → nvidia-dkms (AUR/cache) → nouveau fallback.
             GPU_GENERATION="legacy"
+            if PkgAvailableInRepos "equestria-nvidia-dkms" || [ -n "$(FindCachedPkg equestria-nvidia-dkms)" ]; then
+                DRIVER_TYPE="proprietary"
+                DRIVER_PKG="equestria-nvidia-dkms"
+                DRIVER_UTILS_PKG="nvidia-utils"
+            elif PkgAvailableInRepos "nvidia-dkms" || [ -n "$(FindCachedPkg nvidia-dkms)" ]; then
+                DRIVER_TYPE="proprietary"
+                DRIVER_PKG="nvidia-dkms"
+                DRIVER_UTILS_PKG="nvidia-utils"
+            else
+                Warn "No proprietary NVIDIA driver available for $(FamilyName "$GPU_FAMILY") GPU."
+                Warn "  nvidia-open-dkms does NOT support this GPU architecture."
+                Warn "  Falling back to nouveau. Gaming performance will be limited."
+                Warn "  For full NVIDIA support, place equestria-nvidia-dkms pkg in $DRIVER_CACHE_DIR/"
+                DRIVER_TYPE="nouveau"
+            fi
             ;;
         GK*)
             DRIVER_TYPE="proprietary"
@@ -174,9 +173,9 @@ SelectDriver() {
                 DRIVER_PKG="nvidia-open"
                 Note "--no-dkms: using 'nvidia-open' instead of 'nvidia-open-dkms'."
                 ;;
-            nvidia-dkms)
+            nvidia-dkms|equestria-nvidia-dkms)
                 DRIVER_PKG="nvidia"
-                Note "--no-dkms: using 'nvidia' instead of 'nvidia-dkms'."
+                Note "--no-dkms: using 'nvidia' instead of '$DRIVER_PKG'."
                 ;;
             *)
                 Note "--no-dkms: ignored for $DRIVER_PKG (DKMS-only package)."
@@ -220,7 +219,7 @@ BuildPackageLists() {
 
         local rm_list=(
             nvidia-open-dkms nvidia-open nvidia-open-lts
-            nvidia-dkms nvidia nvidia-lts nvidia-utils
+            nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts nvidia-utils
             nvidia-470xx-dkms nvidia-470xx-utils
             nvidia-390xx-dkms nvidia-390xx-utils
             nvidia-settings
@@ -252,16 +251,19 @@ BuildPackageLists() {
         local rm_list=(xf86-video-nouveau vulkan-nouveau lib32-vulkan-nouveau)
         case "$DRIVER_PKG" in
             nvidia-open-dkms|nvidia-open|nvidia-open-lts)
-                rm_list+=(nvidia-dkms nvidia nvidia-lts nvidia-470xx-dkms nvidia-470xx-utils nvidia-390xx-dkms nvidia-390xx-utils)
+                rm_list+=(nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts nvidia-470xx-dkms nvidia-470xx-utils nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
-            nvidia-dkms|nvidia|nvidia-lts)
+            nvidia-dkms|nvidia|nvidia-lts|equestria-nvidia-dkms)
                 rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-470xx-dkms nvidia-470xx-utils nvidia-390xx-dkms nvidia-390xx-utils)
+                # Remove the other proprietary package if switching between them
+                [[ "$DRIVER_PKG" = "equestria-nvidia-dkms" ]] && rm_list+=(nvidia-dkms nvidia nvidia-lts)
+                [[ "$DRIVER_PKG" = "nvidia-dkms" ]] && rm_list+=(equestria-nvidia-dkms)
                 ;;
             nvidia-470xx-dkms)
-                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-dkms nvidia nvidia-lts nvidia-utils nvidia-390xx-dkms nvidia-390xx-utils)
+                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts nvidia-utils nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
             nvidia-390xx-dkms)
-                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-dkms nvidia nvidia-lts nvidia-utils nvidia-470xx-dkms nvidia-470xx-utils)
+                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts nvidia-utils nvidia-470xx-dkms nvidia-470xx-utils)
                 ;;
         esac
         for p in "${rm_list[@]}"; do
@@ -633,11 +635,16 @@ ShowHelp() {
         --show-gpu      Print detected GPU info and exit.
 
   GPU support:
-    Turing / Ampere / Ada / Blackwell  →  nvidia-open-dkms     (open, official repos)
-    Maxwell / Pascal / Volta           →  nvidia-dkms           (proprietary, official repos)
-    Kepler  (GTX 600/700, GT 7xxM)    →  nvidia-470xx-dkms    (offline cache / AUR)
-    Fermi   (GT 400/500, GT 5xxM)     →  nvidia-390xx-dkms    (offline cache / AUR)
+    Turing / Ampere / Ada / Blackwell  →  nvidia-open-dkms      (open, official repos)
+    Maxwell / Pascal / Volta           →  equestria-nvidia-dkms  (Equestria repo, proprietary)
+                                          nvidia-dkms            (AUR/cache fallback)
+                                          nouveau                (fallback if no pkg available)
+    Kepler  (GTX 600/700, GT 7xxM)    →  nvidia-470xx-dkms     (offline cache / AUR)
+    Fermi   (GT 400/500, GT 5xxM)     →  nvidia-390xx-dkms     (offline cache / AUR)
     Older                              →  nouveau
+
+  Note: nvidia-open-dkms does NOT support Maxwell/Pascal/Volta (pre-Turing).
+        For GTX 10xx/900/750 series, equestria-nvidia-dkms is required.
 
   Offline cache:
     Place pre-built .pkg.tar.zst files in:
@@ -706,7 +713,7 @@ Main() {
         SaveGpuState
         # On non-NVIDIA systems: remove leftover NVIDIA packages and clean mkinitcpio
         if [ "$AUTO" = yes ] && [ "$DRY_RUN" = no ]; then
-            local nvidia_pkgs=(nvidia-lts nvidia-open-dkms nvidia-open nvidia-dkms nvidia-utils lib32-nvidia-utils nvidia-settings)
+            local nvidia_pkgs=(nvidia-lts nvidia-open-dkms nvidia-open nvidia-dkms equestria-nvidia-dkms nvidia-utils lib32-nvidia-utils nvidia-settings)
             local to_remove=()
             for p in "${nvidia_pkgs[@]}"; do IsInstalled "$p" && to_remove+=("$p"); done
             if [ ${#to_remove[@]} -gt 0 ]; then

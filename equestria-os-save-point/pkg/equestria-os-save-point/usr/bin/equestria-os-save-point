@@ -1,3 +1,0 @@
-#!/bin/bash
-cd /usr/lib/equestria-os-save-point/
-exec python3 main.py "$@"

@@ -1,0 +1,3 @@
+#!/bin/bash
+cd /opt/equestria-os/desktop-editor-ui/
+exec python3 desktop_editor_ui.py "$@"

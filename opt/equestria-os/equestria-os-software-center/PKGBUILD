@@ -1,0 +1,36 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-software-center
+pkgver=1.3.3
+pkgrel=2
+pkgdesc="Центр программного обеспечения для Equestria OS"
+arch=('any')
+url="https://github.com/Lucia7Lunadottir"
+license=('GPL')
+depends=('pacman' 'yay' 'python-pyqt6')
+
+package() {
+    local _lib="$pkgdir/opt/equestria-os/$pkgname"
+    install -dm755 "$_lib"
+
+    for f in main.py models.py utils.py workers.py ui_software.py style.qss equestria_cyrillic.ttf EquestriaApps.csv EquestriaLocalizations.csv equestria-os-software-center.png; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    cp -a "$startdir/locales" "$_lib/"
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-software-center" << 'EOF'
+#!/bin/bash
+cd /opt/equestria-os/equestria-os-software-center/
+exec python3 main.py "$@"
+EOF
+
+    install -d "$pkgdir/usr/share/applications"
+    sed "s|^Exec=.*|Exec=equestria-os-software-center|" \
+        "$startdir/equestria-os-software-center.desktop" \
+        > "$pkgdir/usr/share/applications/equestria-os-software-center.desktop"
+    chmod 644 "$pkgdir/usr/share/applications/equestria-os-software-center.desktop"
+
+    install -Dm644 "$startdir/equestria-os-software-center.png" \
+        "$pkgdir/usr/share/pixmaps/equestria-os-software-center.png"
+}

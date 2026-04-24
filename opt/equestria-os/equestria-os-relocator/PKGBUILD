@@ -1,0 +1,41 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-relocator
+pkgver=1.0.0
+pkgrel=8
+pkgdesc="GUI tool to move files/folders and create symlinks at the original location"
+arch=('any')
+url="https://github.com/Lucia7Lunadottir"
+license=('GPL')
+depends=('polkit' 'python-pyqt6')
+optdepends=('kdesu: alternative privilege elevation')
+
+package() {
+    local _lib="$pkgdir/opt/equestria-os/$pkgname"
+    install -dm755 "$_lib"
+
+    for f in main.py backend.py app.py core.py privilege.py ui_relocator.py style.qss equestria_cyrillic.ttf equestria-os-relocator.png; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-relocator" << 'EOF'
+#!/bin/bash
+cd /opt/equestria-os/equestria-os-relocator/
+exec python3 main.py "$@"
+EOF
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-relocator-backend" << 'EOF'
+#!/bin/bash
+cd /opt/equestria-os/equestria-os-relocator/
+exec python3 backend.py "$@"
+EOF
+
+    install -Dm644 "$startdir/equestria-os-relocator.desktop" \
+        "$pkgdir/usr/share/applications/equestria-os-relocator.desktop"
+
+    install -Dm755 "$startdir/equestria-os-relocator-servicemenu.desktop" \
+        "$pkgdir/usr/share/kio/servicemenus/equestria-os-relocator-servicemenu.desktop"
+
+    install -Dm644 "$startdir/equestria-os-relocator.png" \
+        "$pkgdir/usr/share/pixmaps/equestria-os-relocator.png"
+}

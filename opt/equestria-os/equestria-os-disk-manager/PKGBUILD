@@ -1,0 +1,44 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-disk-manager
+pkgver=1.1.0
+pkgrel=8
+pkgdesc="GUI tool for managing disks: mount, fstab, permissions, labels, format"
+arch=('any')
+url="https://github.com/Lucia7Lunadottir"
+license=('GPL')
+depends=('polkit' 'python-pyqt6')
+optdepends=(
+    'kdesu: alternative privilege elevation'
+    'ntfs-3g: NTFS read/write support and ntfslabel'
+    'btrfs-progs: btrfs label and filesystem tools'
+    'exfatprogs: exFAT format and label support'
+    'dosfstools: FAT32 format and label support (mkfs.vfat, fatlabel)'
+)
+
+package() {
+    local _lib="$pkgdir/opt/equestria-os/$pkgname"
+    install -dm755 "$_lib"
+
+    for f in disk_app.py disk_backend.py core.py privilege.py style.qss equestria_cyrillic.ttf equestria-os-disk-manager.png; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-disk-manager" << 'EOF'
+#!/bin/bash
+cd /opt/equestria-os/equestria-os-disk-manager/
+exec python3 disk_app.py "$@"
+EOF
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-disk-backend" << 'EOF'
+#!/bin/bash
+cd /opt/equestria-os/equestria-os-disk-manager/
+exec python3 disk_backend.py "$@"
+EOF
+
+    install -Dm644 "$startdir/equestria-os-disk-manager.desktop" \
+        "$pkgdir/usr/share/applications/equestria-os-disk-manager.desktop"
+
+    install -Dm644 "$startdir/equestria-os-disk-manager.png" \
+        "$pkgdir/usr/share/pixmaps/equestria-os-disk-manager.png"
+}

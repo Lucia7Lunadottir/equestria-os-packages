@@ -1,0 +1,31 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-welcome-hub
+pkgver=2.3.0
+pkgrel=8
+pkgdesc="The official Equestria OS Welcome Center and Community Portal"
+arch=('any')
+url="https://github.com/Lucia7Lunadottir"
+license=('GPL')
+depends=('python-pyqt6' 'xdg-utils')
+
+package() {
+    local _lib="$pkgdir/opt/equestria-os/$pkgname"
+    install -dm755 "$_lib"
+
+    for f in welcome_hub.py ui_welcome.py style.qss equestria_cyrillic.ttf EquestriaOS-Logo.png; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-welcome" << 'EOF'
+#!/bin/bash
+cd /opt/equestria-os/equestria-os-welcome-hub/
+exec python3 welcome_hub.py "$@"
+EOF
+
+    install -Dm644 "$startdir/equestria-os-welcome.desktop" \
+        "$pkgdir/usr/share/applications/equestria-os-welcome.desktop"
+
+    install -Dm644 "$startdir/EquestriaOS-Logo.png" \
+        "$pkgdir/usr/share/pixmaps/equestria-os-welcome-hub.png"
+}

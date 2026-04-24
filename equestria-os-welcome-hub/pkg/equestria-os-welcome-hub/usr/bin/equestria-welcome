@@ -1,3 +1,0 @@
-#!/bin/bash
-cd /usr/lib/equestria-os-welcome-hub/
-exec python3 welcome_hub.py "$@"

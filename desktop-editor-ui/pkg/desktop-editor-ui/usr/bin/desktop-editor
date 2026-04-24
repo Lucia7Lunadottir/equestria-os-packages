@@ -1,3 +1,0 @@
-#!/bin/bash
-cd /usr/lib/desktop-editor-ui/
-exec python3 desktop_editor_ui.py "$@"

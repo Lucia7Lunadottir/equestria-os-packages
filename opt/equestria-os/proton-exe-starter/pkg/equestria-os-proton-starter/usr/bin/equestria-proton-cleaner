@@ -1,0 +1,3 @@
+#!/bin/bash
+cd /opt/equestria-os/equestria-proton-starter/
+exec python3 cleaner.py "$@"
