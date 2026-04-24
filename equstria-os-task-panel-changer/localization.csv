@@ -32,14 +32,14 @@ ui.btn_new,New,Новый,Neu,Nouveau,Nuevo,Novo,Nowy,Новий,新建,新規
 ui.btn_restore_all,Restore All,Сбросить всё,Alles zurücksetzen,Tout restaurer,Restaurar todo,Restaurar tudo,Przywróć wszystko,Відновити все,全部恢复,すべて復元
 ui.hide_icons,Hide icons,Скрыть значки,Symbole ausblenden,Masquer les icônes,Ocultar iconos,Ocultar ícones,Ukryj ikony,Сховати значки,隐藏图标,アイコンを隠す
 ui.btn_restore_default,Restore Default,По умолчанию,Standard,Par défaut,Por defecto,Padrão,Domyślny,За замовч.,恢复默认,デフォルト
-ui.dark_text,🌙 Dark text,🌙 Тёмный текст,🌙 Dunkler Text,🌙 Texte sombre,🌙 Texto oscuro,🌙 Texto escuro,🌙 Ciemny tekst,🌙 Темний текст,🌙 深色文字,🌙 ダークテキスト
-ui.light_text,☀️ Light text,☀️ Светлый текст,☀️ Heller Text,☀️ Texte clair,☀️ Texto claro,☀️ Texto claro,☀️ Jasny tekst,☀️ Світлий текст,☀️ 浅色文字,☀️ ライトテキスト
+ui.dark_panel,🌙 Dark,🌙 Тёмная,🌙 Dunkel,🌙 Sombre,🌙 Oscuro,🌙 Escuro,🌙 Ciemna,🌙 Темна,🌙 深色,🌙 ダーク
+ui.light_panel,☀️ Light,☀️ Светлая,☀️ Hell,☀️ Claire,☀️ Clara,☀️ Clara,☀️ Jasna,☀️ Світла,☀️ 浅色,☀️ ライト
 ui.ed_title_new,New Preset,Новый стиль,Neues Preset,Nouveau préréglage,Nuevo ajuste,Novo predefinição,Nowe ustawienie,Новий стиль,新建预设,新規プリセット
 ui.ed_title_edit,Edit: {0},Изменить: {0},Bearbeiten: {0},Éditer : {0},Editar: {0},Editar: {0},Edytuj: {0},Змінити: {0},编辑: {0},編集: {0}
 ui.ed_preset_id,Preset ID:,ID стиля:,Preset-ID:,ID de préréglage :,ID de ajuste:,ID do predefinição:,ID ustawień:,ID стилю:,预设 ID:,プリセット ID:
 ui.ed_name_label,Display Name:,Имя:,Anzeigename:,Nom d'affichage :,Nombre:,Nome:,Nazwa:,Ім'я:,显示名称:,表示名:
 ui.ed_desc_label,Description:,Описание:,Beschreibung:,Description :,Descripción:,Descrição:,Opis:,Опис:,描述:,説明:
-ui.ed_color_label,Panel Color:,Цвет панели:,Panelfarbe:,Couleur du panneau :,Color del panel:,Cor do painel:,Kolor panelu:,Колір панелі:,面板颜色:,パネルカラー:
+ui.ed_color_label,Panel Colors:,Цвета панели:,Panelfarben:,Couleurs du panneau :,Colores del panel:,Cores do painel:,Kolory panelu:,Кольори панелі:,面板颜色:,パネルカラー:
 ui.ed_panels_label,Panels:,Панели:,Panels:,Panneaux :,Paneles:,Painéis:,Panele:,Панелі:,面板:,パネル:
 ui.ed_add_panel_btn,+ Add Panel,+ Добавить панель,+ Panel hinzufügen,+ Ajouter un panneau,+ Añadir panel,+ Adicionar painel,+ Dodaj panel,+ Додати панель,+ 添加面板,+ パネルを追加
 ui.pr_position,Position:,Позиция:,Position:,Position :,Posición:,Posição:,Pozycja:,Позиція:,位置:,位置:
@@ -58,7 +58,7 @@ ui.pr_clock,Clock,Часы,Uhr,Horloge,Reloj,Relógio,Zegar,Годинник,时
 ui.pr_pager,Pager,Пейджер,Pager,Pager,Paginador,Paginador,Pager,Пейджер,分页器,ページャー
 ui.pr_monitor,Monitor,Монитор,Monitor,Moniteur,Monitor,Monitor,Monitor,Монітор,监视器,モニター
 ui.ed_opacity_label,Opacity:,Прозрачность:,Deckkraft:,Opacité :,Opacidad:,Opacidade:,Krycie:,Прозорість:,不透明度:,不透明度:
-ui.ed_theme_label,Text Color:,Цвет текста:,Textfarbe:,Couleur du texte :,Color del texto:,Cor do texto:,Kolor tekstu:,Колір тексту:,文字颜色:,テキストカラー:
+ui.ed_theme_label,Panel Theme:,Тема панели:,Panel-Thema:,Thème du panneau :,Tema del panel:,Tema do painel:,Motyw panelu:,Тема панелі:,面板主题:,パネルテーマ:
 ui.ed_icon_label,Icon:,Иконка:,Symbol:,Icône :,Icono:,Ícone:,Ikona:,Іконка:,图标:,アイコン:
 ui.ed_layout_label,Panel Layout:,Раскладка панелей:,Panel-Layout:,Disposition du panneau :,Diseño del panel:,Layout do painel:,Układ panelu:,Розмітка панелей:,面板布局:,パネルレイアウト:
 ui.ed_capture_btn,📸 Capture current panels,📸 Снять текущие панели,📸 Aktuelle Panels erfassen,📸 Capturer les panneaux actuels,📸 Capturar paneles actuales,📸 Capturar painéis atuais,📸 Przechwyć aktualne panele,📸 Зняти поточні панелі,📸 捕获当前面板,📸 現在のパネルをキャプチャ

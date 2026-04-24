@@ -57,6 +57,29 @@ QPushButton[cssClass="action-btn"]:hover {
     background-color: rgb(120, 80, 180);
 }
 
+/* Panel Theme Buttons */
+QPushButton[cssClass="theme-btn"] {
+    font-family: "Equestria_Cyrillic", "Noto Sans", sans-serif;
+    background-color: transparent;
+    color: rgb(180, 170, 210);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 12px;
+}
+
+QPushButton[cssClass="theme-btn"]:hover {
+    background-color: rgb(40, 35, 60);
+    color: rgb(220, 200, 255);
+}
+
+QPushButton[cssClass="theme-btn"][active="true"] {
+    background-color: rgb(100, 60, 160);
+    color: white;
+    border: 1px solid rgb(140, 90, 200);
+    font-weight: bold;
+}
+
 /* Language Buttons */
 QPushButton[cssClass="lang-button"] {
     font-family: "Equestria_Cyrillic", "Noto Sans", sans-serif;

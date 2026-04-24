@@ -26,14 +26,16 @@ class TaskPanelApp(QMainWindow):
         self.setWindowTitle("Equestria OS Task Panel Styles")
 
         self.active_preset_id = None
-        self.panel_color = "#313060"
+        self.panel_color_dark = "#313060"
+        self.panel_color_light = "#dacac1"
         self.panel_opacity = 90
         self.panel_is_dark = True
 
         self.presets = []
         self.editing_preset_id = None
         self.is_new_preset = False
-        self._ed_color = "#313060"
+        self._ed_color_dark = "#313060"
+        self._ed_color_light = "#dacac1"
         self._ed_opacity = 90
         self._ed_is_dark = True
         self._panel_rows = []
@@ -63,6 +65,10 @@ class TaskPanelApp(QMainWindow):
         self._update_ui_state()
         self._apply_panel_appearance()
 
+    @property
+    def _active_panel_color(self):
+        return self.panel_color_dark if self.panel_is_dark else self.panel_color_light
+
     # ─────────────────────── Initialization ───────────────────────
 
     def _init_data(self):
@@ -82,7 +88,9 @@ class TaskPanelApp(QMainWindow):
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                self.panel_color = data.get("color", self.panel_color)
+                _legacy = data.get("color", None)
+                self.panel_color_dark = data.get("color_dark", _legacy or self.panel_color_dark)
+                self.panel_color_light = data.get("color_light", _legacy or self.panel_color_light)
                 self.panel_opacity = data.get("opacity", self.panel_opacity)
                 self.panel_is_dark = data.get("is_dark", self.panel_is_dark)
                 self.active_preset_id = data.get("active_preset", None)
@@ -93,7 +101,8 @@ class TaskPanelApp(QMainWindow):
         try:
             with open(os.path.join(USER_PATH, "appearance.json"), "w", encoding="utf-8") as f:
                 json.dump({
-                    "color": self.panel_color,
+                    "color_dark": self.panel_color_dark,
+                    "color_light": self.panel_color_light,
                     "opacity": self.panel_opacity,
                     "is_dark": self.panel_is_dark,
                     "active_preset": self.active_preset_id,
@@ -236,7 +245,7 @@ class TaskPanelApp(QMainWindow):
                 desc_text=preset.get("desc") or self._t(preset.get("desc_key", pid)),
                 icon_path=self._preset_icon_path(preset),
             )
-            card.update_appearance(self.panel_color, self.panel_opacity)
+            card.update_appearance(self._active_panel_color, self.panel_opacity)
             card.set_active_state(pid == self.active_preset_id)
             card.clicked.connect(lambda checked, p=pid: self.on_preset_selected(p))
             self.cards[pid] = card
@@ -260,11 +269,13 @@ class TaskPanelApp(QMainWindow):
         self.ui.btn_new_preset.clicked.connect(lambda: self.open_editor(None))
         self.ui.btn_restore_all.clicked.connect(self.restore_all_defaults)
 
-        self.ui.btn_ed_color.clicked.connect(self.on_ed_color_click)
+        self.ui.btn_ed_color_dark.clicked.connect(lambda: self.on_ed_color_click("dark"))
+        self.ui.btn_ed_color_light.clicked.connect(lambda: self.on_ed_color_click("light"))
         self.ui.sld_ed_opacity.valueChanged.connect(self.on_ed_opacity_changed)
         self.ui.btn_ed_icon.clicked.connect(self.open_icon_picker)
         self.ui.btn_ed_add_panel.clicked.connect(lambda: self._add_panel_row())
-        self.ui.btn_ed_theme.clicked.connect(self.toggle_editor_theme)
+        self.ui.btn_ed_theme_dark.clicked.connect(lambda: self._set_editor_theme(True))
+        self.ui.btn_ed_theme_light.clicked.connect(lambda: self._set_editor_theme(False))
         self.ui.btn_ed_capture.clicked.connect(self.capture_panels)
         self.ui.btn_ed_restore.clicked.connect(self.restore_single_default)
         self.ui.btn_ed_delete.clicked.connect(self.delete_preset)  # НОВАЯ КНОПКА
@@ -318,7 +329,9 @@ class TaskPanelApp(QMainWindow):
         self.ui.btn_ed_delete.setText(self._t("ui.btn_delete")) # ПЕРЕВОД КНОПКИ
         self.ui.btn_ed_cancel.setText(self._t("ui.btn_cancel"))
         self.ui.btn_ed_save.setText(self._t("ui.btn_save"))
-        self.ui.btn_ed_theme.setText(self._t("ui.dark_text") if self._ed_is_dark else self._t("ui.light_text"))
+        self.ui.btn_ed_theme_dark.setText(self._t("ui.dark_panel"))
+        self.ui.btn_ed_theme_light.setText(self._t("ui.light_panel"))
+        self._update_theme_buttons()
         self._update_capture_label()
         for row in self._panel_rows:
             row.retranslate(self._t)
@@ -338,7 +351,9 @@ class TaskPanelApp(QMainWindow):
 
         preset = self._get_preset(preset_id)
         if preset:
-            self.panel_color = preset.get("color", self.panel_color)
+            _legacy = preset.get("color", None)
+            self.panel_color_dark = preset.get("color_dark", _legacy or self.panel_color_dark)
+            self.panel_color_light = preset.get("color_light", _legacy or self.panel_color_light)
             self.panel_opacity = preset.get("opacity", self.panel_opacity)
             self.panel_is_dark = preset.get("is_dark", self.panel_is_dark)
 
@@ -353,7 +368,8 @@ class TaskPanelApp(QMainWindow):
         self._clear_panel_rows()
 
         if self.is_new_preset:
-            self._ed_color = "#313060"
+            self._ed_color_dark = "#313060"
+            self._ed_color_light = "#dacac1"
             self._ed_opacity = 90
             self._ed_is_dark = True
             self._ed_layout_captured = None
@@ -371,7 +387,9 @@ class TaskPanelApp(QMainWindow):
             preset = self._get_preset(preset_id)
             if not preset:
                 return
-            self._ed_color = preset.get("color", "#313060")
+            _legacy = preset.get("color", "#313060")
+            self._ed_color_dark = preset.get("color_dark", _legacy)
+            self._ed_color_light = preset.get("color_light", _legacy)
             self._ed_opacity = preset.get("opacity", 90)
             self._ed_is_dark = preset.get("is_dark", True)
             self._ed_layout_captured = preset.get("layout_captured")
@@ -401,25 +419,40 @@ class TaskPanelApp(QMainWindow):
             for cfg in self._parse_preset_panels_config(preset):
                 self._add_panel_row(cfg)
 
-        self.ui.btn_ed_color.setStyleSheet(f"background-color: {self._ed_color};")
+        self.ui.btn_ed_color_dark.setStyleSheet(f"background-color: {self._ed_color_dark};")
+        self.ui.btn_ed_color_light.setStyleSheet(f"background-color: {self._ed_color_light};")
         self.ui.sld_ed_opacity.setValue(self._ed_opacity)
         self.ui.lbl_ed_opacity_val.setText(f"{self._ed_opacity}%")
         self._update_ui_state()
         self.ui.stacked_widget.setCurrentIndex(1)
 
-    def on_ed_color_click(self):
-        color = QColorDialog.getColor(QColor(self._ed_color), self, self._t("ui.cp_title"))
+    def on_ed_color_click(self, which: str):
+        current = self._ed_color_dark if which == "dark" else self._ed_color_light
+        color = QColorDialog.getColor(QColor(current), self, self._t("ui.cp_title"))
         if color.isValid():
-            self._ed_color = color.name()
-            self.ui.btn_ed_color.setStyleSheet(f"background-color: {self._ed_color};")
+            if which == "dark":
+                self._ed_color_dark = color.name()
+                self.ui.btn_ed_color_dark.setStyleSheet(f"background-color: {self._ed_color_dark};")
+            else:
+                self._ed_color_light = color.name()
+                self.ui.btn_ed_color_light.setStyleSheet(f"background-color: {self._ed_color_light};")
 
     def on_ed_opacity_changed(self, value):
         self._ed_opacity = value
         self.ui.lbl_ed_opacity_val.setText(f"{value}%")
 
-    def toggle_editor_theme(self):
-        self._ed_is_dark = not self._ed_is_dark
-        self.ui.btn_ed_theme.setText(self._t("ui.dark_text") if self._ed_is_dark else self._t("ui.light_text"))
+    def _set_editor_theme(self, is_dark: bool):
+        self._ed_is_dark = is_dark
+        self._update_theme_buttons()
+
+    def _update_theme_buttons(self):
+        for btn, active in [
+            (self.ui.btn_ed_theme_dark, self._ed_is_dark),
+            (self.ui.btn_ed_theme_light, not self._ed_is_dark),
+        ]:
+            btn.setProperty("active", "true" if active else "false")
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
 
     def open_icon_picker(self):
         current = self.ui.fld_ed_icon.text().strip()
@@ -506,7 +539,8 @@ class TaskPanelApp(QMainWindow):
                 "id": new_id,
                 "char_id": new_id,
                 "desc_key": f"preset.{new_id}",
-                "color": self._ed_color,
+                "color_dark": self._ed_color_dark,
+                "color_light": self._ed_color_light,
                 "opacity": self._ed_opacity,
                 "is_dark": self._ed_is_dark,
                 "desktop_icons_hidden": self.ui.chk_ed_hide_icons.isChecked(),
@@ -519,7 +553,8 @@ class TaskPanelApp(QMainWindow):
             preset = self._get_preset(self.editing_preset_id)
             if not preset:
                 return
-            preset["color"] = self._ed_color
+            preset["color_dark"] = self._ed_color_dark
+            preset["color_light"] = self._ed_color_light
             preset["opacity"] = self._ed_opacity
             preset["is_dark"] = self._ed_is_dark
             preset["desktop_icons_hidden"] = self.ui.chk_ed_hide_icons.isChecked()
@@ -551,12 +586,14 @@ class TaskPanelApp(QMainWindow):
 
         if not self.is_new_preset and self.editing_preset_id == self.active_preset_id:
             appearance_changed = (
-                self._ed_color    != self.panel_color or
-                self._ed_opacity  != self.panel_opacity or
-                self._ed_is_dark  != self.panel_is_dark
+                self._ed_color_dark  != self.panel_color_dark or
+                self._ed_color_light != self.panel_color_light or
+                self._ed_opacity     != self.panel_opacity or
+                self._ed_is_dark     != self.panel_is_dark
             )
-            self.panel_color   = self._ed_color
-            self.panel_opacity = self._ed_opacity
+            self.panel_color_dark  = self._ed_color_dark
+            self.panel_color_light = self._ed_color_light
+            self.panel_opacity     = self._ed_opacity
             self.panel_is_dark = self._ed_is_dark
 
             self._pending_layout_preset = self.editing_preset_id
@@ -908,7 +945,13 @@ class TaskPanelApp(QMainWindow):
         with open(os.path.join(theme_dir, "colors"), "w", encoding="utf-8") as f:
             f.write(colors_data)
 
-        svg = plasma_utils.generate_panel_svg(self.panel_color, self.panel_opacity / 100.0)
+        # Also register colors as a proper color scheme so plasma-apply-colorscheme can pick it up.
+        color_schemes_dir = os.path.expanduser("~/.local/share/color-schemes")
+        os.makedirs(color_schemes_dir, exist_ok=True)
+        with open(os.path.join(color_schemes_dir, "EquestriaPanel.colors"), "w", encoding="utf-8") as f:
+            f.write(colors_data)
+
+        svg = plasma_utils.generate_panel_svg(self._active_panel_color, self.panel_opacity / 100.0)
         with open(os.path.join(widgets_dir, "panel-background.svg"), "w", encoding="utf-8") as f:
             f.write(svg)
 
@@ -926,16 +969,20 @@ class TaskPanelApp(QMainWindow):
         plasma_utils.apply_system_theme_fixes()
 
         cache_clear = "rm -rf ~/.cache/ksvg/ 2>/dev/null; rm -f ~/.cache/plasma_theme_*.kcache 2>/dev/null; "
+        # In Plasma 6, plasma-apply-desktoptheme does not automatically apply the embedded
+        # color scheme, so text/foreground colors in panel widgets stay unchanged without
+        # an explicit plasma-apply-colorscheme call.
+        apply_colorscheme = "plasma-apply-colorscheme EquestriaPanel 2>/dev/null; "
         if current_theme == "EquestriaPanel":
-            cmd = cache_clear + "plasma-apply-desktoptheme default && sleep 0.5 && plasma-apply-desktoptheme EquestriaPanel"
+            cmd = cache_clear + apply_colorscheme + "plasma-apply-desktoptheme default && sleep 0.5 && plasma-apply-desktoptheme EquestriaPanel"
         else:
-            cmd = cache_clear + "plasma-apply-desktoptheme EquestriaPanel"
+            cmd = cache_clear + apply_colorscheme + "plasma-apply-desktoptheme EquestriaPanel"
 
         self._run_shell(cmd, on_finished=self._on_theme_applied)
 
         self._update_ui_state()
         for card in self.cards.values():
-            card.update_appearance(self.panel_color, self.panel_opacity)
+            card.update_appearance(self._active_panel_color, self.panel_opacity)
 
     def _on_theme_applied(self):
         if self._pending_layout_preset:
