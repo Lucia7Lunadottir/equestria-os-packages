@@ -1098,7 +1098,7 @@ class TaskPanelApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setDesktopFileName("equestria-theme-switcher.desktop")
+    app.setDesktopFileName("equestria-os-task-panel-changer")
 
     icon_path = "/usr/share/pixmaps/equestria-os-logo.png"
     app.setWindowIcon(QIcon(icon_path) if os.path.exists(icon_path) else QIcon.fromTheme("preferences-desktop-theme"))

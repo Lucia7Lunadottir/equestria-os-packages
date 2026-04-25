@@ -29,4 +29,4 @@ Terminal=false
 Type=Application
 Categories=X-EquestriaOS;System;Utility;Qt;
 StartupNotify=true
-StartupWMClass=equestria-welcome-hub
+StartupWMClass=equestria-os-welcome

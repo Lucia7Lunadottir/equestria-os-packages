@@ -573,7 +573,7 @@ plasma-apply-colorscheme "{active_name}"
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setDesktopFileName("equestria-theme-switcher.desktop")
+    app.setDesktopFileName("equestria-theme-switcher")
 
     icon_path = "/usr/share/pixmaps/equestria-os-logo.png"
     if os.path.exists(icon_path):

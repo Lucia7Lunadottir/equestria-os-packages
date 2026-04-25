@@ -355,6 +355,7 @@ if __name__ == "__main__":
     _detect_language()
 
     app = QApplication(sys.argv)
+    app.setDesktopFileName("equestria-os-proton-cleaner")
 
     icon_path = "/usr/share/pixmaps/equestria-os-proton-starter.png"
     if os.path.exists(icon_path):

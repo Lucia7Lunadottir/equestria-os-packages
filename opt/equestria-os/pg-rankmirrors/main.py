@@ -266,6 +266,7 @@ class main_app(QMainWindow, Ui_RankMirrors):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setDesktopFileName("pg-rankmirrors")
 
     icon_path = "/usr/share/pixmaps/equestria-os-logo.png"
     if os.path.exists(icon_path):

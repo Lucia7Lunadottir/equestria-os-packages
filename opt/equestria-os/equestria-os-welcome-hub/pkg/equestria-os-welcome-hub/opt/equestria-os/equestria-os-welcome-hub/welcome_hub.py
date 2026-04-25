@@ -222,6 +222,7 @@ class main_app(QMainWindow, Ui_WelcomeHub):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setDesktopFileName("equestria-os-welcome")
     icon_path = "/usr/share/pixmaps/equestria-os-logo.png"
     if os.path.exists(icon_path):
         app.setWindowIcon(QIcon(icon_path))

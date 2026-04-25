@@ -6,9 +6,9 @@ xdata = pkgtype=pkg
 pkgver = 1.2.3-2
 pkgdesc = Task panel style manager for Equestria OS (KDE Plasma 6)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1777074414
+builddate = 1777078358
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 2009796
+size = 2009795
 arch = any
 license = GPL
 depend = python-pyqt6

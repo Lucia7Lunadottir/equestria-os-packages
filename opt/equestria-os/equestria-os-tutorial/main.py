@@ -85,9 +85,9 @@ class TutorialApp(QMainWindow):
                 {"btn": "s2_btn2", "desktop": "equestria-os-task-panel-changer.desktop"}
             ]},
 
-            # Шаг 3: Программы и Обновления (ТОЛЬКО ESSENTIALS)
+            # Шаг 3: Программы и Обновления
             {"title": "slide3_title", "text": "slide3_text", "image": "slide3.png", "actions": [
-                {"btn": "s3_btn1", "desktop": "equestria-app-store.desktop"}
+                {"btn": "s3_btn1", "desktop": "equestria-os-software-center.desktop"}
             ]},
 
             # Шаг 4: Удаление пакетов
@@ -427,6 +427,7 @@ class TutorialApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setDesktopFileName("equestria-os-tutorial")
     window = TutorialApp()
     window.showMaximized()
     sys.exit(app.exec())

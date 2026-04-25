@@ -12,6 +12,7 @@ from app import RelocatorApp
 def main():
     paths = sys.argv[1:]
     app = QApplication(sys.argv)
+    app.setDesktopFileName("equestria-os-relocator")
     app.setWindowIcon(QIcon.fromTheme("equestria-os-relocator"))
     win = RelocatorApp(initial_sources=paths)
     win.show()

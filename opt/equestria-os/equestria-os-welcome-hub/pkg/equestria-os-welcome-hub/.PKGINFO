@@ -6,9 +6,9 @@ xdata = pkgtype=pkg
 pkgver = 2.3.0-8
 pkgdesc = The official Equestria OS Welcome Center and Community Portal
 url = https://github.com/Lucia7Lunadottir
-builddate = 1777074412
+builddate = 1777078357
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 479005
+size = 479055
 arch = any
 license = GPL
 depend = python-pyqt6

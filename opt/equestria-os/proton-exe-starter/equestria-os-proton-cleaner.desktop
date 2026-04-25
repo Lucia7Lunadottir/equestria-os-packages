@@ -25,3 +25,4 @@ Icon=equestria-os-proton-starter
 Categories=X-EquestriaOS;System;Utility;
 Keywords=proton;wine;cache;shader;clean;
 StartupNotify=true
+StartupWMClass=equestria-os-proton-cleaner

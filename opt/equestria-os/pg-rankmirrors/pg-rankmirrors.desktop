@@ -36,4 +36,5 @@ Name[uk_UA]=Менеджер дзеркал
 Name[zh_CN]=镜像管理器
 StartupNotify=true
 Terminal=false
+StartupWMClass=pg-rankmirrors
 Type=Application

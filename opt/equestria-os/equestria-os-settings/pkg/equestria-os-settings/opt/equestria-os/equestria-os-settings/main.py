@@ -11,7 +11,7 @@ BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
 def main():
     app = QApplication(sys.argv)
-    app.setApplicationName("equestria-os-settings")
+    app.setDesktopFileName("equestria-os-settings")
 
     icon_path = os.path.join(BASE_PATH, "equestria-os-settings.png")
     if os.path.exists(icon_path):

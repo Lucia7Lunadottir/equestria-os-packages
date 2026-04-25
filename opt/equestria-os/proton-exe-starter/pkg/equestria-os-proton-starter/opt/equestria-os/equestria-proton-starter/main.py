@@ -153,6 +153,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setDesktopFileName("equestria-os-proton-starter")
 
     icon_path = "/usr/share/pixmaps/equestria-os-proton-starter.png"
     if os.path.exists(icon_path):
