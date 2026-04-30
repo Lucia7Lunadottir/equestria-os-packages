@@ -9,11 +9,31 @@
 #  No expac, no eos-* dependencies. Works on pure Arch.
 # ============================================================
 
+# Check that the NVIDIA DKMS module is actually built before rebuilding
+# initramfs. Without this check, a failed DKMS compile (e.g. missing
+# linux-lts-headers) would silently bake a broken / absent module into
+# the image, making the driver permanently invisible to the kernel.
+DkmsModuleReady() {
+    # If DKMS is not installed the driver is a pre-built (non-DKMS) package —
+    # no need to verify, proceed with initramfs rebuild.
+    command -v dkms &>/dev/null || return 0
+
+    # dkms status output format:  "nvidia/570.x.y, 6.18.x-lts, x86_64: installed"
+    dkms status 2>/dev/null | grep -qE "^nvidia[^,]*.+: installed"
+}
+
 Main() {
     # Check which initramfs tool is available and use it.
     # Priority: mkinitcpio → dracut → booster
 
     if command -v mkinitcpio &>/dev/null; then
+        if ! DkmsModuleReady; then
+            echo "[pg-nvidia-fix] WARNING: NVIDIA DKMS module is not built for the current kernel."
+            echo "[pg-nvidia-fix]   Skipping initramfs rebuild to avoid baking in a broken state."
+            echo "[pg-nvidia-fix]   Install the matching kernel headers (e.g. linux-lts-headers)"
+            echo "[pg-nvidia-fix]   then run: sudo dkms autoinstall && sudo mkinitcpio -P"
+            return 1
+        fi
         echo "[pg-nvidia-fix] Rebuilding initramfs with mkinitcpio..."
         mkinitcpio -P
         return $?

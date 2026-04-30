@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team <your@email.here>
 
 pkgname=pg-nvidia-hook
-pkgver=1.0.3
-pkgrel=2
+pkgver=1.0.4
+pkgrel=1
 pkgdesc='Pacman hook for NVIDIA — auto-rebuilds initramfs after driver updates (Equestria OS)'
 arch=('any')
 license=('GPL3')

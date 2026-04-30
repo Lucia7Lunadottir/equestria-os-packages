@@ -534,6 +534,7 @@ ExecuteChanges() {
                 InstallPkg "$pkg" || failed+=("$pkg")
             done
             if [ ${#failed[@]} -gt 0 ]; then
+                INSTALL_FAILED=yes
                 if [ "$AUTO" = yes ]; then
                     Warn "Some packages could not be installed: ${failed[*]}"
                     Warn "  Place pre-built packages in $DRIVER_CACHE_DIR/ to enable offline install."
@@ -557,6 +558,45 @@ ExecuteChanges() {
     if [ ${#INSTALL[@]} -eq 0 ] && [ ${#REMOVE[@]} -eq 0 ]; then
         Info "All packages are already up to date — nothing to do."
     fi
+}
+
+# ── DKMS Verification ─────────────────────────────────────────
+#
+# Before rebuilding initramfs, verify that the NVIDIA DKMS module was
+# actually compiled for the running kernel. If DKMS silently failed
+# (e.g. missing kernel headers), mkinitcpio would bake in a missing/
+# stale module and make the driver invisible after every reboot.
+
+VerifyDkmsModule() {
+    [ "$DRIVER_TYPE" = "nouveau" ] && return 0
+
+    # Non-DKMS packages (e.g. --no-dkms path) don't need this check.
+    [[ "$DRIVER_PKG" != *dkms* ]] && return 0
+
+    if ! command -v dkms &>/dev/null; then
+        Warn "dkms not found — cannot verify module build. Skipping initramfs rebuild."
+        return 1
+    fi
+
+    local status
+    status=$(dkms status 2>/dev/null)
+
+    # dkms status format: "nvidia/570.x.y, 6.18.x, x86_64: installed"
+    if echo "$status" | grep -qE "^nvidia[^,]*.+: installed"; then
+        Info "DKMS: nvidia module verified as built and installed."
+        return 0
+    fi
+
+    Warn "DKMS: nvidia module is NOT built for the current kernel."
+    if [ -n "$status" ]; then
+        Warn "  dkms status: $status"
+    else
+        Warn "  dkms status: <empty — module may not be registered at all>"
+    fi
+    Warn "  Skipping initramfs rebuild to avoid baking in a broken state."
+    Warn "  Fix: install the matching kernel headers, then run:"
+    Warn "    sudo dkms autoinstall && sudo mkinitcpio -P"
+    return 1
 }
 
 RebuildInitramfs() {
@@ -696,6 +736,8 @@ Main() {
 
     [ "$EUID" -ne 0 ] && DIE "Please run as root:  sudo pg-gpu-sync $*"
 
+    INSTALL_FAILED=no
+
     Header "PG GPU Sync — Equestria OS"
 
     # 1. Detect GPU hardware
@@ -735,11 +777,21 @@ Main() {
         exit 0
     fi
 
-    # Fast path in --auto mode: skip if GPU hasn't changed
+    # Fast path in --auto mode: skip if GPU hasn't changed AND driver is healthy.
+    # Without the health check, a previously failed install would save the GPU
+    # state and then skip all subsequent boot attempts silently.
     if [ "$AUTO" = yes ] && [ "$DRY_RUN" = no ]; then
         if ! GpuChanged; then
-            Info "GPU unchanged ($(FamilyName "$GPU_FAMILY")) — driver already configured."
-            exit 0
+            # GPU family matches saved state — but verify driver is actually working.
+            local _dkms_ok=yes
+            if command -v dkms &>/dev/null; then
+                dkms status 2>/dev/null | grep -qE "^nvidia[^,]*.+: installed" || _dkms_ok=no
+            fi
+            if [ "$_dkms_ok" = yes ]; then
+                Info "GPU unchanged ($(FamilyName "$GPU_FAMILY")) — driver already configured."
+                exit 0
+            fi
+            Info "GPU unchanged but DKMS module missing — re-running driver setup."
         fi
         [ -f "$STATE_FILE" ] && _GPU_WAS_SWAPPED=yes || _GPU_WAS_SWAPPED=no
     fi
@@ -778,10 +830,19 @@ Main() {
     # 12. mkinitcpio/dracut MODULES injection
     ConfigureMkinitcpio
 
-    # 13. Rebuild initramfs
-    RebuildInitramfs
-
-    SaveGpuState
+    # 13. Verify DKMS module is built, then rebuild initramfs.
+    # If INSTALL_FAILED=yes or DKMS module is absent, skip initramfs rebuild
+    # and do NOT save GPU state — so the service retries on the next boot.
+    if [ "${INSTALL_FAILED}" = yes ]; then
+        Warn "Driver installation was incomplete — skipping initramfs rebuild."
+        Warn "  GPU state NOT saved. The service will retry on the next boot."
+        Warn "  Ensure network access or place packages in $DRIVER_CACHE_DIR/"
+    elif VerifyDkmsModule; then
+        RebuildInitramfs
+        SaveGpuState
+    else
+        Warn "GPU state NOT saved. The service will retry on the next boot."
+    fi
 
     Header "Done!"
     if [ "$DRY_RUN" = yes ]; then
