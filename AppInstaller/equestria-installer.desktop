@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Equestria OS Installer
+Name[ru]=Установщик Equestria OS
+Comment=Install local packages
+Comment[ru]=Установка локальных пакетов
+Exec=/usr/bin/equestria-installer %U
+Icon=system-software-install
+Terminal=false
+Type=Application
+Categories=System;Settings;
+MimeType=application/x-equestria-pkg;

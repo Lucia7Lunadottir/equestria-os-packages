@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-save-point
 pkgver=1.2.0
-pkgrel=3
+pkgrel=4
 pkgdesc="Equestria OS Save Point — system snapshot manager (Btrfs/Restic/Timeshift)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -20,7 +20,7 @@ optdepends=(
 )
 
 package() {
-    local _lib="$pkgdir/opt/equestria-os/$pkgname"
+    local _lib="$pkgdir/usr/lib/$pkgname"
     install -dm755 "$_lib"
 
     for f in main.py backend.py hooks.py screenshot.py ui_pkg.py utils.py style.qss equestria_cyrillic.ttf equestria-os-save-point.png; do

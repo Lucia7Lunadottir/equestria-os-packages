@@ -6,8 +6,7 @@
 # created in the background before any install/update/remove operation.
 # Works for terminal usage; GUI clients (Discover) are not covered.
 
-_ESP_SCRIPT="/opt/equestria-os-save-point/pacman-snapshot.sh"
-
+_ESP_SCRIPT="/usr/lib/equestria-os-save-point/pacman-snapshot.sh"
 if command -v flatpak &>/dev/null && [[ -x "$_ESP_SCRIPT" ]]; then
     flatpak() {
         case "${1:-}" in

@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Equestria OS Packages — Документация для разработчика</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════════════ -->
+<header class="site-header">
+  <a href="#top" class="logo">
+    <div class="logo-icon">🐴</div>
+    Equestria OS Packages
+  </a>
+  <span class="badge">7 пакетов</span>
+  <div class="hspacer"></div>
+  <nav class="header-links">
+    <a href="#overview">Обзор</a>
+    <a href="#pkg-nvidia">NVIDIA DKMS</a>
+    <a href="#pkg-keyring">Keyring</a>
+    <a href="#pkg-gpusync">GPU Sync</a>
+    <a href="#pkg-hooks">Hooks</a>
+    <a href="#pkg-nvhook">NV Hook</a>
+    <a href="#pkg-reboot">Reboot</a>
+    <a href="#pkg-update">Update</a>
+  </nav>
+</header>
+
+<!-- ═══════════════════ LAYOUT ═══════════════════════════ -->
+<div class="layout">
+
+<!-- ── Sidebar ─────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sb-section">
+    <div class="sb-label">Общее</div>
+    <nav>
+      <a href="#overview" class="active">Обзор пакетов</a>
+      <a href="#ecosystem">Экосистема</a>
+      <a href="#conventions">Соглашения</a>
+    </nav>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Пакеты</div>
+    <nav>
+      <a href="#pkg-nvidia"  class="pkg p1">equestria-nvidia-dkms</a>
+      <a href="#nvidia-script"  class="sub">↳ Скрипт обновления</a>
+      <a href="#nvidia-hook"    class="sub">↳ Pacman hook</a>
+      <a href="#pkg-keyring" class="pkg p2">equestria-os-keyring</a>
+      <a href="#pkg-gpusync"  class="pkg p3">pg-gpu-sync</a>
+      <a href="#gpusync-matrix" class="sub">↳ GPU матрица</a>
+      <a href="#gpusync-flow"   class="sub">↳ Логика выбора</a>
+      <a href="#gpusync-config" class="sub">↳ Конфиги системы</a>
+      <a href="#gpusync-cli"    class="sub">↳ CLI-флаги</a>
+      <a href="#pkg-hooks"   class="pkg p4">pg-hooks</a>
+      <a href="#pkg-nvhook"  class="pkg p5">pg-nvidia-hook</a>
+      <a href="#pkg-reboot"  class="pkg p6">pg-reboot-notify</a>
+      <a href="#pkg-update"  class="pkg p7">pg-update</a>
+      <a href="#update-sources" class="sub">↳ Источники</a>
+      <a href="#update-systemd" class="sub">↳ systemd timer</a>
+    </nav>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Справка</div>
+    <nav>
+      <a href="#deps-map">Карта зависимостей</a>
+      <a href="#hooks-ref">Таблица хуков</a>
+      <a href="#files-ref">Установленные файлы</a>
+    </nav>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Обучение</div>
+    <nav>
+      <a href="#learn">Что изучать</a>
+      <a href="#learn-foundation" class="sub">↳ Основа (bash, pacman)</a>
+      <a href="#learn-kernel" class="sub">↳ Ядро и модули</a>
+      <a href="#learn-nvidia" class="sub">↳ NVIDIA / DKMS</a>
+      <a href="#learn-systemd" class="sub">↳ systemd</a>
+      <a href="#learn-wayland" class="sub">↳ Wayland / DRM</a>
+      <a href="#learn-gpg" class="sub">↳ GPG / Keyring</a>
+      <a href="#learn-notify" class="sub">↳ Уведомления</a>
+      <a href="#learn-roadmap" class="sub">↳ Дорожная карта</a>
+    </nav>
+  </div>
+</aside>
+
+<!-- ── Main content ─────────────────────────────────────── -->
+<main class="main-content" id="top">
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">Документация для разработчика</div>
+  <h1>Equestria OS <span>Packages</span></h1>
+  <p>Набор системных пакетов для Equestria OS: автоматическое управление NVIDIA-драйверами,
+     поддержание дистро-идентичности, GPG-инфраструктура доверия,
+     уведомления об обновлениях и перезагрузках.</p>
+  <div class="hero-tags">
+    <span class="tag tag-red">NVIDIA DKMS</span>
+    <span class="tag tag-purple">GPG Keyring</span>
+    <span class="tag tag-blue">GPU Sync</span>
+    <span class="tag tag-green">Pacman Hooks</span>
+    <span class="tag tag-peach">Initramfs</span>
+    <span class="tag tag-yellow">Reboot Notify</span>
+    <span class="tag tag-teal">Update Checker</span>
+    <span class="tag tag-sky">Arch Linux</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     OVERVIEW
+════════════════════════════════════════════════════════ -->
+<section class="section" id="overview">
+  <h2 class="section-title"><span class="section-icon">📦</span>Обзор пакетов</h2>
+  <p class="section-sub">Семь взаимосвязанных пакетов образуют инфраструктуру Equestria OS.</p>
+
+  <div class="overview-grid">
+    <div class="ov-card c1">
+      <h3>🔴 equestria-nvidia-dkms</h3>
+      <p>Самообновляемые проприетарные NVIDIA-модули ядра через DKMS. Для legacy GPU (Maxwell / Pascal / Volta).</p>
+    </div>
+    <div class="ov-card c2">
+      <h3>🟣 equestria-os-keyring</h3>
+      <p>GPG-связка ключей для верификации пакетов Equestria OS. RSA 4096-bit, интеграция с pacman-key.</p>
+    </div>
+    <div class="ov-card c3">
+      <h3>🔵 pg-gpu-sync</h3>
+      <p>Автодетекция GPU и выбор оптимального драйвера при загрузке. Поддерживает открытые и проприетарные драйверы.</p>
+    </div>
+    <div class="ov-card c4">
+      <h3>🟢 pg-hooks</h3>
+      <p>Сохранение брендинга Equestria OS после обновлений filesystem и lsb-release. Управляет os-release и issue.</p>
+    </div>
+    <div class="ov-card c5">
+      <h3>🟠 pg-nvidia-hook</h3>
+      <p>Автоматическая пересборка initramfs при любом изменении NVIDIA-драйверов. Проверяет состояние DKMS.</p>
+    </div>
+    <div class="ov-card c6">
+      <h3>🟡 pg-reboot-notify</h3>
+      <p>Обнаружение необходимости перезагрузки после обновления ядра или systemd. KDE-уведомление пользователю.</p>
+    </div>
+    <div class="ov-card c7">
+      <h3>🩵 pg-update</h3>
+      <p>Почасовая проверка обновлений из pacman, AUR, Flatpak, Snap. KDE-уведомление при наличии новых версий.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     ECOSYSTEM
+════════════════════════════════════════════════════════ -->
+<section class="section" id="ecosystem">
+  <h2 class="section-title"><span class="section-icon">🕸️</span>Экосистема и взаимодействие</h2>
+
+  <div class="flow">
+    <div class="fr">
+      <div class="fn2 start">pacman install/upgrade</div>
+      <div class="fa">→</div>
+      <div class="fn2 main">Pacman Hooks (libalpm)</div>
+    </div>
+    <div class="fr">
+      <div class="fn2 main">nvidia-utils изменился</div>
+      <div class="fa">→</div>
+      <div class="fn2 pkg">equestria-nvidia-dkms.hook</div>
+      <div class="fa">→</div>
+      <div class="fn2 sh">equestria-nvidia-dkms-update</div>
+      <div class="fa">→</div>
+      <div class="fn2 sys">DKMS compile</div>
+    </div>
+    <div class="fr">
+      <div class="fn2 main">любой NVIDIA pkg изменился</div>
+      <div class="fa">→</div>
+      <div class="fn2 pkg">pg-nvidia-fix.hook</div>
+      <div class="fa">→</div>
+      <div class="fn2 sh">pg-nvidia-fix</div>
+      <div class="fa">→</div>
+      <div class="fn2 sys">mkinitcpio -P</div>
+    </div>
+    <div class="fr">
+      <div class="fn2 main">linux/systemd изменился</div>
+      <div class="fa">→</div>
+      <div class="fn2 pkg">pg-reboot-notify.hook</div>
+      <div class="fa">→</div>
+      <div class="fn2 out">notify-send (KDE)</div>
+    </div>
+    <div class="fr">
+      <div class="fn2 main">filesystem pkg изменился</div>
+      <div class="fa">→</div>
+      <div class="fn2 pkg">25-pg-os-release.hook</div>
+      <div class="fa">→</div>
+      <div class="fn2 sh">pg-hooks-runner</div>
+      <div class="fa">→</div>
+      <div class="fn2 sys">/usr/lib/os-release восстановлен</div>
+    </div>
+    <div class="fr">
+      <div class="fn2 sys">systemd timer (каждый час)</div>
+      <div class="fa">→</div>
+      <div class="fn2 pkg">pg-update.service</div>
+      <div class="fa">→</div>
+      <div class="fn2 out">notify-send (если есть обновления)</div>
+    </div>
+    <div class="fr">
+      <div class="fn2 sys">boot → pg-gpu-watch.service</div>
+      <div class="fa">→</div>
+      <div class="fn2 sh">pg-gpu-sync --auto</div>
+      <div class="fa">→</div>
+      <div class="fn2 sys">установка нужного NVIDIA-драйвера</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     CONVENTIONS
+════════════════════════════════════════════════════════ -->
+<section class="section" id="conventions">
+  <h2 class="section-title"><span class="section-icon">📐</span>Соглашения и структура</h2>
+  <div class="card-grid">
+    <div class="card-sm">
+      <h4><span class="card-icon">📁</span>Структура пакета</h4>
+      <p>Каждый пакет: <code>PKGBUILD</code> + основной скрипт(ы) + <code>.hook</code> файлы + <code>.install</code> хук. Версии в формате <code>MAJOR.MINOR.PATCH</code> или <code>YYYYMMDD</code>.</p>
+    </div>
+    <div class="card-sm">
+      <h4><span class="card-icon">🪝</span>Libalpm hooks</h4>
+      <p>Все автоматические реакции на события pacman реализованы через хуки в <code>/usr/share/libalpm/hooks/*.hook</code>. Тип: <code>PostTransaction</code>.</p>
+    </div>
+    <div class="card-sm">
+      <h4><span class="card-icon">🔔</span>Уведомления</h4>
+      <p>Используется <code>notify-send</code> (libnotify). App name всегда <code>"Equestria OS"</code>. Уведомления совместимы с KDE Plasma.</p>
+    </div>
+    <div class="card-sm">
+      <h4><span class="card-icon">🌐</span>Дистро-идентичность</h4>
+      <p>Prefix <code>pg-</code> = Psyche Games. <code>equestria-</code> = дистро-специфика. URL: <code>https://psyche-games.com</code>.</p>
+    </div>
+    <div class="card-sm">
+      <h4><span class="card-icon">📜</span>Лицензии</h4>
+      <p><code>GPL3</code> для всех системных пакетов. <code>LicenseRef-NVIDIA-proprietary</code> для nvidia-dkms. <code>GPL</code> для keyring.</p>
+    </div>
+    <div class="card-sm">
+      <h4><span class="card-icon">🔧</span>Оболочка</h4>
+      <p>Все скрипты — Bash (<code>#!/bin/bash</code>). Пути исполняемых файлов: <code>/usr/bin/</code>. Вспомогательные скрипты: <code>/usr/lib/&lt;pkgname&gt;/</code>.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     PKG 1: equestria-nvidia-dkms
+════════════════════════════════════════════════════════ -->
+<section class="section" id="pkg-nvidia">
+  <h2 class="section-title"><span class="section-icon">🔴</span>equestria-nvidia-dkms</h2>
+
+  <div class="pkg-header pkg-nvidia">
+    <div class="pkg-header-top">
+      <div class="pkg-icon">🎮</div>
+      <div class="pkg-title">
+        <h2>equestria-nvidia-dkms</h2>
+        <code>v1.0-1 · x86_64 · LicenseRef-NVIDIA-proprietary</code>
+      </div>
+    </div>
+    <p class="pkg-desc">
+      Самообновляемые проприетарные NVIDIA-модули ядра через DKMS. Предназначен для видеокарт
+      поколений Maxwell, Pascal и Volta, которые не поддерживаются <code>nvidia-open-dkms</code>
+      (требует Turing+). При обновлении <code>nvidia-utils</code> автоматически скачивает и
+      компилирует новую версию драйвера.
+    </p>
+    <div class="pkg-meta">
+      <span class="tag tag-red">DKMS</span>
+      <span class="tag tag-red">Legacy GPU</span>
+      <span class="tag tag-peach">Maxwell · Pascal · Volta</span>
+      <span class="tag tag-blue">curl</span>
+      <span class="tag tag-green">bash</span>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Поддерживаемые GPU</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Поколение</th><th>Коды чипов</th><th>Примеры карт</th></tr></thead>
+        <tbody>
+          <tr><td>Pascal</td><td class="tc">GP102, GP104, GP106, GP108</td><td class="dc">GTX 10xx серия</td></tr>
+          <tr><td>Maxwell</td><td class="tc">GM107, GM108, GM200, GM204, GM206</td><td class="dc">GTX 9xx / GTX 750 серия</td></tr>
+          <tr><td>Volta</td><td class="tc">GV100</td><td class="dc">Titan V</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div>Для карт Turing+ (RTX 20xx и новее) используйте <code>nvidia-open-dkms</code> из официальных репозиториев.
+      Этот пакет конфликтует с ним и не должен устанавливаться совместно.</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Зависимости и конфликты</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>Depends</h4>
+        <ul><li>dkms</li><li>nvidia-utils</li><li>libglvnd</li><li>curl</li><li>bash</li></ul>
+      </div>
+      <div class="card-sm">
+        <h4>OptDepends</h4>
+        <ul><li>linux-headers</li><li>linux-lts-headers</li></ul>
+      </div>
+      <div class="card-sm">
+        <h4>Conflicts</h4>
+        <ul><li>nvidia-open-dkms</li><li>nvidia-open</li><li>nvidia-open-lts</li><li>nvidia-dkms</li><li>nvidia</li><li>nvidia-lts</li></ul>
+      </div>
+      <div class="card-sm">
+        <h4>Provides</h4>
+        <ul><li>NVIDIA-MODULE</li><li>nvidia-dkms</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="nvidia-script">
+    <h3 class="subsection-title">Скрипт equestria-nvidia-dkms-update</h3>
+    <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:12px;">
+      Путь установки: <code>/usr/lib/equestria-nvidia-dkms/equestria-nvidia-dkms-update</code>
+    </p>
+
+    <div class="flow">
+      <div class="fr"><div class="fn2 start">запуск (из hook или .install)</div></div>
+      <div class="fr">
+        <div class="fa">↓</div>
+        <div class="fnote">определяет целевую версию nvidia-utils</div>
+      </div>
+      <div class="fr"><div class="fn2 sh">pacman -Q nvidia-utils → VERSION</div></div>
+      <div class="fr">
+        <div class="fa">↓</div>
+        <div class="fnote">проверяет актуальность DKMS-источника</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 main">DKMS source уже актуален?</div>
+        <div class="fa">→ Да →</div>
+        <div class="fn2 out">выход (уже компилировался)</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓ Нет</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sh">curl → download.nvidia.com → NVIDIA-Linux-x86_64-VERSION.run</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sh">sh installer --extract-only → /usr/src/nvidia-VERSION/</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sys">создание dkms.conf (nvidia, nvidia-modeset, nvidia-uvm, nvidia-drm, nvidia-peermem)</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sys">dkms add + dkms build + dkms install (для всех ядер)</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 main">флаг --no-initramfs?</div>
+        <div class="fa">→ Нет →</div>
+        <div class="fn2 pkg">pg-nvidia-fix → mkinitcpio -P</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr"><div class="fn2 sys">удаление старых версий src из /usr/src/</div></div>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>Модули DKMS в dkms.conf</span></div>
+      <pre><code><span class="cm"># Создаётся скриптом автоматически:</span>
+BUILT_MODULE_NAME[0]="nvidia"
+BUILT_MODULE_NAME[1]="nvidia-modeset"
+BUILT_MODULE_NAME[2]="nvidia-uvm"
+BUILT_MODULE_NAME[3]="nvidia-drm"
+BUILT_MODULE_NAME[4]="nvidia-peermem"</code></pre>
+    </div>
+  </div>
+
+  <div class="subsection" id="nvidia-hook">
+    <h3 class="subsection-title">Pacman hook</h3>
+    <div class="pre-wrap">
+      <div class="pre-header"><span>equestria-nvidia-dkms.hook</span> → /usr/share/libalpm/hooks/</div>
+      <pre><code>[Trigger]
+<span class="at">Operation</span> = Install
+<span class="at">Operation</span> = Upgrade
+<span class="at">Type</span>      = Package
+<span class="at">Target</span>    = nvidia-utils
+
+[Action]
+<span class="at">When</span>        = PostTransaction
+<span class="at">Exec</span>        = /usr/lib/equestria-nvidia-dkms/equestria-nvidia-dkms-update
+<span class="at">Description</span> = Updating proprietary NVIDIA kernel source</code></pre>
+    </div>
+
+    <div class="subsection-title" style="margin-top:18px">Install hook (.install)</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Событие</th><th>Действие</th></tr></thead>
+        <tbody>
+          <tr><td>post_install</td><td class="dc">Запускает <code>equestria-nvidia-dkms-update --no-initramfs</code></td></tr>
+          <tr><td>post_upgrade</td><td class="dc">Запускает <code>equestria-nvidia-dkms-update --no-initramfs</code></td></tr>
+          <tr><td>pre_remove</td><td class="dc">Удаляет все NVIDIA-модули через <code>dkms remove nvidia/VERSION</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div>При первичной установке initramfs не пересобирается (<code>--no-initramfs</code>), так как
+      это делает <code>pg-nvidia-hook</code> по окончании транзакции pacman.</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Установленные файлы</h3>
+    <div class="file-tree">
+      <div><span class="td">/usr/</span></div>
+      <div class="ti">
+        <div><span class="td">lib/equestria-nvidia-dkms/</span></div>
+        <div class="ti"><div><span class="tf">equestria-nvidia-dkms-update</span> <span class="tdesc">— главный скрипт (chmod 755)</span></div></div>
+        <div><span class="td">share/libalpm/hooks/</span></div>
+        <div class="ti"><div><span class="tf">equestria-nvidia-dkms.hook</span> <span class="tdesc">— триггер на nvidia-utils</span></div></div>
+      </div>
+      <div><span class="td">/usr/src/nvidia-VERSION/</span> <span class="tdesc">— создаётся скриптом во время работы</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     PKG 2: equestria-os-keyring
+════════════════════════════════════════════════════════ -->
+<section class="section" id="pkg-keyring">
+  <h2 class="section-title"><span class="section-icon">🟣</span>equestria-os-keyring</h2>
+
+  <div class="pkg-header pkg-keyring">
+    <div class="pkg-header-top">
+      <div class="pkg-icon">🔑</div>
+      <div class="pkg-title">
+        <h2>equestria-os-keyring</h2>
+        <code>v20260407-1 · any · GPL</code>
+      </div>
+    </div>
+    <p class="pkg-desc">
+      GPG-инфраструктура доверия для пакетов Equestria OS. Предоставляет связку открытых ключей
+      для верификации подписей пакетов через pacman. После установки автоматически интегрирует
+      ключ в локальный keyring системы.
+    </p>
+    <div class="pkg-meta">
+      <span class="tag tag-purple">GPG RSA 4096</span>
+      <span class="tag tag-purple">pacman-key</span>
+      <span class="tag tag-sky">Arch</span>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Состав пакета</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Файл</th><th>Путь установки</th><th>Описание</th></tr></thead>
+        <tbody>
+          <tr><td>equestria-os.gpg</td><td class="tc">/usr/share/pacman/keyrings/</td><td class="dc">Открытый GPG-ключ RSA 4096-bit. Создан 2026-04-07. OpenPGP Public Key v4.</td></tr>
+          <tr><td>equestria-os-trusted</td><td class="tc">/usr/share/pacman/keyrings/</td><td class="dc">Список доверенных отпечатков. Содержит fingerprint: <code>24B88A3AFD6B4E71F2C7EE44DA7ED220DA39685A:</code></td></tr>
+          <tr><td>equestria-os-revoked</td><td class="tc">/usr/share/pacman/keyrings/</td><td class="dc">Список отозванных ключей (пустой, placeholder)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Install hook</h3>
+    <div class="pre-wrap">
+      <div class="pre-header"><span>equestria-os-keyring.install</span></div>
+      <pre><code>post_install() {
+    <span class="cm"># Добавить ключ в keyring пользователя pacman</span>
+    pacman-key --add /usr/share/pacman/keyrings/equestria-os.gpg
+
+    <span class="cm"># Установить доверие согласно equestria-os-trusted</span>
+    pacman-key --populate equestria-os
+}
+post_upgrade() { post_install; }</code></pre>
+    </div>
+    <div class="callout info">
+      <span class="callout-icon">ℹ️</span>
+      <div>Команда <code>pacman-key --populate equestria-os</code> читает файл
+      <code>/usr/share/pacman/keyrings/equestria-os-trusted</code> и подписывает перечисленные
+      ключи локально с уровнем доверия "полное" (marginal).</div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Добавление нового ключа (инструкция)</h3>
+    <div class="pre-wrap">
+      <div class="pre-header"><span>bash — обновление keyring</span></div>
+      <pre><code><span class="cm"># 1. Экспортировать новый ключ</span>
+gpg --export --armor KEY_ID > equestria-os.gpg
+
+<span class="cm"># 2. Получить fingerprint</span>
+gpg --with-fingerprint equestria-os.gpg
+
+<span class="cm"># 3. Добавить fingerprint в equestria-os-trusted</span>
+echo "<span class="va">FINGERPRINT</span>:" >> equestria-os-trusted
+
+<span class="cm"># 4. Для отозванных ключей — в equestria-os-revoked</span>
+echo "<span class="va">OLD_FINGERPRINT</span>:" >> equestria-os-revoked
+
+<span class="cm"># 5. Обновить pkgver (дата)</span>
+<span class="cm"># 6. Пересобрать пакет: makepkg -si</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     PKG 3: pg-gpu-sync
+════════════════════════════════════════════════════════ -->
+<section class="section" id="pkg-gpusync">
+  <h2 class="section-title"><span class="section-icon">🔵</span>pg-gpu-sync</h2>
+
+  <div class="pkg-header pkg-gpusync">
+    <div class="pkg-header-top">
+      <div class="pkg-icon">🖥️</div>
+      <div class="pkg-title">
+        <h2>pg-gpu-sync</h2>
+        <code>v2.2.0-1 · any · GPL3</code>
+      </div>
+    </div>
+    <p class="pkg-desc">
+      Комплексный менеджер NVIDIA-драйверов с автодетекцией видеокарты при загрузке.
+      Определяет поколение GPU через <code>lspci</code>, выбирает оптимальный драйвер
+      (открытый или проприетарный), настраивает Wayland, KWin, mkinitcpio/dracut
+      и suspend/resume сервисы. Работает в интерактивном и автоматическом режимах.
+    </p>
+    <div class="pkg-meta">
+      <span class="tag tag-blue">pciutils</span>
+      <span class="tag tag-blue">bash</span>
+      <span class="tag tag-peach">pg-nvidia-hook</span>
+      <span class="tag tag-green">systemd</span>
+      <span class="tag tag-purple">Wayland</span>
+      <span class="tag tag-teal">861 строк</span>
+    </div>
+  </div>
+
+  <div class="subsection" id="gpusync-matrix">
+    <h3 class="subsection-title">Матрица поддержки GPU</h3>
+    <div class="gpu-grid">
+      <div class="gpu-card">
+        <h4 style="color:var(--green)">Turing+ (TU/GA/AD/GB/GN)</h4>
+        <p>RTX 20xx, RTX 30xx, RTX 40xx, RTX 50xx<br>GeForce GTX 16xx</p>
+        <span class="driver drv-open">nvidia-open-dkms</span>
+      </div>
+      <div class="gpu-card">
+        <h4 style="color:var(--red)">Pascal (GP)</h4>
+        <p>GTX 10xx серия<br>GP102, GP104, GP106, GP108</p>
+        <span class="driver drv-prop">equestria-nvidia-dkms → nvidia-dkms</span>
+      </div>
+      <div class="gpu-card">
+        <h4 style="color:var(--red)">Maxwell (GM)</h4>
+        <p>GTX 9xx, GTX 750<br>GM107, GM108, GM200, GM204, GM206</p>
+        <span class="driver drv-prop">equestria-nvidia-dkms → nvidia-dkms</span>
+      </div>
+      <div class="gpu-card">
+        <h4 style="color:var(--red)">Volta (GV)</h4>
+        <p>Titan V<br>GV100</p>
+        <span class="driver drv-prop">equestria-nvidia-dkms → nvidia-dkms</span>
+      </div>
+      <div class="gpu-card">
+        <h4 style="color:var(--yellow)">Kepler (GK)</h4>
+        <p>GTX 6xx / 7xx серия</p>
+        <span class="driver drv-leg">nvidia-470xx-dkms (legacy)</span>
+      </div>
+      <div class="gpu-card">
+        <h4 style="color:var(--yellow)">Fermi (GF)</h4>
+        <p>GTX 4xx / 5xx серия</p>
+        <span class="driver drv-leg">nvidia-390xx-dkms (legacy)</span>
+      </div>
+      <div class="gpu-card">
+        <h4 style="color:var(--teal)">Старее / неизвестно</h4>
+        <p>Любой другой чип NVIDIA</p>
+        <span class="driver drv-open2">nouveau (open-source)</span>
+      </div>
+      <div class="gpu-card">
+        <h4 style="color:var(--teal)">Nouveau (принудительно)</h4>
+        <p>Флаг <code>--nouveau</code></p>
+        <span class="driver drv-open2">nouveau</span>
+      </div>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div>При недоступности <code>equestria-nvidia-dkms</code> (нет репозитория Equestria) скрипт
+      автоматически пытается установить <code>nvidia-dkms</code> из AUR через yay/paru.</div>
+    </div>
+  </div>
+
+  <div class="subsection" id="gpusync-flow">
+    <h3 class="subsection-title">Логика выбора и установки драйвера</h3>
+    <div class="flow">
+      <div class="fr"><div class="fn2 start">pg-gpu-sync [--auto|--test|...]</div></div>
+      <div class="fr">
+        <div class="fa">↓</div>
+        <div class="fnote">проверяет наличие интернета (archlinux.org)</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sh">DetectGPU() → lspci -d 10de: → GPU chip code</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sh">DetectOptimus() → двойной GPU (ноутбук)?</div>
+        <div class="fnote">→ помечает как Optimus-конфигурацию</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 main">SaveGpuState() → /var/lib/pg-gpu-sync/gpu-family</div>
+        <div class="fa">→</div>
+        <div class="fnote">при повторном запуске: если GPU не изменился — выход</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sh">SelectDriver() → определяет пакеты</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 pkg">BuildPackageLists() → to_install[] + to_remove[]</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+        <div class="fnote">офлайн-кэш: /usr/share/pg-gpu-sync/drivers/*.pkg.tar.zst</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sys">pacman -R to_remove + pacman -S to_install (или pacman -U из кэша)</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sys">ConfigureNouveauBlacklist()</div>
+        <div class="fa">+</div>
+        <div class="fn2 sys">ConfigureWayland()</div>
+        <div class="fa">+</div>
+        <div class="fn2 sys">ConfigureKwinCompositor()</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sys">EnableNvidiaSleepServices()</div>
+        <div class="fa">+</div>
+        <div class="fn2 sys">ConfigureMkinitcpio() / ConfigureDracut()</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 main">VerifyDkmsModule()</div>
+        <div class="fa">→ DKMS готов? →</div>
+        <div class="fn2 sys">RebuildInitramfs()</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection" id="gpusync-config">
+    <h3 class="subsection-title">Файлы конфигурации системы</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Файл</th><th>Назначение</th><th>Содержимое</th></tr></thead>
+        <tbody>
+          <tr><td>/etc/modprobe.d/blacklist-nouveau.conf</td><td class="dc">Блокировка nouveau</td><td class="dc"><code>blacklist nouveau</code>, <code>options nouveau modeset=0</code></td></tr>
+          <tr><td>/etc/modprobe.d/nvidia.conf</td><td class="dc">Параметры ядра NVIDIA</td><td class="dc">modeset=1, memory preservation, NVreg параметры</td></tr>
+          <tr><td>/etc/environment.d/99-nvidia-wayland.conf</td><td class="dc">Wayland env vars</td><td class="dc">GBM_BACKEND, __GLX_VENDOR_LIBRARY_NAME и др.</td></tr>
+          <tr><td>/etc/xdg/kwinrc</td><td class="dc">KDE KWin настройки</td><td class="dc">EGL Backend, композитор OpenGL</td></tr>
+          <tr><td>/etc/environment.d/99-kwin-nvidia.conf</td><td class="dc">KWin EGL vendor</td><td class="dc">KWIN_DRM_USE_EGL_STREAMS</td></tr>
+          <tr><td>/etc/mkinitcpio.conf</td><td class="dc">Модули initramfs</td><td class="dc">MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)</td></tr>
+          <tr><td>/etc/dracut.conf.d/nvidia.conf</td><td class="dc">Dracut конфиг</td><td class="dc">force_drivers для nvidia модулей</td></tr>
+          <tr><td>/var/lib/pg-gpu-sync/gpu-family</td><td class="dc">Кэш GPU семейства</td><td class="dc">TU / GA / GM / GP / GV / GK / GF / …</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection" id="gpusync-cli">
+    <h3 class="subsection-title">CLI-интерфейс</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Флаг</th><th>Описание</th></tr></thead>
+        <tbody>
+          <tr><td>-h, --help</td><td class="dc">Показать справку</td></tr>
+          <tr><td>-t, --test</td><td class="dc">Dry-run режим — никаких изменений в системе</td></tr>
+          <tr><td>-a, --auto</td><td class="dc">Безмолвный режим (для инсталлятора / live-образа)</td></tr>
+          <tr><td>-f, --force</td><td class="dc">Установить даже если GPU не обнаружен</td></tr>
+          <tr><td>-n, --nouveau</td><td class="dc">Принудительно использовать nouveau</td></tr>
+          <tr><td>--no-dkms</td><td class="dc">Использовать не-DKMS пакеты (nvidia вместо nvidia-dkms)</td></tr>
+          <tr><td>--32</td><td class="dc">Включить 32-bit Vulkan (требует [multilib] в pacman.conf)</td></tr>
+          <tr><td>--no-settings</td><td class="dc">Не устанавливать nvidia-settings</td></tr>
+          <tr><td>--show-gpu</td><td class="dc">Показать информацию о GPU и выйти</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">systemd-сервис pg-gpu-watch</h3>
+    <div class="pre-wrap">
+      <div class="pre-header"><span>pg-gpu-watch.service</span> → /usr/lib/systemd/system/</div>
+      <pre><code>[Unit]
+<span class="at">Description</span> = Equestria OS GPU Watch Service
+<span class="at">After</span>       = network.target
+
+[Service]
+<span class="at">Type</span>            = oneshot
+<span class="at">ExecStart</span>       = /usr/bin/pg-gpu-sync --auto
+<span class="at">TimeoutStartSec</span> = 7200
+
+[Install]
+<span class="at">WantedBy</span> = multi-user.target</code></pre>
+    </div>
+    <div class="callout info">
+      <span class="callout-icon">ℹ️</span>
+      <div>Сервис запускается при загрузке и ждёт до 2 часов — столько может занять DKMS-компиляция
+      на медленных машинах. При повторных запусках завершается мгновенно (GPU не изменился → ранний выход).</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     PKG 4: pg-hooks
+════════════════════════════════════════════════════════ -->
+<section class="section" id="pkg-hooks">
+  <h2 class="section-title"><span class="section-icon">🟢</span>pg-hooks</h2>
+
+  <div class="pkg-header pkg-hooks">
+    <div class="pkg-header-top">
+      <div class="pkg-icon">🏷️</div>
+      <div class="pkg-title">
+        <h2>pg-hooks</h2>
+        <code>v1.0.0-1 · any · GPL3 · replaces: eos-hooks</code>
+      </div>
+    </div>
+    <p class="pkg-desc">
+      Поддержание идентичности дистрибутива Equestria OS после системных обновлений.
+      Пакеты <code>filesystem</code> и <code>lsb-release</code> из Arch могут перезаписать
+      дистро-специфичные файлы. pg-hooks восстанавливает их через pacman-хуки.
+    </p>
+    <div class="pkg-meta">
+      <span class="tag tag-green">bash</span>
+      <span class="tag tag-green">os-release</span>
+      <span class="tag tag-green">lsb-release</span>
+      <span class="tag tag-sky">Replaces eos-hooks</span>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Управляемые файлы и дистро-идентичность</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>/usr/lib/os-release</h4>
+        <ul>
+          <li>NAME="Equestria OS"</li>
+          <li>PRETTY_NAME="Equestria OS Linux"</li>
+          <li>ID=equestria-os</li>
+          <li>ID_LIKE=arch</li>
+          <li>HOME_URL=https://psyche-games.com</li>
+          <li>LOGO=equestria-os</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>/etc/lsb-release</h4>
+        <ul>
+          <li>DISTRIB_ID="Equestria OS"</li>
+          <li>DISTRIB_CODENAME=rolling</li>
+          <li>DISTRIB_DESCRIPTION="Equestria OS Linux"</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>/etc/issue</h4>
+        <ul>
+          <li>Заменяет "EndeavourOS" на "Equestria OS"</li>
+          <li>Заменяет "Arch Linux" на "Equestria OS"</li>
+          <li>Также обновляет /usr/share/factory/etc/issue</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Скрипт pg-hooks-runner</h3>
+    <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:12px;">
+      Путь: <code>/usr/bin/pg-hooks-runner</code>
+    </p>
+    <div class="pre-wrap">
+      <div class="pre-header"><span>pg-hooks-runner — функции и маршрутизация</span></div>
+      <pre><code><span class="kw">function</span> <span class="fn">Os_release</span>() {
+    <span class="cm"># Перезаписывает /usr/lib/os-release значениями Equestria OS</span>
+}
+
+<span class="kw">function</span> <span class="fn">Lsb_release</span>() {
+    <span class="cm"># Добавляет DISTRIB_CODENAME если отсутствует</span>
+    <span class="cm"># Перезаписывает значения в /etc/lsb-release</span>
+}
+
+<span class="kw">function</span> <span class="fn">Issues</span>() {
+    <span class="cm"># sed: EndeavourOS → Equestria OS в /etc/issue</span>
+    <span class="cm"># sed: Arch Linux  → Equestria OS в /usr/share/factory/etc/issue</span>
+}
+
+<span class="kw">function</span> <span class="fn">Main</span>() {
+    <span class="kw">case</span> "$1" <span class="kw">in</span>
+        os-release)  Os_release ;;
+        lsb-release) Lsb_release ;;
+        issue)       Issues ;;
+        *)           Os_release; Lsb_release; Issues ;;
+    <span class="kw">esac</span>
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Pacman hooks</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Хук</th><th>Триггер</th><th>Аргумент runner'а</th></tr></thead>
+        <tbody>
+          <tr><td>pg-hooks.hook</td><td class="dc">Install/Upgrade <code>pg-hooks</code></td><td class="dc">— (все функции)</td></tr>
+          <tr><td>pg-lsb-release.hook</td><td class="dc">Install/Upgrade <code>lsb-release</code></td><td class="dc"><code>lsb-release</code></td></tr>
+          <tr><td>25-pg-os-release.hook</td><td class="dc">Install/Upgrade <code>filesystem</code></td><td class="dc"><code>os-release</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     PKG 5: pg-nvidia-hook
+════════════════════════════════════════════════════════ -->
+<section class="section" id="pkg-nvhook">
+  <h2 class="section-title"><span class="section-icon">🟠</span>pg-nvidia-hook</h2>
+
+  <div class="pkg-header pkg-nvhook">
+    <div class="pkg-header-top">
+      <div class="pkg-icon">🔄</div>
+      <div class="pkg-title">
+        <h2>pg-nvidia-hook</h2>
+        <code>v1.0.4-1 · any · GPL3 · replaces: eos-nvidia-fix</code>
+      </div>
+    </div>
+    <p class="pkg-desc">
+      Автоматическая пересборка initramfs при любом изменении NVIDIA-драйверов.
+      Перед пересборкой проверяет состояние DKMS — если модуль не скомпилирован,
+      пересборка пропускается с предупреждением, чтобы не сохранить сломанное состояние.
+      Поддерживает mkinitcpio, dracut и booster.
+    </p>
+    <div class="pkg-meta">
+      <span class="tag tag-peach">mkinitcpio</span>
+      <span class="tag tag-peach">bash</span>
+      <span class="tag tag-red">DKMS verify</span>
+      <span class="tag tag-sky">Replaces eos-nvidia-fix</span>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Скрипт pg-nvidia-fix</h3>
+    <div class="flow">
+      <div class="fr"><div class="fn2 start">pg-nvidia-fix (вызван хуком)</div></div>
+      <div class="fr">
+        <div class="fa">↓</div>
+        <div class="fnote">ищет доступный инструмент initramfs</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 main">mkinitcpio найден?</div>
+        <div class="fa">→ Да →</div>
+        <div class="fn2 sh">DkmsModuleReady()</div>
+      </div>
+      <div class="fr" style="margin-left:120px">
+        <div class="fn2 main">DKMS nvidia installed?</div>
+        <div class="fa">→ Нет →</div>
+        <div class="fn2 err">WARNING + exit 1</div>
+      </div>
+      <div class="fr" style="margin-left:120px">
+        <div class="fa">↓ Да</div>
+      </div>
+      <div class="fr" style="margin-left:120px">
+        <div class="fn2 sys">mkinitcpio -P</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 main">dracut найден?</div>
+        <div class="fa">→ Да →</div>
+        <div class="fn2 sys">dracut для каждого /usr/lib/modules/*/pkgbase</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 main">booster найден?</div>
+        <div class="fa">→ Да →</div>
+        <div class="fn2 sys">booster build (TBD)</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 err">ни один инструмент не найден → WARNING + exit 1</div>
+      </div>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>DkmsModuleReady() — проверка DKMS</span></div>
+      <pre><code><span class="kw">function</span> <span class="fn">DkmsModuleReady</span>() {
+    <span class="cm"># Если dkms не установлен — всегда готов (pre-built драйвер)</span>
+    command -v dkms &>/dev/null || <span class="kw">return</span> <span class="nu">0</span>
+
+    <span class="cm"># Проверяет: dkms status | grep "^nvidia.*: installed"</span>
+    dkms status | grep -qP <span class="st">'^nvidia[^,]*.+: installed'</span>
+    <span class="kw">return</span> $?
+}</code></pre>
+    </div>
+
+    <div class="callout danger">
+      <span class="callout-icon">🔴</span>
+      <div><strong>Важно:</strong> Если DKMS не скомпилировал модуль (например, нет kernel-headers),
+      пересборка initramfs пропускается намеренно. Иначе система загрузится без NVIDIA и
+      возможно без графики. Вместо этого выводится:
+      <br><code>Install matching kernel headers, then: sudo dkms autoinstall && sudo mkinitcpio -P</code></div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Pacman hook — триггеры</h3>
+    <div class="pre-wrap">
+      <div class="pre-header"><span>pg-nvidia-fix.hook</span></div>
+      <pre><code>[Trigger]
+<span class="at">Operation</span> = Install
+<span class="at">Operation</span> = Upgrade
+<span class="at">Operation</span> = Remove
+<span class="at">Type</span>      = Package
+<span class="cm"># Мониторит ВСЕ варианты NVIDIA-пакетов:</span>
+<span class="at">Target</span> = nvidia-open
+<span class="at">Target</span> = nvidia-open-lts
+<span class="at">Target</span> = nvidia-open-dkms
+<span class="at">Target</span> = nvidia-dkms
+<span class="at">Target</span> = equestria-nvidia-dkms
+<span class="at">Target</span> = nvidia
+<span class="at">Target</span> = nvidia-lts
+<span class="at">Target</span> = nvidia-utils
+<span class="at">Target</span> = nvidia-470xx-dkms
+<span class="at">Target</span> = nvidia-470xx-utils
+<span class="at">Target</span> = nvidia-390xx-dkms
+<span class="at">Target</span> = nvidia-390xx-utils
+
+[Action]
+<span class="at">When</span>        = PostTransaction
+<span class="at">Exec</span>        = /usr/bin/pg-nvidia-fix
+<span class="at">Description</span> = Rebuilding initramfs after NVIDIA driver change...</code></pre>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     PKG 6: pg-reboot-notify
+════════════════════════════════════════════════════════ -->
+<section class="section" id="pkg-reboot">
+  <h2 class="section-title"><span class="section-icon">🟡</span>pg-reboot-notify</h2>
+
+  <div class="pkg-header pkg-reboot">
+    <div class="pkg-header-top">
+      <div class="pkg-icon">🔔</div>
+      <div class="pkg-title">
+        <h2>pg-reboot-notify</h2>
+        <code>v1.0.0-1 · any · GPL3</code>
+      </div>
+    </div>
+    <p class="pkg-desc">
+      Определяет необходимость перезагрузки после обновления ядра или systemd.
+      Сравнивает запущенное ядро с установленным, проверяет флаги <code>reboot-required</code>.
+      Если нужна перезагрузка — отправляет KDE-уведомление на русском языке.
+    </p>
+    <div class="pkg-meta">
+      <span class="tag tag-yellow">libnotify</span>
+      <span class="tag tag-yellow">bash</span>
+      <span class="tag tag-yellow">notify-send</span>
+      <span class="tag tag-purple">KDE Plasma</span>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Методы определения необходимости перезагрузки</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>RebootNeededKernel()</h4>
+        <p>Сравнивает <code>uname -r</code> (текущее ядро) с <code>ALL_kver=</code> из <code>/etc/mkinitcpio.d/*.preset</code>. Если есть расхождение — нужна перезагрузка.</p>
+      </div>
+      <div class="card-sm">
+        <h4>RebootNeededSystemd()</h4>
+        <p>Проверяет <code>systemctl is-system-running</code>. При статусах <code>degraded</code> или <code>starting</code> возвращает true. <em>(Определена, но не используется в Main)</em></p>
+      </div>
+      <div class="card-sm">
+        <h4>RebootNeededFlag()</h4>
+        <p>Проверяет наличие файлов <code>/var/run/reboot-required</code> или <code>/run/reboot-required</code>. Стандартный механизм Debian-систем.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Логика Main() и уведомления</h3>
+    <div class="flow">
+      <div class="fr"><div class="fn2 start">pg-reboot-notify (PostTransaction)</div></div>
+      <div class="fr">
+        <div class="fn2 main">RebootNeededKernel()?</div>
+        <div class="fa">→ Да →</div>
+        <div class="fn2 out">notify-send "Ядро было обновлено. Перезагрузи систему..."</div>
+        <div class="fa">→</div>
+        <div class="fn2 sys">exit 0</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓ Нет</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 main">RebootNeededFlag()?</div>
+        <div class="fa">→ Да →</div>
+        <div class="fn2 out">notify-send "Один из пакетов требует перезагрузки..."</div>
+        <div class="fa">→</div>
+        <div class="fn2 sys">exit 0</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓ Нет</div>
+      </div>
+      <div class="fr"><div class="fn2 sys">тихий exit 0 (ничего не делать)</div></div>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>Параметры notify-send</span></div>
+      <pre><code>notify-send \
+  --app-name <span class="st">"Equestria OS"</span>     \
+  --icon <span class="st">"system-reboot"</span>        \
+  --urgency <span class="st">"normal"</span>             \
+  --expire-time <span class="st">"10000"</span>          \
+  <span class="st">"Рекомендуется перезагрузка"</span>  \
+  <span class="st">"&lt;тело сообщения&gt;"</span></code></pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Pacman hook</h3>
+    <div class="pre-wrap">
+      <div class="pre-header"><span>pg-reboot-notify.hook</span></div>
+      <pre><code>[Trigger]
+<span class="at">Operation</span>   = Upgrade
+<span class="at">Type</span>        = Package
+<span class="at">Target</span>      = linux
+<span class="at">Target</span>      = linux-lts
+<span class="at">Target</span>      = linux-zen
+<span class="at">Target</span>      = linux-hardened
+<span class="at">Target</span>      = systemd
+<span class="at">NeedsTargets</span> = true
+
+[Action]
+<span class="at">When</span>        = PostTransaction
+<span class="at">Exec</span>        = /usr/bin/pg-reboot-notify
+<span class="at">Description</span> = Checking if reboot is needed...</code></pre>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     PKG 7: pg-update
+════════════════════════════════════════════════════════ -->
+<section class="section" id="pkg-update">
+  <h2 class="section-title"><span class="section-icon">🩵</span>pg-update</h2>
+
+  <div class="pkg-header pkg-update">
+    <div class="pkg-header-top">
+      <div class="pkg-icon">📡</div>
+      <div class="pkg-title">
+        <h2>pg-update</h2>
+        <code>v1.1.0-1 · any · GPL3</code>
+      </div>
+    </div>
+    <p class="pkg-desc">
+      Периодическая проверка обновлений из нескольких источников: pacman, AUR (yay), Flatpak, Snap.
+      Показывает KDE-уведомление с суммарным количеством обновлений и разбивкой по источникам.
+      Запускается каждый час через systemd user timer.
+    </p>
+    <div class="pkg-meta">
+      <span class="tag tag-teal">libnotify</span>
+      <span class="tag tag-teal">pacman</span>
+      <span class="tag tag-teal">bash</span>
+      <span class="tag tag-sky">yay (опц.)</span>
+      <span class="tag tag-sky">flatpak (опц.)</span>
+      <span class="tag tag-sky">snap (опц.)</span>
+    </div>
+  </div>
+
+  <div class="subsection" id="update-sources">
+    <h3 class="subsection-title">Источники обновлений</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4><span class="card-icon">📦</span>Pacman</h4>
+        <p>Команда: <code>checkupdates</code><br>Считает строки вывода → N официальных обновлений</p>
+      </div>
+      <div class="card-sm">
+        <h4><span class="card-icon">🏗️</span>AUR (yay)</h4>
+        <p>Команда: <code>yay -Qua</code><br>Если yay не установлен → 0. Считает строки вывода.</p>
+      </div>
+      <div class="card-sm">
+        <h4><span class="card-icon">📱</span>Flatpak</h4>
+        <p>Команда: <code>flatpak remote-ls --updates</code><br>Если flatpak не установлен → 0.</p>
+      </div>
+      <div class="card-sm">
+        <h4><span class="card-icon">🔩</span>Snap</h4>
+        <p>Команда: <code>snap refresh --list</code><br>Парсит таблицу, пропускает header. "All snaps up to date" → 0.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3 class="subsection-title">Логика проверки и уведомления</h3>
+    <div class="flow">
+      <div class="fr"><div class="fn2 start">pg-update (по таймеру)</div></div>
+      <div class="fr">
+        <div class="fa">↓</div>
+        <div class="fnote">ping archlinux.org — нет интернета → тихий exit</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sh">checkupdates → N_pacman</div>
+        <div class="fa">+</div>
+        <div class="fn2 sh">yay -Qua → N_aur</div>
+        <div class="fa">+</div>
+        <div class="fn2 sh">flatpak → N_flatpak</div>
+        <div class="fa">+</div>
+        <div class="fn2 sh">snap → N_snap</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 main">TOTAL = N_pacman + N_aur + N_flatpak + N_snap</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 main">TOTAL == 0?</div>
+        <div class="fa">→ Да →</div>
+        <div class="fn2 sys">rm /tmp/pg-update-last-count → exit 0</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓ Нет</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 main">TOTAL == last-count (кэш)?</div>
+        <div class="fa">→ Да →</div>
+        <div class="fn2 sys">тихий exit (без дубликата уведомления)</div>
+      </div>
+      <div class="fr">
+        <div class="fa">↓ Изменилось</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 sys">echo TOTAL > /tmp/pg-update-last-count</div>
+      </div>
+      <div class="fr">
+        <div class="fn2 out">notify-send "Доступны обновления (TOTAL)"</div>
+      </div>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>Пример уведомления</span></div>
+      <pre><code>Заголовок: <span class="st">"Доступны обновления (6)"</span>
+Тело:
+  Pacman: 3
+  AUR: 2
+  Flatpak: 1
+
+<span class="cm">--app-name "Equestria OS"</span>
+<span class="cm">--icon     "system-software-update"</span>
+<span class="cm">--urgency  "low"</span>
+<span class="cm">--expire-time 8000</span></code></pre>
+    </div>
+  </div>
+
+  <div class="subsection" id="update-systemd">
+    <h3 class="subsection-title">systemd user timer</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>pg-update.service</h4>
+        <p>Type: oneshot<br>ExecStart: <code>/usr/bin/pg-update</code><br>Пользовательский сервис (не root)</p>
+      </div>
+      <div class="card-sm">
+        <h4>pg-update.timer</h4>
+        <p>OnBootSec: <code>5min</code><br>OnUnitActiveSec: <code>1h</code><br>WantedBy: <code>timers.target</code></p>
+      </div>
+    </div>
+    <div class="pre-wrap">
+      <div class="pre-header"><span>pg-update.timer</span></div>
+      <pre><code>[Unit]
+<span class="at">Description</span> = Equestria OS — Check for updates every hour
+
+[Timer]
+<span class="at">OnBootSec</span>       = 5min
+<span class="at">OnUnitActiveSec</span> = 1h
+<span class="at">Unit</span>            = pg-update.service
+
+[Install]
+<span class="at">WantedBy</span> = timers.target</code></pre>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>Автозапуск через .install</span></div>
+      <pre><code>post_install() {
+    systemctl --user enable --now pg-update.timer
+}</code></pre>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ️</span>
+      <div>Сервис запускается как <strong>пользовательский</strong> (не root) — это необходимо для
+      работы <code>notify-send</code> в сессии пользователя. Файлы устанавливаются в
+      <code>/usr/lib/systemd/user/</code>.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     REFERENCE TABLES
+════════════════════════════════════════════════════════ -->
+<section class="section" id="deps-map">
+  <h2 class="section-title"><span class="section-icon">🗺️</span>Карта зависимостей</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Пакет</th><th>Depends</th><th>OptDepends</th><th>Conflicts</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>equestria-nvidia-dkms</td>
+          <td class="dc">dkms, nvidia-utils, libglvnd, curl, bash</td>
+          <td class="dc">linux-headers, linux-lts-headers</td>
+          <td class="dc">nvidia-open-dkms, nvidia-open, nvidia-dkms, nvidia, nvidia-lts</td>
+        </tr>
+        <tr>
+          <td>equestria-os-keyring</td>
+          <td class="dc">—</td>
+          <td class="dc">—</td>
+          <td class="dc">—</td>
+        </tr>
+        <tr>
+          <td>pg-gpu-sync</td>
+          <td class="dc">bash, pciutils, pg-nvidia-hook</td>
+          <td class="dc">—</td>
+          <td class="dc">—</td>
+        </tr>
+        <tr>
+          <td>pg-hooks</td>
+          <td class="dc">bash</td>
+          <td class="dc">—</td>
+          <td class="dc">eos-hooks</td>
+        </tr>
+        <tr>
+          <td>pg-nvidia-hook</td>
+          <td class="dc">bash, mkinitcpio</td>
+          <td class="dc">—</td>
+          <td class="dc">nvidia-hook, eos-nvidia-fix</td>
+        </tr>
+        <tr>
+          <td>pg-reboot-notify</td>
+          <td class="dc">bash, libnotify</td>
+          <td class="dc">—</td>
+          <td class="dc">—</td>
+        </tr>
+        <tr>
+          <td>pg-update</td>
+          <td class="dc">bash, libnotify, pacman</td>
+          <td class="dc">yay (AUR updates)</td>
+          <td class="dc">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="hooks-ref">
+  <h2 class="section-title"><span class="section-icon">🪝</span>Таблица всех Pacman hooks</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Файл хука</th><th>Триггер (Target)</th><th>Операции</th><th>Исполняет</th></tr></thead>
+      <tbody>
+        <tr><td>equestria-nvidia-dkms.hook</td><td class="dc">nvidia-utils</td><td class="dc">Install, Upgrade</td><td class="dc">equestria-nvidia-dkms-update</td></tr>
+        <tr><td>pg-nvidia-fix.hook</td><td class="dc">nvidia*, equestria-nvidia-dkms, nvidia-utils, nvidia-*xx-*</td><td class="dc">Install, Upgrade, Remove</td><td class="dc">pg-nvidia-fix</td></tr>
+        <tr><td>pg-hooks.hook</td><td class="dc">pg-hooks</td><td class="dc">Install, Upgrade</td><td class="dc">pg-hooks-runner</td></tr>
+        <tr><td>pg-lsb-release.hook</td><td class="dc">lsb-release</td><td class="dc">Install, Upgrade</td><td class="dc">pg-hooks-runner lsb-release</td></tr>
+        <tr><td>25-pg-os-release.hook</td><td class="dc">filesystem</td><td class="dc">Install, Upgrade</td><td class="dc">pg-hooks-runner os-release</td></tr>
+        <tr><td>pg-reboot-notify.hook</td><td class="dc">linux, linux-lts, linux-zen, linux-hardened, systemd</td><td class="dc">Upgrade</td><td class="dc">pg-reboot-notify</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="files-ref">
+  <h2 class="section-title"><span class="section-icon">📁</span>Установленные файлы — сводная таблица</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Путь</th><th>Пакет</th><th>Описание</th></tr></thead>
+      <tbody>
+        <tr><td>/usr/bin/pg-gpu-sync</td><td class="tc">pg-gpu-sync</td><td class="dc">Главный скрипт GPU-менеджера</td></tr>
+        <tr><td>/usr/bin/pg-hooks-runner</td><td class="tc">pg-hooks</td><td class="dc">Восстановитель дистро-идентичности</td></tr>
+        <tr><td>/usr/bin/pg-nvidia-fix</td><td class="tc">pg-nvidia-hook</td><td class="dc">Инструмент пересборки initramfs</td></tr>
+        <tr><td>/usr/bin/pg-reboot-notify</td><td class="tc">pg-reboot-notify</td><td class="dc">Проверка необходимости перезагрузки</td></tr>
+        <tr><td>/usr/bin/pg-update</td><td class="tc">pg-update</td><td class="dc">Проверка обновлений</td></tr>
+        <tr><td>/usr/lib/equestria-nvidia-dkms/equestria-nvidia-dkms-update</td><td class="tc">equestria-nvidia-dkms</td><td class="dc">Загрузчик и компилятор NVIDIA-драйвера</td></tr>
+        <tr><td>/usr/lib/systemd/system/pg-gpu-watch.service</td><td class="tc">pg-gpu-sync</td><td class="dc">Системный сервис (root)</td></tr>
+        <tr><td>/usr/lib/systemd/user/pg-update.service</td><td class="tc">pg-update</td><td class="dc">Пользовательский сервис</td></tr>
+        <tr><td>/usr/lib/systemd/user/pg-update.timer</td><td class="tc">pg-update</td><td class="dc">Пользовательский таймер (каждый час)</td></tr>
+        <tr><td>/usr/share/libalpm/hooks/equestria-nvidia-dkms.hook</td><td class="tc">equestria-nvidia-dkms</td><td class="dc">Pacman hook</td></tr>
+        <tr><td>/usr/share/libalpm/hooks/pg-nvidia-fix.hook</td><td class="tc">pg-nvidia-hook</td><td class="dc">Pacman hook</td></tr>
+        <tr><td>/usr/share/libalpm/hooks/pg-hooks.hook</td><td class="tc">pg-hooks</td><td class="dc">Pacman hook</td></tr>
+        <tr><td>/usr/share/libalpm/hooks/pg-lsb-release.hook</td><td class="tc">pg-hooks</td><td class="dc">Pacman hook</td></tr>
+        <tr><td>/usr/share/libalpm/hooks/25-pg-os-release.hook</td><td class="tc">pg-hooks</td><td class="dc">Pacman hook (приоритет 25)</td></tr>
+        <tr><td>/usr/share/libalpm/hooks/pg-reboot-notify.hook</td><td class="tc">pg-reboot-notify</td><td class="dc">Pacman hook</td></tr>
+        <tr><td>/usr/share/pacman/keyrings/equestria-os.gpg</td><td class="tc">equestria-os-keyring</td><td class="dc">Открытый GPG-ключ</td></tr>
+        <tr><td>/usr/share/pacman/keyrings/equestria-os-trusted</td><td class="tc">equestria-os-keyring</td><td class="dc">Доверенные отпечатки</td></tr>
+        <tr><td>/usr/share/pacman/keyrings/equestria-os-revoked</td><td class="tc">equestria-os-keyring</td><td class="dc">Отозванные ключи</td></tr>
+        <tr><td>/usr/share/pg-gpu-sync/drivers/</td><td class="tc">pg-gpu-sync</td><td class="dc">Офлайн-кэш .pkg.tar.zst</td></tr>
+        <tr><td>/var/lib/pg-gpu-sync/gpu-family</td><td class="tc">pg-gpu-sync</td><td class="dc">Runtime: сохранённое GPU семейство</td></tr>
+        <tr><td>/tmp/pg-update-last-count</td><td class="tc">pg-update</td><td class="dc">Runtime: кэш последнего числа обновлений</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     LEARN
+════════════════════════════════════════════════════════ -->
+<section class="section" id="learn">
+  <h2 class="section-title"><span class="section-icon">🎓</span>Что изучать</h2>
+  <p class="section-sub">
+    Карта знаний для разработчика, который хочет понимать, изменять или развивать эти пакеты.
+    От базовых навыков — к специфическим темам каждого пакета.
+  </p>
+
+  <div class="callout tip">
+    <span class="callout-icon">💡</span>
+    <div>Порядок важен. Bash-скриптинг и устройство pacman — фундамент для <em>всех</em> пакетов.
+    Остальные темы можно изучать параллельно, ориентируясь на тот пакет, с которым работаешь.</div>
+  </div>
+
+  <!-- ── 1. Foundation ──────────────────────────────────── -->
+  <div class="subsection" id="learn-foundation">
+    <h3 class="subsection-title">1. Основа — нужна для всех пакетов</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>🐚 Bash scripting</h4>
+        <p>Все скрипты написаны на Bash. Нужно уверенно понимать:</p>
+        <ul>
+          <li>Переменные, массивы, арифметика</li>
+          <li>Условия: <code>if/case</code>, коды возврата</li>
+          <li>Функции и передача аргументов</li>
+          <li>Циклы: <code>for/while</code></li>
+          <li>Pipe, подстановка команд <code>$()</code></li>
+          <li>Перенаправление: <code>&gt; &gt;&gt; 2&gt;&amp;1 &gt;/dev/null</code></li>
+          <li><code>grep -q</code>, <code>sed</code>, <code>awk</code> — базовые инструменты</li>
+          <li><code>command -v</code> для проверки наличия утилит</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>📦 Arch Linux packaging</h4>
+        <p>Основа для написания и редактирования пакетов:</p>
+        <ul>
+          <li>Структура <code>PKGBUILD</code>: pkgname, pkgver, depends, install</li>
+          <li>Функции <code>package()</code>, <code>build()</code></li>
+          <li>Команда <code>makepkg -si</code></li>
+          <li>Файлы <code>.install</code>: post_install, pre_remove</li>
+          <li>Репозитории: <code>pacman.conf</code>, custom repo</li>
+          <li><code>.SRCINFO</code> — метаданные для AUR</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🪝 Pacman libalpm hooks</h4>
+        <p>Механизм автоматических реакций на события pacman:</p>
+        <ul>
+          <li>Формат <code>.hook</code> файла: [Trigger] + [Action]</li>
+          <li>Типы операций: Install, Upgrade, Remove</li>
+          <li>Типы целей: Package, File, Path</li>
+          <li>When: <code>PreTransaction</code> vs <code>PostTransaction</code></li>
+          <li>Флаг <code>NeedsTargets</code></li>
+          <li>Директория: <code>/usr/share/libalpm/hooks/</code></li>
+          <li>Нумерация (<code>25-</code>) для управления порядком</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🐧 Linux базовые концепции</h4>
+        <ul>
+          <li>Права доступа: chmod, chown, umask</li>
+          <li>Переменные окружения: <code>export</code>, <code>/etc/environment</code></li>
+          <li>Иерархия файловой системы (FHS)</li>
+          <li><code>/usr/lib/</code>, <code>/usr/share/</code>, <code>/etc/</code>, <code>/var/</code>, <code>/run/</code></li>
+          <li>Процессы: <code>$?</code>, коды возврата, сигналы</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>Что почитать</span></div>
+      <pre><code><span class="cm"># Bash</span>
+Bash Reference Manual — gnu.org/software/bash/manual
+Advanced Bash-Scripting Guide — tldp.org/LDP/abs/html
+
+<span class="cm"># Arch packaging</span>
+wiki.archlinux.org/title/PKGBUILD
+wiki.archlinux.org/title/Creating_packages
+wiki.archlinux.org/title/Pacman#Hooks (libalpm hooks)</code></pre>
+    </div>
+  </div>
+
+  <!-- ── 2. Kernel & Modules ───────────────────────────── -->
+  <div class="subsection" id="learn-kernel">
+    <h3 class="subsection-title">2. Ядро Linux и модули — для pg-gpu-sync, pg-nvidia-hook, equestria-nvidia-dkms</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>🔩 Модули ядра Linux</h4>
+        <ul>
+          <li>Что такое <code>.ko</code> файл</li>
+          <li><code>lsmod</code>, <code>modinfo</code>, <code>modprobe</code>, <code>rmmod</code></li>
+          <li>Параметры модулей: <code>modprobe.d/</code></li>
+          <li>Blacklist: <code>blacklist nouveau</code></li>
+          <li>Автозагрузка: <code>/etc/modules-load.d/</code></li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🗜️ initramfs</h4>
+        <ul>
+          <li>Зачем нужен initramfs (ранняя загрузка)</li>
+          <li><code>mkinitcpio</code>: конфиг, хуки, пресеты</li>
+          <li><code>/etc/mkinitcpio.conf</code>: MODULES, HOOKS</li>
+          <li><code>mkinitcpio -P</code> — пересборка всех</li>
+          <li><code>dracut</code> — альтернатива mkinitcpio</li>
+          <li>Зачем NVIDIA-модули должны быть в initramfs</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🔍 PCI и определение устройств</h4>
+        <ul>
+          <li><code>lspci</code> — список PCI-устройств</li>
+          <li>Vendor ID NVIDIA: <code>10de</code></li>
+          <li><code>lspci -d 10de:</code> — только NVIDIA</li>
+          <li>PCI ID базы данных: <code>pciids.sourceforge.net</code></li>
+          <li>Как определить поколение GPU по коду чипа (GK, GM, GP, TU…)</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🏗️ DKMS</h4>
+        <ul>
+          <li>Зачем DKMS: пересборка модулей при обновлении ядра</li>
+          <li><code>dkms.conf</code>: BUILT_MODULE_NAME, DEST_MODULE</li>
+          <li><code>dkms add/build/install/remove</code></li>
+          <li><code>dkms status</code> — проверка состояния</li>
+          <li>Расположение исходников: <code>/usr/src/MODULE-VERSION/</code></li>
+          <li>Необходимость kernel-headers (<code>linux-headers</code>)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>Что почитать</span></div>
+      <pre><code><span class="cm"># initramfs / mkinitcpio</span>
+wiki.archlinux.org/title/Mkinitcpio
+wiki.archlinux.org/title/Dracut
+
+<span class="cm"># DKMS</span>
+wiki.archlinux.org/title/Dynamic_Kernel_Module_Support
+github.com/dell/dkms (официальная документация DKMS)
+
+<span class="cm"># Модули ядра</span>
+wiki.archlinux.org/title/Kernel_module</code></pre>
+    </div>
+  </div>
+
+  <!-- ── 3. NVIDIA ─────────────────────────────────────── -->
+  <div class="subsection" id="learn-nvidia">
+    <h3 class="subsection-title">3. NVIDIA и драйверы — для equestria-nvidia-dkms, pg-gpu-sync</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>🎮 Архитектура NVIDIA-драйвера</h4>
+        <ul>
+          <li>Пять модулей: <code>nvidia</code>, <code>nvidia-modeset</code>, <code>nvidia-uvm</code>, <code>nvidia-drm</code>, <code>nvidia-peermem</code></li>
+          <li>Проприетарный vs open-source (nvidia-open)</li>
+          <li>nvidia-utils: userspace библиотеки</li>
+          <li>libglvnd: прослойка OpenGL dispatch</li>
+          <li>Версионирование: driver == CUDA toolkit version</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>📥 NVIDIA .run установщик</h4>
+        <ul>
+          <li>Формат <code>NVIDIA-Linux-x86_64-VER.run</code></li>
+          <li>Флаг <code>--extract-only</code>: только распаковать</li>
+          <li>Структура извлечённого архива</li>
+          <li>URL: <code>download.nvidia.com/XFree86/Linux-x86_64/</code></li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🌙 nouveau</h4>
+        <ul>
+          <li>Open-source драйвер NVIDIA (ядро Linux)</li>
+          <li>Почему его нужно blacklist'ить при использовании проприетарного</li>
+          <li><code>options nouveau modeset=0</code></li>
+          <li>Когда nouveau — правильный выбор (старые GPU)</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🔢 Поколения GPU и их коды</h4>
+        <ul>
+          <li>GF = Fermi, GK = Kepler, GM = Maxwell</li>
+          <li>GP = Pascal, GV = Volta, TU = Turing</li>
+          <li>GA = Ampere, AD = Ada Lovelace, GB = Blackwell</li>
+          <li>Как эти коды появляются в <code>lspci</code></li>
+          <li>Таблица поддержки драйверов по поколениям</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🌊 Wayland + NVIDIA DRM</h4>
+        <ul>
+          <li>DRM KMS: <code>nvidia-drm.modeset=1</code></li>
+          <li>GBM backend: <code>GBM_BACKEND=nvidia-drm</code></li>
+          <li>EGL + Wayland: <code>__GLX_VENDOR_LIBRARY_NAME=nvidia</code></li>
+          <li>NVIDIA suspend/hibernate systemd сервисы</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>💤 NVIDIA suspend/resume</h4>
+        <ul>
+          <li><code>nvidia-suspend.service</code></li>
+          <li><code>nvidia-resume.service</code></li>
+          <li><code>nvidia-hibernate.service</code></li>
+          <li>Зачем: preserve memory allocation при suspend</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>Что почитать</span></div>
+      <pre><code><span class="cm"># Arch Wiki — главный источник</span>
+wiki.archlinux.org/title/NVIDIA
+wiki.archlinux.org/title/NVIDIA/Tips_and_tricks
+wiki.archlinux.org/title/NVIDIA#DRM_kernel_mode_setting
+
+<span class="cm"># Официальная документация NVIDIA</span>
+download.nvidia.com/XFree86/Linux-x86_64/latest/README/
+
+<span class="cm"># nouveau</span>
+wiki.archlinux.org/title/Nouveau</code></pre>
+    </div>
+  </div>
+
+  <!-- ── 4. systemd ────────────────────────────────────── -->
+  <div class="subsection" id="learn-systemd">
+    <h3 class="subsection-title">4. systemd — для pg-gpu-sync, pg-update</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>⚙️ Unit-файлы</h4>
+        <ul>
+          <li>Секции: [Unit], [Service], [Install]</li>
+          <li>Type: <code>oneshot</code>, <code>simple</code>, <code>forking</code></li>
+          <li>ExecStart, After, WantedBy</li>
+          <li>TimeoutStartSec</li>
+          <li><code>systemctl enable/start/status</code></li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>⏱️ Таймеры</h4>
+        <ul>
+          <li><code>.timer</code> файлы как замена cron</li>
+          <li><code>OnBootSec</code>: через N после загрузки</li>
+          <li><code>OnUnitActiveSec</code>: периодически</li>
+          <li><code>OnCalendar</code>: по расписанию</li>
+          <li><code>systemctl list-timers</code></li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>👤 User services</h4>
+        <ul>
+          <li>Отличие от system-wide сервисов</li>
+          <li>Директория: <code>/usr/lib/systemd/user/</code></li>
+          <li><code>systemctl --user enable/start</code></li>
+          <li>Зачем: <code>notify-send</code> требует user session</li>
+          <li>Переменная <code>DBUS_SESSION_BUS_ADDRESS</code></li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>📋 Диагностика</h4>
+        <ul>
+          <li><code>journalctl -u UNIT</code> — логи сервиса</li>
+          <li><code>systemctl status UNIT</code></li>
+          <li><code>systemd-analyze blame</code></li>
+          <li><code>systemctl is-system-running</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>Что почитать</span></div>
+      <pre><code><span class="cm"># systemd</span>
+wiki.archlinux.org/title/systemd
+wiki.archlinux.org/title/systemd/Timers
+wiki.archlinux.org/title/systemd/User
+
+<span class="cm"># Официальные man-страницы</span>
+man systemd.service
+man systemd.timer
+man systemd.unit</code></pre>
+    </div>
+  </div>
+
+  <!-- ── 5. Wayland / DRM ──────────────────────────────── -->
+  <div class="subsection" id="learn-wayland">
+    <h3 class="subsection-title">5. Wayland, DRM, KMS — для pg-gpu-sync</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>🖥️ Стек отображения Linux</h4>
+        <ul>
+          <li>DRM (Direct Rendering Manager) — ядро</li>
+          <li>KMS (Kernel Mode Setting) — управление режимами</li>
+          <li>GBM (Generic Buffer Manager) — буферы</li>
+          <li>EGL — интерфейс между GPU и compositor</li>
+          <li>Wayland протокол vs X11</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🔧 Переменные окружения</h4>
+        <ul>
+          <li><code>GBM_BACKEND=nvidia-drm</code></li>
+          <li><code>__GLX_VENDOR_LIBRARY_NAME=nvidia</code></li>
+          <li><code>WLR_NO_HARDWARE_CURSORS=1</code></li>
+          <li><code>KWIN_DRM_USE_EGL_STREAMS</code></li>
+          <li>Где задавать: <code>/etc/environment.d/</code></li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🪟 KDE KWin + NVIDIA</h4>
+        <ul>
+          <li>Compositor backend: OpenGL (EGL)</li>
+          <li><code>/etc/xdg/kwinrc</code> — конфиг KWin</li>
+          <li>NVIDIA-специфичные настройки KWin</li>
+          <li>Проблемы: тearing, screen sharing</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>Что почитать</span></div>
+      <pre><code><span class="cm"># Wayland на Arch с NVIDIA</span>
+wiki.archlinux.org/title/NVIDIA#Wayland
+wiki.archlinux.org/title/Wayland
+
+<span class="cm"># KDE/KWin</span>
+wiki.archlinux.org/title/KDE#Wayland</code></pre>
+    </div>
+  </div>
+
+  <!-- ── 6. GPG ────────────────────────────────────────── -->
+  <div class="subsection" id="learn-gpg">
+    <h3 class="subsection-title">6. GPG и keyring pacman — для equestria-os-keyring</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>🔐 GPG / OpenPGP основы</h4>
+        <ul>
+          <li>Асимметричная криптография: публичный и приватный ключ</li>
+          <li>Подпись и верификация</li>
+          <li>Fingerprint ключа (отпечаток)</li>
+          <li>Web of Trust модель доверия</li>
+          <li>RSA vs Ed25519</li>
+          <li>Формат: OpenPGP Public Key v4</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>📦 Pacman keyring</h4>
+        <ul>
+          <li>Как pacman верифицирует пакеты</li>
+          <li><code>pacman-key --init</code>, <code>--populate</code></li>
+          <li>Файлы keyring: <code>.gpg</code>, <code>-trusted</code>, <code>-revoked</code></li>
+          <li>Директория: <code>/usr/share/pacman/keyrings/</code></li>
+          <li><code>pacman-key --add</code>, <code>--lsign-key</code></li>
+          <li>SigLevel в <code>pacman.conf</code></li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🗝️ Управление ключами GPG</h4>
+        <ul>
+          <li><code>gpg --gen-key</code> / <code>--full-gen-key</code></li>
+          <li><code>gpg --export --armor KEY_ID</code></li>
+          <li><code>gpg --fingerprint</code></li>
+          <li><code>gpg --recv-keys</code> (keyserver)</li>
+          <li>Отзыв ключа: revocation certificate</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>Что почитать</span></div>
+      <pre><code><span class="cm"># Pacman keyring</span>
+wiki.archlinux.org/title/Pacman/Package_signing
+
+<span class="cm"># GPG</span>
+gnupg.org/documentation/
+wiki.archlinux.org/title/GnuPG
+
+<span class="cm"># Как устроены дистро-keyring пакеты</span>
+<span class="cm"># Пример: github.com/archlinux/archlinux-keyring</span></code></pre>
+    </div>
+  </div>
+
+  <!-- ── 7. Notifications ──────────────────────────────── -->
+  <div class="subsection" id="learn-notify">
+    <h3 class="subsection-title">7. Уведомления и Desktop Integration — для pg-update, pg-reboot-notify</h3>
+    <div class="card-grid">
+      <div class="card-sm">
+        <h4>🔔 libnotify / notify-send</h4>
+        <ul>
+          <li>Freedesktop Desktop Notifications spec</li>
+          <li>Флаги: <code>--app-name</code>, <code>--icon</code>, <code>--urgency</code>, <code>--expire-time</code></li>
+          <li>Уровни urgency: low, normal, critical</li>
+          <li>Иконки: системные (XDG icon theme)</li>
+          <li>D-Bus — транспорт уведомлений</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>📊 checkupdates и pacman API</h4>
+        <ul>
+          <li><code>checkupdates</code> из пакета <code>pacman-contrib</code></li>
+          <li>Безопасная проверка без изменения системы</li>
+          <li><code>pacman -Qu</code> — устаревшие пакеты</li>
+          <li><code>pacman -Si</code> — инфо о пакете</li>
+          <li><code>pacman -Q</code> — установленные</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🌐 Внешние менеджеры пакетов</h4>
+        <ul>
+          <li>yay: AUR helper, <code>yay -Qua</code></li>
+          <li>flatpak: <code>flatpak remote-ls --updates</code></li>
+          <li>snap: <code>snap refresh --list</code></li>
+          <li>Graceful degradation если не установлены</li>
+        </ul>
+      </div>
+      <div class="card-sm">
+        <h4>🔎 Обнаружение необходимости перезагрузки</h4>
+        <ul>
+          <li><code>uname -r</code> — запущенное ядро</li>
+          <li><code>/etc/mkinitcpio.d/*.preset</code> — установленные</li>
+          <li><code>/run/reboot-required</code> — флаг</li>
+          <li><code>systemctl is-system-running</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pre-wrap">
+      <div class="pre-header"><span>Что почитать</span></div>
+      <pre><code><span class="cm"># Desktop Notifications</span>
+specifications.freedesktop.org/notification-spec/latest/
+man notify-send
+
+<span class="cm"># pacman-contrib (checkupdates)</span>
+gitlab.archlinux.org/pacman/pacman-contrib
+
+<span class="cm"># AUR helpers</span>
+wiki.archlinux.org/title/AUR_helpers</code></pre>
+    </div>
+  </div>
+
+  <!-- ── Roadmap ───────────────────────────────────────── -->
+  <div class="subsection" id="learn-roadmap">
+    <h3 class="subsection-title">Дорожная карта обучения</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Этап</th><th>Тема</th><th>Нужна для</th><th>Приоритет</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td class="dc">Bash scripting (переменные, функции, условия, pipe)</td>
+            <td class="dc">Все пакеты</td>
+            <td><span class="tag tag-red" style="font-size:.7rem">обязательно</span></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td class="dc">Arch packaging: PKGBUILD, makepkg, .install хуки</td>
+            <td class="dc">Все пакеты</td>
+            <td><span class="tag tag-red" style="font-size:.7rem">обязательно</span></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td class="dc">Libalpm hooks: формат .hook, операции, порядок</td>
+            <td class="dc">Все пакеты</td>
+            <td><span class="tag tag-red" style="font-size:.7rem">обязательно</span></td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td class="dc">Модули ядра Linux: lsmod, modprobe, blacklist, параметры</td>
+            <td class="dc">equestria-nvidia-dkms, pg-gpu-sync, pg-nvidia-hook</td>
+            <td><span class="tag tag-peach" style="font-size:.7rem">высокий</span></td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td class="dc">mkinitcpio: конфиг, пресеты, хуки, пересборка</td>
+            <td class="dc">pg-nvidia-hook, pg-gpu-sync, equestria-nvidia-dkms</td>
+            <td><span class="tag tag-peach" style="font-size:.7rem">высокий</span></td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td class="dc">DKMS: принцип работы, dkms.conf, статусы, kernel-headers</td>
+            <td class="dc">equestria-nvidia-dkms, pg-nvidia-hook</td>
+            <td><span class="tag tag-peach" style="font-size:.7rem">высокий</span></td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td class="dc">NVIDIA-драйвер: модули, версии, .run установщик, поколения GPU</td>
+            <td class="dc">equestria-nvidia-dkms, pg-gpu-sync</td>
+            <td><span class="tag tag-peach" style="font-size:.7rem">высокий</span></td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td class="dc">systemd: unit-файлы, oneshot, таймеры, user services</td>
+            <td class="dc">pg-gpu-sync, pg-update</td>
+            <td><span class="tag tag-yellow" style="font-size:.7rem">средний</span></td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td class="dc">lspci: PCI vendor IDs, определение GPU по коду чипа</td>
+            <td class="dc">pg-gpu-sync</td>
+            <td><span class="tag tag-yellow" style="font-size:.7rem">средний</span></td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td class="dc">Wayland + NVIDIA: DRM modeset, GBM, env-переменные, KWin</td>
+            <td class="dc">pg-gpu-sync</td>
+            <td><span class="tag tag-yellow" style="font-size:.7rem">средний</span></td>
+          </tr>
+          <tr>
+            <td>11</td>
+            <td class="dc">GPG/OpenPGP: асимметричная криптография, fingerprint, доверие</td>
+            <td class="dc">equestria-os-keyring</td>
+            <td><span class="tag tag-yellow" style="font-size:.7rem">средний</span></td>
+          </tr>
+          <tr>
+            <td>12</td>
+            <td class="dc">Pacman keyring: pacman-key, структура keyring-пакета, SigLevel</td>
+            <td class="dc">equestria-os-keyring</td>
+            <td><span class="tag tag-yellow" style="font-size:.7rem">средний</span></td>
+          </tr>
+          <tr>
+            <td>13</td>
+            <td class="dc">libnotify / notify-send: freedesktop spec, D-Bus, флаги</td>
+            <td class="dc">pg-update, pg-reboot-notify</td>
+            <td><span class="tag tag-green" style="font-size:.7rem">базовый</span></td>
+          </tr>
+          <tr>
+            <td>14</td>
+            <td class="dc">checkupdates, yay -Qua, flatpak, snap — проверка обновлений</td>
+            <td class="dc">pg-update</td>
+            <td><span class="tag tag-green" style="font-size:.7rem">базовый</span></td>
+          </tr>
+          <tr>
+            <td>15</td>
+            <td class="dc">os-release формат, lsb-release, /etc/issue — дистро-идентичность</td>
+            <td class="dc">pg-hooks</td>
+            <td><span class="tag tag-green" style="font-size:.7rem">базовый</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">📚</span>
+      <div>
+        <strong>Лучший способ учиться</strong> — читать и модифицировать сами скрипты. Все они короткие
+        (60–120 строк), хорошо структурированы и делают одно конкретное дело. Начни с <code>pg-hooks-runner</code>
+        (92 строки, простая логика) → <code>pg-reboot-notify</code> → <code>pg-nvidia-fix</code> →
+        <code>pg-update</code> → <code>pg-gpu-sync</code> (самый сложный, 861 строка).
+        <br><br>
+        <strong>Arch Wiki</strong> — главный источник истины для большинства тем.
+        <strong>man-страницы</strong> — для деталей конкретных команд.
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- ═══════════════════ FOOTER ═══════════════════════════ -->
+<footer class="site-footer">
+  <div>Equestria OS Packages — Документация для разработчика</div>
+  <div>GPL-3.0 · <a href="https://psyche-games.com">psyche-games.com</a></div>
+</footer>
+
+<script>
+  const secs = document.querySelectorAll('[id]');
+  const links = document.querySelectorAll('.sidebar nav a[href^="#"]');
+  function upd() {
+    let cur = '';
+    secs.forEach(s => { if (window.scrollY >= s.offsetTop - 80) cur = s.id; });
+    links.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    });
+  }
+  window.addEventListener('scroll', upd, {passive:true});
+  upd();
+</script>
+</body>
+</html>

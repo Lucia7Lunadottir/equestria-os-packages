@@ -1,0 +1,37 @@
+# Maintainer: Твое Имя <твоя@почта.com>
+pkgname=equestria-installer
+pkgver=1.0
+pkgrel=1
+pkgdesc="Graphical local package installer for Equestria OS"
+arch=('any')
+url="https://github.com/Lucia7Lunadottir"
+license=('GPL3')
+depends=('python' 'python-pyqt6' 'polkit')
+makedepends=('qt6-tools')
+
+source=('installer.py'
+        'equestria-installer.desktop'
+        'ru_RU.ts')
+
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP')
+
+build() {
+    cd "${srcdir}"
+    # Используем полный путь к lrelease из qt6-tools
+    /usr/lib/qt6/bin/lrelease ru_RU.ts
+}
+
+package() {
+    cd "${srcdir}"
+    
+    # 1. Скрипт
+    install -Dm755 installer.py "${pkgdir}/usr/bin/equestria-installer"
+
+    # 2. Desktop-файл (уже с переводами внутри)
+    install -Dm644 equestria-installer.desktop "${pkgdir}/usr/share/applications/equestria-installer.desktop"
+
+    # 3. Файл скомпилированного перевода
+    install -Dm644 ru_RU.qm "${pkgdir}/usr/share/equestria-installer/translations/ru_RU.qm"
+}

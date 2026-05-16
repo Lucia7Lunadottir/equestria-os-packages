@@ -10,7 +10,7 @@ DefaultDependencies=no
 Type=oneshot
 ExecStart=/usr/bin/pg-gpu-sync --auto
 RemainAfterExit=no
-TimeoutStartSec=120
+TimeoutStartSec=7200
 
 [Install]
 WantedBy=multi-user.target

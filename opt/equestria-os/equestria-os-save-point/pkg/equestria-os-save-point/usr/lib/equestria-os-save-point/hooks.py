@@ -1,12 +1,14 @@
 import os
 import shlex
 
+
 PACMAN_HOOK_PATH  = "/etc/pacman.d/hooks/equestria-save-point.hook"
 FLATPAK_HOOK_PATH = "/etc/profile.d/60-equestria-save-point.sh"
-HOOK_SCRIPT_SRC   = "/opt/equestria-os-save-point/equestria-save-point.hook"
-FLATPAK_SCRIPT_SRC= "/opt/equestria-os-save-point/flatpak-hook.sh"
+HOOK_SCRIPT_SRC   = "/usr/lib/equestria-os-save-point/equestria-save-point.hook"
+FLATPAK_SCRIPT_SRC= "/usr/lib/equestria-os-save-point/flatpak-hook.sh"
 HOOK_CONFIG_PATH  = "/var/lib/equestria-save-point/hook-config"
 REPO_PATH_SYS     = "/var/lib/equestria-save-point/repo-path"
+
 
 def check_hooks_installed() -> tuple[bool, bool]:
     return (

@@ -1,0 +1,2617 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equestria OS — Developer Documentation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sb-logo">⬡ Equestria OS</div>
+
+  <div class="sb-section">Обзор</div>
+  <a href="#overview"       class="sb-link">Все 17 приложений</a>
+  <a href="#common-init"    class="sb-link">Инициализация QApp</a>
+  <a href="#common-priv"    class="sb-link">Паттерн привилегий</a>
+  <a href="#common-i18n"    class="sb-link">Локализация</a>
+  <a href="#common-signals" class="sb-link">Сигналы + потоки</a>
+
+  <div class="sb-section">Приложения</div>
+  <a href="#app-desktop-editor"   class="sb-link">desktop-editor-ui</a>
+  <a href="#app-character-theme"  class="sb-link">character-theme</a>
+  <a href="#app-disk-manager"     class="sb-link">disk-manager</a>
+  <a href="#app-git-askpass"      class="sb-link">git-askpass</a>
+  <a href="#app-package-manager"  class="sb-link">package-manager</a>
+  <a href="#app-relocator"        class="sb-link">relocator</a>
+  <a href="#app-rename-helper"    class="sb-link">rename-helper</a>
+  <a href="#app-save-point"       class="sb-link">save-point</a>
+  <a href="#app-services-manager" class="sb-link">services-manager</a>
+  <a href="#app-settings"         class="sb-link">settings</a>
+  <a href="#app-software-center"  class="sb-link">software-center</a>
+  <a href="#app-swap-manager"     class="sb-link">swap-manager</a>
+  <a href="#app-tutorial"         class="sb-link">tutorial</a>
+  <a href="#app-welcome-hub"      class="sb-link">welcome-hub</a>
+  <a href="#app-task-panel"       class="sb-link">task-panel-changer</a>
+  <a href="#app-rankmirrors"      class="sb-link">pg-rankmirrors</a>
+  <a href="#app-proton"           class="sb-link">proton-exe-starter</a>
+
+  <div class="sb-section">Модули Settings</div>
+  <a href="#base-module"    class="sb-link">BaseModule ABC</a>
+  <a href="#modules-list"   class="sb-link">13 модулей</a>
+  <a href="#module-example" class="sb-link">Пример модуля</a>
+
+  <div class="sb-section">Обучение</div>
+  <a href="#learn" class="sb-link">Что изучать</a>
+</nav>
+
+<main class="content">
+
+<!-- ══════════════════════ HERO ══════════════════════ -->
+<section class="hero">
+  <h1>Equestria OS<br><span>Developer Documentation</span></h1>
+  <p>17 PyQt6-приложений системного уровня — архитектура, реальный код, паттерны и учебная дорожная карта для самостоятельной отладки</p>
+  <div class="hero-tags">
+    <span class="tag">Python 3</span>
+    <span class="tag">PyQt6</span>
+    <span class="tag">KDE Plasma 6</span>
+    <span class="tag">Arch Linux / PKGBUILD</span>
+    <span class="tag">Polkit / pkexec</span>
+    <span class="tag">systemd</span>
+    <span class="tag">10 языков</span>
+    <span class="tag">libalpm hooks</span>
+  </div>
+</section>
+
+<!-- ══════════════════════ OVERVIEW GRID ══════════════════════ -->
+<section id="overview">
+  <h2>Все 17 приложений</h2>
+  <p>Каждое — отдельный Arch-пакет, устанавливается в <code>/opt/equestria-os/&lt;pkgname&gt;/</code>, бинарь-обёртка в <code>/usr/bin/</code>.</p>
+
+  <div class="app-grid">
+    <div class="app-card ac1">
+      <div class="app-card-title">desktop-editor-ui</div>
+      <div class="app-card-ver">v1.0.0-6</div>
+      <div class="app-card-desc">Создание и редактирование .desktop-файлов с мультиязычными полями, превью иконок и прямой установкой в ~/.local/share/applications/</div>
+      <div class="app-card-tags"><span class="tag sm">QDialog</span><span class="tag sm">locales.json</span><span class="tag sm">LocalizationDialog</span></div>
+    </div>
+    <div class="app-card ac2">
+      <div class="app-card-title">character-theme</div>
+      <div class="app-card-ver">v2.0.3-8</div>
+      <div class="app-card-desc">Переключатель тем MLP: 7 персонажей, цветовые схемы KDE, Konsole-темы, обои, fastfetch-логотипы, .bashrc-хуки</div>
+      <div class="app-card-tags"><span class="tag sm">EGCharacter dataclass</span><span class="tag sm">plasma-apply-*</span><span class="tag sm">CSV i18n</span></div>
+    </div>
+    <div class="app-card ac3">
+      <div class="app-card-title">disk-manager</div>
+      <div class="app-card-ver">v1.1.0-8</div>
+      <div class="app-card-desc">GUI для монтирования, редактирования fstab, установки меток и прав доступа. Разделение frontend/backend через pkexec</div>
+      <div class="app-card-tags"><span class="tag sm">SymbolToggle</span><span class="tag sm">FstabOptionsWidget</span><span class="tag sm">privilege.py</span></div>
+    </div>
+    <div class="app-card ac4">
+      <div class="app-card-title">git-askpass</div>
+      <div class="app-card-ver">v1.0.1-2</div>
+      <div class="app-card-desc">GUI-диалог для GIT_ASKPASS / SSH_ASKPASS. Получает prompt из argv[1], возвращает ответ на stdout. Авто-определение пароль/текст</div>
+      <div class="app-card-tags"><span class="tag sm">AskPassDialog</span><span class="tag sm">profile.d</span><span class="tag sm">EchoMode</span></div>
+    </div>
+    <div class="app-card ac5">
+      <div class="app-card-title">package-manager</div>
+      <div class="app-card-ver">v2.2.1-7</div>
+      <div class="app-card-desc">Деинсталлятор пакетов Pacman/AUR/Flatpak с категоризацией, поиском и диалогом подтверждения. Uninstall в потоке через pyqtSignal</div>
+      <div class="app-card-tags"><span class="tag sm">PackageData</span><span class="tag sm">threading</span><span class="tag sm">pyqtSignal</span></div>
+    </div>
+    <div class="app-card ac6">
+      <div class="app-card-title">relocator</div>
+      <div class="app-card-ver">v1.0.0-8</div>
+      <div class="app-card-desc">Перемещает файлы/папки в новое место, создаёт симлинк на старом пути. Интегрирован в Dolphin через KIO servicemenu</div>
+      <div class="app-card-tags"><span class="tag sm">RelocateWorker</span><span class="tag sm">KIO menu</span><span class="tag sm">NTFS guard</span></div>
+    </div>
+    <div class="app-card ac7">
+      <div class="app-card-title">rename-helper</div>
+      <div class="app-card-ver">v1.0.0-4</div>
+      <div class="app-card-desc">Пакетное переименование с предпросмотром, историей и undo. Операции: Find&amp;Replace, префикс/суффикс, нумерация</div>
+      <div class="app-card-tags"><span class="tag sm">HistoryDialog</span><span class="tag sm">bulk_rename</span><span class="tag sm">preview</span></div>
+    </div>
+    <div class="app-card ac8">
+      <div class="app-card-title">save-point</div>
+      <div class="app-card-ver">v1.2.0-3</div>
+      <div class="app-card-desc">Снапшоты системы: авто-выбор backend (Btrfs→Restic→Timeshift), pacman hook, systemd timer, скриншоты, auto-restore на загрузке</div>
+      <div class="app-card-tags"><span class="tag sm">SnapshotData</span><span class="tag sm">detect_backend()</span><span class="tag sm">libalpm hook</span></div>
+    </div>
+    <div class="app-card ac9">
+      <div class="app-card-title">services-manager</div>
+      <div class="app-card-ver">v2.2.0</div>
+      <div class="app-card-desc">GUI для systemctl: список всех сервисов (system+user), фильтрация по состоянию, start/stop/enable/disable через pkexec</div>
+      <div class="app-card-tags"><span class="tag sm">ServiceData</span><span class="tag sm">_fetch_scope()</span><span class="tag sm">ServiceRow</span></div>
+    </div>
+    <div class="app-card ac1">
+      <div class="app-card-title">settings</div>
+      <div class="app-card-ver">v1.3.1</div>
+      <div class="app-card-desc">Единый центр настроек: 13 плагин-модулей, авто-обнаружение через importlib, ленивая загрузка, SidebarDelegate, live-смена языка</div>
+      <div class="app-card-tags"><span class="tag sm">BaseModule ABC</span><span class="tag sm">importlib</span><span class="tag sm">SidebarDelegate</span></div>
+    </div>
+    <div class="app-card ac2">
+      <div class="app-card-title">software-center</div>
+      <div class="app-card-ver">v1.3.3</div>
+      <div class="app-card-desc">Менеджер пакетов Pacman+AUR+Flatpak. 8 QThread-воркеров, AppStream XML, AUR JSON API, дедуп, пагинация 50/стр., кэш скриншотов</div>
+      <div class="app-card-tags"><span class="tag sm">AppStoreLoader</span><span class="tag sm">FlatpakLoader</span><span class="tag sm">AURSearchThread</span></div>
+    </div>
+    <div class="app-card ac3">
+      <div class="app-card-title">swap-manager</div>
+      <div class="app-card-ver">v2.0.1</div>
+      <div class="app-card-desc">Управление swap-файлом, zram (lzo-rle/zstd/lz4), swappiness, OOM killer, overcommit policy. Пресет "как Windows" одной кнопкой</div>
+      <div class="app-card-tags"><span class="tag sm">SwapWorker(QThread)</span><span class="tag sm">swap_backend.py</span><span class="tag sm">zram</span></div>
+    </div>
+    <div class="app-card ac4">
+      <div class="app-card-title">tutorial</div>
+      <div class="app-card-ver">v1.4.1-2</div>
+      <div class="app-card-desc">8-слайдовый интерактивный тур. RoundedImageLabel с QPainterPath, запуск приложений через парсинг .desktop-файлов, autostart-чекбокс</div>
+      <div class="app-card-tags"><span class="tag sm">RoundedImageLabel</span><span class="tag sm">QStackedWidget</span><span class="tag sm">.desktop parser</span></div>
+    </div>
+    <div class="app-card ac5">
+      <div class="app-card-title">welcome-hub</div>
+      <div class="app-card-ver">v2.3.0</div>
+      <div class="app-card-desc">Хаб с 5 категориями: System, Music, Games, Pony Social, Support. Item-launcher умеет открывать URL, Steam-ссылки и команды</div>
+      <div class="app-card-tags"><span class="tag sm">Item class</span><span class="tag sm">xdg-open</span><span class="tag sm">autostart</span></div>
+    </div>
+    <div class="app-card ac6">
+      <div class="app-card-title">task-panel-changer</div>
+      <div class="app-card-ver">v1.2.3</div>
+      <div class="app-card-desc">Кастомизация KDE Plasma 6 панели: цвета, прозрачность, пресеты, layout, SVG-тема. Управление через qdbus6 + plasmashell restart</div>
+      <div class="app-card-tags"><span class="tag sm">plasma_utils.py</span><span class="tag sm">qdbus6</span><span class="tag sm">appletsrc</span></div>
+    </div>
+    <div class="app-card ac7">
+      <div class="app-card-title">pg-rankmirrors</div>
+      <div class="app-card-ver">v2.1.1</div>
+      <div class="app-card-desc">Ранжирование зеркал Pacman по скорости. GUI + bash-backend через pkexec, systemd-таймер (еженедельно), libalpm hook (после pacman -Sy)</div>
+      <div class="app-card-tags"><span class="tag sm">bash backend</span><span class="tag sm">JSON stdout</span><span class="tag sm">systemd timer</span></div>
+    </div>
+    <div class="app-card ac8">
+      <div class="app-card-title">proton-exe-starter</div>
+      <div class="app-card-ver">latest</div>
+      <div class="app-card-desc">Запуск .exe через umu-run/Proton. Один код — три бинаря (dispatch по argv[0]). MD5-изолированные WINEPREFIX, DXVK_HUD, FSR, virtual desktop</div>
+      <div class="app-card-tags"><span class="tag sm">dispatch.py</span><span class="tag sm">MD5 prefix</span><span class="tag sm">SplashWindow</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ COMMON: INIT ══════════════════════ -->
+<section id="common-init">
+  <h2>Общий паттерн: инициализация QApplication</h2>
+  <p>Все 17 приложений разделяют одну схему запуска. Разница только в имени класса окна.</p>
+
+  <div class="file-tree">
+    <div class="ft-dir">pkgname/</div>
+    <div class="ft-file">├── main.py                <span class="ft-comment"># QApplication + загрузка шрифта/QSS + запуск окна</span></div>
+    <div class="ft-file">├── app.py / *_app.py      <span class="ft-comment"># QMainWindow с бизнес-логикой</span></div>
+    <div class="ft-file">├── ui_*.py                <span class="ft-comment"># компоненты UI (вручную или Qt Designer)</span></div>
+    <div class="ft-file">├── backend.py             <span class="ft-comment"># (если нужны права root) CLI-скрипт, запускается через pkexec</span></div>
+    <div class="ft-file">├── core.py                <span class="ft-comment"># логика без GUI (тесты можно писать отдельно)</span></div>
+    <div class="ft-file">├── privilege.py           <span class="ft-comment"># обёртка pkexec/kdesu (копируется в каждый пакет)</span></div>
+    <div class="ft-file">├── style.qss              <span class="ft-comment"># Catppuccin Mocha тёмная тема</span></div>
+    <div class="ft-file">├── equestria_cyrillic.ttf <span class="ft-comment"># кастомный шрифт с поддержкой кириллицы</span></div>
+    <div class="ft-file">├── *.png                  <span class="ft-comment"># иконка приложения</span></div>
+    <div class="ft-file">└── locales/ или localization.csv / locales.json</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">main.py — стандартный шаблон (package-manager, services-manager и др.)</div>
+    <pre><code>import sys, os
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui import QIcon, QFontDatabase, QFont
+from PyQt6.QtCore import Qt
+from app import MyApp   # главное окно
+
+app = QApplication(sys.argv)
+
+base_path = os.path.dirname(os.path.abspath(__file__))
+
+# 1. Кастомный шрифт (кириллица + уникальный стиль)
+f_path = os.path.join(base_path, "equestria_cyrillic.ttf")
+if os.path.exists(f_path):
+    fid = QFontDatabase.addApplicationFont(f_path)
+    families = QFontDatabase.applicationFontFamilies(fid)
+    if families:
+        # Применяем только к заголовкам; тело — системный шрифт
+        # (каждое окно сохраняет ссылку на families[0])
+        pass
+
+# 2. QSS-тема (заменяет все стандартные стили Qt)
+q_path = os.path.join(base_path, "style.qss")
+if os.path.exists(q_path):
+    app.setStyleSheet(open(q_path).read())
+
+# 3. Иконка в таскбаре / Alt+Tab
+icon_path = os.path.join(base_path, "myapp.png")
+if os.path.exists(icon_path):
+    app.setWindowIcon(QIcon(icon_path))
+
+# 4. Связь с .desktop (нужно для корректного значка в KDE)
+QApplication.setDesktopFileName("my-app-name")
+
+window = MyApp()
+window.show()
+sys.exit(app.exec())</code></pre>
+  </div>
+
+  <h3>Почему QApplication.setDesktopFileName() важен</h3>
+  <p>Без него KDE не может сопоставить запущенный процесс с .desktop-файлом. Иконка в таскбаре будет "пустой" вместо иконки приложения. Аргумент — имя файла без расширения, например <code>"equestria-os-services-manager"</code>.</p>
+
+  <h3>QFontDatabase — загрузка TTF во время выполнения</h3>
+  <div class="code-block">
+    <div class="code-header">Загрузка кастомного шрифта и применение к заголовку</div>
+    <pre><code>fid = QFontDatabase.addApplicationFont(f_path)
+families = QFontDatabase.applicationFontFamilies(fid)
+# families — пустой список если файл не найден или повреждён
+if families:
+    title_font = QFont(families[0], 28, QFont.Weight.Bold)
+    self.title_label.setFont(title_font)
+    # Для других виджетов используем тот же families[0]
+    self.modal_title.setFont(QFont(families[0], 22, QFont.Weight.Bold))</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ COMMON: PRIVILEGE ══════════════════════ -->
+<section id="common-priv">
+  <h2>Общий паттерн: привилегии (privilege.py)</h2>
+  <p>Применяется в: disk-manager, relocator, rename-helper, swap-manager, package-manager, services-manager, pg-rankmirrors.</p>
+  <p>Принцип: GUI-процесс никогда не имеет прав root. Все операции, требующие root, вынесены в отдельный Python-скрипт (<code>backend.py</code>), который запускается через <code>pkexec</code> или <code>kdesu</code>.</p>
+
+  <div class="flow">
+    <div class="flow-step">Пользователь<br>нажимает кнопку</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><code>privilege.find_elevator()</code><br>pkexec или kdesu?</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Polkit-диалог<br>запрашивает пароль</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><code>backend.py</code><br>запущен как root</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">stdout: PROGRESS N M<br>stdout: OK / ERROR</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">GUI читает вывод<br>обновляет UI через Signal</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">privilege.py — реальный код из disk-manager / swap-manager</div>
+    <pre><code>import shutil, subprocess, sys
+
+def find_elevator() -> str | None:
+    """Возвращает 'pkexec' или 'kdesu', или None если ничего нет."""
+    for tool in ("pkexec", "kdesu"):
+        if shutil.which(tool):
+            return tool
+    return None
+
+def run_privileged(script_path: str, *args) -> subprocess.Popen:
+    """Запускает Python-скрипт от имени root через pkexec или kdesu.
+
+    Возвращает Popen-объект — читай stdout построчно:
+        for line in proc.stdout:
+            if line.startswith("PROGRESS"):
+                ...
+    """
+    elevator = find_elevator()
+    if not elevator:
+        raise RuntimeError("No privilege escalation tool found (pkexec/kdesu)")
+
+    cmd = [elevator, sys.executable, script_path, *args]
+    return subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">backend.py — протокол вывода (stdout)</div>
+    <pre><code>"""CLI backend, запускается через pkexec. Пишет прогресс на stdout."""
+import sys
+
+def main():
+    # ... получаем args ...
+    total = len(sources)
+
+    for i, src in enumerate(sources, 1):
+        result = do_operation(src, destination)
+
+        # Протокол: "PROGRESS текущий итого"
+        sys.stdout.write(f"PROGRESS {i} {total}\n")
+        sys.stdout.flush()   # <-- важно: без flush GUI не получит данные
+
+        if result.error:
+            sys.stderr.write(f"ERROR: {result.error}\n")
+            sys.exit(1)
+
+    sys.stdout.write(f"OK {total}\n")
+    sys.stdout.flush()
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">GUI-сторона: чтение вывода backend в QThread</div>
+    <pre><code>class BackendWorker(QThread):
+    progress = pyqtSignal(int, int)   # current, total
+    finished = pyqtSignal(bool, str)  # success, message
+
+    def __init__(self, script, *args):
+        super().__init__()
+        self.script = script
+        self.args = args
+
+    def run(self):
+        try:
+            proc = privilege.run_privileged(self.script, *self.args)
+        except RuntimeError as e:
+            self.finished.emit(False, str(e))
+            return
+
+        for line in proc.stdout:
+            line = line.strip()
+            if line.startswith("PROGRESS"):
+                _, cur, total = line.split()
+                self.progress.emit(int(cur), int(total))
+            elif line.startswith("OK"):
+                self.finished.emit(True, "")
+            elif line.startswith("ERROR"):
+                self.finished.emit(False, line[6:])
+
+        proc.wait()
+        if proc.returncode != 0 and proc.returncode is not None:
+            err = proc.stderr.read()
+            self.finished.emit(False, err)</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ COMMON: I18N ══════════════════════ -->
+<section id="common-i18n">
+  <h2>Общий паттерн: локализация (10 языков)</h2>
+  <p>Поддерживаемые языки: <code>en ru de fr es pt pl uk zh ja</code>. Все приложения определяют язык из переменной окружения <code>LANG</code> с fallback на <code>en</code>.</p>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="ic-title">Вариант 1: Inline dict</div>
+      <div class="ic-body">relocator, swap-manager, welcome-hub, package-manager. <code>STRINGS = {"key": {"en": "...", "ru": "..."}}</code> прямо в Python-файле. Удобно для небольших приложений — всё в одном месте.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">Вариант 2: JSON файлы</div>
+      <div class="ic-body">save-point, software-center, settings, tutorial. Папка <code>locales/</code> с файлами <code>en.json</code>, <code>ru.json</code>… Загружаются через <code>json.load()</code>. Проще редактировать переводчикам.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">Вариант 3: CSV</div>
+      <div class="ic-body">git-askpass, character-theme, task-panel-changer. Строки: <code>key,en,ru,de,...</code>. Читается через <code>csv.reader()</code>. Удобно открывать в таблицах.</div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">Определение языка (используется во всех вариантах)</div>
+    <pre><code>import os
+
+LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
+
+def detect_lang() -> str:
+    lang = os.environ.get("LANG", "en")[:2]
+    return lang if lang in LANGS else "en"
+
+# Пример использования:
+self.current_lang = detect_lang()</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">Live-смена языка без перезапуска (паттерн из всех приложений)</div>
+    <pre><code>def t(self, key: str) -> str:
+    """Translate key to current language with en fallback."""
+    return self.strings.get(key, {}).get(self.current_lang) \
+        or self.strings.get(key, {}).get("en") \
+        or key
+
+def apply_language(self, lang: str):
+    self.current_lang = lang
+    # Переводим все виджеты вручную:
+    self.setWindowTitle(self.t("title"))
+    self.btn_apply.setText(self.t("btn.apply"))
+    self.label_path.setText(self.t("path"))
+    # ... все остальные строки
+
+def change_lang(self, lang: str):
+    """Слот кнопки выбора языка (welcome-hub, package-manager и др.)"""
+    self.current_lang = lang
+    # Обновить стиль кнопок языков:
+    for btn in self.lang_buttons:
+        btn.setProperty("active", "true" if btn.text().lower() == lang else "false")
+        btn.style().unpolish(btn)
+        btn.style().polish(btn)   # форсируем QSS-пересчёт
+    self.apply_language(lang)</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">Загрузка CSV (git-askpass, character-theme)</div>
+    <pre><code>import csv
+
+def load_localization_csv(self):
+    loc_path = os.path.join(self.base_path, "localization.csv")
+    if not os.path.exists(loc_path):
+        return
+    with open(loc_path, "r", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        headers = next(reader)          # ["key", "en", "ru", "de", ...]
+        langs = headers[1:]             # список языков из заголовка
+        for row in reader:
+            if not row:
+                continue
+            key = row[0]
+            self.localized_strings[key] = {
+                lang: row[i + 1] for i, lang in enumerate(langs)
+                if i + 1 < len(row)
+            }</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ COMMON: SIGNALS ══════════════════════ -->
+<section id="common-signals">
+  <h2>Общий паттерн: Threading + Signals/Slots</h2>
+  <p>Главное правило PyQt6: <strong>нельзя обновлять UI из не-главного потока</strong>. Все долгие операции (сеть, диск, pkexec) выносятся в поток, результат передаётся через <code>pyqtSignal.emit()</code>.</p>
+
+  <div class="code-block">
+    <div class="code-header">Паттерн 1: threading.Thread + pyqtSignal (package-manager, services-manager)</div>
+    <pre><code>from PyQt6.QtCore import pyqtSignal, QObject
+import threading
+
+class main_app(QMainWindow):
+    # Объявляем сигналы на уровне класса (не в __init__!)
+    fetch_finished   = pyqtSignal(list)       # пришёл список пакетов
+    uninstall_done   = pyqtSignal(bool, str)  # успех, сообщение
+
+    def __init__(self):
+        super().__init__()
+        # Подключаем сигналы к слотам (всегда в main thread)
+        self.fetch_finished.connect(self.on_packages_loaded)
+        self.uninstall_done.connect(self.on_uninstall_result)
+
+        # Запускаем фоновую загрузку
+        self.load_packages()
+
+    def load_packages(self):
+        def _worker():
+            pkgs = self._fetch_all()      # долгая операция
+            self.fetch_finished.emit(pkgs)  # безопасно!
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def on_packages_loaded(self, packages: list):
+        # Этот метод ВСЕГДА вызывается в main thread через event loop
+        for pkg in packages:
+            self.add_row(pkg)</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">Паттерн 2: QThread (software-center, swap-manager)</div>
+    <pre><code>from PyQt6.QtCore import QThread, pyqtSignal
+
+class AppStoreLoader(QThread):
+    finished = pyqtSignal(list)
+
+    def run(self):
+        # run() выполняется в отдельном потоке
+        pkgs = self._load_with_expac() or self._load_with_pacman()
+        self.finished.emit(pkgs)  # возвращаемся в main thread через сигнал
+
+    def _load_with_expac(self) -> list:
+        res = subprocess.run(
+            ["expac", "-S", "%n\t%v\t%d\t%r"],
+            capture_output=True, text=True
+        )
+        if res.returncode != 0:
+            return []
+        pkgs = []
+        for line in res.stdout.splitlines():
+            name, ver, desc, repo = line.split('\t', 3)
+            pkgs.append(StoreData(name, ver, desc, repo))
+        return pkgs
+
+# В главном окне:
+self.loader = AppStoreLoader()
+self.loader.finished.connect(self.on_store_loaded)
+self.loader.start()   # запускает run() в потоке
+
+# Важно: сохранить ссылку self.loader — иначе QThread будет собран GC</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: DESKTOP EDITOR ══════════════════════ -->
+<section id="app-desktop-editor">
+  <h2><span class="app-badge ac1">desktop-editor-ui</span> &nbsp;v1.0.0-6</h2>
+  <p>Создание и редактирование <code>.desktop</code>-файлов для ярлыков приложений. Поддерживает мультиязычные поля (<code>Name[ru]=</code>, <code>GenericName[de]=</code>), превью иконок и прямую установку в <code>~/.local/share/applications/</code>.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь</span><code>/usr/bin/desktop-editor</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>python-pyqt6</code></div>
+    <div class="meta-item"><span class="meta-label">Локализация</span>locales.json (10 яз.)</div>
+    <div class="meta-item"><span class="meta-label">Файлы</span>один Python-файл + locales.json</div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">desktop_editor_ui.py <span class="ft-comment"># DesktopEditorApp + LocalizationDialog — всё в одном файле</span></div>
+    <div class="ft-file">locales.json         <span class="ft-comment"># {"key": {"en": "...", "ru": "..."}}</span></div>
+    <div class="ft-file">style.qss</div>
+    <div class="ft-file">equestria_cyrillic.ttf</div>
+    <div class="ft-file">desktop-editor-ui.desktop</div>
+  </div>
+
+  <h3>Классы</h3>
+  <div class="method-block">
+    <div class="method-sig">class DesktopEditorApp(QMainWindow)</div>
+    <div class="method-body">
+      Главное окно. Поля формы: имя приложения, описание, путь к исполняемому файлу, аргументы до/после пути к файлу (для интерпретаторов: <code>python3 %f</code>, <code>wine %f</code>), иконка (путь или имя темы), категория (<code>Utility</code>, <code>Game</code>, …).
+      <br><br>
+      <strong>Кнопка Browse</strong> — <code>QFileDialog.getOpenFileName()</code> для исполняемого и <code>QFileDialog.getOpenFileName(filter="Images (*.png *.svg *.ico)")</code> для иконки.
+      <br>
+      <strong>Превью иконки</strong> — если путь существует как файл, загружает через <code>QPixmap</code>; если нет — пробует <code>QIcon.fromTheme(name)</code>.
+      <br>
+      <strong>Install</strong> — генерирует текст .desktop и записывает в <code>~/.local/share/applications/name.desktop</code>.
+    </div>
+  </div>
+  <div class="method-block">
+    <div class="method-sig">class LocalizationDialog(QDialog)</div>
+    <div class="method-body">
+      Диалог добавления переводов имени и описания. Показывает таблицу с колонками "Язык", "Имя", "Описание". Результат возвращается через <code>dialog.exec()</code> + геттеры.
+      <br>
+      Пример использования:
+      <br><code>dlg = LocalizationDialog(existing_translations, parent=self)</code>
+      <br><code>if dlg.exec(): translations = dlg.get_result()</code>
+    </div>
+  </div>
+
+  <h3>Формат генерируемого .desktop-файла</h3>
+  <div class="code-block">
+    <div class="code-header">Пример выходного файла</div>
+    <pre><code>[Desktop Entry]
+Version=1.0
+Type=Application
+Name=My App
+Name[ru]=Моё приложение
+Name[de]=Meine App
+GenericName=Utility
+GenericName[ru]=Утилита
+Comment=Does something useful
+Comment[ru]=Делает что-то полезное
+Exec=python3 %f /path/to/script.py
+Icon=myapp-icon
+Categories=Utility;
+Terminal=false</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: CHARACTER THEME ══════════════════════ -->
+<section id="app-character-theme">
+  <h2><span class="app-badge ac2">character-theme</span> &nbsp;v2.0.3-8</h2>
+  <p>Переключатель тем на основе персонажей MLP. Меняет цветовую схему KDE, тему Konsole, обои (slideshow), fastfetch-логотип и хуки в .bashrc.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь</span><code>/usr/bin/equestria-os-character-theme</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>python-pyqt6</code></div>
+    <div class="meta-item"><span class="meta-label">Локализация</span>localization.csv (10 яз.)</div>
+    <div class="meta-item"><span class="meta-label">Данные пользователя</span><code>~/.local/share/EquestriaOS/Themes/</code></div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">main.py           <span class="ft-comment"># EGThemeSwitcher, EGCharacter, KonsoleColorScheme</span></div>
+    <div class="ft-file">ui.py             <span class="ft-comment"># Ui_MainWindow + APP_STYLE (встроенный QSS)</span></div>
+    <div class="ft-file">characters.json   <span class="ft-comment"># 7 персонажей: Id, DisplayName, AccentColor, HoverColor, …</span></div>
+    <div class="ft-file">localization.csv  <span class="ft-comment"># key,en,ru,de,… — переводы всех строк UI</span></div>
+    <div class="ft-dir">MLP Cutiemarks/   <span class="ft-comment"># PNG-иконки для кнопок выбора (190×150px)</span></div>
+    <div class="ft-dir">Wallpapers/       <span class="ft-comment"># обои по персонажу (копируются в ~/.local/share/EquestriaOS/Themes/)</span></div>
+  </div>
+
+  <h3>Dataclasses</h3>
+  <div class="method-block">
+    <div class="method-sig">@dataclass class KonsoleColorScheme</div>
+    <div class="method-body">
+      16 цветов Konsole (Background, Foreground, Color0–Color7 + Intense-варианты). Каждый — строка <code>"R,G,B"</code>. Метод <code>to_colorscheme_text(name)</code> генерирует текст <code>.colorscheme</code>-файла для Konsole. Записывается в <code>~/.local/share/konsole/EquestriaOS_&lt;character&gt;.colorscheme</code>.
+    </div>
+  </div>
+  <div class="method-block">
+    <div class="method-sig">@dataclass class EGCharacter</div>
+    <div class="method-body">
+      Поля из <code>characters.json</code>: <code>Id</code>, <code>DisplayName</code>, <code>KonsoleProfile</code>, <code>WallpaperPath</code>, <code>KdeColorScheme</code>, <code>AccentColor</code> (#RRGGBB), <code>HoverColor</code>, <code>IconPath</code>, <code>KonsoleTheme: KonsoleColorScheme</code>.
+    </div>
+  </div>
+  <div class="method-block">
+    <div class="method-sig">class EGThemeSwitcher(QMainWindow, Ui_MainWindow)</div>
+    <div class="method-body">
+      <strong>init_user_folder()</strong> — копирует <code>characters.json</code>, <code>Wallpapers/</code>, <code>MLP Cutiemarks/</code> из <code>/opt/…</code> в <code>~/.local/share/EquestriaOS/Themes/</code> если их там нет. Пользователь может добавить своих персонажей.
+      <br><br>
+      <strong>load_localization_csv()</strong> — парсит CSV, строит словарь <code>self.localized_strings</code>.
+      <br><br>
+      <strong>detect_kde_dark_mode()</strong> — читает <code>~/.config/kdeglobals</code>, определяет тёмный/светлый режим.
+      <br><br>
+      При выборе персонажа вызывает по цепочке:
+      <code>apply_kde_colorscheme()</code> → <code>apply_konsole_theme()</code> → <code>apply_wallpaper()</code> → <code>apply_fastfetch()</code> → <code>update_bashrc()</code>.
+    </div>
+  </div>
+
+  <h3>KDE-интеграция: применение темы</h3>
+  <div class="code-block">
+    <div class="code-header">Применение цветовой схемы и перезапуск Plasma</div>
+    <pre><code>import subprocess
+
+def apply_kde_colorscheme(self, character: EGCharacter):
+    # 1. Записать .colors-файл
+    scheme_path = os.path.expanduser(
+        f"~/.local/share/color-schemes/EquestriaOS_{character.Id}.colors"
+    )
+    with open(scheme_path, "w") as f:
+        f.write(self.generate_kde_colors(character))
+
+    # 2. Применить через CLI (не требует перезапуска плазмы)
+    subprocess.run(["plasma-apply-colorscheme",
+                    f"EquestriaOS_{character.Id}"])
+
+def apply_wallpaper(self, wallpaper_path: str):
+    # D-Bus evaluateScript — единственный способ сменить обои без перезапуска
+    script = f"""
+var allDesktops = desktops();
+for (var i = 0; i < allDesktops.length; i++) {{
+    var d = allDesktops[i];
+    d.wallpaperPlugin = 'org.kde.image';
+    d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
+    d.writeConfig('Image', 'file://{wallpaper_path}');
+}}
+"""
+    subprocess.run([
+        "qdbus6", "org.kde.plasmashell", "/PlasmaShell",
+        "org.kde.PlasmaShell.evaluateScript", script
+    ])</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: DISK MANAGER ══════════════════════ -->
+<section id="app-disk-manager">
+  <h2><span class="app-badge ac3">disk-manager</span> &nbsp;v1.1.0-8</h2>
+  <p>GUI для управления дисками: монтирование/размонтирование, редактирование <code>/etc/fstab</code>, установка меток, исправление прав. Privileged backend — отдельный Python-скрипт через pkexec.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь (UI)</span><code>/usr/bin/equestria-disk-manager</code></div>
+    <div class="meta-item"><span class="meta-label">Бинарь (root)</span><code>/usr/bin/equestria-os-disk-backend</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>polkit python-pyqt6</code></div>
+    <div class="meta-item"><span class="meta-label">Опциональные</span><code>ntfs-3g btrfs-progs exfatprogs dosfstools</code></div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">disk_app.py     <span class="ft-comment"># DiskManagerApp, SymbolToggle, FstabOptionsWidget</span></div>
+    <div class="ft-file">disk_backend.py <span class="ft-comment"># CLI: --mount --fstab --label --fix-perms</span></div>
+    <div class="ft-file">core.py         <span class="ft-comment"># detect_ntfs(), check_writable(), RelocateResult</span></div>
+    <div class="ft-file">privilege.py    <span class="ft-comment"># find_elevator(), run_privileged()</span></div>
+  </div>
+
+  <h3>Кастомный виджет: SymbolToggle</h3>
+  <div class="code-block">
+    <div class="code-header">disk_app.py — SymbolToggle (QPushButton вместо QCheckBox)</div>
+    <pre><code>class SymbolToggle(QPushButton):
+    """Checkable button showing ☐/☑ — полностью стилизуется через QSS."""
+    stateChanged = pyqtSignal(int)
+
+    def __init__(self, label: str, parent=None):
+        super().__init__(parent)
+        self._label = label
+        self.setCheckable(True)
+        self.setObjectName("OptionsCb")
+        self.toggled.connect(self._on_toggle)
+        self._refresh()
+
+    def _on_toggle(self, checked: bool):
+        self._refresh()
+        self.stateChanged.emit(2 if checked else 0)  # совместимо с QCheckBox API
+
+    def _refresh(self):
+        self.setText(f"☑  {self._label}" if self.isChecked()
+                     else f"☐  {self._label}")
+
+    def setChecked(self, val: bool):
+        super().setChecked(bool(val))
+        self._refresh()
+
+# Почему не QCheckBox? — QSS не может полностью переопределить индикатор
+# нативного чекбокса на всех платформах. QPushButton — полностью под контролем QSS.</code></pre>
+  </div>
+
+  <h3>FstabOptionsWidget — опции с tooltips</h3>
+  <div class="method-block">
+    <div class="method-sig">class FstabOptionsWidget(QFrame)</div>
+    <div class="method-body">
+      Редактор расширенных опций fstab. Содержит набор <code>SymbolToggle</code> и <code>QLineEdit</code> для каждой опции. Константа <code>OPTS_TIPS</code> — словарь с подсказками на EN и RU для каждого флага.
+      <br><br>
+      Поддерживаемые опции: <code>noatime</code>, <code>nofail</code>, <code>ro</code>, <code>exec</code>, <code>noexec</code>, <code>noauto</code>, <code>uid</code>, <code>gid</code>, <code>dmask</code>, <code>fmask</code>, <code>winnames</code>, <code>compress</code>, <code>autodefrag</code>.
+      <br><br>
+      Метод <code>get_options_string() → str</code> собирает строку опций для fstab, например <code>"defaults,noatime,nofail,uid=1000,gid=1000"</code>.
+      <br><br>
+      Метод <code>set_fstype(fstype: str)</code> скрывает/показывает опции, специфичные для ФС: <code>compress</code> и <code>autodefrag</code> — только для Btrfs; <code>dmask/fmask/winnames</code> — только для NTFS/exFAT/FAT32.
+    </div>
+  </div>
+
+  <h3>Пример: опции с предупреждением для Steam</h3>
+  <div class="code-block">
+    <div class="code-header">disk_app.py — OPTS_TIPS["noexec"]</div>
+    <pre><code>OPTS_TIPS = {
+    "noexec": {
+        "en": ("Prevent execution of any binaries on this partition.\n"
+               "⚠ Don't enable for Steam game drives!"),
+        "ru": ("Запретить запуск исполняемых файлов с этого раздела.\n"
+               "⚠ Не включать для дисков с играми Steam!")
+    },
+    "winnames": {
+        "en": ("Restrict filenames to Windows-compatible characters.\n"
+               "⚠ DO NOT use for Steam game libraries — breaks game files!"),
+        "ru": ("Ограничить имена файлов символами, совместимыми с Windows.\n"
+               "⚠ НЕ использовать для библиотек Steam — ломает файлы игр!")
+    },
+    # ...
+}</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: GIT ASKPASS ══════════════════════ -->
+<section id="app-git-askpass">
+  <h2><span class="app-badge ac4">git-askpass</span> &nbsp;v1.0.1-2</h2>
+  <p>GUI-диалог для <code>GIT_ASKPASS</code> и <code>SSH_ASKPASS</code>. Перехватывает запросы пароля от Git/SSH и показывает нативный PyQt6-диалог вместо консольного ввода.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь</span><code>/usr/bin/equestria-os-git-askpass</code></div>
+    <div class="meta-item"><span class="meta-label">Env hook</span><code>/etc/profile.d/equestria-os-git-askpass.sh</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>python-pyqt6</code></div>
+    <div class="meta-item"><span class="meta-label">Локализация</span>localization.csv</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">/etc/profile.d/equestria-os-git-askpass.sh — автоматически устанавливается пакетом</div>
+    <pre><code>export GIT_ASKPASS=/usr/bin/equestria-os-git-askpass
+export SSH_ASKPASS=/usr/bin/equestria-os-git-askpass
+export SSH_ASKPASS_REQUIRE=prefer</code></pre>
+  </div>
+
+  <h3>Протокол GIT_ASKPASS</h3>
+  <p>Git запускает программу из <code>GIT_ASKPASS</code> с одним аргументом — текстом подсказки (<code>argv[1]</code>). Программа должна вывести ответ на <strong>stdout</strong> и завершиться с кодом 0 (успех) или ненулевым (отмена).</p>
+
+  <div class="code-block">
+    <div class="code-header">equestria-os-git-askpass.py — основная логика</div>
+    <pre><code>import sys
+from PyQt6.QtWidgets import QApplication, QDialog, QLineEdit, ...
+from PyQt6.QtCore import Qt
+
+class AskPassDialog(QDialog):
+    def __init__(self, prompt: str):
+        super().__init__()
+        # Всегда поверх других окон
+        self.setWindowFlags(Qt.WindowType.Dialog |
+                            Qt.WindowType.WindowStaysOnTopHint)
+
+        self.prompt_label.setText(prompt)
+
+        # Авто-определение: пароль или обычный текст
+        p = prompt.lower()
+        is_password = any(w in p for w in
+                          ("password", "passphrase", "пароль", "token"))
+        if is_password:
+            self.input.setEchoMode(QLineEdit.EchoMode.Password)
+            self.toggle_btn.setVisible(True)  # кнопка 👁
+        else:
+            self.input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.toggle_btn.setVisible(False)
+
+        self.toggle_btn.clicked.connect(self.toggle_visibility)
+
+    def toggle_visibility(self):
+        if self.input.echoMode() == QLineEdit.EchoMode.Password:
+            self.input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.toggle_btn.setText("🙈")
+        else:
+            self.input.setEchoMode(QLineEdit.EchoMode.Password)
+            self.toggle_btn.setText("👁")
+
+if __name__ == "__main__":
+    prompt = sys.argv[1] if len(sys.argv) > 1 else "Password:"
+    app = QApplication(sys.argv)
+    dlg = AskPassDialog(prompt)
+
+    if dlg.exec() == QDialog.DialogCode.Accepted:
+        print(dlg.input.text())  # вывод на stdout — Git читает это
+        sys.exit(0)
+    else:
+        sys.exit(1)  # ненулевой код = отмена → Git отменяет операцию</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: PACKAGE MANAGER ══════════════════════ -->
+<section id="app-package-manager">
+  <h2><span class="app-badge ac5">package-manager</span> &nbsp;v2.2.1-7</h2>
+  <p>GUI-деинсталлятор. Показывает все установленные пакеты из Pacman, AUR и Flatpak. Удаление — через pkexec с диалогом подтверждения и прогресс-модалом.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь</span><code>/usr/bin/equestria-os-package-manager</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>polkit python-pyqt6</code></div>
+    <div class="meta-item"><span class="meta-label">Локализация</span>inline dict (10 яз.)</div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">main.py   <span class="ft-comment"># main_app(QMainWindow), PackageData, сигналы</span></div>
+    <div class="ft-file">ui_pkg.py <span class="ft-comment"># Ui_PackageManager, PackageRow — строка пакета</span></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">main.py — PackageData и авто-категоризация</div>
+    <pre><code>class PackageData:
+    def __init__(self, name: str, source: str, app_id: str = None):
+        self.name    = name
+        self.source  = source   # "pacman" | "aur" | "flatpak"
+        self.app_id  = app_id   # используется для flatpak uninstall --noninteractive
+
+        # Авто-категория по имени пакета
+        driver_keywords = ["nvidia", "vulkan", "firmware", "mesa",
+                           "intel", "amd", "radeon", "opencl"]
+        self.category = "Drivers" if any(
+            kw in name.lower() for kw in driver_keywords
+        ) else "Software"
+
+class main_app(QMainWindow):
+    fetch_finished   = pyqtSignal(list)      # список PackageData
+    uninstall_finished = pyqtSignal(bool, str)
+
+    def __init__(self):
+        super().__init__()
+        self.fetch_finished.connect(self.on_fetch_finished)
+        self.uninstall_finished.connect(self.on_uninstall_finished)
+
+        # Запускаем загрузку сразу
+        threading.Thread(target=self._load_all, daemon=True).start()
+
+    def _load_all(self):
+        """Собирает пакеты из всех источников. Выполняется в потоке."""
+        pkgs = []
+
+        # Pacman: pacman -Qn (нативные, не AUR)
+        r = subprocess.run(["pacman", "-Qn"], capture_output=True, text=True)
+        for line in r.stdout.splitlines():
+            parts = line.split()
+            if parts:
+                pkgs.append(PackageData(parts[0], "pacman"))
+
+        # AUR: pacman -Qm (иностранные/AUR)
+        r = subprocess.run(["pacman", "-Qm"], capture_output=True, text=True)
+        for line in r.stdout.splitlines():
+            parts = line.split()
+            if parts:
+                pkgs.append(PackageData(parts[0], "aur"))
+
+        # Flatpak (если установлен)
+        if shutil.which("flatpak"):
+            r = subprocess.run(
+                ["flatpak", "list", "--app",
+                 "--columns=name,application"],
+                capture_output=True, text=True
+            )
+            for line in r.stdout.splitlines():
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    pkgs.append(PackageData(parts[0], "flatpak", app_id=parts[1]))
+
+        self.fetch_finished.emit(pkgs)</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: RELOCATOR ══════════════════════ -->
+<section id="app-relocator">
+  <h2><span class="app-badge ac6">relocator</span> &nbsp;v1.0.0-8</h2>
+  <p>Перемещает файлы/папки в новое место и создаёт симлинк на исходном пути. На NTFS симлинки не поддерживаются — приложение предупреждает и перемещает без симлинка.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь (UI)</span><code>/usr/bin/equestria-relocator</code></div>
+    <div class="meta-item"><span class="meta-label">Бинарь (root)</span><code>/usr/bin/equestria-os-relocator-backend</code></div>
+    <div class="meta-item"><span class="meta-label">KIO servicemenu</span><code>/usr/share/kio/servicemenus/…desktop</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>polkit python-pyqt6</code></div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">main.py          <span class="ft-comment"># точка входа</span></div>
+    <div class="ft-file">app.py           <span class="ft-comment"># RelocatorApp(QMainWindow), RelocateWorker(QThread)</span></div>
+    <div class="ft-file">ui_relocator.py  <span class="ft-comment"># Ui_Relocator — форма выбора источника и назначения</span></div>
+    <div class="ft-file">backend.py       <span class="ft-comment"># CLI: src1 [src2 …] --dest /path → PROGRESS / OK</span></div>
+    <div class="ft-file">core.py          <span class="ft-comment"># relocate(), detect_ntfs(), check_writable(), RelocateResult</span></div>
+    <div class="ft-file">privilege.py</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">backend.py — полный CLI-интерфейс (запускается от root)</div>
+    <pre><code>"""Запуск: pkexec python3 backend.py src1 [src2 ...] --dest /path/to/dest"""
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import core
+
+def main():
+    args = sys.argv[1:]
+    dest_idx = args.index("--dest")
+    sources = args[:dest_idx]
+    destination = args[dest_idx + 1]
+
+    total = len(sources)
+    symlinks = 0
+
+    for i, src in enumerate(sources, 1):
+        results = core.relocate([src], destination, create_symlink=True)
+        r = results[0]
+        if r.error:
+            sys.stderr.write(f"{r.source}: {r.error}\n")
+            sys.exit(1)
+        if r.symlink_created:
+            symlinks += 1
+
+        sys.stdout.write(f"PROGRESS {i} {total}\n")
+        sys.stdout.flush()
+
+    sys.stdout.write(f"OK {total} {symlinks}\n")
+    sys.stdout.flush()
+
+if __name__ == "__main__":
+    main()</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">app.py — STRINGS (inline dict, 10 языков, пример)</div>
+    <pre><code># Пример строки с NTFS-предупреждением:
+"ntfs_warn": {
+    "en": "⚠  Symlinks are not supported on NTFS. "
+          "The file will be moved without a symlink.",
+    "ru": "⚠  Символические ссылки не поддерживаются на NTFS. "
+          "Файл будет перемещён без ссылки.",
+    # + de, fr, es, pt, pl, uk, zh, ja
+},
+# Сообщение успеха с подстановкой:
+"success": {
+    "en": "Moved {n} item(s) to {dest}. Created {s} symlink(s).",
+    "ru": "Перемещено {n} элемент(ов) в {dest}. Создано {s} ссылок.",
+}</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: RENAME HELPER ══════════════════════ -->
+<section id="app-rename-helper">
+  <h2><span class="app-badge ac7">rename-helper</span> &nbsp;v1.0.0-4</h2>
+  <p>Пакетное переименование файлов в директории: Find&amp;Replace, добавление префикса/суффикса, последовательная нумерация. Предпросмотр до применения, история с undo.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь</span><code>/usr/bin/equestria-os-rename-helper</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>python-pyqt6</code></div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">rename_app.py <span class="ft-comment"># RenameApp(QMainWindow), HistoryDialog</span></div>
+    <div class="ft-file">core.py       <span class="ft-comment"># bulk_rename() → list[RenameResult]</span></div>
+    <div class="ft-file">privilege.py  <span class="ft-comment"># для файлов, требующих root</span></div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="ic-title">Find &amp; Replace</div>
+      <div class="ic-body">Замена подстроки или regex в имени файла (без расширения или с ним, настраивается). <code>re.sub(pattern, replacement, name)</code> или <code>str.replace()</code>.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">Prefix / Suffix</div>
+      <div class="ic-body">Добавление текста в начало (<code>prefix + name</code>) или конец (<code>stem + suffix + ext</code>) имени файла.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">Нумерация</div>
+      <div class="ic-body">Добавление порядкового номера. Формат: <code>f"{num:03d}_{name}"</code>. Начальный номер и ширина настраиваются через QSpinBox.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">Preview + Apply</div>
+      <div class="ic-body">Кнопка Preview показывает таблицу: Старое имя → Новое имя. Apply применяет через <code>os.rename()</code>. Результат сохраняется в историю.</div>
+    </div>
+  </div>
+
+  <div class="method-block">
+    <div class="method-sig">class HistoryDialog(QDialog)</div>
+    <div class="method-body">
+      Показывает список выполненных batch-операций: дата+время, количество файлов, тип операции. При выборе операции — таблица пар (было → стало). Кнопка "Undo выбранное" вызывает <code>os.rename(new_path, old_path)</code> для каждой пары в обратном порядке. Если файл уже переименован повторно — undo может не сработать (предупреждение).
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: SAVE POINT ══════════════════════ -->
+<section id="app-save-point">
+  <h2><span class="app-badge ac8">save-point</span> &nbsp;v1.2.0-3</h2>
+  <p>Менеджер системных снапшотов с тремя backend'ами, автоматизацией через pacman hook и systemd timer, скриншотами рабочего стола и авто-восстановлением при сбое загрузки.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь (GUI)</span><code>/usr/bin/equestria-os-save-point</code></div>
+    <div class="meta-item"><span class="meta-label">Бинарь (CLI)</span><code>/usr/bin/restore-system</code></div>
+    <div class="meta-item"><span class="meta-label">Данные</span><code>/var/lib/equestria-save-point/</code></div>
+    <div class="meta-item"><span class="meta-label">Config</span><code>~/.config/equestria-save-point/config.json</code></div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">main.py           <span class="ft-comment"># main_app(QMainWindow), сигналы, управление config</span></div>
+    <div class="ft-file">backend.py        <span class="ft-comment"># SnapshotData, BtrfsBackend, ResticBackend, TimeshiftBackend, detect_backend()</span></div>
+    <div class="ft-file">hooks.py          <span class="ft-comment"># PACMAN_HOOK_PATH, build_hook_apply_script()</span></div>
+    <div class="ft-file">screenshot.py     <span class="ft-comment"># capture_screenshot() — Spectacle / Grim / Scrot → WebP</span></div>
+    <div class="ft-file">utils.py          <span class="ft-comment"># launch_terminal() — konsole / xfce4-terminal / xterm</span></div>
+    <div class="ft-file">restore-system.py <span class="ft-comment"># CLI-восстановление (запускается от root)</span></div>
+    <div class="ft-file">auto-restore.py   <span class="ft-comment"># systemd service: запускается при загрузке на случай сбоя</span></div>
+  </div>
+
+  <h3>backend.py — SnapshotData и detect_backend()</h3>
+  <div class="code-block">
+    <div class="code-header">backend.py — реальный код определения backend</div>
+    <pre><code>class SnapshotData:
+    """Единый дескриптор снапшота для всех backend'ов."""
+    def __init__(self, num, date_str, snapshot_id, tags,
+                 comment, fs_id=None, protected=False):
+        self.num         = num
+        self.date_str    = date_str
+        self.snapshot_id = snapshot_id   # ID для restore
+        self.tags        = tags          # однобуквенный код для бейджа
+        self.comment     = comment
+        self.fs_id       = fs_id or snapshot_id  # YYYY-MM-DD_HH-MM-SS для скриншота
+        self.protected   = protected     # True = дневной защищённый
+
+def detect_root_fstype() -> str:
+    """Читает /proc/mounts и возвращает тип ФС корневого раздела."""
+    try:
+        with open("/proc/mounts") as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) >= 3 and parts[1] == "/":
+                    return parts[2].lower()
+    except OSError:
+        pass
+    return "unknown"
+
+def detect_backend() -> str:
+    """Возвращает 'btrfs', 'restic', 'timeshift' или 'none'."""
+    fs      = detect_root_fstype()
+    have_bt = subprocess.run(["which", "btrfs"],
+                              capture_output=True).returncode == 0
+    have_rs = subprocess.run(["which", "restic"],
+                              capture_output=True).returncode == 0
+    have_ts = subprocess.run(["which", "timeshift"],
+                              capture_output=True).returncode == 0
+
+    if fs == "btrfs" and have_bt:
+        return "btrfs"    # нативный CoW: мгновенно, нулевое место
+    if have_rs:
+        return "restic"   # дедупликация + сжатие
+    if have_ts:
+        return "timeshift"  # rsync-fallback
+    return "none"</code></pre>
+  </div>
+
+  <h3>Константы Restic</h3>
+  <div class="code-block">
+    <div class="code-header">backend.py — пути и исключения</div>
+    <pre><code>RESTIC_DIR  = "/var/lib/equestria-save-point"
+RESTIC_REPO = f"{RESTIC_DIR}/restic-repo"
+RESTIC_KEY  = f"{RESTIC_DIR}/repo.key"
+
+RESTIC_EXCLUDES = [
+    "/proc", "/sys", "/dev", "/run", "/tmp", "/var/run",
+    "/var/cache/pacman/pkg", "/var/cache/apt", "/var/tmp",
+    "/root/.cache",
+    "/mnt", "/media", "/lost+found",
+    RESTIC_DIR,           # <-- репозиторий не бэкапим сам себя!
+    "/home",              # домашние папки — отдельный бэкап
+    "/root/.local/share/Steam",
+    "/opt/steam",
+]</code></pre>
+  </div>
+
+  <h3>hooks.py — генерация скрипта установки хуков</h3>
+  <div class="code-block">
+    <div class="code-header">hooks.py — реальный код build_hook_apply_script()</div>
+    <pre><code>PACMAN_HOOK_PATH = "/etc/pacman.d/hooks/equestria-save-point.hook"
+HOOK_SCRIPT_SRC  = "/opt/equestria-os-save-point/equestria-save-point.hook"
+HOOK_CONFIG_PATH = "/var/lib/equestria-save-point/hook-config"
+REPO_PATH_SYS    = "/var/lib/equestria-save-point/repo-path"
+
+def build_hook_apply_script(hook_pacman: bool, hook_flatpak: bool,
+                             repo_path: str, move_old_repo: str | None,
+                             keep_last: int,
+                             restic_repo_default: str) -> str:
+    """Возвращает bash-строку для выполнения от root через pkexec."""
+    parts = [
+        "mkdir -p /var/lib/equestria-save-point",
+        f"echo {shlex.quote(str(keep_last))} > {HOOK_CONFIG_PATH}",
+    ]
+    # Перенос репозитория если путь изменился
+    if move_old_repo and move_old_repo != repo_path:
+        new_parent = shlex.quote(os.path.dirname(repo_path))
+        parts += [
+            f"mkdir -p {new_parent}",
+            f"mv {shlex.quote(move_old_repo)} {shlex.quote(repo_path)}",
+        ]
+    # Сохраняем кастомный путь (или удаляем файл если дефолтный)
+    if repo_path and repo_path != restic_repo_default:
+        parts.append(f"echo {shlex.quote(repo_path)} > {REPO_PATH_SYS}")
+    else:
+        parts.append(f"rm -f {REPO_PATH_SYS}")
+
+    if hook_pacman:
+        parts += [
+            "mkdir -p /etc/pacman.d/hooks",
+            f"cp {HOOK_SCRIPT_SRC} {PACMAN_HOOK_PATH}",
+            f"chmod 644 {PACMAN_HOOK_PATH}",
+        ]
+    else:
+        parts.append(f"rm -f {PACMAN_HOOK_PATH}")
+
+    return " && ".join(parts)</code></pre>
+  </div>
+
+  <h3>utils.py — launch_terminal()</h3>
+  <div class="code-block">
+    <div class="code-header">utils.py — открытие терминала для CLI restore</div>
+    <pre><code>import subprocess
+
+def launch_terminal(bash_cmd: str):
+    """Запускает bash-команду в первом доступном терминале."""
+    for term, args in [
+        ("konsole",        ["konsole",        "-e"]),
+        ("xfce4-terminal", ["xfce4-terminal", "--hold", "-e"]),
+        ("xterm",          ["xterm",          "-hold", "-e"]),
+    ]:
+        try:
+            subprocess.run(["which", term], capture_output=True, check=True)
+            subprocess.Popen(args + ["bash", "-c", bash_cmd])
+            return
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
+    # Крайний случай: запустить без терминала
+    subprocess.Popen(["bash", "-c", bash_cmd])</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: SERVICES MANAGER ══════════════════════ -->
+<section id="app-services-manager">
+  <h2><span class="app-badge ac9">services-manager</span> &nbsp;v2.2.0</h2>
+  <p>GUI для <code>systemctl</code>: просмотр всех сервисов (system и user scope), фильтрация по состоянию, управление через pkexec для системных и напрямую для пользовательских.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь</span><code>/usr/bin/equestria-os-services-manager</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>polkit python-pyqt6</code></div>
+    <div class="meta-item"><span class="meta-label">Локализация</span>inline dict (10 яз.)</div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">main.py        <span class="ft-comment"># ServicesApp(QMainWindow), ServiceData, _fetch_scope(), _refresh_single()</span></div>
+    <div class="ft-file">ui_services.py <span class="ft-comment"># Ui_ServicesManager, ServiceRow(QFrame)</span></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">main.py — ServiceData и _fetch_scope() (реальный код)</div>
+    <pre><code>class ServiceData:
+    def __init__(self, name: str, unit_file_state: str = "", scope: str = "system"):
+        self.name            = name
+        self.scope           = scope        # "system" или "user"
+        self.description     = ""
+        self.active_state    = "inactive"   # active / inactive / failed
+        self.sub_state       = "dead"       # running / dead / exited / …
+        self.unit_file_state = unit_file_state  # enabled / disabled / static / …
+
+    @property
+    def uid(self) -> str:
+        return f"{self.scope}:{self.name}"
+
+    @property
+    def is_running(self) -> bool:
+        return self.active_state == "active"
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.unit_file_state in ("enabled", "enabled-runtime")
+
+    @property
+    def display_name(self) -> str:
+        return self.description or self.name.removesuffix(".service")
+
+def _fetch_scope(scope: str) -> dict[str, ServiceData]:
+    """Получает все сервисы для scope='system' или 'user'.
+
+    Делает два вызова:
+    1. systemctl list-unit-files  → получает unit_file_state (enabled/disabled)
+    2. systemctl list-units --all → получает active_state, sub_state, description
+    """
+    flag = ["--user"] if scope == "user" else ["--system"]
+    services = {}
+
+    # Шаг 1: unit-files (включены/выключены)
+    r1 = subprocess.run(
+        ["systemctl"] + flag + [
+            "list-unit-files", "--type=service",
+            "--no-pager", "--no-legend"
+        ],
+        capture_output=True, text=True
+    )
+    for line in r1.stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and parts[0].endswith(".service"):
+            services[parts[0]] = ServiceData(
+                name=parts[0], unit_file_state=parts[1], scope=scope
+            )
+
+    # Шаг 2: units (текущее состояние)
+    r2 = subprocess.run(
+        ["systemctl"] + flag + [
+            "list-units", "--all", "--type=service",
+            "--no-pager", "--no-legend", "--full"
+        ],
+        capture_output=True, text=True
+    )
+    for line in r2.stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        tokens = line.split(None, 5)
+        # Убираем цветовые символы ● ✗ ▷ ○
+        if tokens and tokens[0] in ("●", "✗", "▷", "○", "×"):
+            tokens = tokens[1:]
+        if len(tokens) < 4:
+            continue
+        name, _, active, sub = tokens[:4]
+        desc = tokens[4].strip() if len(tokens) > 4 else ""
+        if name in services:
+            services[name].active_state = active
+            services[name].sub_state = sub
+            if desc:
+                services[name].description = desc
+
+    return services</code></pre>
+  </div>
+
+  <div class="method-block">
+    <div class="method-sig">class ServiceRow(QFrame)</div>
+    <div class="method-body">
+      Строка одного сервиса: цветной индикатор состояния (зелёный/красный/жёлтый), display_name, кнопки Start/Stop/Enable/Disable.
+      <br><br>
+      Системные сервисы: <code>subprocess.run(["pkexec", "systemctl", action, name])</code>.
+      <br>
+      Пользовательские: <code>subprocess.run(["systemctl", "--user", action, name])</code>.
+      <br><br>
+      После действия вызывает <code>_refresh_single(name, scope)</code> — обновляет только эту строку без перезагрузки всего списка.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: SETTINGS ══════════════════════ -->
+<section id="app-settings">
+  <h2><span class="app-badge ac1">settings</span> &nbsp;v1.3.1</h2>
+  <p>Единый центр настроек Equestria OS. Автоматически обнаруживает модули из папки <code>modules/</code> через <code>importlib</code>, отображает в sidebar с категориями, загружает виджет лениво при первом выборе.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь</span><code>/usr/bin/equestria-os-settings</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>python-pyqt6</code> + опциональные бинари модулей</div>
+    <div class="meta-item"><span class="meta-label">Локализация</span>locales/*.json (10 яз.)</div>
+    <div class="meta-item"><span class="meta-label">Модули</span>13 шт. в modules/mod_*.py</div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">main.py             <span class="ft-comment"># 27 строк: QApplication + SettingsWindow</span></div>
+    <div class="ft-file">app.py              <span class="ft-comment"># SettingsWindow(QMainWindow), SidebarDelegate, авто-обнаружение</span></div>
+    <div class="ft-file">base_module.py      <span class="ft-comment"># BaseModule ABC — контракт для всех модулей</span></div>
+    <div class="ft-file">embedded_module.py  <span class="ft-comment"># EmbeddedModule — для встраивания внешних приложений</span></div>
+    <div class="ft-dir">modules/            <span class="ft-comment"># 13 файлов mod_*.py</span></div>
+    <div class="ft-dir">locales/            <span class="ft-comment"># en.json, ru.json, … (10 файлов)</span></div>
+    <div class="ft-file">packages.json       <span class="ft-comment"># метаданные опциональных инструментов</span></div>
+  </div>
+
+  <h3>Авто-обнаружение модулей через importlib</h3>
+  <div class="code-block">
+    <div class="code-header">app.py — загрузка модулей (реальный паттерн)</div>
+    <pre><code>import glob, importlib.util, inspect
+from base_module import BaseModule
+
+CATEGORIES_ORDER = ["system", "software", "appearance"]
+
+def _load_modules(modules_dir: str, t_func, base_path: str) -> list[BaseModule]:
+    modules = []
+    pattern = os.path.join(modules_dir, "mod_*.py")
+
+    for path in sorted(glob.glob(pattern)):
+        mod_name = os.path.basename(path)[:-3]
+        spec = importlib.util.spec_from_file_location(mod_name, path)
+        mod  = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(mod)
+        except Exception as e:
+            print(f"[settings] Failed to load {mod_name}: {e}")
+            continue
+
+        # Ищем класс-наследник BaseModule в модуле
+        for _, cls in inspect.getmembers(mod, inspect.isclass):
+            if issubclass(cls, BaseModule) and cls is not BaseModule:
+                instance = cls(t_func, base_path)
+                modules.append(instance)
+                break
+
+    # Сортируем по категории (CATEGORIES_ORDER) и sort_order внутри категории
+    cat_order = {cat: i for i, cat in enumerate(CATEGORIES_ORDER)}
+    modules.sort(key=lambda m: (cat_order.get(m.category, 99), m.sort_order))
+    return modules</code></pre>
+  </div>
+
+  <h3>Ленивая загрузка + lifecycle</h3>
+  <div class="code-block">
+    <div class="code-header">app.py — переключение между модулями</div>
+    <pre><code>class SettingsWindow(QMainWindow):
+    def __init__(self):
+        # ...
+        self._built: dict[str, QWidget] = {}
+
+    def _on_module_selected(self, module: BaseModule):
+        """Вызывается при клике в sidebar."""
+        # 1. Скрыть предыдущий модуль
+        if self._current_module:
+            self._current_module.on_hidden()
+
+        # 2. Построить виджет при первом обращении
+        if module.module_id not in self._built:
+            if module.is_available():
+                widget = module.get_widget()  # вызывает build_widget() один раз
+            else:
+                widget = NotInstalledWidget(module.package_name)
+            self.stack.addWidget(widget)
+            self._built[module.module_id] = widget
+
+        # 3. Показать
+        self.stack.setCurrentWidget(self._built[module.module_id])
+        module.on_shown()  # вызывается при каждом переключении
+        self._current_module = module</code></pre>
+  </div>
+
+  <h3>SidebarDelegate — кастомная отрисовка</h3>
+  <div class="code-block">
+    <div class="code-header">app.py — SidebarDelegate.paint() (реальный код)</div>
+    <pre><code>class SidebarDelegate(QStyledItemDelegate):
+    def paint(self, painter, option, index):
+        item_type = index.data(Qt.ItemDataRole.UserRole + 1)
+        painter.save()
+
+        if item_type == _ITEM_TYPE_CATEGORY:
+            # Заголовок категории: тёмный фон, маленький шрифт, UPPERCASE
+            painter.fillRect(option.rect, QColor(40, 38, 58))
+            painter.setPen(QColor(140, 130, 170))
+            font = QFont(option.font)
+            font.setPointSize(9)
+            painter.setFont(font)
+            text = index.data(Qt.ItemDataRole.DisplayRole).upper()
+            rect = option.rect.adjusted(12, 0, -4, 0)
+            painter.drawText(rect,
+                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+                text)
+        else:
+            is_selected = bool(option.state & option.state.State_Selected)
+            # Выбранный: лавандовый фон + тёмный текст
+            # Hover: чуть светлее фон
+            # Обычный: прозрачный фон
+            if is_selected:
+                painter.fillRect(option.rect, QColor(203, 166, 247))
+                painter.setPen(QColor(30, 30, 46))
+            elif bool(option.state & option.state.State_MouseOver):
+                painter.fillRect(option.rect, QColor(50, 47, 72))
+                painter.setPen(QColor(220, 215, 240))
+            else:
+                painter.fillRect(option.rect, QColor(30, 28, 46))
+                painter.setPen(QColor(200, 195, 220))
+
+            icon = index.data(Qt.ItemDataRole.UserRole + 2) or ""
+            text = index.data(Qt.ItemDataRole.DisplayRole) or ""
+            painter.drawText(
+                option.rect.adjusted(16, 6, -8, -6),
+                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+                | Qt.TextFlag.TextWordWrap,
+                f"{icon}  {text}"
+            )
+        painter.restore()
+
+    def sizeHint(self, option, index):
+        item_type = index.data(Qt.ItemDataRole.UserRole + 1)
+        if item_type == _ITEM_TYPE_CATEGORY:
+            return QSize(220, 30)
+        return QSize(220, 46)</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: SOFTWARE CENTER ══════════════════════ -->
+<section id="app-software-center">
+  <h2><span class="app-badge ac2">software-center</span> &nbsp;v1.3.3</h2>
+  <p>Единый менеджер пакетов: Pacman (expac/pacman -Sl) + AUR (JSON API + yay) + Flatpak (AppStream XML). 8 параллельных QThread-воркеров, кэш скриншотов, пагинация 50 шт/стр., дедупликация имён.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь</span><code>/usr/bin/equestria-os-software-center</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>pacman yay python-pyqt6</code> + опц. <code>flatpak expac</code></div>
+    <div class="meta-item"><span class="meta-label">Локализация</span>locales/*.json (10 яз.)</div>
+    <div class="meta-item"><span class="meta-label">Flatpak AppStream</span><code>/var/lib/flatpak/appstream/.../appstream.xml.gz</code></div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">main.py                 <span class="ft-comment"># main_app(QMainWindow) — 997 строк, оркестратор</span></div>
+    <div class="ft-file">models.py               <span class="ft-comment"># EssentialData, StoreData</span></div>
+    <div class="ft-file">workers.py              <span class="ft-comment"># 8 QThread-классов</span></div>
+    <div class="ft-file">ui_software.py          <span class="ft-comment"># EssentialAppRow, StoreAppRow, AppDetailWidget</span></div>
+    <div class="ft-file">utils.py                <span class="ft-comment"># normalize_key(), merge_packages(), FLATPAK_APPSTREAM, SCREENSHOT_CACHE_DIR</span></div>
+    <div class="ft-file">EquestriaApps.csv       <span class="ft-comment"># кюрированный список "Essential" приложений</span></div>
+    <div class="ft-file">EquestriaLocalizations.csv  <span class="ft-comment"># локализованные описания для Essential-списка</span></div>
+    <div class="ft-dir">locales/                <span class="ft-comment"># en.json, ru.json, …</span></div>
+  </div>
+
+  <h3>8 QThread-воркеров</h3>
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="ic-title">AppStoreLoader</div>
+      <div class="ic-body">Пробует <code>expac -S "%n\t%v\t%d\t%r"</code> (быстро + описания). Fallback: <code>pacman -Sl</code>. Парсит построчно, создаёт <code>StoreData</code>.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">FlatpakLoader</div>
+      <div class="ic-body">Открывает <code>appstream.xml.gz</code> через <code>gzip.open()</code> + <code>xml.etree.ElementTree</code>. Парсит каждый <code>&lt;component&gt;</code>: id, name, summary, screenshots.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">AURSearchThread</div>
+      <div class="ic-body">GET <code>aur.archlinux.org/rpc/?v=5&amp;type=search&amp;arg=…</code>. Debounce: 500мс QTimer в главном окне перед запуском потока. Результат: список StoreData.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">AURPopularLoader</div>
+      <div class="ic-body">Список популярных AUR-пакетов из константы <code>_AUR_POPULAR</code>. Загружается при открытии вкладки Store без поискового запроса.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">AURUpgradableLoader</div>
+      <div class="ic-body"><code>yay -Qu</code> — список пакетов с доступными обновлениями. Показывается в отдельной вкладке.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">ScreenshotDownloadThread</div>
+      <div class="ic-body">Скачивает URL скриншота в <code>SCREENSHOT_CACHE_DIR</code>. Кэш очищается при превышении размера. Эмитирует сигнал с путём к файлу.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">LocalAppStreamLoader</div>
+      <div class="ic-body">Ищет <code>/usr/share/metainfo/*.appdata.xml</code> — локальные описания установленных пакетов. Дополняет StoreData из Pacman.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">PacmanInfoLoader</div>
+      <div class="ic-body"><code>pacman -Qi &lt;name&gt;</code> — детальная информация пакета для страницы деталей (размер, зависимости, дата установки).</div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">workers.py — AppStoreLoader (реальный код)</div>
+    <pre><code>class AppStoreLoader(QThread):
+    finished = pyqtSignal(list)
+
+    def run(self):
+        pkgs = self._load_with_expac() or self._load_with_pacman()
+        self.finished.emit(pkgs)
+
+    def _load_with_expac(self) -> list:
+        """expac быстрее и даёт описания."""
+        try:
+            res = subprocess.run(
+                ["expac", "-S", "%n\t%v\t%d\t%r"],
+                capture_output=True, text=True
+            )
+            if res.returncode != 0 or not res.stdout.strip():
+                return []
+            pkgs = []
+            for line in res.stdout.splitlines():
+                parts = line.split('\t', 3)
+                if len(parts) < 2:
+                    continue
+                name, version = parts[0], parts[1]
+                desc = parts[2].strip() if len(parts) > 2 else ""
+                repo = parts[3].strip() if len(parts) > 3 else "pacman"
+                d = StoreData(name, version, desc or _GENERIC_PACMAN_DESC, repo)
+                d.category = guess_cat(name)
+                pkgs.append(d)
+            return pkgs
+        except FileNotFoundError:
+            return []  # expac не установлен → fallback
+
+    def _load_with_pacman(self) -> list:
+        pkgs = []
+        res = subprocess.run(["pacman", "-Sl"], capture_output=True, text=True)
+        for line in res.stdout.splitlines():
+            p = line.split()
+            if len(p) >= 3:
+                d = StoreData(p[1], p[2], _GENERIC_PACMAN_DESC, p[0])
+                d.category = guess_cat(p[1])
+                pkgs.append(d)
+        return pkgs</code></pre>
+  </div>
+
+  <h3>Алгоритм полного обновления системы</h3>
+  <div class="flow">
+    <div class="flow-step">1. pacman -Syu<br>(офиц. + кастом. репо)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">При ошибке зеркала:<br>pg-rankmirrors-backend rank</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Авто-разрешение<br>конфликтов пакетов</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">yay -Syu<br>(AUR, по одному)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">flatpak update<br>(если установлен)</div>
+  </div>
+
+  <p>Каждый шаг — отдельный <code>subprocess.Popen</code>, вывод читается построчно в QThread. AUR-пакеты обновляются по одному (<code>yay -S pkg_name</code>) чтобы избежать каскадных конфликтов.</p>
+</section>
+
+<!-- ══════════════════════ APP: SWAP MANAGER ══════════════════════ -->
+<section id="app-swap-manager">
+  <h2><span class="app-badge ac3">swap-manager</span> &nbsp;v2.0.1</h2>
+  <p>Полный GUI для управления памятью Linux: swap-файл, zram (сжатый swap в RAM), swappiness, OOM killer, overcommit policy. Все изменения применяются через привилегированный backend.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь (UI)</span><code>/usr/bin/equestria-os-swap-manager</code></div>
+    <div class="meta-item"><span class="meta-label">Бинарь (root)</span><code>/usr/bin/equestria-os-swap-backend</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>polkit python-pyqt6</code></div>
+    <div class="meta-item"><span class="meta-label">Локализация</span>inline dict (~30 ключей, 10 яз.)</div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">swap_app.py     <span class="ft-comment"># SwapManagerApp(QMainWindow), SwapWorker(QThread) — 689 строк</span></div>
+    <div class="ft-file">swap_backend.py <span class="ft-comment"># CLI: --create --disable --delete --swappiness --zram-* --overcommit --oomd</span></div>
+    <div class="ft-file">core.py         <span class="ft-comment"># логика без GUI (тестируется отдельно)</span></div>
+    <div class="ft-file">privilege.py</div>
+    <div class="ft-file">check_mark.svg  <span class="ft-comment"># генерируется кодом при первом запуске</span></div>
+  </div>
+
+  <h3>Секции UI и их связь с ядром</h3>
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="ic-title">Swap-файл</div>
+      <div class="ic-body">QLineEdit для пути (default: <code>/swapfile</code>), QSpinBox для размера в ГБ, QCheckBox для <code>/etc/fstab</code>. Статус читается из <code>swapon --show</code>.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">Swappiness (0–100)</div>
+      <div class="ic-body">QSlider + QSpinBox (синхронизированы). Текущее значение читается из <code>/proc/sys/vm/swappiness</code>. Применяется через <code>sysctl vm.swappiness=N</code>.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">Fast Swap (zram)</div>
+      <div class="ic-body">Сжатый swap в RAM — без I/O диска. Алгоритмы: lzo-rle (быстрый), zstd (лучший ratio), lz4 (минимальная нагрузка CPU). Размер 1-128 GB. Предотвращает watchdog-перезагрузку.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">OOM / Overcommit</div>
+      <div class="ic-body"><code>vm.overcommit_memory</code>: 0=эвристика, 1=всегда разрешать (как Windows), 2=строгий лимит. Тоггл systemd-oomd. <code>kernel.panic_on_oom=0</code> — не паниковать.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">Windows-пресет</div>
+      <div class="ic-body">Одна кнопка: zram 50% RAM + lzo-rle + overcommit=1 + swappiness=80 + oomd off + panic_on_oom=0. Система замедляется под нагрузкой вместо убийства процессов.</div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">swap_app.py — SwapWorker(QThread) и helper _get_ram_gb()</div>
+    <pre><code>def _get_ram_gb() -> int:
+    """Читает MemTotal из /proc/meminfo → возвращает GB."""
+    try:
+        with open("/proc/meminfo") as f:
+            for line in f:
+                if line.startswith("MemTotal:"):
+                    kb = int(line.split()[1])
+                    return max(1, kb // 1024 // 1024)
+    except Exception:
+        pass
+    return 8  # fallback
+
+class SwapWorker(QThread):
+    finished = pyqtSignal(bool, str)  # success, error_message
+
+    def __init__(self, command_args: list[str]):
+        super().__init__()
+        self.command_args = command_args
+
+    def run(self):
+        elevator = privilege.find_elevator()
+        if not elevator:
+            self.finished.emit(False, "No pkexec/kdesu found")
+            return
+        backend = "/opt/equestria-os/equestria-os-swap-manager/swap_backend.py"
+        cmd = [elevator, "python3", backend] + self.command_args
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            self.finished.emit(True, "")
+        else:
+            self.finished.emit(False, result.stderr.strip())
+
+# Пример вызова из GUI:
+def apply_swappiness(self, value: int):
+    self.worker = SwapWorker(["--swappiness", str(value)])
+    self.worker.finished.connect(self.on_done)
+    self.worker.start()</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">swap_backend.py — CLI-интерфейс</div>
+    <pre><code>#!/usr/bin/env python3
+"""Запускается от root через pkexec. Принимает аргументы командной строки."""
+import sys, subprocess
+
+def main():
+    args = sys.argv[1:]
+    if "--create" in args:
+        i = args.index("--create")
+        path, size_gb, mount_on_boot = args[i+1], args[i+2], args[i+3]
+        # Создаём swap-файл:
+        subprocess.run(["fallocate", "-l", f"{size_gb}G", path], check=True)
+        subprocess.run(["chmod", "600", path], check=True)
+        subprocess.run(["mkswap", path], check=True)
+        subprocess.run(["swapon", path], check=True)
+        if mount_on_boot == "true":
+            _add_fstab(path)
+
+    elif "--swappiness" in args:
+        val = args[args.index("--swappiness") + 1]
+        subprocess.run(["sysctl", f"vm.swappiness={val}"], check=True)
+
+    elif "--zram-enable" in args:
+        i = args.index("--zram-enable")
+        size_gb, algo = args[i+1], args[i+2]
+        # modprobe zram → запись в /sys/block/zram0/ → mkswap → swapon
+        subprocess.run(["modprobe", "zram"], check=True)
+        with open("/sys/block/zram0/comp_algorithm", "w") as f:
+            f.write(algo)
+        with open("/sys/block/zram0/disksize", "w") as f:
+            f.write(f"{int(size_gb) * 1024 * 1024 * 1024}")
+        subprocess.run(["mkswap", "/dev/zram0"], check=True)
+        subprocess.run(["swapon", "-p", "100", "/dev/zram0"], check=True)
+
+    elif "--oomd" in args:
+        action = args[args.index("--oomd") + 1]
+        cmd = "enable" if action == "enable" else "disable"
+        subprocess.run(["systemctl", cmd, "--now", "systemd-oomd"], check=True)</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: TUTORIAL ══════════════════════ -->
+<section id="app-tutorial">
+  <h2><span class="app-badge ac4">tutorial</span> &nbsp;v1.4.1-2</h2>
+  <p>8-слайдовый интерактивный тур по Equestria OS. Каждый слайд — изображение + текст + кнопки запуска утилит. Autostart через <code>~/.config/autostart/</code>.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь</span><code>/usr/bin/equestria-os-tutorial</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>python-pyqt6</code></div>
+    <div class="meta-item"><span class="meta-label">Локализация</span>locales/*.json (10 яз.)</div>
+    <div class="meta-item"><span class="meta-label">Слайды</span>assets/slide0-7.png</div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">main.py       <span class="ft-comment"># TutorialApp(QMainWindow), RoundedImageLabel — 434 строки</span></div>
+    <div class="ft-dir">locales/      <span class="ft-comment"># en.json, ru.json, …</span></div>
+    <div class="ft-dir">assets/       <span class="ft-comment"># slide0-7.png, иконки SVG</span></div>
+  </div>
+
+  <h3>RoundedImageLabel — изображения с закруглёнными краями</h3>
+  <div class="code-block">
+    <div class="code-header">main.py — реальный код RoundedImageLabel</div>
+    <pre><code>class RoundedImageLabel(QLabel):
+    """QLabel с закруглёнными краями. Масштабирует изображение динамически."""
+
+    def __init__(self, pixmap: QPixmap, radius: int = 16,
+                 max_h: int = 480, parent=None):
+        super().__init__(parent)
+        self._original = pixmap
+        self._radius   = radius
+        self.setMaximumHeight(max_h)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding,
+                           QSizePolicy.Policy.Preferred)
+
+    def hasHeightForWidth(self) -> bool:
+        return not self._original.isNull()
+
+    def heightForWidth(self, width: int) -> int:
+        """Qt вызывает это при пересчёте layout."""
+        if self._original.isNull() or self._original.width() == 0:
+            return 0
+        aspect = self._original.height() / self._original.width()
+        return min(int(width * aspect), self.maximumHeight())
+
+    def paintEvent(self, event):
+        if self._original.isNull():
+            return
+        scaled = self._original.scaled(
+            self.width(), self.height(),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        # Центрируем
+        x = (self.width()  - scaled.width())  // 2
+        y = (self.height() - scaled.height()) // 2
+        # Обрезаем по закруглённому прямоугольнику
+        path = QPainterPath()
+        path.addRoundedRect(
+            float(x), float(y),
+            float(scaled.width()), float(scaled.height()),
+            float(self._radius), float(self._radius)
+        )
+        painter.setClipPath(path)
+        painter.drawPixmap(x, y, scaled)</code></pre>
+  </div>
+
+  <h3>Запуск приложений из слайдов</h3>
+  <div class="code-block">
+    <div class="code-header">main.py — парсинг .desktop и запуск</div>
+    <pre><code>def launch_app_from_desktop(self, desktop_name: str):
+    """Находит .desktop-файл и запускает приложение."""
+    desktop_dirs = [
+        "/usr/share/applications/",
+        os.path.expanduser("~/.local/share/applications/"),
+    ]
+    for d in desktop_dirs:
+        path = os.path.join(d, desktop_name)
+        if os.path.exists(path):
+            exec_cmd = self._parse_exec(path)
+            if exec_cmd:
+                subprocess.Popen(exec_cmd, start_new_session=True)
+                return
+
+def _parse_exec(self, desktop_path: str) -> list[str] | None:
+    """Читает Exec= из .desktop, убирает %F %U %f %u %i %c %k."""
+    with open(desktop_path, encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("Exec="):
+                cmd = line[5:].strip()
+                # Убираем placeholder'ы freedesktop
+                for ph in ("%F", "%U", "%f", "%u", "%i", "%c", "%k"):
+                    cmd = cmd.replace(ph, "")
+                return cmd.split()</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: WELCOME HUB ══════════════════════ -->
+<section id="app-welcome-hub">
+  <h2><span class="app-badge ac5">welcome-hub</span> &nbsp;v2.3.0</h2>
+  <p>Хаб ссылок по 5 категориям: System, Music (21 YouTube-канал), Games (Pony Town, Steam, itch.io), Pony Social, Support. Умный Item-launcher определяет тип цели автоматически.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь</span><code>/usr/bin/equestria-os-welcome-hub</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>python-pyqt6</code></div>
+    <div class="meta-item"><span class="meta-label">Autostart</span><code>~/.config/autostart/equestria-welcomehub.desktop</code></div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">welcome_hub.py <span class="ft-comment"># main_app(QMainWindow, Ui_WelcomeHub), Item</span></div>
+    <div class="ft-file">ui_welcome.py  <span class="ft-comment"># Ui_WelcomeHub — сгенерированный UI</span></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">welcome_hub.py — класс Item и логика запуска</div>
+    <pre><code>class Item:
+    def __init__(self, name: str, target: str, launch_type: str = "app"):
+        self.name = name
+        self.target = target
+        # Авто-определение типа по содержимому target
+        self.launch_type = (
+            "url" if target.startswith(("http", "steam"))
+            else launch_type
+        )
+
+# В main_app:
+def launch_item(self, item: Item):
+    t = item.target
+    try:
+        if t.startswith("http") or t.startswith("https"):
+            subprocess.Popen(["xdg-open", t])
+
+        elif t.startswith("steam://"):
+            # Пробуем запустить через Steam, fallback на браузер
+            if shutil.which("steam"):
+                subprocess.Popen(["steam", t])
+            else:
+                subprocess.Popen(["xdg-open", t])
+
+        else:
+            # Команда или бинарь
+            subprocess.Popen(t.split(), start_new_session=True)
+    except Exception as e:
+        print(f"Failed to launch {item.name}: {e}")</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">welcome_hub.py — autostart через .desktop-файл</div>
+    <pre><code>AUTOSTART_PATH = os.path.expanduser(
+    "~/.config/autostart/equestria-welcomehub.desktop"
+)
+
+def setup_autostart_logic(self):
+    # Checkbox отражает наличие файла
+    self.autostart_cb.setChecked(os.path.exists(AUTOSTART_PATH))
+    self.autostart_cb.toggled.connect(self.toggle_autostart)
+
+def toggle_autostart(self, enabled: bool):
+    if enabled:
+        os.makedirs(os.path.dirname(AUTOSTART_PATH), exist_ok=True)
+        with open(AUTOSTART_PATH, "w") as f:
+            f.write("[Desktop Entry]\n"
+                    "Type=Application\n"
+                    "Name=Equestria OS Welcome Hub\n"
+                    "Exec=/usr/bin/equestria-os-welcome-hub\n"
+                    "X-GNOME-Autostart-enabled=true\n")
+    else:
+        if os.path.exists(AUTOSTART_PATH):
+            os.remove(AUTOSTART_PATH)</code></pre>
+  </div>
+
+  <h3>Переключение языка</h3>
+  <div class="code-block">
+    <div class="code-header">welcome_hub.py — lang-кнопки в два ряда</div>
+    <pre><code>def setup_ui_logic(self):
+    codes = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
+    for i, code in enumerate(codes):
+        btn = QPushButton(code.upper())
+        btn.setProperty("cssClass", "lang-button")
+        btn.setProperty("active", "true" if code == self.current_lang else "false")
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn.clicked.connect(lambda chk, c=code: self.change_lang(c))
+        # Первые 5 — в верхний ряд, следующие 5 — в нижний
+        if i < 5:
+            self.lang_row1.addWidget(btn)
+        else:
+            self.lang_row2.addWidget(btn)</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: TASK PANEL ══════════════════════ -->
+<section id="app-task-panel">
+  <h2><span class="app-badge ac6">task-panel-changer</span> &nbsp;v1.2.3</h2>
+  <p>Полная кастомизация KDE Plasma 6 панели. Генерирует SVG-тему и .colors-схему, применяет через <code>plasma-apply-*</code> и <code>qdbus6 evaluateScript</code>, перезапускает <code>plasmashell</code>.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Директория</span><code>equstria-os-task-panel-changer</code> (опечатка в имени)</div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>python-pyqt6 plasma-workspace</code></div>
+    <div class="meta-item"><span class="meta-label">Данные пользователя</span><code>~/.local/share/EquestriaOS/PanelStyles/</code></div>
+    <div class="meta-item"><span class="meta-label">Локализация</span>localization.csv</div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">main.py          <span class="ft-comment"># TaskPanelApp(QMainWindow) — 1120 строк</span></div>
+    <div class="ft-file">ui.py            <span class="ft-comment"># Ui_TaskPanel (Qt Designer)</span></div>
+    <div class="ft-file">widgets.py       <span class="ft-comment"># PresetCard, PanelRowWidget</span></div>
+    <div class="ft-file">plasma_utils.py  <span class="ft-comment"># find_qdbus(), set_desktop_icons_state(), apply_panel_theme()</span></div>
+    <div class="ft-file">presets.json     <span class="ft-comment"># встроенные пресеты (default, dark, transparent, …)</span></div>
+    <div class="ft-file">characters.json  <span class="ft-comment"># персонажи для пресетов по персонажу</span></div>
+    <div class="ft-file">save_panel.sh    <span class="ft-comment"># бэкап текущего appletsrc</span></div>
+    <div class="ft-file">restore_panel.sh</div>
+    <div class="ft-dir">MLP Cutiemarks/  <span class="ft-comment"># иконки персонажей</span></div>
+  </div>
+
+  <h3>plasma_utils.py — реальный код</h3>
+  <div class="code-block">
+    <div class="code-header">plasma_utils.py — find_qdbus() и set_desktop_icons_state()</div>
+    <pre><code>import shutil, subprocess, os
+from pathlib import Path
+
+PLASMA_CONFIG = os.path.expanduser(
+    "~/.config/plasma-org.kde.plasma.desktop-appletsrc"
+)
+
+def find_qdbus() -> str:
+    """Ищет qdbus6 или qdbus — в зависимости от установленного Plasma."""
+    for name in ("qdbus6", "qdbus"):
+        path = shutil.which(name)
+        if path:
+            return path
+    raise FileNotFoundError(
+        "qdbus not found. Install plasma-workspace or kde-cli-tools."
+    )
+
+def set_desktop_icons_state(visible: bool):
+    """Показывает или скрывает иконки рабочего стола через D-Bus."""
+    qdbus = find_qdbus()
+    state = "true" if visible else "false"
+    script = (
+        "var allDesktops = desktops();\n"
+        "for (var i = 0; i < allDesktops.length; i++) {\n"
+        "    var d = allDesktops[i];\n"
+        f"    d.currentConfigGroup = ['General'];\n"
+        f"    d.writeConfig('showIcons', {state});\n"
+        "}\n"
+    )
+    subprocess.run([
+        qdbus, "org.kde.plasmashell", "/PlasmaShell",
+        "org.kde.PlasmaShell.evaluateScript", script
+    ])
+
+def restart_plasmashell():
+    """Перезапускает plasmashell для применения темы."""
+    subprocess.run(["kquitapp6", "plasmashell"], capture_output=True)
+    import time; time.sleep(1)
+    subprocess.Popen(["kstart6", "plasmashell"])</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">Структура пользовательских данных</div>
+    <pre><code>~/.local/share/EquestriaOS/PanelStyles/
+├── appearance.json       # текущий активный пресет + цвет + прозрачность
+├── presets.json          # пользовательские пресеты
+└── layouts/              # снапшоты plasma appletsrc (.bak файлы)
+
+# Тема Plasma генерируется в:
+~/.local/share/plasma/desktoptheme/EquestriaPanel/
+├── metadata.desktop
+├── colors
+└── widgets/
+    └── panel-background.svg   # SVG с нужным цветом и прозрачностью
+
+# Цветовая схема:
+~/.local/share/color-schemes/EquestriaPanel.colors</code></pre>
+  </div>
+
+  <h3>Параметры панели (PanelRowWidget)</h3>
+  <div class="info-grid">
+    <div class="info-card"><div class="ic-title">Позиция</div><div class="ic-body">top / bottom / left / right</div></div>
+    <div class="info-card"><div class="ic-title">Высота</div><div class="ic-body">Пиксели (QSpinBox)</div></div>
+    <div class="info-card"><div class="ic-title">Видимость</div><div class="ic-body">none / autohide / dodge / gobelow</div></div>
+    <div class="info-card"><div class="ic-title">Длина</div><div class="ic-body">fill / fit / custom (px)</div></div>
+    <div class="info-card"><div class="ic-title">Выравнивание</div><div class="ic-body">left / center / right</div></div>
+    <div class="info-card"><div class="ic-title">Launcher</div><div class="ic-body">kickoff / kicker / none</div></div>
+    <div class="info-card"><div class="ic-title">Виджеты</div><div class="ic-body">taskbar / systray / clock / pager</div></div>
+    <div class="info-card"><div class="ic-title">Иконки стола</div><div class="ic-body">QCheckBox → set_desktop_icons_state()</div></div>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: PG-RANKMIRRORS ══════════════════════ -->
+<section id="app-rankmirrors">
+  <h2><span class="app-badge ac7">pg-rankmirrors</span> &nbsp;v2.1.1</h2>
+  <p>Ранжирование зеркал Pacman по скорости. GUI выбирает страны, bash-backend через pkexec переписывает <code>/etc/pacman.d/mirrorlist</code>. Автоматизация: systemd timer (еженедельно) + libalpm hook.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинарь (UI)</span><code>/usr/bin/pg-rankmirrors</code></div>
+    <div class="meta-item"><span class="meta-label">Бинарь (root)</span><code>/usr/bin/pg-rankmirrors-backend</code> (bash)</div>
+    <div class="meta-item"><span class="meta-label">Hook</span><code>/etc/pacman.d/hooks/pg-rankmirrors.hook</code></div>
+    <div class="meta-item"><span class="meta-label">Timer</span><code>pg-rankmirrors.timer</code> (еженедельно)</div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">main.py                  <span class="ft-comment"># main_app(QMainWindow), CountryRow</span></div>
+    <div class="ft-file">ui_mirrors.py            <span class="ft-comment"># Ui_Mirrors, CountryRow виджет</span></div>
+    <div class="ft-file">pg-rankmirrors-backend   <span class="ft-comment"># bash-скрипт (privileged)</span></div>
+    <div class="ft-file">pg-rankmirrors.service   <span class="ft-comment"># Type=oneshot</span></div>
+    <div class="ft-file">pg-rankmirrors.timer     <span class="ft-comment"># OnCalendar=weekly</span></div>
+    <div class="ft-file">pg-rankmirrors.hook      <span class="ft-comment"># Operation=Upgrade, When=PostTransaction</span></div>
+    <div class="ft-dir">locales/</div>
+  </div>
+
+  <h3>Протокол GUI ↔ bash-backend (JSON stdout)</h3>
+  <div class="code-block">
+    <div class="code-header">pg-rankmirrors-backend — команды и вывод</div>
+    <pre><code>#!/bin/bash
+# Запускается через pkexec. Все данные — JSON на stdout.
+
+case "$1" in
+  list-countries)
+    # Возвращает список стран с количеством зеркал
+    python3 -c "
+import json, subprocess
+# reflector --list-countries --save /dev/stdout
+result = subprocess.run(['reflector', '--list-countries'],
+                       capture_output=True, text=True)
+countries = []
+for line in result.stdout.splitlines()[2:]:
+    parts = line.split()
+    if len(parts) >= 3:
+        countries.append({'code': parts[-2], 'name': ' '.join(parts[:-2]),
+                          'mirrors': int(parts[-1])})
+print(json.dumps({'countries': countries}))
+"
+    ;;
+
+  rank)
+    # $2 — коды стран через запятую: "RU,DE,FR"
+    # Переписывает /etc/pacman.d/mirrorlist по скорости
+    reflector --country "$2" --latest 10 --sort rate \
+              --save /etc/pacman.d/mirrorlist
+    echo "OK"
+    ;;
+
+  restore)
+    cp /etc/pacman.d/mirrorlist.backup /etc/pacman.d/mirrorlist
+    echo "OK"
+    ;;
+
+  enable-auto)
+    systemctl enable --now pg-rankmirrors.timer
+    ;;
+
+  disable-auto)
+    systemctl disable --now pg-rankmirrors.timer
+    ;;
+esac</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">pg-rankmirrors.hook — libalpm hook</div>
+    <pre><code>[Trigger]
+Operation = Upgrade
+Type = Package
+Target = pacman-mirrorlist   # срабатывает при обновлении списка зеркал
+
+[Action]
+Description = Ranking Pacman mirrors by speed...
+When = PostTransaction
+Exec = /usr/bin/pg-rankmirrors-backend rank auto</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ APP: PROTON EXE STARTER ══════════════════════ -->
+<section id="app-proton">
+  <h2><span class="app-badge ac8">proton-exe-starter</span></h2>
+  <p>Запуск Windows .exe через umu-run (UMU/Proton). Один Python-код устанавливается под тремя именами бинарей и маршрутизирует выполнение через <code>dispatch.py</code> по <code>argv[0]</code>. Изолированный WINEPREFIX на основе MD5 пути.</p>
+
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Бинари</span><code>equestria-proton-settings</code> / <code>equestria-proton-run</code> / <code>equestria-proton-cleaner</code></div>
+    <div class="meta-item"><span class="meta-label">Зависимости</span><code>python-pyqt6 umu</code></div>
+    <div class="meta-item"><span class="meta-label">MIME</span><code>application/x-ms-dos-executable</code></div>
+    <div class="meta-item"><span class="meta-label">Данные</span><code>~/.local/share/Equestria OS/ProtonApps/</code></div>
+  </div>
+
+  <div class="file-tree">
+    <div class="ft-file">dispatch.py       <span class="ft-comment"># маршрутизация по os.path.basename(sys.argv[0])</span></div>
+    <div class="ft-file">launcher.py       <span class="ft-comment"># SplashWindow — frameless progress UI, log viewer</span></div>
+    <div class="ft-file">proton_runner.py  <span class="ft-comment"># main(): MD5 prefix, env setup, umu-run запуск</span></div>
+    <div class="ft-file">proton_updater.py <span class="ft-comment"># обновление Proton/UMU runtime</span></div>
+    <div class="ft-file">main.py           <span class="ft-comment"># настройки: список приложений, конфиги WINEPREFIX</span></div>
+    <div class="ft-file">cleaner.py        <span class="ft-comment"># очистка: удаление WINEPREFIX, кэша</span></div>
+    <div class="ft-file">ui.py             <span class="ft-comment"># UI-компоненты</span></div>
+    <div class="ft-file">mimeapps.list     <span class="ft-comment"># ассоциация .exe → equestria-proton-run</span></div>
+  </div>
+
+  <h3>dispatch.py — один код, три бинаря</h3>
+  <div class="code-block">
+    <div class="code-header">dispatch.py — реальный код</div>
+    <pre><code>"""
+Один бинарь symlink'ится под тремя именами. Маршрутизация по argv[0].
+
+  equestria-proton-settings  → main.py   (GUI настроек)
+  equestria-proton-run       → launcher.py + proton_runner.py
+  equestria-proton-cleaner   → cleaner.py
+"""
+import sys, os
+
+_name = os.path.basename(sys.argv[0])
+
+if "run" in _name or "launcher" in _name:
+    import launcher as _mod
+elif "cleaner" in _name:
+    import cleaner as _mod
+else:
+    import main as _mod
+
+# Запускаем __main__ нужного модуля
+if hasattr(_mod, "__file__"):
+    import runpy
+    runpy.run_module(_mod.__name__, run_name="__main__", alter_sys=True)</code></pre>
+  </div>
+
+  <h3>proton_runner.py — изоляция WINEPREFIX через MD5</h3>
+  <div class="code-block">
+    <div class="code-header">proton_runner.py — реальный код запуска</div>
+    <pre><code>APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
+CONFIG_DIR    = os.path.expanduser("~/.config/Equestria OS/Proton/")
+
+def main():
+    exe_path = sys.argv[1]
+    exe_name = os.path.basename(exe_path)
+
+    # Уникальный ID приложения: имя + первые 8 символов MD5 пути
+    path_hash = hashlib.md5(exe_path.encode("utf-8")).hexdigest()[:8]
+    app_id = f"{exe_name}_{path_hash}"
+
+    # Изолированный WINEPREFIX — каждый .exe получает свою "Windows"
+    prefix_path = os.path.join(APPS_DATA_DIR, app_id)
+    os.makedirs(prefix_path, exist_ok=True)
+
+    # Загрузка пользовательских настроек для этого .exe
+    config_file = os.path.join(CONFIG_DIR, f"{app_id}.json")
+    settings = {}
+    if os.path.exists(config_file):
+        with open(config_file) as f:
+            settings = json.load(f)
+
+    # Формирование env
+    env = os.environ.copy()
+    env["WINEPREFIX"] = prefix_path
+    env["GAMEID"]     = app_id       # требуется umu-run
+
+    if settings.get("dxvk_hud"):
+        env["DXVK_HUD"] = "compiler,frametimes,fps"  # оверлей отладки
+    if settings.get("fsr"):
+        env["WINE_FULLSCREEN_FSR"] = "1"              # FidelityFX Super Resolution
+
+    extra_args = shlex.split(settings.get("launch_args", ""))
+    game_dir   = os.path.dirname(exe_path)
+
+    # Virtual desktop (изолированное окно Wine)
+    if settings.get("virtual_desktop"):
+        screen = QApplication.primaryScreen().size()
+        res = f"{screen.width()}x{screen.height()}"
+        cmd = ["umu-run", "explorer.exe",
+               f"/desktop=EquestriaOS,{res}", exe_path] + extra_args
+    else:
+        cmd = ["umu-run", exe_path] + extra_args
+
+    # Запуск с логом
+    log_path = os.path.join(APPS_DATA_DIR, f"{app_id}.log")
+    log_out  = open(log_path, "w", encoding="utf-8")
+    proc = subprocess.Popen(cmd, env=env, cwd=game_dir,
+                            stdout=log_out, stderr=subprocess.STDOUT)
+
+    # Splash-окно читает лог и показывает прогресс
+    splash = SplashWindow(exe_name, log_path, proc)
+    splash.exec()</code></pre>
+  </div>
+
+  <div class="method-block">
+    <div class="method-sig">class SplashWindow(QDialog)</div>
+    <div class="method-body">
+      Frameless окно (<code>Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint</code>). QProgressBar обновляется через QTimer, читающий лог-файл на строки "PROGRESS:N%". При ошибке (returncode != 0) — показывает QTextEdit с полным содержимым лога + кнопку Retry. При успехе — авто-закрытие. Кнопка X закрывает окно но оставляет процесс работать.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ BASEMODULE API ══════════════════════ -->
+<section id="base-module">
+  <h2>BaseModule ABC — контракт плагин-системы</h2>
+  <p>Каждый модуль в <code>equestria-os-settings</code> — класс-наследник <code>BaseModule</code> из <code>base_module.py</code>. Settings авто-обнаруживает их через <code>importlib</code>.</p>
+
+  <div class="code-block">
+    <div class="code-header">base_module.py — реальный полный код</div>
+    <pre><code>import shutil
+from abc import ABC, abstractmethod
+from PyQt6.QtWidgets import QWidget
+
+
+class BaseModule(ABC):
+    """Base class for all equestria-os-settings modules.
+
+    Чтобы добавить новый модуль, создайте modules/mod_<name>.py
+    с одним классом-наследником BaseModule. Settings авто-обнаружит его.
+    """
+
+    # ── Идентификация (class-level атрибуты, задаются в подклассе) ──────────
+    module_id:        str = ""   # уникальный ключ, напр. "mod_swap_manager"
+    display_name_key: str = ""   # ключ в словаре локализации → название в sidebar
+    description_key:  str = ""   # ключ для подзаголовка
+    category:         str = "system"  # "system" | "software" | "appearance"
+    icon:             str = "⚙"       # emoji в sidebar
+    sort_order:       int = 99        # порядок внутри категории (меньше = выше)
+    required_binary:  str = ""   # напр. "/usr/bin/btrfs" → is_available() проверяет
+    package_name:     str = ""   # напр. "equestria-os-disk-manager" → кнопка Install
+
+    def __init__(self, t_func, base_path: str):
+        """
+        t_func    — callable(key: str) → str, глобальная t() из SettingsWindow
+        base_path — абсолютный путь установки equestria-os-settings
+        """
+        self.t         = t_func
+        self.base_path = base_path
+        self._widget: QWidget | None = None
+
+    # ── Lifecycle ────────────────────────────────────────────────────────────
+
+    @abstractmethod
+    def build_widget(self) -> QWidget:
+        """Строит и возвращает виджет. Вызывается ровно один раз, результат кэшируется."""
+
+    def get_widget(self) -> QWidget:
+        """Возвращает кэшированный виджет, строит при первом обращении."""
+        if self._widget is None:
+            self._widget = self.build_widget()
+        return self._widget
+
+    def on_shown(self) -> None:
+        """Вызывается каждый раз при переключении на этот модуль.
+        Используй для обновления состояния (напр. перечитать swapon --show)."""
+
+    def on_hidden(self) -> None:
+        """Вызывается при уходе с модуля. Сохрани несохранённые изменения."""
+
+    def apply_language(self) -> None:
+        """Вызывается при смене языка. Перетранслируй все строки виджета."""
+
+    def is_available(self) -> bool:
+        """False → модуль скрыт, показывается NotInstalledWidget с кнопкой Install.
+        Проверяет наличие required_binary через shutil.which()."""
+        if not self.required_binary:
+            return True
+        return shutil.which(self.required_binary) is not None
+
+    # ── Helpers ──────────────────────────────────────────────────────────────
+
+    def launch_app(self, binary: str) -> None:
+        """Запуск внешнего приложения без блокировки UI."""
+        import subprocess
+        subprocess.Popen([binary], start_new_session=True)
+
+    def launch_in_terminal(self, cmd: list) -> None:
+        """Запуск команды в первом доступном терминале."""
+        import subprocess
+        for term_args in [
+            ["konsole", "-e"],
+            ["xterm", "-e"],
+            ["gnome-terminal", "--"],
+        ]:
+            if shutil.which(term_args[0]):
+                subprocess.Popen(term_args + cmd, start_new_session=True)
+                return</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ MODULES LIST ══════════════════════ -->
+<section id="modules-list">
+  <h2>13 модулей Settings</h2>
+  <div class="module-grid">
+    <div class="module-card">
+      <div class="mc-id">mod_character_theme</div>
+      <div class="mc-cat appearance">appearance · sort_order=10</div>
+      <div class="mc-desc">Встраивает character-theme switcher. required_binary: нет (всегда доступен).</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_task_panel</div>
+      <div class="mc-cat appearance">appearance · sort_order=20</div>
+      <div class="mc-desc">Кастомизация KDE панели. required_binary: qdbus6 или qdbus.</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_tutorial</div>
+      <div class="mc-cat appearance">appearance · sort_order=30</div>
+      <div class="mc-desc">Запуск интерактивного тура. Кнопка launch_app("/usr/bin/equestria-os-tutorial").</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_disk_manager</div>
+      <div class="mc-cat system">system · sort_order=10</div>
+      <div class="mc-desc">Управление дисками и fstab. required_binary: /usr/bin/equestria-disk-manager.</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_services</div>
+      <div class="mc-cat system">system · sort_order=20</div>
+      <div class="mc-desc">Systemd service manager. required_binary: systemctl (всегда есть в Arch).</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_swap_manager</div>
+      <div class="mc-cat system">system · sort_order=30</div>
+      <div class="mc-desc">Память, swap, zram. required_binary: swapon.</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_mirrors</div>
+      <div class="mc-cat system">system · sort_order=40</div>
+      <div class="mc-desc">pg-rankmirrors GUI. required_binary: /usr/bin/pg-rankmirrors.</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_save_point</div>
+      <div class="mc-cat system">system · sort_order=50</div>
+      <div class="mc-desc">Снапшоты системы. required_binary: /usr/bin/equestria-os-save-point.</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_auto_update</div>
+      <div class="mc-cat system">system · sort_order=60</div>
+      <div class="mc-desc">Настройки автообновления. Управляет systemd-сервисом обновлений.</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_software_center</div>
+      <div class="mc-cat software">software · sort_order=10</div>
+      <div class="mc-desc">Магазин приложений. required_binary: /usr/bin/equestria-os-software-center.</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_package_manager</div>
+      <div class="mc-cat software">software · sort_order=20</div>
+      <div class="mc-desc">Деинсталлятор пакетов. required_binary: /usr/bin/equestria-os-package-manager.</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_install_packages</div>
+      <div class="mc-cat software">software · sort_order=30</div>
+      <div class="mc-desc">Установка дополнительных пакетов из packages.json. Открывает konsole с pacman -S.</div>
+    </div>
+    <div class="module-card">
+      <div class="mc-id">mod_proton</div>
+      <div class="mc-cat software">software · sort_order=40</div>
+      <div class="mc-desc">Настройки Proton/Wine per-приложение. required_binary: umu-run.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ MODULE EXAMPLE ══════════════════════ -->
+<section id="module-example">
+  <h2>Пример нового модуля</h2>
+  <p>Чтобы добавить новый раздел в Settings, создайте файл <code>modules/mod_myfeature.py</code>:</p>
+
+  <div class="code-block">
+    <div class="code-header">modules/mod_myfeature.py — минимальный рабочий модуль</div>
+    <pre><code>import subprocess
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
+from base_module import BaseModule
+
+
+class MyFeatureModule(BaseModule):
+    module_id        = "mod_myfeature"
+    display_name_key = "mod.myfeature"   # добавить в locales/*.json
+    description_key  = "mod.myfeature.desc"
+    category         = "system"          # system | software | appearance
+    icon             = "🔧"
+    sort_order       = 70
+    required_binary  = "/usr/bin/my-tool"  # "" → всегда доступен
+    package_name     = "my-tool-package"   # для кнопки Install
+
+    def build_widget(self) -> QWidget:
+        """Вызывается один раз при первом открытии модуля."""
+        self._root = QWidget()
+        layout = QVBoxLayout(self._root)
+
+        self._status_label = QLabel("Loading…")
+        layout.addWidget(self._status_label)
+
+        btn = QPushButton("Do Something")
+        btn.clicked.connect(self._on_click)
+        layout.addWidget(btn)
+
+        layout.addStretch()
+        return self._root
+
+    def on_shown(self):
+        """Вызывается при каждом переключении на этот модуль — обновляем статус."""
+        result = subprocess.run(["my-tool", "--status"],
+                                capture_output=True, text=True)
+        self._status_label.setText(result.stdout.strip())
+
+    def apply_language(self):
+        """Перетранслируем строки при смене языка."""
+        # self.t() вызывает глобальный переводчик Settings
+        pass
+
+    def _on_click(self):
+        self.launch_app("/usr/bin/my-tool")</code></pre>
+  </div>
+
+  <p>После создания файла — перезапустить <code>equestria-os-settings</code>. Модуль появится автоматически.</p>
+</section>
+
+<!-- ══════════════════════ LEARN ══════════════════════ -->
+<section id="learn">
+  <h2>Что изучать</h2>
+  <p>Дорожная карта для самостоятельной отладки и разработки приложений Equestria OS без зависимости от ИИ. Каждый раздел — конкретные концепции, применяемые в реальном коде.</p>
+
+  <div class="learn-block">
+    <div class="learn-num">01</div>
+    <div class="learn-content">
+      <div class="learn-title">Python 3 — необходимые возможности</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> <code>dataclasses</code> (@dataclass, field, asdict) — используются в character-theme (EGCharacter, KonsoleColorScheme) и save-point (SnapshotData). <code>ABC</code> и <code>@abstractmethod</code> — BaseModule в settings. <code>subprocess</code> (Popen, run, PIPE, capture_output, text=True, stdout.flush()) — везде. <code>threading.Thread</code> (daemon=True) — package-manager, services-manager. <code>pathlib.Path</code> — task-panel-changer. <code>hashlib.md5</code> — proton-exe-starter. <code>shlex.split/quote</code> — save-point (hooks.py), proton_runner. <code>json.load/dump</code> — configs. <code>csv.reader/DictReader</code> — character-theme, git-askpass.
+        <br><strong>Ресурсы:</strong> docs.python.org/3/, realpython.com
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">02</div>
+    <div class="learn-content">
+      <div class="learn-title">PyQt6 — виджеты и layouts</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> QApplication, QMainWindow, QDialog, QWidget. Все базовые виджеты: QPushButton (setCheckable, setProperty, style().unpolish/polish для QSS-обновления), QLabel, QLineEdit (EchoMode.Password), QComboBox, QSlider, QSpinBox, QCheckBox, QStackedWidget (для слайдов tutorial и модулей settings), QScrollArea, QListWidget, QTreeWidget. Layouts: QVBoxLayout, QHBoxLayout, QGridLayout, addStretch(), setSpacing()/setContentsMargins(). QSizePolicy, setSizePolicy().
+        <br><strong>Где применяется:</strong> все 17 приложений.
+        <br><strong>Ресурсы:</strong> doc.qt.io/qtforpython/, pythonguis.com
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">03</div>
+    <div class="learn-content">
+      <div class="learn-title">PyQt6 — сигналы, потоки и кастомные виджеты</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> <code>pyqtSignal</code> (объявление на уровне класса, .connect(), .emit()) — главное правило: emit() можно вызывать из любого потока, слот выполняется в main thread. <code>QThread</code> (run(), quit(), wait(), deleteLater()) — software-center, swap-manager. <code>QStyledItemDelegate</code> (paint(), sizeHint()) — SidebarDelegate в settings. <code>QPainter + QPainterPath</code> (addRoundedRect, setClipPath, setRenderHint Antialiasing) — RoundedImageLabel в tutorial. <code>QFontDatabase</code> (addApplicationFont, applicationFontFamilies). <code>QTimer</code> (singleShot для debounce). <code>QFontMetrics</code> (boundingRect для динамического sizeHint).
+        <br><strong>Критическая ошибка:</strong> прямое изменение виджетов из потока → крэш. Всегда через emit().
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">04</div>
+    <div class="learn-content">
+      <div class="learn-title">Qt Style Sheets (QSS)</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> Синтаксис похож на CSS, но свойства другие. Селекторы: <code>QPushButton</code>, <code>QPushButton:hover</code>, <code>QPushButton:checked</code>, <code>QPushButton#objectName</code>, <code>QLabel[cssClass="title"]</code> (кастомные свойства). Свойства: background-color, color, border, border-radius, padding, font-size, font-weight, font-family, min-height, max-width. Загрузка: <code>app.setStyleSheet(open("style.qss").read())</code>. Форсирование пересчёта: <code>widget.style().unpolish(widget); widget.style().polish(widget)</code> — нужно после setProperty().
+        <br><strong>Важно:</strong> Kvantum перекрывает QSS. Если стили не применяются — добавить <code>QApplication.setStyle("Fusion")</code> перед загрузкой QSS.
+        <br><strong>Ресурсы:</strong> doc.qt.io/qt-6/stylesheet-reference.html
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">05</div>
+    <div class="learn-content">
+      <div class="learn-title">Polkit и архитектура frontend/backend</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> Polkit (PolicyKit) — система авторизации привилегированных действий. <code>pkexec</code> — запуск команды/скрипта от root с диалогом аутентификации. <code>kdesu</code> — KDE-аналог. Как писать <code>.policy</code>-файлы для pkexec (<code>/usr/share/polkit-1/actions/</code>). Паттерн: GUI без прав + отдельный Python-CLI запускается через pkexec. Протокол stdout: PROGRESS N M / OK / ERROR. Чтение через subprocess.Popen с PIPE, построчно.
+        <br><strong>Где применяется:</strong> disk-manager, relocator, swap-manager, package-manager, services-manager, pg-rankmirrors.
+        <br><strong>Ресурсы:</strong> wiki.archlinux.org/title/Polkit, man pkexec(1)
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">06</div>
+    <div class="learn-content">
+      <div class="learn-title">systemd — сервисы, таймеры, юниты</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> Структура <code>.service</code>: [Unit] Description/After/Requires, [Service] Type/ExecStart/Restart, [Install] WantedBy. Тип <code>oneshot</code> vs <code>simple</code>. <code>.timer</code>-файлы: OnCalendar=weekly/daily, Unit=. <code>systemctl</code>: list-unit-files, list-units --all, show --property=ActiveState,UnitFileState,Description, start/stop/enable/disable --now. Пользовательские сервисы: <code>--user</code>. Логи: <code>journalctl -u service-name -f</code>. <code>WantedBy=graphical.target</code> — запуск после старта DE.
+        <br><strong>Где применяется:</strong> save-point (daily timer + auto-restore service), pg-rankmirrors (weekly timer), services-manager (управляет всеми сервисами).
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">07</div>
+    <div class="learn-content">
+      <div class="learn-title">Arch Linux PKGBUILD и makepkg</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> Структура PKGBUILD: pkgname, pkgver, pkgrel, pkgdesc, arch, depends, optdepends, install. Функция <code>package()</code>: <code>install -Dm755 src dst</code> (исполняемые), <code>install -Dm644</code> (данные), <code>install -dm755</code> (директории). Переменные: <code>$pkgdir</code> (корень пакета), <code>$startdir</code> (директория PKGBUILD). Процесс: <code>makepkg -si</code> → <code>makepkg --printsrcinfo</code> для AUR. <code>namcap PKGBUILD</code> — проверка ошибок. <code>pacman -Qi/-Ql/-Qn/-Qm</code> — информация об установленных пакетах.
+        <br><strong>Ресурсы:</strong> wiki.archlinux.org/title/PKGBUILD, wiki.archlinux.org/title/Creating_packages
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">08</div>
+    <div class="learn-content">
+      <div class="learn-title">libalpm hooks (pacman hooks)</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> Формат <code>.hook</code>-файла: секции [Trigger] и [Action]. Trigger: <code>Operation</code> (Install/Upgrade/Remove), <code>Type</code> (Package/File/Path), <code>Target</code> (имя пакета или glob пути). Action: <code>When</code> (PreTransaction/PostTransaction), <code>Exec</code>, <code>Description</code>, <code>NeedsTargets</code>. Расположение: <code>/usr/share/libalpm/hooks/</code> (системные) и <code>/etc/pacman.d/hooks/</code> (пользовательские, имеют приоритет).
+        <br><strong>Где применяется:</strong> save-point.hook (снапшот перед обновлением), pg-rankmirrors.hook (переранжирование после pacman -Sy).
+        <br><strong>Ресурсы:</strong> man alpm-hooks(5), wiki.archlinux.org/title/Pacman#Hooks
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">09</div>
+    <div class="learn-content">
+      <div class="learn-title">KDE Plasma 6 — интеграция и D-Bus</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> <code>qdbus6</code> / <code>qdbus</code> — CLI для D-Bus вызовов. Сервис <code>org.kde.plasmashell</code>, путь <code>/PlasmaShell</code>, метод <code>org.kde.PlasmaShell.evaluateScript(script: str)</code> — выполняет JavaScript в Plasma Shell. Через JS доступны: <code>desktops()</code>, <code>panels()</code>, свойства wallpaper. <code>plasma-apply-colorscheme SchemaName</code> — применение .colors-файла. <code>plasma-apply-desktoptheme ThemeName</code> — тема панели. <code>kquitapp6 plasmashell + kstart6 plasmashell</code> — перезапуск. Структура <code>~/.config/plasma-org.kde.plasma.desktop-appletsrc</code>. Формат .colors-файла (похож на INI).
+        <br><strong>Где применяется:</strong> task-panel-changer (полная кастомизация), character-theme (обои + цвета).
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">10</div>
+    <div class="learn-content">
+      <div class="learn-title">Python importlib — динамическая загрузка модулей</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> <code>importlib.util.spec_from_file_location(name, path)</code> — создаёт spec по пути. <code>importlib.util.module_from_spec(spec)</code> — создаёт модуль. <code>spec.loader.exec_module(mod)</code> — выполняет модуль. <code>inspect.getmembers(mod, inspect.isclass)</code> — список классов. <code>issubclass(cls, BaseClass) and cls is not BaseClass</code> — фильтр наследников. Обработка исключений при загрузке — неработающий модуль не ломает всё приложение.
+        <br><strong>Где применяется:</strong> equestria-os-settings — авто-обнаружение модулей из <code>modules/mod_*.py</code>.
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">11</div>
+    <div class="learn-content">
+      <div class="learn-title">Btrfs, Restic, Timeshift — резервное копирование</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> <strong>Btrfs:</strong> субволюмы (<code>btrfs subvolume create/snapshot/delete/list</code>), CoW (copy-on-write) — снапшот не занимает места пока данные не изменились. <strong>Restic:</strong> <code>restic init --repo /path --password-file /key</code>, <code>restic backup / / --exclude /proc …</code>, <code>restic snapshots</code>, <code>restic restore ID --target /</code>, <code>restic forget --keep-last N --prune</code>. <strong>Timeshift:</strong> rsync-режим для не-Btrfs. Определение ФС: <code>/proc/mounts</code> (второй столбец = mount point, третий = fstype).
+        <br><strong>Где применяется:</strong> save-point — три backend'а с авто-выбором через detect_backend().
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">12</div>
+    <div class="learn-content">
+      <div class="learn-title">Linux память — swap, zram, OOM, sysctl</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> <code>/proc/sys/vm/swappiness</code> — чтение текущего значения. <code>sysctl vm.swappiness=60</code> — изменение. <code>vm.overcommit_memory</code>: 0=эвристика (default), 1=всегда (Windows-like), 2=строгий лимит. <code>kernel.panic_on_oom</code>. <strong>zram:</strong> <code>modprobe zram</code>, <code>/sys/class/zram-control/hot_add</code>, <code>/sys/block/zram0/comp_algorithm</code>, <code>/sys/block/zram0/disksize</code> (в байтах), <code>mkswap /dev/zram0</code>, <code>swapon -p 100 /dev/zram0</code>. <strong>swapon --show</strong> — статус. <code>fallocate -l 8G /swapfile + chmod 600 + mkswap + swapon</code>. <strong>systemd-oomd:</strong> <code>systemctl enable/disable systemd-oomd</code>, <code>oomctl</code>.
+        <br><strong>Где применяется:</strong> swap-manager — весь UI.
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">13</div>
+    <div class="learn-content">
+      <div class="learn-title">Wine / Proton / UMU — запуск Windows-приложений</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> <strong>WINEPREFIX</strong> — директория с виртуальной Windows (<code>~/.wine</code> по умолчанию, переопределяется env var). Изолированный WINEPREFIX на приложение = нет конфликтов DLL. <strong>umu-run</strong> — обёртка над Proton (Steam runtime), требует env var <code>GAMEID</code>. <strong>DXVK_HUD=compiler,frametimes,fps</strong> — оверлей с GPU-статистикой (только с DXVK). <strong>WINE_FULLSCREEN_FSR=1</strong> — FidelityFX Super Resolution (апскейлинг). <strong>virtual desktop:</strong> <code>umu-run explorer.exe /desktop=Name,1920x1080 game.exe</code> — изолированное окно. Разница: Wine (сообщество), Proton (Valve, Steam), UMU (wrapper над Proton без Steam).
+        <br><strong>Где применяется:</strong> proton-exe-starter — полный цикл.
+        <br><strong>Ресурсы:</strong> github.com/Open-Wine-Components/umu-launcher, wiki.archlinux.org/title/Wine
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">14</div>
+    <div class="learn-content">
+      <div class="learn-title">AppStream / Flatpak / pacman — источники пакетов</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> <strong>AppStream XML:</strong> <code>/usr/share/metainfo/*.appdata.xml</code> (локальный), <code>/var/lib/flatpak/appstream/flathub/x86_64/active/appstream.xml.gz</code> (Flatpak). Парсинг через <code>xml.etree.ElementTree</code>. Элементы: <code>&lt;component&gt;</code>, <code>&lt;name&gt;</code>, <code>&lt;summary&gt;</code>, <code>&lt;screenshots&gt;</code>, <code>&lt;url type="homepage"&gt;</code>. <strong>expac:</strong> быстрый доступ к pacman БД: <code>expac -S "%n\t%v\t%d\t%r"</code>. <strong>AUR JSON API:</strong> <code>https://aur.archlinux.org/rpc/?v=5&type=search&arg=QUERY</code>. <strong>Flatpak:</strong> <code>flatpak list --app --columns=name,application,version</code>, <code>flatpak remote-info flathub APP_ID</code>.
+        <br><strong>Где применяется:</strong> software-center — объединяет все три.
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">15</div>
+    <div class="learn-content">
+      <div class="learn-title">.desktop файлы и xdg-open</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> Спецификация freedesktop Desktop Entry: обязательные поля <code>Type=Application</code>, <code>Name</code>, <code>Exec</code>. Опциональные: <code>Name[ru]=</code>, <code>Icon=</code> (путь или имя темы), <code>Categories=</code>, <code>MimeType=</code>, <code>NoDisplay=true</code>, <code>X-GNOME-Autostart-enabled=true</code>. Placeholder'ы в Exec: <code>%F</code> (список файлов), <code>%U</code> (список URL), <code>%f/%u</code> (один файл/URL) — нужно убирать при парсинге для программного запуска. <code>xdg-open URL</code> — открытие в браузере/приложении по MIME. <code>update-desktop-database</code> — обновление кэша. KIO servicemenus для Dolphin: <code>/usr/share/kio/servicemenus/</code>, поле <code>ServiceTypes=KonqPopupMenu/Plugin</code>.
+        <br><strong>Где применяется:</strong> desktop-editor-ui (создание), tutorial (парсинг/запуск), welcome-hub (запуск), proton-exe-starter (MIME .exe), autostart в tutorial и welcome-hub.
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">16</div>
+    <div class="learn-content">
+      <div class="learn-title">GIT_ASKPASS / SSH_ASKPASS — протокол</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> Git запускает программу из <code>GIT_ASKPASS</code> передавая prompt как <code>argv[1]</code>. Программа выводит ответ на <strong>stdout</strong> и завершается с кодом 0 (успех) или ненулевым (отмена). <code>SSH_ASKPASS</code> — аналогичный механизм для SSH. <code>SSH_ASKPASS_REQUIRE=prefer</code> — всегда использовать ASKPASS даже если есть tty. <code>/etc/profile.d/</code> — глобальные env-переменные для всех пользователей (загружаются при старте shell). Credential helper vs askpass: helper кэширует, askpass только спрашивает.
+        <br><strong>Где применяется:</strong> git-askpass — единственный приложение, работает как helper-программа.
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">17</div>
+    <div class="learn-content">
+      <div class="learn-title">Bash-скрипты как системные backend'ы</div>
+      <div class="learn-desc">
+        <strong>Что нужно:</strong> Написание bash-скрипта который вызывается из Python через pkexec. case/esac для разбора команд. Вывод JSON через <code>python3 -c "import json; print(json.dumps(...))"</code> или <code>jq</code>. Работа с <code>/etc/pacman.d/mirrorlist</code>: структура файла, <code>reflector --country RU,DE --latest 10 --sort rate --save /etc/...</code>. Бэкап файлов: <code>cp file file.backup</code>. Статус на stdout: <code>echo "OK"</code> и <code>echo "PROGRESS N M"</code>.
+        <br><strong>Где применяется:</strong> pg-rankmirrors-backend — bash-скрипт, вызывается из Python GUI через pkexec.
+      </div>
+    </div>
+  </div>
+
+  <div class="learn-block">
+    <div class="learn-num">18</div>
+    <div class="learn-content">
+      <div class="learn-title">Типичные ошибки PyQt6 и их диагностика</div>
+      <div class="learn-desc">
+        <strong>Обновление UI из потока:</strong> <code>RuntimeError: Internal C++ object already deleted</code> или крэш без сообщения → всегда emit() сигнал, никогда не трогать виджет напрямую из потока.
+        <br><br>
+        <strong>QThread не завершается:</strong> приложение зависает при закрытии → добавить <code>self.thread.quit(); self.thread.wait()</code> в closeEvent().
+        <br><br>
+        <strong>QSS не применяется:</strong> Kvantum перекрывает стили → <code>QApplication.setStyle("Fusion")</code> перед setStyleSheet(). Или: забыли вызвать <code>widget.style().unpolish(); widget.style().polish()</code> после setProperty().
+        <br><br>
+        <strong>Иконка в таскбаре пустая:</strong> забыли <code>QApplication.setDesktopFileName("app-name")</code> — должно совпадать с именем .desktop-файла без расширения.
+        <br><br>
+        <strong>Шрифт не загружается:</strong> <code>QFontDatabase.applicationFontFamilies(fid)</code> возвращает пустой список → файл .ttf не найден или повреждён. Проверить путь: <code>os.path.exists(f_path)</code>.
+        <br><br>
+        <strong>pkexec не показывает диалог:</strong> нет <code>.policy</code>-файла в <code>/usr/share/polkit-1/actions/</code>, или запускается из нет-терминала без DISPLAY/WAYLAND_DISPLAY. Проверить: <code>echo $XDG_CURRENT_DESKTOP</code>.
+        <br><br>
+        <strong>subprocess зависает:</strong> PIPE без чтения буферизуется и блокирует дочерний процесс → использовать <code>communicate()</code> или читать stdout построчно в потоке. Никогда не <code>proc.wait()</code> пока PIPE не прочитан.
+        <br><br>
+        <strong>QDialog не показывается поверх:</strong> добавить <code>Qt.WindowType.WindowStaysOnTopHint</code> в setWindowFlags() — используется в git-askpass и SplashWindow proton.
+      </div>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<footer class="footer">
+  <div>Equestria OS Developer Documentation</div>
+  <div>17 приложений · Python 3 + PyQt6 · KDE Plasma 6 · Arch Linux</div>
+</footer>
+
+<script>
+const links = document.querySelectorAll('.sb-link');
+const sections = document.querySelectorAll('section[id]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const a = document.querySelector(`.sb-link[href="#${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { rootMargin: '-15% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

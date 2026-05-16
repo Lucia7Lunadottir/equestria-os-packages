@@ -1,0 +1,1 @@
+/mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/AppInstaller/ru_RU.ts

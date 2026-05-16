@@ -6,9 +6,9 @@ xdata = pkgtype=pkg
 pkgver = 2.2.0-1
 pkgdesc = NVIDIA GPU driver manager with boot-time detection and KDE compositor config (Equestria OS)
 url = https://psyche-games.com
-builddate = 1777578215
+builddate = 1777587058
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 33137
+size = 33138
 arch = any
 license = GPL3
 depend = bash

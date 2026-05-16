@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-equestria-pkg">
+    <comment>Equestria OS Package</comment>
+    <comment xml:lang="ru">Пакет Equestria OS</comment>
+    <glob pattern="*.pkg.tar.zst"/>
+    <glob pattern="*.pkg.tar.xz"/>
+    <icon name="system-software-install"/>
+  </mime-type>
+</mime-info>
