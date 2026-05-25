@@ -8,7 +8,7 @@ This repository contains the source code, build scripts, and the compiled Arch L
 
 Here you will find the core packages built specifically for Equestria OS:
 
-* **`equestria-os-package-manager`**: A custom, Unity-powered GUI for managing system packages without touching the terminal.
+* **`equestria-os-package-manager`**: A custom, GUI for managing system packages without touching the terminal.
 * **`equestria-os-character-theme`**: Our unique one-click dynamic theming engine. Changes KDE colors, wallpapers, and terminal configurations (fastfetch cutiemarks) based on your favorite character.
 * **`equestria-os-welcome-hub`**: The offline portal containing quick links to MLP games, music (JycRow), and community support.
 * **`equestria-os-package-installer`**: An offline driver and popular software installer (includes ASUS ROG Center Control).
