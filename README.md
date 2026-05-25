@@ -31,7 +31,7 @@ Add the following lines to the very bottom of the file:
 ```Ini, TOML
 [equestria-os]
 SigLevel = Optional TrustAll
-Server = [https://7Lucia7Lokidottir7.github.io/equestria-os-packages/x86_64/](https://7Lucia7Lokidottir7.github.io/equestria-os-packages/x86_64/)
+Server = [https://7Lucia7Lunadottir7.github.io/equestria-os-packages/x86_64/](https://7Lucia7Lunadottir7.github.io/equestria-os-packages/x86_64/)
 ```
 
 Step 3: Update your package databases
