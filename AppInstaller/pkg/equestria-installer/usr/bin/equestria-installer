@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import sys
 import urllib.parse
-from PyQt6.QtWidgets import (QApplication, QWizard, QWizardPage, QLabel, 
+from PyQt6.QtWidgets import (QApplication, QWizard, QWizardPage, QLabel,
                              QVBoxLayout, QPushButton, QFileDialog, QTextEdit)
 from PyQt6.QtCore import QProcess, Qt, QTranslator, QLocale
 
-# Исправленная тема: применяем ко всем QWidget, чтобы перекрыть белые фоны
 PURPLE_THEME = """
 QWidget {
     background-color: #2D1B4E;
@@ -33,7 +32,7 @@ class WelcomePage(QWizardPage):
         super().__init__()
         self.setTitle(self.tr("Equestria OS Package Installer"))
         self.setSubTitle(self.tr("Local Package Installation Wizard"))
-        
+
         layout = QVBoxLayout()
         self.info_label = QLabel(self.tr("Welcome to the installer!\n\nPlease select a .pkg.tar.zst file."))
         self.info_label.setWordWrap(True)
@@ -42,7 +41,7 @@ class WelcomePage(QWizardPage):
         self.btn_browse = QPushButton(self.tr("Browse"))
         self.btn_browse.clicked.connect(self.browse_file)
         layout.addWidget(self.btn_browse)
-        
+
         self.path_label = QLabel("")
         self.path_label.setStyleSheet("color: #CE93D8; font-style: italic; margin-top: 10px;")
         self.path_label.setWordWrap(True)
@@ -51,7 +50,6 @@ class WelcomePage(QWizardPage):
         self.setLayout(layout)
 
     def initializePage(self):
-        # Проверяем, был ли передан файл при запуске
         if self.wizard().package_path:
             self.path_label.setText(self.tr("Selected file: ") + self.wizard().package_path)
             self.completeChanged.emit()
@@ -71,7 +69,7 @@ class InstallPage(QWizardPage):
         super().__init__()
         self.setTitle(self.tr("Installation"))
         self.setSubTitle(self.tr("Integrating package into the system..."))
-        
+
         layout = QVBoxLayout()
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
@@ -83,13 +81,12 @@ class InstallPage(QWizardPage):
         self.wizard().button(QWizard.WizardButton.BackButton).setEnabled(False)
         self.wizard().button(QWizard.WizardButton.NextButton).setEnabled(False)
         self.wizard().button(QWizard.WizardButton.CancelButton).setEnabled(False)
-        
+
         self.log_output.clear()
         self.log_output.append(self.tr("Preparing to install: ") + self.wizard().package_path + "\n")
         self.start_installation()
 
     def start_installation(self):
-        # Если путь содержит пробелы, pkexec/pacman могут ругаться, но QProcess с массивом аргументов обрабатывает их безопасно
         command = "pkexec"
         args = ["pacman", "-U", "--noconfirm", self.wizard().package_path]
 
@@ -130,14 +127,12 @@ class EquestriaInstaller(QWizard):
         self.setWindowTitle(self.tr("Equestria OS Installer"))
         self.setFixedSize(600, 450)
         self.setStyleSheet(PURPLE_THEME)
-        
-        # Надежный парсинг аргументов от файловых менеджеров
+
         self.package_path = ""
         for arg in sys.argv[1:]:
-            # Если DE передало file:// (например, KDE Plasma)
             if arg.startswith("file://"):
-                arg = urllib.parse.unquote(arg[7:]) # Очищаем и декодируем пробелы (%20)
-            
+                arg = urllib.parse.unquote(arg[7:])
+
             if arg.endswith('.pkg.tar.zst') or arg.endswith('.pkg.tar.xz'):
                 self.package_path = arg
                 break
@@ -145,17 +140,30 @@ class EquestriaInstaller(QWizard):
         self.addPage(WelcomePage())
         self.addPage(InstallPage())
         self.addPage(SummaryPage())
-        
-        # Убрали ModernStyle, теперь тема ляжет ровно!
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    
+
+    # Путь к директории с переводами системного пакета
+    tx_dir = "/usr/share/equestria-installer/translations/"
+
     translator = QTranslator()
-    locale = QLocale.system().name()
-    if translator.load(locale, "/usr/share/equestria-installer/translations/"):
+    current_locale = QLocale.system().name() # Например, "ru_RU" или "en_GB"
+
+    # 1. Пытаемся загрузить точное совпадение (например, ru_RU.qm)
+    if not translator.load(current_locale, tx_dir):
+        # 2. Если точного совпадения нет, ищем по базовому языку (из "en_GB" берем "en")
+        base_lang = current_locale.split('_')[0]
+        supported_locales = ['ru_RU', 'uk_UA', 'de_DE', 'en_US', 'es_ES', 'fr_FR', 'pl_PL', 'it_IT', 'kk_KZ', 'zh_CN', 'ja_JP']
+
+        for fallback_locale in supported_locales:
+            if fallback_locale.startswith(base_lang):
+                translator.load(fallback_locale, tx_dir)
+                break
+
+    if not translator.isEmpty():
         app.installTranslator(translator)
-        
+
     wizard = EquestriaInstaller()
     wizard.show()
     sys.exit(app.exec())

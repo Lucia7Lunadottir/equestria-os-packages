@@ -1,6 +1,5 @@
-# Maintainer: Твое Имя <твоя@почта.com>
 pkgname=equestria-installer
-pkgver=1.0
+pkgver=1.0.2
 pkgrel=1
 pkgdesc="Graphical local package installer for Equestria OS"
 arch=('any')
@@ -10,28 +9,35 @@ depends=('python' 'python-pyqt6' 'polkit')
 makedepends=('qt6-tools')
 
 source=('installer.py'
-        'equestria-installer.desktop'
-        'ru_RU.ts')
+        'equestria-installer.desktop')
 
-sha256sums=('SKIP'
-            'SKIP'
-            'SKIP')
+sha256sums=('SKIP' 'SKIP')
+
+_languages=('ru_RU' 'uk_UA' 'de_DE' 'en_US' 'es_ES' 'fr_FR' 'pl_PL' 'it_IT' 'kk_KZ' 'zh_CN' 'ja_JP')
 
 build() {
     cd "${srcdir}"
-    # Используем полный путь к lrelease из qt6-tools
-    /usr/lib/qt6/bin/lrelease ru_RU.ts
+
+    local lang
+    for lang in "${_languages[@]}"; do
+        if [ -f "${startdir}/translations/${lang}.ts" ]; then
+            /usr/lib/qt6/bin/lrelease "${startdir}/translations/${lang}.ts" -qm "${lang}.qm"
+        fi
+    done
 }
 
 package() {
     cd "${srcdir}"
-    
-    # 1. Скрипт
+
     install -Dm755 installer.py "${pkgdir}/usr/bin/equestria-installer"
 
-    # 2. Desktop-файл (уже с переводами внутри)
+    # 2. Desktop-файл
     install -Dm644 equestria-installer.desktop "${pkgdir}/usr/share/applications/equestria-installer.desktop"
 
-    # 3. Файл скомпилированного перевода
-    install -Dm644 ru_RU.qm "${pkgdir}/usr/share/equestria-installer/translations/ru_RU.qm"
+    local lang
+    for lang in "${_languages[@]}"; do
+        if [ -f "${lang}.qm" ]; then
+            install -Dm644 "${lang}.qm" "${pkgdir}/usr/share/equestria-installer/translations/${lang}.qm"
+        fi
+    done
 }
