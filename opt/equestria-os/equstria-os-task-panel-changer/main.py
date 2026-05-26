@@ -239,10 +239,14 @@ class TaskPanelApp(QMainWindow):
 
         for preset in self.presets:
             pid = preset["id"]
+            
+            desc_key = preset.get("desc_key")
+            final_desc = self._t(desc_key) if desc_key in self.localized_strings else (preset.get("desc") or pid)
+            
             card = PresetCard(
                 preset_id=pid,
                 char_name=self._preset_display_name(preset),
-                desc_text=preset.get("desc") or self._t(preset.get("desc_key", pid)),
+                desc_text=final_desc,
                 icon_path=self._preset_icon_path(preset),
             )
             card.update_appearance(self._active_panel_color, self.panel_opacity)
@@ -402,7 +406,8 @@ class TaskPanelApp(QMainWindow):
             self.ui.fld_ed_id.setText(preset_id)
             self.ui.fld_ed_id.setReadOnly(True)
             self.ui.fld_ed_name.setText(display_name)
-            self.ui.fld_ed_desc.setText(preset.get("desc") or self._t(preset.get("desc_key", preset_id)))
+            desc_key = preset.get("desc_key")
+            self.ui.fld_ed_desc.setText(self._t(desc_key) if desc_key in self.localized_strings else (preset.get("desc") or ""))
             self.ui.fld_ed_icon.setText(preset.get("icon", ""))
 
             sys_path = os.path.join(SYSTEM_PATH, "presets.json")

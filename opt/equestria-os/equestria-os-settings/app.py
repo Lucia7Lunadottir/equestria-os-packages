@@ -541,6 +541,9 @@ class SettingsWindow(QMainWindow):
                 for child in widget.findChildren(QWidget):
                     if not child.styleSheet():
                         child.setStyleSheet(self._qss)
+
+            module.apply_language()
+
             self._stack.addWidget(widget)
             self._widget_map[module.module_id] = widget
 
