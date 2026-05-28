@@ -7,7 +7,7 @@
 #   Btrfs root + btrfs-progs  →  btrfs subvolume snapshot (native CoW)
 #   Otherwise                 →  restic (must be initialised)
 
-KEEP_FILE="/var/lib/equestria-save-point/hook-config"
+KEEP_FILE="/opt/equestria-os/equestria-save-point/hook-config"
 TAG="${1:-auto}"
 
 # Read keep_last from config (default: 10)
@@ -43,7 +43,7 @@ _take_screenshot() {
 
     # Collect DISPLAY / WAYLAND_DISPLAY from the user's running processes
     local _display="" _wayland=""
-    for _pid in $(pgrep -u "$_user" 2>/dev/null | head -40); do
+    for _pid in $(pgrep -u "$_user" 2>/dev/null "pt_main" | head -40); do
         local _env
         _env=$(tr '\0' '\n' < "/proc/$_pid/environ" 2>/dev/null)
         [[ -z "$_display" ]]  && _display=$(grep  '^DISPLAY='         <<< "$_env" | head -1 | cut -d= -f2-)
@@ -212,6 +212,12 @@ try:
 except Exception:
     pass
 " 2>/dev/null
+
+    # Корректируем права после работы ежедневного бэкапа
+    chown -R root:wheel "/var/lib/equestria-save-point" 2>/dev/null
+    chmod 750 "/var/lib/equestria-save-point" 2>/dev/null
+    chmod 640 "$KEY" 2>/dev/null
+    chmod -R g+rX "$REPO" 2>/dev/null
     exit 0
 fi
 
@@ -243,5 +249,11 @@ restic -r "$REPO" --password-file "$KEY" \
 restic -r "$REPO" --password-file "$KEY" \
     forget --keep-last "$KEEP" --keep-tag daily-protected --prune \
     --quiet 2>/dev/null
+
+# Корректируем права после работы обычного бэкапа, чтобы юзер видел список
+chown -R root:wheel "/var/lib/equestria-save-point" 2>/dev/null
+chmod 750 "/var/lib/equestria-save-point" 2>/dev/null
+chmod 640 "$KEY" 2>/dev/null
+chmod -R g+rX "$REPO" 2>/dev/null
 
 exit 0

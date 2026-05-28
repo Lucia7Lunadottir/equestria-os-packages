@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-save-point
-pkgver=1.2.0
-pkgrel=4
+pkgver=1.2.2
+pkgrel=1
 pkgdesc="Equestria OS Save Point — system snapshot manager (Btrfs/Restic/Timeshift)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -20,55 +20,63 @@ optdepends=(
 )
 
 package() {
-    local _lib="$pkgdir/usr/lib/$pkgname"
-    install -dm755 "$_lib"
+    # 1. Создаем целевую директорию приложения в /opt
+    local _optdir="$pkgdir/opt/equestria-os/equestria-save-point"
+    install -d "$_optdir"
 
-    for f in main.py backend.py hooks.py screenshot.py ui_pkg.py utils.py style.qss equestria_cyrillic.ttf equestria-os-save-point.png; do
-        install -Dm644 "$startdir/$f" "$_lib/$f"
-    done
+    # 2. Копируем туда все исходники и ресурсы прямо из $startdir
+    install -m755 "$startdir/main.py" "$_optdir/main.py"
+    install -m644 "$startdir/backend.py" "$_optdir/backend.py"
+    install -m644 "$startdir/hooks.py" "$_optdir/hooks.py"
+    install -m644 "$startdir/screenshot.py" "$_optdir/screenshot.py"
+    install -m644 "$startdir/ui_pkg.py" "$_optdir/ui_pkg.py"
+    install -m644 "$startdir/utils.py" "$_optdir/utils.py"
+    install -m644 "$startdir/style.qss" "$_optdir/style.qss"
+    install -m644 "$startdir/equestria_cyrillic.ttf" "$_optdir/equestria_cyrillic.ttf"
+    install -m644 "$startdir/equestria-os-save-point.png" "$_optdir/equestria-os-save-point.png"
 
-    cp -a "$startdir/icons" "$_lib/"
-    cp -a "$startdir/locales" "$_lib/"
+    install -m755 "$startdir/auto-restore.py" "$_optdir/auto-restore.py"
+    install -m755 "$startdir/restore-system.py" "$_optdir/restore-system.py"
+    install -m755 "$startdir/pacman-snapshot.sh" "$_optdir/pacman-snapshot.sh"
+    install -m755 "$startdir/flatpak-hook.sh" "$_optdir/flatpak-hook.sh"
+    install -m755 "$startdir/start.sh" "$_optdir/start.sh"
 
+    # Копируем папки локализации и иконок
+    cp -a "$startdir/icons" "$_optdir/"
+    cp -a "$startdir/locales" "$_optdir/"
+
+    # 3. Создаем бинарник-обертку в /usr/bin для запуска GUI
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-save-point" << 'EOF'
 #!/bin/bash
-cd /opt/equestria-os/equestria-os-save-point/
+cd /opt/equestria-os/equestria-save-point/
 exec python3 main.py "$@"
 EOF
 
+    # 4. Настраиваем и переносим ярлык приложения (.desktop)
     install -d "$pkgdir/usr/share/applications"
     sed "s|^Exec=.*|Exec=equestria-os-save-point|" \
         "$startdir/equestria-os-save-point.desktop" \
         > "$pkgdir/usr/share/applications/equestria-os-save-point.desktop"
     chmod 644 "$pkgdir/usr/share/applications/equestria-os-save-point.desktop"
 
+    # 5. Кладим иконку в системную папку для DE
     install -Dm644 "$startdir/equestria-os-save-point.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-save-point.png"
 
-    install -Dm755 "$startdir/pacman-snapshot.sh" "$_lib/pacman-snapshot.sh"
-    install -Dm644 "$startdir/flatpak-hook.sh" "$_lib/flatpak-hook.sh"
+    # 6. Устанавливаем системные хуки pacman и flatpak туда, где их ждет ОС
     install -Dm644 "$startdir/equestria-save-point.hook" "$pkgdir/etc/pacman.d/hooks/equestria-save-point.hook"
     install -Dm644 "$startdir/flatpak-hook.sh" "$pkgdir/etc/profile.d/60-equestria-save-point.sh"
 
-    # --- НОВОЕ: Консольная утилита восстановления ---
-    install -Dm755 "$startdir/restore-system.py" "$_lib/restore-system.py"
+    # 7. Делаем симлинк для консольной утилиты восстановления
     install -d "$pkgdir/usr/bin"
-    ln -s "/opt/equestria-os/equestria-os-save-point/restore-system.py" "$pkgdir/usr/bin/restore-system"
+    ln -s "/opt/equestria-os/equestria-save-point/restore-system.py" "$pkgdir/usr/bin/restore-system"
 
-    # --- НОВОЕ: Systemd timer для ежедневного бэкапа ---
+    # 8. Разворачиваем Systemd таймеры и службы авто-восстановления
     install -d "$pkgdir/usr/lib/systemd/system/"
     install -Dm644 "$startdir/equestria-save-point-daily.timer" "$pkgdir/usr/lib/systemd/system/equestria-save-point-daily.timer"
     install -Dm644 "$startdir/equestria-save-point-daily.service" "$pkgdir/usr/lib/systemd/system/equestria-save-point-daily.service"
-
-    # --- Установка файлов авто-восстановления ---
-
-    # 1. Сам скрипт отката кидаем к остальным файлам программы
-    install -Dm755 "$startdir/auto-restore.py" "$_lib/auto-restore.py"
-
-    # 2. Сервис кидаем в системную папку systemd
     install -Dm644 "$startdir/equestria-auto-restore.service" "$pkgdir/usr/lib/systemd/system/equestria-auto-restore.service"
 
-    # 3. Триггер кидаем в папку графической цели
     install -d "$pkgdir/usr/lib/systemd/system/graphical.target.d/"
     install -Dm644 "$startdir/auto-restore-trigger.conf" "$pkgdir/usr/lib/systemd/system/graphical.target.d/auto-restore.conf"
 }

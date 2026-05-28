@@ -148,12 +148,6 @@ class TimeshiftBackend:
         return f"timeshift --restore --snapshot {shlex.quote(snap_id)}"
 
     def build_prune_cmd(self, snapshots: list, keep_last: int) -> str:
-        """
-        Generate deletion commands for snapshots beyond keep_last.
-        snapshots is sorted newest-first; after the new snapshot is created
-        there will be len(snapshots)+1 total, so we keep keep_last-1 of the
-        existing ones and delete the rest.
-        """
         to_delete = snapshots[max(0, keep_last - 1):]
         if not to_delete:
             return ""
@@ -210,11 +204,6 @@ BTRFS_DAILY_DIR  = "/.snapshots/daily"
 class BtrfsBackend:
     """
     Native Btrfs CoW snapshots using btrfs-progs.
-    Requires: btrfs-progs (always present on Btrfs systems).
-
-    Snapshots are stored as read-only subvolumes under snap_dir (default /.snapshots).
-    Protected daily snapshots live in snap_dir/daily/ and cannot be deleted via the GUI.
-    Restore swaps the root subvolume at the Btrfs top-level; reboot needed.
     """
 
     def __init__(self, snap_dir: str = None):
@@ -251,8 +240,6 @@ class BtrfsBackend:
                 date_str = name
             result.append(SnapshotData(str(i), date_str, name, "S", "", fs_id=name))
 
-        # Append protected daily snapshots from snap_dir/daily/
-        # Name format: daily-YYYY-MM-DD_HH-MM-SS
         pat_daily = re.compile(r"^daily-(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})$")
         if os.path.isdir(self.daily_dir):
             try:
@@ -263,7 +250,7 @@ class BtrfsBackend:
                 m = pat_daily.match(name)
                 if not m:
                     continue
-                ts = m.group(1)   # YYYY-MM-DD_HH-MM-SS
+                ts = m.group(1)
                 try:
                     dt       = datetime.strptime(ts, "%Y-%m-%d_%H-%M-%S")
                     date_str = dt.strftime("%Y-%m-%d %H:%M:%S")
@@ -284,18 +271,11 @@ class BtrfsBackend:
         )
 
     def restore_cmd(self, snap_id: str) -> str:
-        snap_rel = self.snap_dir.lstrip("/")   # e.g. ".snapshots"
-        # For daily protected snapshots snap_id is "daily/daily-YYYY-MM-DD";
-        # resolve the path relative to snap_dir.
+        snap_rel = self.snap_dir.lstrip("/")
         if snap_id.startswith("daily/"):
             snap_rel_full = snap_rel + "/" + snap_id
         else:
             snap_rel_full = snap_rel + "/" + snap_id
-        # findmnt gives the subvolume path within the Btrfs volume, e.g. "/@" → "@"
-        # We create a writable snapshot from the selected snapshot, rename it
-        # to the current root subvolume name, and rename the old root aside.
-        # btrfs subvolume delete cannot run on a live (mounted) subvolume, so
-        # the old root is left as @_old_DATE; delete it manually after reboot.
         return (
             f"set -e; "
             f"DEV=$(df --output=source / | tail -1); "
@@ -331,7 +311,6 @@ class BtrfsBackend:
         return f"btrfs subvolume delete {path}"
 
     def get_repo_size(self) -> str:
-        # CoW snapshots share blocks — raw du is misleading. Skip.
         return ""
 
     def get_snapshot_size(self, snap_id: str) -> str:
@@ -347,28 +326,29 @@ class ResticBackend:
     """
     Content-addressable, chunked-dedup backup via Restic.
     Works on any filesystem (ext4, xfs, f2fs, NTFS, …).
-
-    Repository : configurable, default /var/lib/equestria-save-point/restic-repo
-    Password   : /var/lib/equestria-save-point/repo.key  (auto-generated, root-only)
     """
 
     def __init__(self, repo: str = None, key: str = None):
         self.repo = repo or RESTIC_REPO
         self.key  = key  or RESTIC_KEY
-        # Rebuild excludes: replace the default RESTIC_DIR entry with
-        # the parent of the actual repo so we never recurse into it.
         repo_dir = os.path.dirname(self.repo)
         self._excludes = [e for e in RESTIC_EXCLUDES if e != RESTIC_DIR] + [repo_dir]
 
-    def _cmd(self, *args) -> list[str]:
-        return ["pkexec", "restic",
-                "-r", self.repo,
-                "--password-file", self.key, *args]
+    def _cmd(self, *args, use_pkexec=False) -> list[str]:
+        base = ["pkexec"] if use_pkexec else []
+        return base + ["restic", "-r", self.repo, "--password-file", self.key, *args]
 
     def is_initialized(self) -> bool:
         if not os.path.isfile(self.key) or not os.path.isdir(self.repo):
             return False
-        r = subprocess.run(self._cmd("cat", "config"),
+        try:
+            r = subprocess.run(self._cmd("cat", "config", use_pkexec=False),
+                               capture_output=True, timeout=5)
+            if r.returncode == 0:
+                return True
+        except Exception:
+            pass
+        r = subprocess.run(self._cmd("cat", "config", use_pkexec=True),
                            capture_output=True, timeout=10)
         return r.returncode == 0
 
@@ -380,21 +360,32 @@ class ResticBackend:
         repo_parent = shlex.quote(os.path.dirname(self.repo))
         return (
             f"mkdir -p {d} && "
-            f"chmod 755 {d} && "   # world-readable dir so du works without root
+            f"chmod 755 {d} && "
             f"mkdir -p {repo_parent} && "
             f"chmod 755 {repo_parent} && "
+            f"rm -rf {r} && "
             f"openssl rand -base64 32 > {k} && "
-            f"chmod 600 {k} && "   # key stays root-only
-            f"restic init -r {r} --password-file {k}"
+            f"chmod 600 {k} && "
+            f"restic init -r {r} --password-file {k} && "
+            f"chown -R root:wheel {d} && "
+            f"chmod 750 {d} && "
+            f"chmod 640 {k} && "
+            f"chmod -R g+rX {r}"
         )
 
     def list_snapshots(self) -> tuple[list[SnapshotData], str]:
         try:
             r = subprocess.run(
-                self._cmd("snapshots", "--json"),
-                capture_output=True, text=True, timeout=30)
+                self._cmd("snapshots", "--json", use_pkexec=False),
+                capture_output=True, text=True, timeout=15)
+            
             if r.returncode != 0:
-                return [], r.stderr.strip()
+                r = subprocess.run(
+                    self._cmd("snapshots", "--json", use_pkexec=True),
+                    capture_output=True, text=True, timeout=30)
+                if r.returncode != 0:
+                    return [], r.stderr.strip()
+
             raw = json.loads(r.stdout or "[]")
             result = []
             for i, s in enumerate(raw):
@@ -414,7 +405,7 @@ class ResticBackend:
                     str(i), date_str, snap_id,
                     "P" if is_protected else "R",
                     comment, fs_id=fs_id, protected=is_protected))
-            return result[::-1], ""   # newest first
+            return result[::-1], ""
         except Exception as e:
             if isinstance(e, FileNotFoundError):
                 return [], "err.restic_not_found"
@@ -429,7 +420,7 @@ class ResticBackend:
         return (
             f"restic -r {r} --password-file {k} "
             f"backup / {excl} "
-            f"--tag 'User Point' --compression auto"
+            f"--tag 'User Point' --compression auto --verbose"
         )
 
     def build_prune_cmd(self, snapshots: list, keep_last: int) -> str:
@@ -447,8 +438,6 @@ class ResticBackend:
         return _fmt_size(size) if size > 0 else ""
 
     def get_snapshot_size(self, snap_id: str) -> str:
-        # Restic's logical size equals the whole system size — misleading.
-        # Actual disk usage is shared across snapshots via dedup; see repo total.
         return ""
 
     def delete_cmd(self, snap_id: str) -> str:

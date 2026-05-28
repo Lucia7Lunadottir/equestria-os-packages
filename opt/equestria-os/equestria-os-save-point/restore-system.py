@@ -4,7 +4,7 @@ import os
 import subprocess
 
 # Указываем правильный путь из твоего PKGBUILD
-APP_DIR = "/usr/lib/equestria-os-save-point"
+APP_DIR = "/opt/equestria-os/equestria-save-point"
 sys.path.append(APP_DIR)
 
 try:
