@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-save-point
 pkgver=1.2.2
-pkgrel=1
+pkgrel=2
 pkgdesc="Equestria OS Save Point — system snapshot manager (Btrfs/Restic/Timeshift)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -21,7 +21,7 @@ optdepends=(
 
 package() {
     # 1. Создаем целевую директорию приложения в /opt
-    local _optdir="$pkgdir/opt/equestria-os/equestria-save-point"
+    local _optdir="$pkgdir//opt/equestria-os/equestria-os-save-point"
     install -d "$_optdir"
 
     # 2. Копируем туда все исходники и ресурсы прямо из $startdir
@@ -48,7 +48,7 @@ package() {
     # 3. Создаем бинарник-обертку в /usr/bin для запуска GUI
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-save-point" << 'EOF'
 #!/bin/bash
-cd /opt/equestria-os/equestria-save-point/
+cd //opt/equestria-os/equestria-os-save-point/
 exec python3 main.py "$@"
 EOF
 
@@ -69,7 +69,7 @@ EOF
 
     # 7. Делаем симлинк для консольной утилиты восстановления
     install -d "$pkgdir/usr/bin"
-    ln -s "/opt/equestria-os/equestria-save-point/restore-system.py" "$pkgdir/usr/bin/restore-system"
+    ln -s "//opt/equestria-os/equestria-os-save-point/restore-system.py" "$pkgdir/usr/bin/restore-system"
 
     # 8. Разворачиваем Systemd таймеры и службы авто-восстановления
     install -d "$pkgdir/usr/lib/systemd/system/"

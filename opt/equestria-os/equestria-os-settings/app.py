@@ -30,10 +30,6 @@ _ITEM_TYPE_CATEGORY = 1001
 _ITEM_TYPE_MODULE = 1002
 
 
-# ---------------------------------------------------------------------------
-# Sidebar delegate
-# ---------------------------------------------------------------------------
-
 class SidebarDelegate(QStyledItemDelegate):
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index):
         item_type = index.data(Qt.ItemDataRole.UserRole + 1)
@@ -92,17 +88,12 @@ class SidebarDelegate(QStyledItemDelegate):
         font.setPointSize(11)
         from PyQt6.QtGui import QFontMetrics
         fm = QFontMetrics(font)
-        # Available width: sidebar width minus left padding (16) and right margin (8)
         avail_w = 220 - 16 - 8
         br = fm.boundingRect(QRect(0, 0, avail_w, 0),
                              Qt.AlignmentFlag.AlignLeft | Qt.TextFlag.TextWordWrap,
                              full_text)
         return QSize(220, max(40, br.height() + 16))
 
-
-# ---------------------------------------------------------------------------
-# Not-installed widget
-# ---------------------------------------------------------------------------
 
 class NotInstalledWidget(QWidget):
     def __init__(self, parent=None):
@@ -154,10 +145,6 @@ class NotInstalledWidget(QWidget):
                 subprocess.Popen(term + ["yay", "-S", pkg], start_new_session=True)
                 return
 
-
-# ---------------------------------------------------------------------------
-# Launch widget (for complex apps)
-# ---------------------------------------------------------------------------
 
 class _StatusFetcher(QObject):
     status_ready = pyqtSignal(str)
@@ -249,16 +236,11 @@ class LaunchWidget(QWidget):
         fetcher.status_ready.connect(self._status_lbl.setText)
         thread = threading.Thread(target=fetcher.run, daemon=True)
         thread.start()
-        # Keep reference so GC doesn't collect it
         self._fetcher = fetcher
 
     def _launch(self):
         subprocess.Popen([self._binary], start_new_session=True)
 
-
-# ---------------------------------------------------------------------------
-# Welcome page
-# ---------------------------------------------------------------------------
 
 class WelcomePage(QWidget):
     def __init__(self, t_func, parent=None):
@@ -285,10 +267,6 @@ class WelcomePage(QWidget):
         self._hint.setText(self._t("welcome.hint"))
 
 
-# ---------------------------------------------------------------------------
-# Main window
-# ---------------------------------------------------------------------------
-
 class SettingsWindow(QMainWindow):
     def __init__(self, base_path: str):
         super().__init__()
@@ -297,28 +275,29 @@ class SettingsWindow(QMainWindow):
         self.setWindowTitle("Equestria OS Settings")
         self.resize(1200, 720)
 
-        # --- Load font ---
         font_path = os.path.join(base_path, "equestria_cyrillic.ttf")
         fid = QFontDatabase.addApplicationFont(font_path)
         families = QFontDatabase.applicationFontFamilies(fid)
         self._eq_font_family = families[0] if families else "Sans Serif"
 
-        # --- Load locales ---
         self.langs: dict[str, dict] = self._load_locales()
         self.current_lang = self._detect_lang()
 
-        # --- Load QSS ---
         self._qss = ""
         qss_path = os.path.join(base_path, "style.qss")
         if os.path.exists(qss_path):
             with open(qss_path, encoding="utf-8") as f:
-                self._qss = f.read().replace("{{BASE_PATH}}", base_path.replace("\\", "/").replace(" ", "%20"))
+                raw = f.read()
+            # ИСПРАВЛЕНО: Безопасно заполняем все шаблоны стилей при загрузке, убирая спам логов в Qt
+            base = base_path.replace("\\", "/").replace(" ", "%20")
+            raw = raw.replace("{{BASE_PATH}}", base)
+            raw = raw.replace("{{CHECKMARK_SVG_PATH}}", os.path.join(base_path, "icons", "cb_checked.svg").replace(" ", "%20"))
+            raw = raw.replace("{{TITLE_FONT}}", f'"{self._eq_font_family}"')
+            self._qss = raw
             self.setStyleSheet(self._qss)
 
-        # --- Discover modules ---
         self._modules: list[BaseModule] = self._discover_modules()
 
-        # --- Build UI ---
         central = QWidget()
         central.setObjectName("root")
         self.setCentralWidget(central)
@@ -348,10 +327,7 @@ class SettingsWindow(QMainWindow):
         self._current_module: BaseModule | None = None
         self._widget_map: dict[str, QWidget] = {}
 
-        # Select first selectable item
         self._select_first()
-
-    # --- Locales ---
 
     def _load_locales(self) -> dict:
         langs = {}
@@ -378,8 +354,6 @@ class SettingsWindow(QMainWindow):
             or self.langs.get("en", {}).get(key, key)
         )
 
-    # --- Module discovery ---
-
     def _discover_modules(self) -> list[BaseModule]:
         modules = []
         pattern = os.path.join(self.base_path, "modules", "mod_*.py")
@@ -393,13 +367,12 @@ class SettingsWindow(QMainWindow):
                     if (issubclass(cls, BaseModule) and cls is not BaseModule
                             and cls.module_id):
                         instance = cls(self.t, self.base_path)
+                        instance.current_lang = self.current_lang
                         modules.append(instance)
                         break
             except Exception as e:
                 print(f"[settings] failed to load module {path}: {e}")
         return modules
-
-    # --- Header ---
 
     def _build_header(self) -> QFrame:
         header = QFrame()
@@ -420,7 +393,6 @@ class SettingsWindow(QMainWindow):
 
         layout.addStretch()
 
-        # Language buttons
         self._lang_btn_map: dict[str, QPushButton] = {}
         lang_layout = QHBoxLayout()
         lang_layout.setSpacing(4)
@@ -444,8 +416,6 @@ class SettingsWindow(QMainWindow):
 
         return header
 
-    # --- Sidebar ---
-
     def _build_sidebar(self) -> QWidget:
         container = QWidget()
         container.setObjectName("Sidebar")
@@ -461,7 +431,6 @@ class SettingsWindow(QMainWindow):
         self._sidebar_list.setMouseTracking(True)
         self._sidebar_list.currentRowChanged.connect(self._on_sidebar_selected)
 
-        # Group modules by category in defined order
         by_cat: dict[str, list[BaseModule]] = {c: [] for c in CATEGORIES_ORDER}
         for m in self._modules:
             cat = m.category if m.category in by_cat else "system"
@@ -475,7 +444,6 @@ class SettingsWindow(QMainWindow):
             mods = by_cat[cat]
             if not mods:
                 continue
-            # Category header
             cat_item = QListWidgetItem(self.t(CATEGORY_KEYS[cat]))
             cat_item.setData(Qt.ItemDataRole.UserRole + 1, _ITEM_TYPE_CATEGORY)
             cat_item.setFlags(Qt.ItemFlag.NoItemFlags)
@@ -502,8 +470,6 @@ class SettingsWindow(QMainWindow):
                 self._sidebar_list.setCurrentRow(i)
                 break
 
-    # --- Navigation ---
-
     def _on_sidebar_selected(self, row: int):
         module = self._sidebar_row_to_module.get(row)
         if module is None:
@@ -523,18 +489,10 @@ class SettingsWindow(QMainWindow):
             self._current_module = None
             return
 
-        # Build or retrieve cached widget
         if module.module_id not in self._widget_map:
+            module.current_lang = self.current_lang
             widget = module.get_widget()
-            # For inline (non-embedded) modules, force QStyleSheetStyle on
-            # the root widget AND every descendant.  Setting the stylesheet
-            # only on the root is not enough: Kvantum intercepts QPushButton,
-            # QComboBox, QLineEdit rendering even when a parent has a
-            # stylesheet.  Setting it directly on each child widget forces Qt
-            # to create a per-widget QStyleSheetStyle, which always wins over
-            # the application-level Kvantum QStyle.
-            # Widgets that already have their own stylesheet (e.g. a QComboBox
-            # with hand-written inline styles) are left untouched.
+            
             from embedded_module import EmbeddedAppModule
             if self._qss and not isinstance(module, EmbeddedAppModule):
                 widget.setStyleSheet(self._qss)
@@ -551,23 +509,18 @@ class SettingsWindow(QMainWindow):
         self._current_module = module
         module.on_shown()
 
-    # --- Language ---
-
     def _apply_language(self, code: str):
         self.current_lang = code
 
-        # Update lang button states
         for c, btn in self._lang_btn_map.items():
             btn.setProperty("active", c == code)
             btn.style().unpolish(btn)
             btn.style().polish(btn)
 
-        # Retranslate header
         self._app_title_lbl.setText(self.t("app.title"))
         self._kde_btn.setText(self.t("header.kde_btn"))
         self._welcome_page.retranslate()
 
-        # Re-group modules for sidebar retranslation
         by_cat = {c: [] for c in CATEGORIES_ORDER}
         for m in self._modules:
             cat = m.category if m.category in by_cat else "system"
@@ -590,16 +543,12 @@ class SettingsWindow(QMainWindow):
                     item.setText(self.t(m.display_name_key))
                 row += 1
 
-        # Retranslate modules (pass current_lang so embedded apps can forward it)
         for m in self._modules:
             m.current_lang = code
             m.apply_language()
 
-    # --- KDE Settings ---
-
     def _launch_kde_settings(self):
         for binary in ["systemsettings", "systemsettings5", "kcontrol"]:
-            import shutil
             if shutil.which(binary):
                 subprocess.Popen([binary], start_new_session=True)
                 return
