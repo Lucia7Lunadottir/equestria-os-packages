@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QStackedWidget, QTextBrowser, QLabel,
                              QGraphicsDropShadowEffect, QSizePolicy, QCheckBox)
 from PyQt6.QtGui import QFontDatabase, QFont, QPixmap, QPainter, QPainterPath, QColor, QIcon
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QLocale
 
 class RoundedImageLabel(QLabel):
     """QLabel с закруглёнными краями, масштабирует изображение динамически."""
@@ -59,7 +59,7 @@ class TutorialApp(QMainWindow):
         self.locales_dir = os.path.join(self.base_path, "locales")
         self.langs = []
         self.translations = {}
-        self.current_lang = "ru"
+        self.current_lang = "en"
         self.load_translations()
 
         # Загрузка шрифта
@@ -127,6 +127,7 @@ class TutorialApp(QMainWindow):
             os.makedirs(self.locales_dir, exist_ok=True)
             return
 
+        # Загружаем все доступные json файлы
         for file_path in glob.glob(os.path.join(self.locales_dir, "*.json")):
             lang_code = os.path.basename(file_path).replace(".json", "")
             try:
@@ -137,7 +138,43 @@ class TutorialApp(QMainWindow):
                 print(f"Error loading {file_path}: {e}")
 
         self.langs.sort()
-        if "ru" not in self.langs and self.langs:
+
+        # --- ТОЧНОЕ ОПРЕДЕЛЕНИЕ СИСТЕМНОГО ЯЗЫКА ---
+        detected_lang = None
+
+        # Способ 1: Опрашиваем список UI-языков от Qt (идеально для KDE)
+        # Он возвращает список вида ['ru-RU', 'ru', 'en-US'] или ['zh-Hans-CN', 'zh']
+        ui_langs = QLocale.system().uiLanguages()
+        for lang in ui_langs:
+            # Очищаем от региональных тегов (из "zh-Hans-CN" или "en_US" делаем "zh" или "en")
+            clean_lang = lang.split('-')[0].split('_')[0].lower()
+            if clean_lang in self.langs:
+                detected_lang = clean_lang
+                break
+
+        # Способ 2: Если Qt не помог, проверяем переменные окружения Linux напрямую
+        if not detected_lang:
+            for var in ['LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG']:
+                val = os.environ.get(var)
+                if val:
+                    # Переменная LANGUAGE может содержать список через двоеточие: "uk_UA:uk:en"
+                    parts = val.split(':') if var == 'LANGUAGE' else [val]
+                    for part in parts:
+                        clean_lang = part.split('.')[0].split('_')[0].lower()
+                        if clean_lang in self.langs:
+                            detected_lang = clean_lang
+                            break
+                if detected_lang:
+                    break
+
+        # Способ 3: Финальные фолбеки, если совпадений вообще не найдено
+        if detected_lang:
+            self.current_lang = detected_lang
+        elif "en" in self.langs:
+            self.current_lang = "en"
+        elif "ru" in self.langs:
+            self.current_lang = "ru"
+        elif self.langs:
             self.current_lang = self.langs[0]
 
     def t(self, key):
@@ -213,9 +250,7 @@ class TutorialApp(QMainWindow):
         self.autostart_checkbox.setObjectName("AutostartCheckbox")
         self.autostart_checkbox.setChecked(self._autostart_enabled())
         self.autostart_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.autostart_checkbox.stateChanged.connect(
-            lambda state: self._set_autostart(bool(state))
-        )
+        self.autostart_checkbox.toggled.connect(self._set_autostart)
         self.bottom_layout.addWidget(self.autostart_checkbox)
 
         self.bottom_layout.addSpacing(24)
@@ -304,27 +339,34 @@ class TutorialApp(QMainWindow):
                             "equestria-os-tutorial.desktop")
 
     def _autostart_enabled(self):
-        return os.path.exists(self._autostart_path())
+        path = self._autostart_path()
+        if not os.path.exists(path):
+            return False
+        
+        # Читаем файл и проверяем, не скрыт ли автозапуск
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+                return "Hidden=true" not in content
+        except Exception:
+            return False
 
     def _set_autostart(self, enabled: bool):
         path = self._autostart_path()
-        if enabled:
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            with open(path, "w", encoding="utf-8") as f:
-                f.write(
-                    "[Desktop Entry]\n"
-                    "Type=Application\n"
-                    "Name=Equestria OS Tour\n"
-                    "Exec=equestria-os-tutorial\n"
-                    "Icon=equestria-os-tutorial\n"
-                    "X-GNOME-Autostart-enabled=true\n"
-                    "Hidden=false\n"
-                )
-        else:
-            try:
-                os.remove(path)
-            except FileNotFoundError:
-                pass
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(
+                "[Desktop Entry]\n"
+                "Type=Application\n"
+                "Name=Equestria OS Tour\n"
+                "Exec=equestria-os-tutorial\n"
+                "Icon=equestria-os-tutorial\n"
+            )
+            if enabled:
+                f.write("Hidden=false\n") # Разрешено запускать
+            else:
+                f.write("Hidden=true\n")  # Полностью блокирует глобальный автозапуск!
 
     def launch_app(self, desktop_filename):
         """Умный запуск .desktop файла с парсингом Exec и отвязкой от терминала"""

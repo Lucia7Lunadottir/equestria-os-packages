@@ -7,7 +7,7 @@
 #   Btrfs root + btrfs-progs  →  btrfs subvolume snapshot (native CoW)
 #   Otherwise                 →  restic (must be initialised)
 
-KEEP_FILE="/opt/equestria-os/equestria-save-point/hook-config"
+KEEP_FILE="/opt/equestria-os/equestria-os-save-point/hook-config"
 TAG="${1:-auto}"
 
 # Read keep_last from config (default: 10)

@@ -1,7 +1,7 @@
 import sys, os, subprocess, webbrowser
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton
 from PyQt6.QtGui import QFontDatabase, QFont, QIcon
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QLocale # Добавили QLocale
 from ui_welcome import Ui_WelcomeHub
 
 class Item:
@@ -29,7 +29,6 @@ class main_app(QMainWindow, Ui_WelcomeHub):
         if os.path.exists(os.path.join(self.base_path, "style.qss")):
             self.setStyleSheet(open(os.path.join(self.base_path, "style.qss")).read())
 
-        # ФИКС: ПОЛНАЯ ЛОКАЛИЗАЦИЯ ИЗ ТВОЕГО C# ФАЙЛА
         self.strings = {
             "cat.system": {"en":"🛠️ System", "ru":"🛠️ Система", "de":"🛠️ System", "fr":"🛠️ Système", "es":"🛠️ Sistema", "pt":"🛠️ Sistema", "pl":"🛠️ System", "uk":"🛠️ Система", "zh":"🛠️ 系统", "ja":"🛠️ システム"},
             "cat.music": {"en":"🎵 Music", "ru":"🎵 Музыка", "de":"🎵 Musik", "fr":"🎵 Musique", "es":"🎵 Música", "pt":"🎵 Música", "pl":"🎵 Muzyka", "uk":"🎵 Музика", "zh":"🎵 音乐", "ja":"🎵 音楽"},
@@ -37,18 +36,39 @@ class main_app(QMainWindow, Ui_WelcomeHub):
             "cat.social": {"en":"🐴 Pony Social", "ru":"🐴 Пони-соцсети", "de":"🐴 Pony Soziales", "fr":"🐴 Social Pony", "es":"🐴 Social Pony", "pt":"🐴 Social Pony", "pl":"🐴 Kucyk Social", "uk":"🐴 Поні-соцмережі", "zh":"🐴 小马社区", "ja":"🐴 ポニーSNS"},
             "cat.support": {"en":"🆘 Support", "ru":"🆘 Поддержка", "de":"🆘 Support", "fr":"🆘 Aide", "es":"🆘 Soporte", "pt":"🆘 Suporte", "pl":"🆘 Wsparcie", "uk":"🆘 Підтримка", "zh":"🆘 支持", "ja":"🆘 サポート"},
             "ui.autostart": {"en":"Launch on startup", "ru":"Запускать при старте", "de":"Beim Start ausführen", "fr":"Lancer au démarrage", "es":"Iniciar al arrancar", "pt":"Iniciar na inicialização", "pl":"Uruchom przy starcie", "uk":"Запускати при старті", "zh":"开机启动", "ja":"起動時に実行"},
-
-            # --- НОВЫЕ КЛЮЧИ ДЛЯ ПРИЛОЖЕНИЙ (ВСЕ 10 ЯЗЫКОВ) ---
             "app.theme": {"en":"Equestria OS Theme Switcher", "ru":"Переключатель тем Equestria OS", "de":"Equestria-OS-Theme-Wechsler", "fr":"Sélecteur de thèmes Equestria OS", "es":"Selector de temas de Equestria OS", "pt":"Seletor de temas Equestria OS", "pl":"Przełącznik motywów Equestria OS", "uk":"Перемикач тем Equestria OS", "zh":"Equestria OS主题切换器", "ja":"Equestria OSテーマスイッチャー"},
-            "app.tutorial": {"en":"Equestria OS Tour", "ru":"Тур по Equestria OS", "de":"Equestria OS Tour", "fr":"Visite guidée Equestria OS", "es":"Tour de Equestria OS", "pt":"Tour do Equestria OS", "pl":"Wycieczka po Equestria OS", "uk":"Тур по Equestria OS", "zh":"Equestria OS 导览", "ja":"Equestria OS ツアー"},
-            "app.panel": {"en":"Equestria OS Task Panel Changer", "ru":"Настройка панели задач Equestria OS", "de":"Equestria OS Taskleisten-Konfigurator", "fr":"Gestionnaire de barre des tâches Equestria OS", "es":"Configurador de barra de tareas Equestria OS", "pt":"Configurador de barra de tarefas Equestria OS", "pl":"Konfigurator paska zadań Equestria OS", "uk":"Налаштування панелі завдань Equestria OS", "zh":"Equestria OS任务栏配置器", "ja":"Equestria OSタスクバー設定"},
+            "app.tutorial": {"en":"Equestria OS Tour", "ru":"Тур по Equestria OS", "de":"Equestria OS Tour", "fr":"Visite guided Equestria OS", "es":"Tour de Equestria OS", "pt":"Tour do Equestria OS", "pl":"Wycieczka po Equestria OS", "uk":"Тур по Equestria OS", "zh":"Equestria OS 导览", "ja":"Equestria OS ツアー"},
+            "app.panel": {"en":"Equestria OS Task Panel Changer", "ru":"Настройка панели задач Equestria OS", "de":"Equestria OS Taskleisten-Konfigurator", "fr":"Gestionnaire de barre des tâches Equestria OS", "es":"Configurador de barra de tareas Equestria OS", "pt":"Configurador de barra de tarefas Equestria OS", "pl":"Konfigurator paska zadań Equestria OS", "uk":"Налаштування панели завдань Equestria OS", "zh":"Equestria OS任务栏配置器", "ja":"Equestria OSタスクバー設定"},
             "app.essentials": {"en":"Equestria OS Essentials", "ru":"Базовые программы Equestria OS", "de":"Equestria OS Essentials", "fr":"Les Essentiels Equestria OS", "es":"Esenciales de Equestria OS", "pt":"Essenciais do Equestria OS", "pl":"Niezbędnik Equestria OS", "uk":"Базові програми Equestria OS", "zh":"Equestria OS 必备软件", "ja":"Equestria OS 必須アプリ"},
             "app.store": {"en":"Equestria OS App Store", "ru":"Магазин Equestria OS", "de":"Equestria OS App Store", "fr":"Boutique Equestria OS", "es":"Tienda Equestria OS", "pt":"Loja Equestria OS", "pl":"Sklep Equestria OS", "uk":"Магазин Equestria OS", "zh":"Equestria OS 应用商店", "ja":"Equestria OS アプリストア"},
             "app.pkgs": {"en":"Equestria OS Packages", "ru":"Пакеты Equestria OS", "de":"Equestria OS Pakete", "fr":"Paquets Equestria OS", "es":"Paquetes de Equestria OS", "pt":"Pacotes do Equestria OS", "pl":"Pakiety Equestria OS", "uk":"Пакети Equestria OS", "zh":"Equestria OS软件包", "ja":"Equestria OSパッケージ"}
         }
 
-        self.current_lang = os.getenv("LANG", "en")[:2]
-        if self.current_lang not in ["en", "ru", "uk", "de", "fr", "es", "pt", "pl", "zh", "ja"]: self.current_lang = "en"
+        # --- УМНОЕ ОПРЕДЕЛЕНИЕ ЯЗЫКА (ПРИОРИТЕТ 10 ЛОКАЛЕЙ) ---
+        self.langs = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
+        self.current_lang = "en"
+
+        detected_lang = None
+        for lang in QLocale.system().uiLanguages():
+            clean_lang = lang.split('-')[0].split('_')[0].lower()
+            if clean_lang in self.langs:
+                detected_lang = clean_lang
+                break
+
+        if not detected_lang:
+            for var in ['LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG']:
+                val = os.environ.get(var)
+                if val:
+                    parts = val.split(':') if var == 'LANGUAGE' else [val]
+                    for part in parts:
+                        clean_lang = part.split('.')[0].split('_')[0].lower()
+                        if clean_lang in self.langs:
+                            detected_lang = clean_lang
+                            break
+                if detected_lang: break
+
+        if detected_lang:
+            self.current_lang = detected_lang
 
         self.setup_autostart_logic()
         self.setup_ui_logic()
@@ -57,8 +77,7 @@ class main_app(QMainWindow, Ui_WelcomeHub):
     def t(self, key): return self.strings.get(key, {}).get(self.current_lang, self.strings.get(key, {}).get("en", key))
 
     def setup_ui_logic(self):
-        codes = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
-        for i, code in enumerate(codes):
+        for i, code in enumerate(self.langs):
             btn = QPushButton(code.upper())
             btn.setProperty("cssClass", "lang-button")
             btn.setProperty("active", "true" if code == self.current_lang else "false")
@@ -179,46 +198,55 @@ class main_app(QMainWindow, Ui_WelcomeHub):
     def launch(self, item):
         target = item.target
 
-        # --- Умная обработка Steam-ссылок ---
         if target.startswith("steam://store/"):
-            # Ищем активный процесс Steam (pgrep вернет код 0, если найдет)
             is_steam_running = subprocess.run(["pgrep", "-i", "steam"], capture_output=True).returncode == 0
-
             if not is_steam_running:
-                # Если Steam не открыт (или не установлен), делаем браузерную ссылку
                 app_id = target.replace("steam://store/", "").strip("/")
                 target = f"https://store.steampowered.com/app/{app_id}/"
 
-        # --- Запуск ---
         if item.launch_type == "url" or target.startswith("http"):
-            # xdg-open гарантированно откроет браузер по умолчанию (Opera)
             subprocess.Popen(["xdg-open", target])
         elif item.launch_type == "command":
             subprocess.Popen(["/bin/bash", "-c", target])
         else:
             subprocess.Popen([target])
 
-    # --- АВТОЗАПУСК: СОЗДАНИЕ И УДАЛЕНИЕ ФАЙЛА В LINUX ---
+    # --- ИСПРАВЛЕННАЯ ЛОГИКА АВТОЗАПУСКА (БЕЗ УДАЛЕНИЯ КОНФИГА) ---
     def setup_autostart_logic(self):
         path = os.path.expanduser("~/.config/autostart/equestria-welcomehub.desktop")
+        
+        # По умолчанию галочка активна, если файл есть и в нём нет "Hidden=true"
+        is_enabled = False
+        if os.path.exists(path):
+            is_enabled = True
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    if "Hidden=true" in f.read():
+                        is_enabled = False
+            except Exception:
+                pass
 
-        # При старте проверяем, есть ли уже файл, и ставим галочку
-        self.autostart_checkbox.setChecked(os.path.exists(path))
+        self.autostart_checkbox.setChecked(is_enabled)
         self.autostart_checkbox.toggled.connect(self.toggle_autostart)
 
     def toggle_autostart(self, enable):
         path = os.path.expanduser("~/.config/autostart/equestria-welcomehub.desktop")
-        if enable:
-            # Создаем скрытую папку autostart, если её нет, и пишем файл
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            with open(path, "w") as f:
-                f.write("[Desktop Entry]\nType=Application\nName=Equestria OS Welcome Hub\n" +
-                        "Exec=python3 " + os.path.abspath(__file__) + "\nIcon=equestria-os\n" +
-                        "X-GNOME-Autostart-enabled=true\nHidden=false\n")
-        else:
-            # Если галочку сняли - удаляем файл автозапуска
-            if os.path.exists(path):
-                os.remove(path)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        
+        # Используем системный бинарник вместо python3 /путь/к/файлу
+        exec_cmd = "equestria-os-welcome" 
+        
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("[Desktop Entry]\n"
+                    "Type=Application\n"
+                    "Name=Equestria OS Welcome Hub\n"
+                    f"Exec={exec_cmd}\n"
+                    "Icon=equestria-os-logo\n"
+                    "X-GNOME-Autostart-enabled=true\n")
+            if enable:
+                f.write("Hidden=false\n")
+            else:
+                f.write("Hidden=true\n")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
