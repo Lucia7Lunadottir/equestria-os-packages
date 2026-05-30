@@ -125,7 +125,7 @@ class main_app(QMainWindow, Ui_WelcomeHub):
                 Item("Remains (Steam)", "https://store.steampowered.com/app/3908900/Remains/"),
                 Item("My Little Karaoke: Singing is Magic", "https://www.mylittlekaraoke.com"),
                 Item("Fighting is Magic: Aurora (Proton)", "https://windowslogic.itch.io/fighting-is-magic-aurora"),
-                Item("Equestria at War — Hearts of Iron IV (Steam)", "https://steamcommunity.com/sharedfiles/filedetails/?id=1826643372")
+                Item("Equestria at War — Hearts of Iron IV (Steam)", "https://steamcommunity.com/sharedfiles/filedetails/?id=1826643372") 
             ]),
             ("cat.social", [
                 Item("Derpibooru", "https://derpibooru.org/"),
