@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-tutorial
 pkgver=1.4.2
-pkgrel=1
+pkgrel=2
 pkgdesc="Interactive tour for new Equestria OS users"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -13,24 +13,35 @@ package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
     install -dm755 "$_lib"
 
-    for f in main.py style.qss equestria_cyrillic.ttf tutorial.png Tutorial.zip; do
+    for f in main.py style.qss equestria_cyrillic.ttf tutorial.png Tutorial.zip;
+    do
         [[ -f "$startdir/$f" ]] && install -Dm644 "$startdir/$f" "$_lib/$f"
     done
 
     cp -a "$startdir/assets" "$_lib/"
     cp -a "$startdir/locales" "$_lib/"
 
+    # Создание исполняемого запускатора в /usr/bin
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-tutorial" << 'EOF'
 #!/bin/bash
 cd /opt/equestria-os/equestria-os-tutorial/
 exec python3 main.py "$@"
 EOF
 
+    # 1. Установка обычного ярлыка в меню приложений
     install -d "$pkgdir/usr/share/applications"
     sed "s|^Exec=.*|Exec=equestria-os-tutorial|" "$startdir/equestria-os-tutorial.desktop" \
         > "$pkgdir/usr/share/applications/equestria-os-tutorial.desktop"
     chmod 644 "$pkgdir/usr/share/applications/equestria-os-tutorial.desktop"
 
+    # 2. ДОБАВЛЕНО: Установка ярлыка в глобальный автозапуск для Live-ISO
+    install -d "$pkgdir/etc/xdg/autostart"
+    sed "s|^Exec=.*|Exec=equestria-os-tutorial|" "$startdir/equestria-os-tutorial.desktop" \
+        > "$pkgdir/etc/xdg/autostart/equestria-os-tutorial.desktop"
+    chmod 644 "$pkgdir/etc/xdg/autostart/equestria-os-tutorial.desktop"
+    echo "X-KDE-Autostart-after=panel" >> "$pkgdir/etc/xdg/autostart/equestria-os-tutorial.desktop"
+
+    # Установка иконки
     install -Dm644 "$startdir/tutorial.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-tutorial.png"
 }

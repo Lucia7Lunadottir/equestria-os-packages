@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-welcome-hub
 pkgver=2.3.1
-pkgrel=1
+pkgrel=2
 pkgdesc="The official Equestria OS Welcome Center and Community Portal"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -17,15 +17,27 @@ package() {
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
 
-    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-welcome" << 'EOF'
+    # Имя изменено на equestria-os-welcome для соответствия с кодом
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-welcome" << 'EOF'
 #!/bin/bash
 cd /opt/equestria-os/equestria-os-welcome-hub/
 exec python3 welcome_hub.py "$@"
 EOF
 
-    install -Dm644 "$startdir/equestria-os-welcome.desktop" \
-        "$pkgdir/usr/share/applications/equestria-os-welcome.desktop"
+    # 1. Установка обычного ярлыка в меню приложений
+    install -d "$pkgdir/usr/share/applications"
+    sed "s|^Exec=.*|Exec=equestria-os-welcome|" "$startdir/equestria-os-welcome.desktop" \
+        > "$pkgdir/usr/share/applications/equestria-os-welcome.desktop"
+    chmod 644 "$pkgdir/usr/share/applications/equestria-os-welcome.desktop"
 
+    # 2. Установка ярлыка в глобальный автозапуск для Live-ISO
+    install -d "$pkgdir/etc/xdg/autostart"
+    sed "s|^Exec=.*|Exec=equestria-os-welcome|" "$startdir/equestria-os-welcome.desktop" \
+        > "$pkgdir/etc/xdg/autostart/equestria-os-welcome.desktop"
+    chmod 644 "$pkgdir/etc/xdg/autostart/equestria-os-welcome.desktop"
+    echo "X-KDE-Autostart-after=panel" >> "$pkgdir/etc/xdg/autostart/equestria-os-welcome.desktop"
+
+    # Установка иконки
     install -Dm644 "$startdir/EquestriaOS-Logo.png" \
         "$pkgdir/usr/share/pixmaps/equestria-os-welcome-hub.png"
 }
