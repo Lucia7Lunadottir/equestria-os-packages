@@ -214,10 +214,11 @@ class main_app(QMainWindow, Ui_WelcomeHub):
     # --- ИСПРАВЛЕННАЯ ЛОГИКА АВТОЗАПУСКА (БЕЗ УДАЛЕНИЯ КОНФИГА) ---
     def setup_autostart_logic(self):
         path = os.path.expanduser("~/.config/autostart/equestria-welcomehub.desktop")
-        
-        # По умолчанию галочка активна, если файл есть и в нём нет "Hidden=true"
-        is_enabled = False
-        if os.path.exists(path):
+
+        if not os.path.exists(path):
+            # Пользователь ничего не менял — глобальный /etc/xdg/autostart активен
+            is_enabled = True
+        else:
             is_enabled = True
             try:
                 with open(path, "r", encoding="utf-8") as f:

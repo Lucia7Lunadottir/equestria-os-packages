@@ -341,7 +341,8 @@ class TutorialApp(QMainWindow):
     def _autostart_enabled(self):
         path = self._autostart_path()
         if not os.path.exists(path):
-            return False
+            # Пользователь ничего не менял — глобальный /etc/xdg/autostart активен
+            return True
         
         # Читаем файл и проверяем, не скрыт ли автозапуск
         try:
@@ -349,7 +350,7 @@ class TutorialApp(QMainWindow):
                 content = f.read()
                 return "Hidden=true" not in content
         except Exception:
-            return False
+            return True
 
     def _set_autostart(self, enabled: bool):
         path = self._autostart_path()
