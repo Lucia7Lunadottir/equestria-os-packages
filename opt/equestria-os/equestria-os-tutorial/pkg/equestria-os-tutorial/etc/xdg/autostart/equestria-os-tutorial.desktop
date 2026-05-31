@@ -30,4 +30,5 @@ Type=Application
 Categories=X-EquestriaOS;System;Utility;Qt;
 StartupNotify=true
 StartupWMClass=equestria-os-tutorial
+
 X-KDE-Autostart-after=panel

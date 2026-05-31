@@ -2,12 +2,13 @@
 
 pkgname=equestria-os-tutorial
 pkgver=1.4.2
-pkgrel=2
+pkgrel=3
 pkgdesc="Interactive tour for new Equestria OS users"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
 depends=('python-pyqt6')
+
 
 package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
@@ -34,12 +35,14 @@ EOF
         > "$pkgdir/usr/share/applications/equestria-os-tutorial.desktop"
     chmod 644 "$pkgdir/usr/share/applications/equestria-os-tutorial.desktop"
 
-    # 2. ДОБАВЛЕНО: Установка ярлыка в глобальный автозапуск для Live-ISO
+    # 2. Установка ярлыка в глобальный автозапуск для Live-ISO
     install -d "$pkgdir/etc/xdg/autostart"
     sed "s|^Exec=.*|Exec=equestria-os-tutorial|" "$startdir/equestria-os-tutorial.desktop" \
         > "$pkgdir/etc/xdg/autostart/equestria-os-tutorial.desktop"
     chmod 644 "$pkgdir/etc/xdg/autostart/equestria-os-tutorial.desktop"
-    echo "X-KDE-Autostart-after=panel" >> "$pkgdir/etc/xdg/autostart/equestria-os-tutorial.desktop"
+
+    # БЕЗОПАСНЫЙ СТАРТ: Добавляем символ новой строки перед интеграцией в фазы KDE
+    printf "\nX-KDE-Autostart-after=panel\n" >> "$pkgdir/etc/xdg/autostart/equestria-os-tutorial.desktop"
 
     # Установка иконки
     install -Dm644 "$startdir/tutorial.png" \
