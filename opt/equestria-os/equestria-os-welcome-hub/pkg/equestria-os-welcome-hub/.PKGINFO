@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 2.3.2-1
 pkgdesc = The official Equestria OS Welcome Center and Community Portal
 url = https://github.com/Lucia7Lunadottir
-builddate = 1780197153
+builddate = 1780201121
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 481147
 arch = any

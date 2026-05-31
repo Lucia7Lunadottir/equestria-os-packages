@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-tutorial
 pkgver=1.4.3
-pkgrel=1
+pkgrel=2
 pkgdesc="Interactive tour for new Equestria OS users"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -41,8 +41,7 @@ EOF
         > "$pkgdir/etc/xdg/autostart/equestria-os-tutorial.desktop"
     chmod 644 "$pkgdir/etc/xdg/autostart/equestria-os-tutorial.desktop"
 
-    # БЕЗОПАСНЫЙ СТАРТ: Добавляем символ новой строки перед интеграцией в фазы KDE
-    printf "\nX-KDE-Autostart-after=panel\n" >> "$pkgdir/etc/xdg/autostart/equestria-os-tutorial.desktop"
+    echo "X-KDE-Autostart-after=panel" >> "$pkgdir/etc/xdg/autostart/equestria-os-tutorial.desktop"
 
     # Установка иконки
     install -Dm644 "$startdir/tutorial.png" \
