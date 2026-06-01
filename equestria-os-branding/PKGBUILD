@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team <info@psyche-games.com>
 
 pkgname=equestria-os-branding
-pkgver=1.4.2
-pkgrel=2
+pkgver=1.4.3
+pkgrel=1
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -83,6 +83,8 @@ package() {
     install -dm755 "$pkgdir/usr/share/equestria-os/branding"
     install -m644 "$startdir/watermark.png" "$pkgdir/usr/share/equestria-os/branding/watermark.png"
     install -m644 "$startdir/plymouthd.conf" "$pkgdir/usr/share/equestria-os/branding/plymouthd.conf"
+    # Копируем исправленный конфиг темы в безопасное место
+    install -m644 "$startdir/spinner.plymouth" "$pkgdir/usr/share/equestria-os/branding/spinner.plymouth"
 
     # 2. Устанавливаем системный скрипт автоматизации
     install -Dm755 "$startdir/equestria-os-plymouth-fix" "$pkgdir/usr/bin/equestria-os-plymouth-fix"

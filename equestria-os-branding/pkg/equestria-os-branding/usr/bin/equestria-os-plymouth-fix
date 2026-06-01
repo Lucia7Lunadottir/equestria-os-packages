@@ -3,15 +3,20 @@
 THEME_DIR="/usr/share/plymouth/themes/spinner"
 BRANDING_DIR="/usr/share/equestria-os/branding"
 
-# 1. Принудительно копируем водяной знак в тему spinner
+# 1. Принудительно возвращаем водяной знак
 if [ -d "$THEME_DIR" ]; then
     cp -f "$BRANDING_DIR/watermark.png" "$THEME_DIR/watermark.png"
 fi
 
-# 2. Переписываем глобальный конфиг Plymouth нашим эталоном
+# 2. Насильно перезаписываем .plymouth файл темы, возвращая UseFirmwareBackground
+if [ -f "$BRANDING_DIR/spinner.plymouth" ]; then
+    cp -f "$BRANDING_DIR/spinner.plymouth" "$THEME_DIR/spinner.plymouth"
+fi
+
+# 3. Насильно контролируем глобальный plymouthd.conf
 if [ -f "$BRANDING_DIR/plymouthd.conf" ]; then
     cp -f "$BRANDING_DIR/plymouthd.conf" /etc/plymouth/plymouthd.conf
 fi
 
-# 3. Принудительно выставляем тему spinner и запекаем её в initramfs ядер
+# 4. Выставляем тему spinner по умолчанию и обновляем initramfs ядер
 plymouth-set-default-theme -R spinner
