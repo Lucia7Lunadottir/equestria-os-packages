@@ -1,15 +1,14 @@
 # Maintainer: Equestria OS Team <info@psyche-games.com>
 
 pkgname=equestria-os-branding
-pkgver=1.4.1
-pkgrel=1
+pkgver=1.4.2
+pkgrel=2
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('custom')
 
 provides=('equestria-os-branding')
-
 source=()
 
 package() {
@@ -31,11 +30,7 @@ package() {
         cp -r "$startdir/look-and-feel/Equestria-OS" "$pkgdir/usr/share/plasma/look-and-feel/"
     fi
 
-    # 4. Plasma Lockscreen — файлы хранятся в нашей директории, применяются
-    #    через pacman-хук (см. hooks/equestria-os-lockscreen.hook).
-    #    KDE Plasma 6 не поддерживает lockscreen через look-and-feel,
-    #    поэтому используем хук, который автоматически копирует файлы
-    #    после установки/обновления plasma-desktop или этого пакета.
+    # 4. Plasma Lockscreen
     if [ -d "$startdir/plasma-lockscreen" ]; then
         install -d "$pkgdir/usr/share/equestria-os/plasma-lockscreen"
         cp -r "$startdir/plasma-lockscreen/"* "$pkgdir/usr/share/equestria-os/plasma-lockscreen/"
@@ -45,7 +40,7 @@ package() {
     install -Dm755 "$startdir/scripts/apply-lockscreen.sh" \
         "$pkgdir/usr/lib/equestria-os/apply-lockscreen.sh"
 
-    # 4b. Pacman хук — запускается после install/upgrade plasma-desktop или этого пакета
+    # 4b. Pacman хук для lockscreen
     install -Dm644 "$startdir/hooks/equestria-os-lockscreen.hook" \
         "$pkgdir/usr/share/libalpm/hooks/equestria-os-lockscreen.hook"
 
@@ -73,7 +68,7 @@ package() {
         fi
     done
 
-    # 8. App submenu — groups all Equestria OS tools under one entry in the app menu
+    # 8. App submenu
     install -Dm644 "$startdir/equestria-os.directory" \
         "$pkgdir/usr/share/desktop-directories/equestria-os.directory"
     install -Dm644 "$startdir/equestria-os.menu" \
@@ -82,18 +77,16 @@ package() {
         "$pkgdir/etc/xdg/menus/plasma-applications-merged/equestria-os.menu"
 
 
+    # --- ИСПРАВЛЕННЫЙ БЛОК PLYMOUTH БЕЗ КОНФЛИКТОВ ---
 
-        # 1. Создаём папку для хранения резервной копии брендинга, откуда хук будет его забирать
+    # 1. Сгружаем все "эталонные" файлы брендинга в твою изолированную папку
     install -dm755 "$pkgdir/usr/share/equestria-os/branding"
     install -m644 "$startdir/watermark.png" "$pkgdir/usr/share/equestria-os/branding/watermark.png"
+    install -m644 "$startdir/plymouthd.conf" "$pkgdir/usr/share/equestria-os/branding/plymouthd.conf"
 
-    # 2. Устанавливаем сам водяной знак в текущую тему Plymouth (для первоначальной установки)
-    install -dm755 "$pkgdir/usr/share/plymouth/themes/bgrt"
-    install -m644 "$startdir/watermark.png" "$pkgdir/usr/share/plymouth/themes/bgrt/watermark.png"
-
-    # 3. Устанавливаем скрипт автоматизации в /usr/bin и даем права на исполнение (755)
+    # 2. Устанавливаем системный скрипт автоматизации
     install -Dm755 "$startdir/equestria-os-plymouth-fix" "$pkgdir/usr/bin/equestria-os-plymouth-fix"
 
-    # 4. Устанавливаем хук пакмана в системную директорию хуков (644)
-    install -Dm644 "$startdir/plymouth-branding.hook" "$pkgdir/etc/pacman.d/hooks/plymouth-branding.hook"
+    # 3. Устанавливаем хук, который будет дергать этот скрипт
+    install -Dm644 "$startdir/plymouth-branding.hook" "$pkgdir/usr/share/libalpm/hooks/plymouth-branding.hook"
 }
