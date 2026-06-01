@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Путь к теме загрузки Equestria OS (bgrt или твоя кастомная)
-THEME_DIR="/usr/share/plymouth/themes/bgrt"
+THEME_DIR="/usr/share/plymouth/themes/spinner"
 BACKUP_DIR="/usr/share/equestria-os/branding"
 
 # Проверяем, существует ли папка темы, и возвращаем водяной знак на место
