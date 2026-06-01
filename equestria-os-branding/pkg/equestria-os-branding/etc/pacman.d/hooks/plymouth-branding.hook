@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = plymouth
+
+[Action]
+Description = Restoring Equestria OS branding for Plymouth...
+When = PostTransaction
+Exec = /usr/bin/equestria-os-plymouth-fix

@@ -282,7 +282,7 @@ class TaskPanelApp(QMainWindow):
         self.ui.btn_ed_theme_light.clicked.connect(lambda: self._set_editor_theme(False))
         self.ui.btn_ed_capture.clicked.connect(self.capture_panels)
         self.ui.btn_ed_restore.clicked.connect(self.restore_single_default)
-        self.ui.btn_ed_delete.clicked.connect(self.delete_preset)  # НОВАЯ КНОПКА
+        self.ui.btn_ed_delete.clicked.connect(self.delete_preset)
         self.ui.btn_ed_cancel.clicked.connect(self.cancel_editor)
         self.ui.btn_ed_save.clicked.connect(self.save_editor)
 
@@ -330,7 +330,7 @@ class TaskPanelApp(QMainWindow):
 
         self.ui.btn_ed_capture.setText(self._t("ui.ed_capture_btn"))
         self.ui.btn_ed_restore.setText(self._t("ui.btn_restore_default"))
-        self.ui.btn_ed_delete.setText(self._t("ui.btn_delete")) # ПЕРЕВОД КНОПКИ
+        self.ui.btn_ed_delete.setText(self._t("ui.btn_delete"))
         self.ui.btn_ed_cancel.setText(self._t("ui.btn_cancel"))
         self.ui.btn_ed_save.setText(self._t("ui.btn_save"))
         self.ui.btn_ed_theme_dark.setText(self._t("ui.dark_panel"))
@@ -385,7 +385,7 @@ class TaskPanelApp(QMainWindow):
             self.ui.fld_ed_icon.setText("")
             self.ui.chk_ed_hide_icons.setChecked(False)
             self.ui.btn_ed_restore.setEnabled(False)
-            self.ui.btn_ed_delete.setVisible(False) # СКРЫВАЕМ КНОПКУ ПРИ СОЗДАНИИ
+            self.ui.btn_ed_delete.setVisible(False)
             self._add_panel_row(self._default_panel_config())
         else:
             preset = self._get_preset(preset_id)
@@ -419,7 +419,7 @@ class TaskPanelApp(QMainWindow):
                 except (json.JSONDecodeError, OSError):
                     pass
             self.ui.btn_ed_restore.setEnabled(has_default)
-            self.ui.btn_ed_delete.setVisible(True) # ПОКАЗЫВАЕМ ПРИ РЕДАКТИРОВАНИИ
+            self.ui.btn_ed_delete.setVisible(True)
 
             for cfg in self._parse_preset_panels_config(preset):
                 self._add_panel_row(cfg)
@@ -505,11 +505,9 @@ class TaskPanelApp(QMainWindow):
         )
 
         if reply == QMessageBox.StandardButton.Yes:
-            # 1. Удаляем из памяти и сохраняем
             self.presets = [p for p in self.presets if p["id"] != self.editing_preset_id]
             self._save_presets()
 
-            # 2. Удаляем файлы конфигов, если они есть
             layout_file = self._preset_layout_file(self.editing_preset_id)
             if os.path.exists(layout_file):
                 os.remove(layout_file)
@@ -517,12 +515,10 @@ class TaskPanelApp(QMainWindow):
             if os.path.exists(shellrc_file):
                 os.remove(shellrc_file)
 
-            # 3. Если удаленный пресет был активен, сбрасываем статус
             if self.active_preset_id == self.editing_preset_id:
                 self.active_preset_id = None
                 self._save_appearance()
 
-            # 4. Обновляем UI и возвращаемся на главную
             self._build_preset_cards()
             self._update_ui_state()
             self.ui.stacked_widget.setCurrentIndex(0)
@@ -669,7 +665,6 @@ class TaskPanelApp(QMainWindow):
         }
 
     def _parse_preset_panels_config(self, preset):
-        # Корректируем старые багнутые конфиги "на лету" перед отдачей UI
         if "panels_config" in preset:
             cfg_list = preset["panels_config"]
             for c in cfg_list:
@@ -691,11 +686,9 @@ class TaskPanelApp(QMainWindow):
             cfg["height"] = int(m.group(1)) if m else preset.get("height", 48)
             cfg["floating"] = "floating=true" in ps
 
-            # Парсим visibilityMode
             m_hide = re.search(r"\.hiding='(\w+)'", ps)
             if m_hide:
                 val = m_hide.group(1)
-                # Перевод старых скриптов на новые рельсы Plasma 6
                 if val == "windowsbelow": val = "dodgewindows"
                 if val == "windowscover": val = "windowsgobelow"
                 cfg["visibilityMode"] = val
@@ -726,6 +719,7 @@ class TaskPanelApp(QMainWindow):
             if "plasma.digitalclock'" in ps: widgets.append("clock")
             if "plasma.pager'" in ps:        widgets.append("pager")
             if "plasma.systemmonitor'" in ps: widgets.append("monitor")
+            if "plasma.appmenu'" in ps:      widgets.append("appmenu")
             cfg["widgets"] = widgets
             panels.append(cfg)
         return panels or [self._default_panel_config(preset.get("height", 48))]
@@ -850,8 +844,6 @@ class TaskPanelApp(QMainWindow):
         pos = "39,174,96"
         vis = "155,89,182"
 
-        # Full Breeze-compatible colors file — incomplete files cause
-        # KWin/kscreenlocker to compute wrong colors for the lockscreen.
         colors_data = "\n".join([
             f"[General]",
             f"ColorScheme={color_scheme}",
@@ -905,8 +897,6 @@ class TaskPanelApp(QMainWindow):
             f"ForegroundPositive={pos}",
             f"ForegroundVisited={vis}",
             f"",
-            # Complementary: always dark bg + white fg — used by lockscreen and logout dialog.
-            # Must match Breeze structure exactly so KWin computes correct colors.
             f"[Colors:Complementary]",
             f"BackgroundNormal=42,46,50",
             f"BackgroundAlternate=27,30,32",
@@ -950,7 +940,6 @@ class TaskPanelApp(QMainWindow):
         with open(os.path.join(theme_dir, "colors"), "w", encoding="utf-8") as f:
             f.write(colors_data)
 
-        # Also register colors as a proper color scheme so plasma-apply-colorscheme can pick it up.
         color_schemes_dir = os.path.expanduser("~/.local/share/color-schemes")
         os.makedirs(color_schemes_dir, exist_ok=True)
         with open(os.path.join(color_schemes_dir, "EquestriaPanel.colors"), "w", encoding="utf-8") as f:
@@ -974,9 +963,6 @@ class TaskPanelApp(QMainWindow):
         plasma_utils.apply_system_theme_fixes()
 
         cache_clear = "rm -rf ~/.cache/ksvg/ 2>/dev/null; rm -f ~/.cache/plasma_theme_*.kcache 2>/dev/null; "
-        # In Plasma 6, plasma-apply-desktoptheme does not automatically apply the embedded
-        # color scheme, so text/foreground colors in panel widgets stay unchanged without
-        # an explicit plasma-apply-colorscheme call.
         apply_colorscheme = "plasma-apply-colorscheme EquestriaPanel 2>/dev/null; "
         if current_theme == "EquestriaPanel":
             cmd = cache_clear + apply_colorscheme + "plasma-apply-desktoptheme default && sleep 0.5 && plasma-apply-desktoptheme EquestriaPanel"

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Путь к теме загрузки Equestria OS (bgrt или твоя кастомная)
+THEME_DIR="/usr/share/plymouth/themes/bgrt"
+BACKUP_DIR="/usr/share/equestria-os/branding"
+
+# Проверяем, существует ли папка темы, и возвращаем водяной знак на место
+if [ -d "$THEME_DIR" ]; then
+    cp -f "$BACKUP_DIR/watermark.png" "$THEME_DIR/watermark.png"
+fi
+
+# Пересобираем initramfs для всех ядер, чтобы заставка обновилась внутри загрузочного образа
+mkinitcpio -P

@@ -121,11 +121,11 @@
             "color_light": "#c4b8d8",
             "opacity": 90,
             "is_dark": true,
-            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p0=new Panel;p0.location='top';p0.height=28;p0.alignment='center';p0.lengthMode='fill';var k0=p0.addWidget('org.kde.plasma.kickoff');k0.currentConfigGroup=['General'];k0.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.systemtray');p0.addWidget('org.kde.plasma.digitalclock');p0.height=28;var p1=new Panel;p1.location='bottom';p1.height=60;p1.alignment='center';p1.lengthMode='fit';p1.hiding='dodgewindows';p1.addWidget('org.kde.plasma.icontasks');p1.height=60;",
+            "script": "var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}var p0=new Panel;p0.location='top';p0.height=28;p0.alignment='center';p0.lengthMode='fill';var k0=p0.addWidget('org.kde.plasma.kickoff');k0.currentConfigGroup=['General'];k0.writeConfig('icon','/usr/share/pixmaps/equestria-os-logo.png');p0.addWidget('org.kde.plasma.appmenu');p0.addWidget('org.kde.plasma.panelspacer');p0.addWidget('org.kde.plasma.systemtray');p0.addWidget('org.kde.plasma.digitalclock');p0.height=28;var p1=new Panel;p1.location='bottom';p1.height=60;p1.alignment='center';p1.lengthMode='fit';p1.hiding='dodgewindows';p1.addWidget('org.kde.plasma.icontasks');p1.height=60;",
             "name": "Rarity",
             "icon": "MLP Cutiemarks/Rarity.png",
             "height": 28,
-            "desc": "MacOS",
+            "desc": "MacOS style",
             "panels_config": [
                 {
                     "position": "top",
@@ -138,6 +138,7 @@
                     "lengthMode": "fill",
                     "launcher": "kickoff",
                     "widgets": [
+                        "appmenu",
                         "systray",
                         "clock"
                     ]

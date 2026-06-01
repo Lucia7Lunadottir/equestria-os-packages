@@ -128,7 +128,6 @@ class PanelRowWidget(QFrame):
     _LAUNCHERS  = ["none", "kickoff", "kicker", "kickerdash"]
     _LENGTHS    = ["fill", "fit"]
     _ALIGNMENTS = ["left", "center", "right"]
-    # Имена параметров строго по API KDE Plasma 6:
     _VISIBILITY_MODES = ["none", "autohide", "dodgewindows", "windowsgobelow"]
 
     def __init__(self, cfg=None, parent=None):
@@ -234,11 +233,9 @@ class PanelRowWidget(QFrame):
         r2.addWidget(self.chk_float)
 
         self.cmb_vis = QComboBox()
-        # Временные элементы, будут заменены в retranslate
         self.cmb_vis.addItems(["Always visible", "Auto hide", "Dodge windows", "Windows go below"])
 
         vis = cfg.get("visibilityMode", "none")
-        # Конвертация ошибочных названий из старых сохранений
         if vis == "windowsbelow": vis = "dodgewindows"
         if vis == "windowscover": vis = "windowsgobelow"
         if cfg.get("autohide", False) and vis == "none":
@@ -284,8 +281,11 @@ class PanelRowWidget(QFrame):
         self.chk_pager.setChecked("pager" in ww)
         self.chk_monitor = SafeCheckBox()
         self.chk_monitor.setChecked("monitor" in ww)
+        self.chk_appmenu = SafeCheckBox()
+        self.chk_appmenu.setChecked("appmenu" in ww)
+        
         for c in (self.chk_taskbar, self.chk_systray, self.chk_clock,
-                  self.chk_pager, self.chk_monitor):
+                  self.chk_pager, self.chk_monitor, self.chk_appmenu):
             r3.addWidget(c)
         r3.addStretch()
         outer.addLayout(r3)
@@ -313,6 +313,7 @@ class PanelRowWidget(QFrame):
         self.chk_clock.setText(t("ui.pr_clock"))
         self.chk_pager.setText(t("ui.pr_pager"))
         self.chk_monitor.setText(t("ui.pr_monitor"))
+        self.chk_appmenu.setText(t("ui.pr_appmenu"))
 
         self._lbl_vis.setText(t("ui.pr_visibility"))
         current_vis_idx = self.cmb_vis.currentIndex()
@@ -334,6 +335,7 @@ class PanelRowWidget(QFrame):
         if self.chk_clock.isChecked():   widgets.append("clock")
         if self.chk_pager.isChecked():   widgets.append("pager")
         if self.chk_monitor.isChecked(): widgets.append("monitor")
+        if self.chk_appmenu.isChecked(): widgets.append("appmenu")
         return {
             "position":   self._POSITIONS[self.cmb_pos.currentIndex()],
             "height":     self.spn_h.value(),

@@ -11,7 +11,7 @@ ui.editor_title,Theme Editor,Редактор темы,Theme-Editor,Éditeur de 
 ui.fld_id,Character ID,ID Персонажа,Charakter-ID,ID du personnage,ID de personaje,ID do personagem,ID postaci,ID персонажа,角色 ID,キャラクター ID
 ui.fld_name,Display Name,Имя,Anzeigename,Nom d'affichage,Nombre para mostrar,Nome de exibição,Nazwa wyświetlana,Ім'я,显示名称,表示名
 ui.fld_wallpaper,Wallpaper Path,Путь к обоям,Hintergrundpfad,Chemin du fond d'écran,Ruta del fondo,Caminho do papel de parede,Ścieżka tapety,Шлях до шпалер,壁纸路径,壁紙のパス
-ui.fld_icon,Cutiemark Path,Путь к метке,Cutiemark-Pfad,Chemin de la Cutiemark,Ruta de la Cutiemark,Caminho da Cutiemark,Ścieżka znaczka,Шлях до мітки,可爱标志路径,キューティーマークのパス
+ui.fld_icon,Cutiemark Path,Путь к метке,Cutiemark-Пад,Chemin de la Cutiemark,Ruta de la Cutiemark,Caminho da Cutiemark,Ścieżka znaczka,Шлях до мітки,可爱标志路径,キューティーマークのパス
 ui.lbl_ui_colors,UI Colors (Hex),Цвета UI (Hex),UI-Farben (Hex),Couleurs UI (Hex),Colores de UI (Hex),Cores da UI (Hex),Kolory UI (Hex),Кольори UI (Hex),UI 颜色 (Hex),UI カラー (Hex)
 ui.lbl_konsole_colors,Konsole Colors (RGB),Цвета Konsole (RGB),Konsole-Farben (RGB),Couleurs Konsole (RGB),Colores de Konsole (RGB),Cores do Konsole (RGB),Kolory Konsole (RGB),Кольори Konsole (RGB),Konsole 颜色 (RGB),Konsole カラー (RGB)
 ui.btn_delete,Delete,Удалить,Löschen,Supprimer,Eliminar,Excluir,Usuń,Видалити,删除,削除
@@ -20,10 +20,10 @@ ui.btn_save,Save,Сохранить,Speichern,Enregistrer,Guardar,Salvar,Zapisz,
 ui.cp_title,Pick Color,Выбор цвета,Farbe wählen,Choisir la couleur,Elegir color,Escolher cor,Wybierz kolor,Вибір кольору,选择颜色,色を選択
 ui.btn_apply,Apply,Применить,Anwenden,Appliquer,Aplicar,Aplicar,Zastosuj,Застосувати,应用,適用
 ui.delete_title,Delete Theme?,Удалить тему?,Theme löschen?,Supprimer le thème ?,¿Eliminar tema?,Excluir tema?,Usunąć motyw?,Видалити тему?,删除主题？,テーマを削除しますか？
-ui.delete_msg,Are you sure you want to delete '{0}'?,Вы уверены что хотите удалить '{0}'?,Sind Sie sicher dass Sie '{0}' löschen möchten?,Voulez-vous vraiment supprimer '{0}' ?,¿Seguro que quieres eliminar '{0}'?,Tem certeza que deseja excluir '{0}'?,Czy na pewno chcesz usunąć '{0}'?,Ви впевнені що хочете видалити '{0}'?,确定要删除 '{0}' 吗？,本当に '{0}' を削除しますか？
+ui.delete_msg,Are you sure you want to delete '{0}'?,Вы уверены что хотите удалить '{0}'?,Sind Sie sicher dass Sie '{0}' лоschen möchten?,Voulez-vous vraiment supprimer '{0}' ?,¿Seguro que quieres eliminar '{0}'?,Tem certeza que deseja excluir '{0}'?,Czy na pewno chcesz usunąć '{0}'?,Ви впевнені що хочете видалити '{0}'?,确定要删除 '{0}' 吗？,本当に '{0}' を削除しますか？
 ui.btn_yes_delete,Yes Delete,Да удалить,Ja löschen,Oui supprimer,Sí eliminar,Sim excluir,Tak usuń,Так видалити,确认删除,はい削除します
 ui.btn_open_folder,Open Folder,Открыть папку,Ordner öffnen,Ouvrir le dossier,Abrir carpeta,Abrir pasta,Otwórz folder,Відкрити папку,打开文件夹,フォルダーを開く
-ui.btn_restore,Restore Defaults,Восстановить по умолчанию,Standard wiederherstellen,Restaurer par défaut,Restaurar predeterminados,Restaurar padrões,Przywróć domyślne,Відновити за замовчуванням,恢复默认,デフォルトに戻す
+ui.btn_restore,Restore Defaults,Восстановить по умолчанию,Standard wiederherstellen,Restaurer par défaut,Restaurar predeterminados,Restaurar padrões,Przywróć domyślne,Відновити за замовчуванием,恢复默认,デフォルトに戻す
 ui.active_preset,Active: {0},Активен: {0},Aktiv: {0},Actif : {0},Activo: {0},Ativo: {0},Aktywny: {0},Активний: {0},当前活动: {0},アクティブ: {0}
 ui.panel_color,Panel color:,Цвет панели:,Panelfarbe:,Couleur du panneau :,Color del panel:,Cor do painel:,Kolor panelu:,Колір панелі:,面板颜色:,パネルカラー:
 ui.opacity,Opacity:,Прозрачность:,Deckkraft:,Opacité :,Opacidad:,Opacidade:,Krycie:,Прозорість:,不透明度:,不透明度:
@@ -39,7 +39,7 @@ ui.ed_title_edit,Edit: {0},Изменить: {0},Bearbeiten: {0},Éditer : {0},E
 ui.ed_preset_id,Preset ID:,ID стиля:,Preset-ID:,ID de préréglage :,ID de ajuste:,ID do predefinição:,ID ustawień:,ID стилю:,预设 ID:,プリセット ID:
 ui.ed_name_label,Display Name:,Имя:,Anzeigename:,Nom d'affichage :,Nombre:,Nome:,Nazwa:,Ім'я:,显示名称:,表示名:
 ui.ed_desc_label,Description:,Описание:,Beschreibung:,Description :,Descripción:,Descrição:,Opis:,Опис:,描述:,説明:
-ui.ed_color_label,Panel Colors:,Цвета панели:,Panelfarben:,Couleurs du panneau :,Colores del panel:,Cores do painel:,Kolory panelu:,Кольори панелі:,面板颜色:,パネルカラー:
+ui.ed_color_label,Panel Colors:,Цвета панели:,Panelfarben:,Couleurs du panneau :,Colores del panel:,Cores do поanel:,Kolory panelu:,Кольори панелі:,面板颜色:,パネルカラー:
 ui.ed_panels_label,Panels:,Панели:,Panels:,Panneaux :,Paneles:,Painéis:,Panele:,Панелі:,面板:,パネル:
 ui.ed_add_panel_btn,+ Add Panel,+ Добавить панель,+ Panel hinzufügen,+ Ajouter un panneau,+ Añadir panel,+ Adicionar painel,+ Dodaj panel,+ Додати панель,+ 添加面板,+ パネルを追加
 ui.pr_position,Position:,Позиция:,Position:,Position :,Posición:,Posição:,Pozycja:,Позиція:,位置:,位置:
@@ -49,7 +49,7 @@ ui.pr_offset,Offset:,Смещение:,Versatz:,Décalage :,Desplaz.:,Deslocam.:
 ui.pr_align,Align:,Выравн.:,Ausricht.:,Alignem. :,Alineac.:,Alinhám.:,Wyrówn.:,Вирівн.:,对齐:,整列:
 ui.pr_floating,Floating,Плавающая,Schwebend,Flottant,Flotante,Flutuante,Pływający,Плаваюча,浮动,フローティング
 ui.pr_autohide,Autohide,Автоскрытие,Ausblenden,Masquage auto,Ocultar auto,Ocultar auto,Auto-ukrywanie,Автоприховання,自动隐藏,自動隠し
-ui.pr_length,Length:,Длина:,Länge:,Longueur :,Longitud:,Comprimento:,Długość:,Довжина:,长度:,長さ:
+ui.pr_length,Length:,Длина:,Länge:,Longueur :,Longitud:,Comprimento:,Długość:,Długość:,Довжина:,长度:,長さ:
 ui.pr_launcher,Launcher:,Меню пуск:,Starter:,Lanceur :,Lanzador:,Iniciador:,Launcher:,Запускач:,启动器:,ランチャー:
 ui.pr_widgets,Widgets:,Виджеты:,Widgets:,Widgets :,Widgets:,Widgets:,Widżety:,Віджети:,小部件:,ウィジェット:
 ui.pr_taskbar,Taskbar,Панель задач,Taskleiste,Barre des tâches,Barra tareas,Barra tarefas,Pasek zadań,Панель завдань,任务栏,タスクバー
@@ -61,31 +61,27 @@ ui.ed_opacity_label,Opacity:,Прозрачность:,Deckkraft:,Opacité :,Opa
 ui.ed_theme_label,Panel Theme:,Тема панели:,Panel-Thema:,Thème du panneau :,Tema del panel:,Tema do painel:,Motyw panelu:,Тема панелі:,面板主题:,パネルテーマ:
 ui.ed_icon_label,Icon:,Иконка:,Symbol:,Icône :,Icono:,Ícone:,Ikona:,Іконка:,图标:,アイコン:
 ui.ed_layout_label,Panel Layout:,Раскладка панелей:,Panel-Layout:,Disposition du panneau :,Diseño del panel:,Layout do painel:,Układ panelu:,Розмітка панелей:,面板布局:,パネルレイアウト:
-ui.ed_capture_btn,📸 Capture current panels,📸 Снять текущие панели,📸 Aktuelle Panels erfassen,📸 Capturer les panneaux actuels,📸 Capturar paneles actuales,📸 Capturar painéis atuais,📸 Przechwyć aktualne panele,📸 Зняти поточні панелі,📸 捕获当前面板,📸 現在のパネルをキャプチャ
+ui.ed_capture_btn,📸 Capture current panels,📸 Снять текущие панели,📸 Aktuelle Panels erfassen,📸 Capturer les panneaux actuels,📸 Capturar paneles actuales,📸 Capturar painéis atuais,📸 Przechwyć aktualне panele,📸 Зняти поточні панелі,📸 捕获当前面板,📸 現在のパネルをキャプチャ
 ui.ed_capture_none,Not captured (using default),Не снято (используется стандартный),Not captured (using default),Not captured (using default),Not captured (using default),Not captured (using default),Not captured (using default),Not captured (using default),Not captured (using default),Not captured (using default)
 ui.ed_capture_done,Captured: {0},Снято: {0},Erfasst: {0},Capturé : {0},Capturado: {0},Capturado: {0},Przechwycono: {0},Знято: {0},已捕获: {0},キャプチャ済み: {0}
 ui.restore_all_title,Restore All,Сбросить всё,Alles zurücksetzen,Tout restaurer,Restaurar todo,Restaurar tudo,Przywróć wszystko,Відновити все,全部恢复,すべて復元
-ui.restore_all_msg,This will restore all presets to system defaults and remove any custom presets. Continue?,Это восстановит все стили до системных значений и удалит пользовательские. Продолжить?,Hierdurch werden alle Presets auf die Standardwerte zurückgesetzt. Fortfahren?,Cela restaurera tous les préréglages par défaut et supprimera les personnalisations. Continuer ?,Esto restaurará todos los ajustes predeterminados y eliminará los personalizados. ¿Continuar?,Isso vai restaurar todos os predefinições para os padrões e remover personalizados. Continuar?,Spowoduje to przywrócenie domyślnych ustawień i usunięcie niestandardowych. Kontynuować?,Це відновить усі стилі до системних значень і видалить користувацькі. Продовжити?,这将把所有预设恢复为系统默认值并删除自定义预设。继续？,すべてのプリセットをシステムのデフォルトに戻し、カスタムプリセットを削除します。続行しますか？
-ui.err_empty_id,Preset ID cannot be empty.,ID стиля не может быть пустым.,Preset-ID darf nicht leer sein.,L'ID de préréglage ne peut pas être vide.,El ID de ajuste no puede estar vacío.,O ID do predefinição não pode estar vazio.,ID ustawień nie może być puste.,ID стилю не може бути порожнім.,预设 ID 不能为空。,プリセット ID を空にすることはできません。
+ui.restore_all_msg,This will restore all presets to system defaults and remove any custom presets. Continue?,Это восстановит все стили до системных значений и удалит пользовательские. Продолжить?,Hierdurch werden alle Presets auf die Standardwerte zurückgesetzt. Fortfahren?,Cela restaurera tous les préréglages par défaut et supprimera les personnalisations. Continuer ?,Esto restaurará todos os ajustes predeterminados y eliminará los personalizados. ¿Continuar?,Isso vai restaurar todos os predefinições para os padrões e remover personalizados. Continuar?,Spowoduje to приврocтить domyślnych ustawień i usunięcie niestanardowych. Kontynuować?,Це відновить усі стилі до системних значень і видалить користувацькі. Продолжити?,这将把所有预设恢复为系统默认值并删除自定义预设。继续？,すべてのプリセットをシステムのデフォルトに戻し、カスタムプリセットを削除します。続行しますか？
+ui.err_empty_id,Preset ID cannot be empty.,ID стиля не может быть пустым.,Preset-ID darf nicht leer sein.,L'ID de préréglage не peut pas être vide.,El ID de ajuste no puede estar vacío.,O ID do predefinição não pode estar vazio.,ID ustawień nie może być puste.,ID стилю не може бути порожнім.,预设 ID 不能为空。,プリセット ID を空にすることはできません。
 ui.err_duplicate_id,Preset ID '{0}' already exists.,Стиль с ID '{0}' уже существует.,Preset-ID '{0}' ist bereits vorhanden.,L'ID de préréglage '{0}' existe déjà.,El ID de ajuste '{0}' ya existe.,O ID '{0}' já existe.,ID '{0}' już istnieje.,ID '{0}' вже існує.,预设 ID '{0}' 已存在。,プリセット ID '{0}' はすでに存在します。
 ui.fullscreen_launcher,Fullscreen launcher,Полноэкранный лаунчер,Vollbild-Starter,Lanceur plein écran,Pantalla completa,Tela cheia,Pełny ekran,Повноекранний,全屏启动器,フルスクリーン
-
 preset.sunset,Floating + Kickoff left,Плавающая + Kickoff слева,Schwebend + Kickoff links,Flottant + Kickoff à gauche,Flotante + Kickoff a la izquierda,Flutuante + Kickoff à esquerda,Pływający + Kickoff po lewej,Плаваюча + Kickoff ліворуч,浮动 + 左侧 Kickoff,フローティング + 左側 Kickoff
 preset.twilight,Windows 10 classic,Win10 классика,Windows 10 klassisch,Windows 10 classique,Windows 10 clásico,Windows 10 clássico,Klasyczny Windows 10,Класика Windows 10,经典 Windows 10,Windows 10 クラシック
 preset.rainbow,Top bar only (GNOME-style),Только верх (GNOME),Nur obere Leiste (GNOME-Stil),Barre supérieure uniquement (style GNOME),Solo barra superior (estilo GNOME),Apenas barra superior (estilo GNOME),Tylko górny pasek (w stylu GNOME),Тільки верхня панель (у стилі GNOME),仅顶部栏 (GNOME 风格),トップバーのみ (GNOME スタイル)
-preset.rarity,Top bar + floating dock,Топ-бар + плав. Dock,Obere Leiste + schwebendes Dock,Barre supérieure + dock flottant,Barra superior + dock flotante,Barra superior + dock flutuante,Górny pasek + pływający dok,Верхня панель + плаваючий док,顶部栏 + 浮动 Dock,トップバー + フローティングドック
+preset.rarity,MacOS style,Стиль MacOS,MacOS-Stil,Style MacOS,Estilo MacOS,Estilo MacOS,Styl MacOS,Стиль MacOS,MacOS 风格,MacOS スタイル
 preset.applejack,Traditional (Cinnamon),Традиционная (Cinnamon),Traditionell (Cinnamon),Traditionnel (Cinnamon),Tradicional (Cinnamon),Tradicional (Cinnamon),Tradycyjny (Cinnamon),Традиційна (Cinnamon),传统 (Cinnamon),伝統的 (Cinnamon)
 preset.fluttershy,Minimal + auto-hide,Минимализм + автоскрытие,Minimal + automatisch ausblenden,Minimal + masquage automatique,Mínimo + ocultar automáticamente,Mínimo + ocultar automaticamente,Minimalny + auto-ukrywanie,Мінімалізм + автоприховання,极简 + 自动隐藏,ミニマル + 自動隠し
 preset.pinkie,Widgets (system monitor),Виджеты (ресурсы),Widgets (Systemmonitor),Widgets (moniteur système),Widgets (monitor del sistema),Widgets (monitor do sistema),Widżety (monitor systemu),Віджети (системний монітор),小部件 (系统监视器),ウィジェット (システムモニター)
-
-
 ui.pr_visibility,Visibility,Видимость,Sichtbarkeit,Visibilité,Visibilidad,Visibilidade,Widoczność,Видимість,可见性,可視性
 ui.vis_always,Always visible,Показывать всегда,Immer sichtbar,Toujours visible,Siempre visible,Sempre visível,Zawsze widoczne,Завжди показувати,始终可见,常に表示
 ui.vis_auto,Auto hide,Скрывать автоматически,Automatisch ausblenden,Masquer automatiquement,Ocultar automáticamente,Ocultar automaticamente,Autoukrywanie,Приховувати автоматично,自动隐藏,自動的に隠す
 ui.vis_dodge,Dodge windows,Скрывать под окнами,Fenster ausweichen,Éviter les fenêtres,Esquivar ventanas,Desviar janelas,Unikaj okien,Ухилятися від вікон,避开窗口,ウィンドウを避ける
-ui.vis_below,Windows go below,Перекрывать другие окна,Fenster verbergen darunter,Les fenêtres passent en dessous,Las ventanas van debajo,As janelas vão para baixo,Okna mogą przykrywać,Перекривати інші вікна,窗口在下方,ウィンドウの下に隠す
-
-
+ui.vis_below,Windows go below,Перекрывать другие окна,Fenster verbergen darunter,Les fenêtres passent en dessous,Las ventanas van debajo,As janelas vão para baixo,Okna mogą прикрывать,Перекривати інші вікна,窗口在下方,ウィンドウの下に隠す
 ui.btn_delete,Delete,Удалить,Löschen,Supprimer,Eliminar,Excluir,Usuń,Видалити,删除,削除
 ui.delete_confirm_title,Delete Preset,Удалить пресет,Preset löschen,Supprimer le préréglage,Eliminar preset,Excluir predefinição,Usuń preset,Видалити пресет,删除预设,プリセットを削除
 ui.delete_confirm_msg,Are you sure you want to delete this preset?,Вы уверены, что хотите удалить этот пресет?,Möchten Sie dieses Preset wirklich löschen?,Voulez-vous vraiment supprimer ce préréglage ?,¿Está seguro de que desea eliminar este preset?,Tem certeza de que deseja excluir esta predefinição?,Czy na pewno chcesz usunąć ten preset?,Ви впевнені, що хочете видалити цей пресет?,您确定要删除此预设吗？,このプリセットを削除してもよろしいですか？
+ui.pr_appmenu,Application Menu,Меню приложений,Anwendungsmenü,Menu des applications,Menú de aplicaciones,Menu de aplicações,Menu aplikacji,Меню програм,应用菜单,アプリケーションメニュー
