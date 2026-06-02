@@ -110,6 +110,9 @@ def generate_script_from_panels(panels_config):
             parts.append(f"k{i}.currentConfigGroup=['General'];")
             parts.append(f"k{i}.writeConfig('icon','{ICON}');")
 
+        if "appmenu" in ww:
+            parts.append(f"{v}.addWidget('org.kde.plasma.appmenu');")
+
         if has_launcher and (has_taskbar or has_right):
             parts.append(f"{v}.addWidget('org.kde.plasma.panelspacer');")
 

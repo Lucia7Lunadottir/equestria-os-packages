@@ -32,7 +32,6 @@ class Ui_MainWindow:
         self.main_layout.setContentsMargins(28, 28, 28, 20)
         self.main_layout.setSpacing(0)
 
-        # Title row
         title_row = QWidget()
         title_row_lo = QHBoxLayout(title_row)
         title_row_lo.setContentsMargins(0, 0, 0, 4)
@@ -51,12 +50,10 @@ class Ui_MainWindow:
 
         self.main_layout.addWidget(title_row)
 
-        # Subtitle
         self.lbl_subtitle = QLabel("Select a layout preset")
         self.lbl_subtitle.setProperty("cssClass", "subtitle")
         self.main_layout.addWidget(self.lbl_subtitle)
 
-        # Scroll area
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
 
@@ -69,7 +66,6 @@ class Ui_MainWindow:
         self.scroll_area.setWidget(self.grid_container)
         self.main_layout.addWidget(self.scroll_area, 1)
 
-        # Status bar
         self.status_bar = QWidget()
         self.status_bar.setProperty("cssClass", "status-bar")
         self.status_layout = QHBoxLayout(self.status_bar)
@@ -78,7 +74,6 @@ class Ui_MainWindow:
 
         self.lbl_status = QLabel("Active: —")
         self.lbl_status.setProperty("cssClass", "status-label")
-        self.lbl_status.setMaximumWidth(200)
         self.status_layout.addWidget(self.lbl_status)
         self.status_layout.addStretch()
 
@@ -126,7 +121,8 @@ class Ui_MainWindow:
             lo.setContentsMargins(0, 0, 0, 0)
             lbl = QLabel(label_text)
             lbl.setProperty("cssClass", "status-label")
-            lbl.setFixedWidth(150)
+            lbl.setMinimumWidth(150)
+            lbl.setWordWrap(True)
             lo.addWidget(lbl)
             lo.addWidget(widget)
             lo.addStretch()
@@ -214,7 +210,7 @@ class Ui_MainWindow:
         self.sld_ed_opacity.setFixedWidth(180)
         self.lbl_ed_opacity_val = QLabel("90%")
         self.lbl_ed_opacity_val.setProperty("cssClass", "status-label")
-        self.lbl_ed_opacity_val.setFixedWidth(40)
+        self.lbl_ed_opacity_val.setMinimumWidth(40)
         opacity_lo.addWidget(self.sld_ed_opacity)
         opacity_lo.addWidget(self.lbl_ed_opacity_val)
         _, self.lbl_ed_opacity_row = add_row("Opacity:", opacity_w)
@@ -249,6 +245,7 @@ class Ui_MainWindow:
         self.btn_ed_capture.setProperty("cssClass", "action-btn")
         self.lbl_ed_capture_status = QLabel("Not captured")
         self.lbl_ed_capture_status.setProperty("cssClass", "capture-status")
+        self.lbl_ed_capture_status.setWordWrap(True)
         layout_lo.addWidget(self.btn_ed_capture)
         layout_lo.addWidget(self.lbl_ed_capture_status)
         layout_lo.addStretch()
@@ -257,7 +254,6 @@ class Ui_MainWindow:
         ed_scroll.setWidget(ed_container)
         ed_layout.addWidget(ed_scroll, 1)
 
-        # Editor bottom bar
         ed_status = QWidget()
         ed_status.setProperty("cssClass", "status-bar")
         ed_status_lo = QHBoxLayout(ed_status)

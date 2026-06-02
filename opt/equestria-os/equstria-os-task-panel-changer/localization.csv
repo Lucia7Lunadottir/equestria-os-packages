@@ -30,6 +30,7 @@ ui.opacity,Opacity:,Прозрачность:,Deckkraft:,Opacité :,Opacidad:,Op
 ui.btn_edit,Edit,Изменить,Bearbeiten,Éditer,Editar,Editar,Edytuj,Змінити,编辑,編集
 ui.btn_new,New,Новый,Neu,Nouveau,Nuevo,Novo,Nowy,Новий,新建,新規
 ui.btn_restore_all,Restore All,Сбросить всё,Alles zurücksetzen,Tout restaurer,Restaurar todo,Restaurar tudo,Przywróć wszystko,Відновити все,全部恢复,すべて復元
+ui.ed_hide_icons_label,Desktop Icons:,Значки на рабочем столе:,Desktop-Symbole:,Icônes du bureau :,Iconos del escritorio:,Ícones do desktop:,Ikony pulpitu:,Значки робочого столу:,桌面图标:,デスクトップアイコン:
 ui.hide_icons,Hide icons,Скрыть значки,Symbole ausblenden,Masquer les icônes,Ocultar iconos,Ocultar ícones,Ukryj ikony,Сховати значки,隐藏图标,アイコンを隠す
 ui.btn_restore_default,Restore Default,По умолчанию,Standard,Par défaut,Por defecto,Padrão,Domyślny,За замовч.,恢复默认,デフォルト
 ui.dark_panel,🌙 Dark,🌙 Тёмная,🌙 Dunkel,🌙 Sombre,🌙 Oscuro,🌙 Escuro,🌙 Ciemna,🌙 Темна,🌙 深色,🌙 ダーク

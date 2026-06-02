@@ -1,8 +1,8 @@
 import os
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QSpinBox, QFrame, QComboBox, QListView)
-from PyQt6.QtGui import QPainter, QColor, QPixmap, QFont
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QPainter, QColor, QPixmap, QFont, QPainterPath
+from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, pyqtProperty, QRectF, QSize
 
 PANEL_LAYOUTS = {
     "sunset":    [{"pos": "bottom", "w": 0.62, "h": 0.28, "float": True}],
@@ -16,22 +16,120 @@ PANEL_LAYOUTS = {
     "pinkie":    [{"pos": "bottom", "w": 1.0,  "h": 0.24, "float": False}],
 }
 
-class SafeCheckBox(QPushButton):
-    """Кастомный чекбокс, который не ломается стилями QSS."""
+class SafeCheckBox(QWidget):
+    """Красивый анимированный Toggle-переключатель с текстом справа."""
+
+    toggled = pyqtSignal(bool)
+
+    _COLOR_ON  = QColor(120, 80, 200)
+    _COLOR_OFF = QColor(55, 48, 80)
+    _COLOR_KNOB = QColor(230, 220, 255)
+
+    _TRACK_W = 38
+    _TRACK_H = 20
+    _KNOB_D  = 14
+    _PADDING = 3
+    _LEFT_PAD = 6
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setCheckable(True)
-        self.setStyleSheet("text-align: left; background: transparent; border: none; color: rgb(200, 190, 230); font-family: sans-serif;")
-        self.toggled.connect(self._refresh)
-        self._lbl = ""
-        self._refresh()
+        self._checked = False
+        self._label = ""
+
+        self._knob_x = float(self._PADDING)
+        self._anim = QPropertyAnimation(self, b"knob_x", self)
+        self._anim.setDuration(160)
+        self._anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
+
+        self.setMinimumHeight(self._TRACK_H + 4)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+    def _get_knob_x(self):
+        return self._knob_x
+
+    def _set_knob_x(self, val):
+        self._knob_x = val
+        self.update()
+
+    knob_x = pyqtProperty(float, _get_knob_x, _set_knob_x)
+
+    def isChecked(self):
+        return self._checked
+
+    def setChecked(self, checked: bool):
+        if self._checked == checked:
+            return
+        self._checked = checked
+        self._animate_to(checked)
 
     def setText(self, text):
-        self._lbl = text
-        self._refresh()
+        self._label = text
+        self.update()
+        self.updateGeometry()
 
-    def _refresh(self):
-        super().setText(f"☑  {self._lbl}" if self.isChecked() else f"☐  {self._lbl}")
+    def text(self):
+        return self._label
+
+    def _animate_to(self, on: bool):
+        target = float(self._TRACK_W - self._PADDING - self._KNOB_D) if on else float(self._PADDING)
+        self._anim.stop()
+        self._anim.setStartValue(self._knob_x)
+        self._anim.setEndValue(target)
+        self._anim.start()
+
+    def _toggle(self):
+        self._checked = not self._checked
+        self._animate_to(self._checked)
+        self.toggled.emit(self._checked)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._toggle()
+
+    def sizeHint(self):
+        from PyQt6.QtGui import QFontMetrics
+        fm = QFontMetrics(self.font())
+        text_w = fm.horizontalAdvance(self._label) + 8 if self._label else 0
+        return QSize(self._LEFT_PAD + self._TRACK_W + 6 + text_w, max(self._TRACK_H + 4, fm.height() + 4))
+
+    def paintEvent(self, event):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        h = self.height()
+        track_y = (h - self._TRACK_H) / 2
+        lp = self._LEFT_PAD
+
+        t = (self._knob_x - self._PADDING) / max(
+            self._TRACK_W - 2 * self._PADDING - self._KNOB_D, 1
+        )
+        t = max(0.0, min(1.0, t))
+        r = int(self._COLOR_OFF.red()   + t * (self._COLOR_ON.red()   - self._COLOR_OFF.red()))
+        g = int(self._COLOR_OFF.green() + t * (self._COLOR_ON.green() - self._COLOR_OFF.green()))
+        b = int(self._COLOR_OFF.blue()  + t * (self._COLOR_ON.blue()  - self._COLOR_OFF.blue()))
+        track_color = QColor(r, g, b)
+
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(track_color)
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(lp, track_y, self._TRACK_W, self._TRACK_H),
+                            self._TRACK_H / 2, self._TRACK_H / 2)
+        p.drawPath(path)
+
+        knob_y = track_y + (self._TRACK_H - self._KNOB_D) / 2
+        p.setBrush(self._COLOR_KNOB)
+        p.drawEllipse(QRectF(lp + self._knob_x, knob_y, self._KNOB_D, self._KNOB_D))
+
+        if self._label:
+            p.setPen(QColor(200, 190, 230))
+            text_x = lp + self._TRACK_W + 6
+            p.drawText(
+                int(text_x), 0,
+                self.width() - int(text_x), h,
+                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+                self._label
+            )
+        p.end()
 
 class PanelPreviewWidget(QWidget):
     def __init__(self, preset_id, panel_color="#1e1e2e", panel_opacity=90, parent=None):
@@ -51,9 +149,13 @@ class PanelPreviewWidget(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         w, h = self.width(), self.height()
 
+        clip_path = QPainterPath()
+        clip_path.addRoundedRect(0, 0, w, h, 4, 4)
+        painter.setClipPath(clip_path)
+
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QColor(44, 42, 68))
-        painter.drawRoundedRect(0, 0, w, h, 4, 4)
+        painter.drawRect(0, 0, w, h)
 
         for cfg in self.layout_configs:
             pw = int(w * cfg["w"])
@@ -67,20 +169,21 @@ class PanelPreviewWidget(QWidget):
 
             radius = 5 if cfg.get("float") else 0
             painter.drawRoundedRect(x, y, pw, ph, radius, radius)
-
         painter.end()
 
 class PresetCard(QPushButton):
     def __init__(self, preset_id, char_name, desc_text, icon_path, parent=None):
         super().__init__(parent)
         self.preset_id = preset_id
-        self.setFixedSize(160, 158)
+        
+        # Задаем жесткий безопасный минимум, исключающий сдавливание разметки при многострочном тексте
+        self.setMinimumSize(170, 230)
         self.setProperty("cssClass", "preset-card")
         self.setProperty("active", "false")
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(6, 8, 6, 8)
-        layout.setSpacing(3)
+        layout.setContentsMargins(10, 10, 10, 12)
+        layout.setSpacing(6)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         icon_lbl = QLabel()
@@ -93,6 +196,7 @@ class PresetCard(QPushButton):
         name_lbl = QLabel(char_name)
         name_lbl.setProperty("cssClass", "char-name")
         name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        name_lbl.setWordWrap(True)
         name_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 
         desc_lbl = QLabel(desc_text)
@@ -110,6 +214,10 @@ class PresetCard(QPushButton):
         layout.addWidget(desc_lbl)
         layout.addWidget(self.preview_widget, 0, Qt.AlignmentFlag.AlignCenter)
 
+    def sizeHint(self):
+        # Возвращаем фиксированные безопасные пропорции для идеальной сетки карточек
+        return QSize(170, 230)
+
     def set_active_state(self, is_active: bool):
         self.setProperty("active", "true" if is_active else "false")
         self.style().unpolish(self)
@@ -119,7 +227,7 @@ class PresetCard(QPushButton):
         self.preview_widget.set_appearance(color, opacity)
 
 class PanelRowWidget(QFrame):
-    """Editor row for a single KDE panel — 3-line layout."""
+    """Редактор настроек панели KDE — 3-строчный адаптивный макет."""
     remove_requested    = pyqtSignal(object)
     move_up_requested   = pyqtSignal(object)
     move_down_requested = pyqtSignal(object)
@@ -127,6 +235,7 @@ class PanelRowWidget(QFrame):
     _POSITIONS  = ["bottom", "top", "left", "right"]
     _LAUNCHERS  = ["none", "kickoff", "kicker", "kickerdash"]
     _LENGTHS    = ["fill", "fit"]
+    _LIMITS     = ["left", "center", "right"]
     _ALIGNMENTS = ["left", "center", "right"]
     _VISIBILITY_MODES = ["none", "autohide", "dodgewindows", "windowsgobelow"]
 
@@ -135,41 +244,48 @@ class PanelRowWidget(QFrame):
         cfg = cfg or {}
         self.setObjectName("PanelRow")
         self.setFrameShape(QFrame.Shape.StyledPanel)
+        
         self.setStyleSheet('''
             QFrame#PanelRow { background-color: rgb(26, 22, 40); border: 1px solid rgb(70, 60, 100); border-radius: 8px; }
             QLabel { color: rgb(160, 150, 195); font-size: 12px; border: none; }
-            QComboBox { background-color: rgb(18, 14, 28); border: 1px solid rgb(58, 52, 88); border-radius: 5px; color: rgb(200, 190, 230); padding: 3px 6px; font-size: 12px; min-height: 22px; }
+            QComboBox { background-color: rgb(18, 14, 28); border: 1px solid rgb(58, 52, 88); border-radius: 5px; color: rgb(200, 190, 230); padding: 3px 28px 3px 8px; font-size: 12px; min-height: 22px; }
             QComboBox:hover { border: 1px solid rgb(110, 80, 160); }
             QComboBox::drop-down { background: rgb(40, 32, 65); border-left: 1px solid rgb(58, 52, 88); border-top-right-radius: 5px; border-bottom-right-radius: 5px; width: 18px; }
             QComboBox QAbstractItemView { background-color: rgb(25, 20, 40); color: rgb(200, 190, 230); border: 1px solid rgb(80, 65, 115); selection-background-color: rgb(100, 60, 160); selection-color: white; outline: none; }
-            QSpinBox { background-color: rgb(18, 14, 28); border: 2px solid rgb(100, 80, 140); border-radius: 5px; color: rgb(200, 190, 230); padding: 5px 8px; font-size: 14px; min-height: 32px; }
+            QSpinBox { background-color: rgb(18, 14, 28); border: 2px solid rgb(100, 80, 140); border-radius: 5px; color: rgb(200, 190, 230); padding: 5px 32px 5px 8px; font-size: 14px; min-height: 32px; }
             QSpinBox:hover { border-color: rgb(140, 100, 200); }
             QSpinBox::up-button, QSpinBox::down-button { background-color: rgb(42, 34, 68); border-left: 2px solid rgb(100, 80, 140); width: 22px; }
             QSpinBox::up-button:hover, QSpinBox::down-button:hover { background-color: rgb(100, 60, 160); }
         ''')
 
         outer = QVBoxLayout(self)
-        outer.setContentsMargins(12, 8, 12, 8)
-        outer.setSpacing(6)
+        outer.setContentsMargins(12, 12, 12, 12)
+        outer.setSpacing(8)
 
         def sl():
             l = QLabel()
             l.setProperty("cssClass", "status-label")
+            l.setWordWrap(True)
             return l
 
-        def spinbox(lo, hi, val, suffix=" px", w=72):
+        def spinbox(lo, hi, val, suffix=" px", w=98):
             s = QSpinBox()
             s.setRange(lo, hi)
             s.setSuffix(suffix)
             s.setValue(val)
-            s.setFixedWidth(w)
+            s.setMinimumWidth(w)
             return s
 
-        # Row 1: position / size / alignment / order
+        def make_safe_combo():
+            cb = QComboBox()
+            cb.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+            cb.setView(QListView())
+            return cb
+
         r1 = QHBoxLayout()
         r1.setSpacing(8)
 
-        self.cmb_pos = QComboBox()
+        self.cmb_pos = make_safe_combo()
         self.cmb_pos.addItems(["Bottom", "Top", "Left", "Right"])
         pos = cfg.get("position", "bottom")
         self.cmb_pos.setCurrentIndex(self._POSITIONS.index(pos) if pos in self._POSITIONS else 0)
@@ -193,7 +309,7 @@ class PanelRowWidget(QFrame):
         r1.addWidget(self._lbl_offset)
         r1.addWidget(self.spn_offset)
 
-        self.cmb_align = QComboBox()
+        self.cmb_align = make_safe_combo()
         self.cmb_align.addItems(["Left", "Center", "Right"])
         align = cfg.get("alignment", "center")
         self.cmb_align.setCurrentIndex(self._ALIGNMENTS.index(align) if align in self._ALIGNMENTS else 1)
@@ -224,7 +340,6 @@ class PanelRowWidget(QFrame):
         r1.addWidget(btn_rm)
         outer.addLayout(r1)
 
-        # Row 2: behaviour / launcher
         r2 = QHBoxLayout()
         r2.setSpacing(8)
 
@@ -232,21 +347,12 @@ class PanelRowWidget(QFrame):
         self.chk_float.setChecked(cfg.get("floating", False))
         r2.addWidget(self.chk_float)
 
-        self.cmb_vis = QComboBox()
-        self.cmb_vis.addItems(["Always visible", "Auto hide", "Dodge windows", "Windows go below"])
-
-        vis = cfg.get("visibilityMode", "none")
-        if vis == "windowsbelow": vis = "dodgewindows"
-        if vis == "windowscover": vis = "windowsgobelow"
-        if cfg.get("autohide", False) and vis == "none":
-            vis = "autohide"
-
-        self.cmb_vis.setCurrentIndex(self._VISIBILITY_MODES.index(vis) if vis in self._VISIBILITY_MODES else 0)
+        self.cmb_vis = make_safe_combo()
         self._lbl_vis = sl()
         r2.addWidget(self._lbl_vis)
         r2.addWidget(self.cmb_vis)
 
-        self.cmb_len = QComboBox()
+        self.cmb_len = make_safe_combo()
         self.cmb_len.addItems(["Fill width", "Fit content"])
         lm = cfg.get("lengthMode", "fill")
         self.cmb_len.setCurrentIndex(self._LENGTHS.index(lm) if lm in self._LENGTHS else 0)
@@ -254,7 +360,7 @@ class PanelRowWidget(QFrame):
         r2.addWidget(self._lbl_len)
         r2.addWidget(self.cmb_len)
 
-        self.cmb_launcher = QComboBox()
+        self.cmb_launcher = make_safe_combo()
         self.cmb_launcher.addItems(["None", "Kickoff", "Kicker (classic)", "KickerDash (fullscreen)"])
         launcher = cfg.get("launcher", "none")
         self.cmb_launcher.setCurrentIndex(self._LAUNCHERS.index(launcher) if launcher in self._LAUNCHERS else 0)
@@ -265,7 +371,6 @@ class PanelRowWidget(QFrame):
         r2.addStretch()
         outer.addLayout(r2)
 
-        # Row 3: widgets
         r3 = QHBoxLayout()
         r3.setSpacing(10)
         self._lbl_widgets = sl()
@@ -290,11 +395,12 @@ class PanelRowWidget(QFrame):
         r3.addStretch()
         outer.addLayout(r3)
 
-        self.cmb_pos.setView(QListView())
-        self.cmb_align.setView(QListView())
-        self.cmb_len.setView(QListView())
-        self.cmb_launcher.setView(QListView())
-        self.cmb_vis.setView(QListView())
+        vis = cfg.get("visibilityMode", "none")
+        if vis == "windowsbelow": vis = "dodgewindows"
+        if vis == "windowscover": vis = "windowsgobelow"
+        if cfg.get("autohide", False) and vis == "none":
+            vis = "autohide"
+        self._initial_vis_idx = self._VISIBILITY_MODES.index(vis) if vis in self._VISIBILITY_MODES else 0
 
         self.retranslate(lambda k: k)
 
@@ -316,7 +422,8 @@ class PanelRowWidget(QFrame):
         self.chk_appmenu.setText(t("ui.pr_appmenu"))
 
         self._lbl_vis.setText(t("ui.pr_visibility"))
-        current_vis_idx = self.cmb_vis.currentIndex()
+        
+        current_vis_idx = self.cmb_vis.currentIndex() if self.cmb_vis.count() > 0 else self._initial_vis_idx
         self.cmb_vis.blockSignals(True)
         self.cmb_vis.clear()
         self.cmb_vis.addItems([

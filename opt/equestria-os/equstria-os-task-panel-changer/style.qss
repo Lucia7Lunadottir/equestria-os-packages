@@ -24,7 +24,6 @@ QLabel[cssClass="subtitle"] {
 
 /* Character Buttons & Text */
 QLabel[cssClass="char-name"] {
-    font-family: "Equestria_Cyrillic", "Noto Sans", sans-serif;
     font-size: 12px;
     font-weight: bold;
     color: rgb(230, 220, 255);
@@ -37,14 +36,12 @@ QWidget[cssClass="status-bar"] {
 }
 
 QLabel[cssClass="status-label"] {
-    font-family: "Equestria_Cyrillic", "Noto Sans", sans-serif;
     font-size: 13px;
     color: rgb(180, 170, 210);
 }
 
 /* Action Buttons */
 QPushButton[cssClass="action-btn"] {
-    font-family: "Equestria_Cyrillic", "Noto Sans", sans-serif;
     background-color: rgb(100, 60, 160);
     border: 1px solid rgb(140, 90, 200);
     border-radius: 8px;
@@ -59,7 +56,6 @@ QPushButton[cssClass="action-btn"]:hover {
 
 /* Panel Theme Buttons */
 QPushButton[cssClass="theme-btn"] {
-    font-family: "Equestria_Cyrillic", "Noto Sans", sans-serif;
     background-color: transparent;
     color: rgb(180, 170, 210);
     border: 1px solid rgb(69, 71, 90);
@@ -82,7 +78,6 @@ QPushButton[cssClass="theme-btn"][active="true"] {
 
 /* Language Buttons */
 QPushButton[cssClass="lang-button"] {
-    font-family: "Equestria_Cyrillic", "Noto Sans", sans-serif;
     background-color: transparent;
     color: rgb(180, 170, 210);
     border: 1px solid rgb(69, 71, 90);
@@ -432,7 +427,6 @@ QPushButton#PanelRemoveBtn:hover {
 QPushButton#PanelMoveBtn,
 QPushButton#PanelRemoveBtn,
 QPushButton#BrowseBtn {
-    font-family: "Noto Sans", sans-serif;
 }
 
 /* ─── QComboBox dropdown (global — prevents transparent popups) ─── */

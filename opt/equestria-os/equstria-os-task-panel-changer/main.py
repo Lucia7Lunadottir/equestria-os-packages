@@ -325,7 +325,7 @@ class TaskPanelApp(QMainWindow):
         self.ui.lbl_ed_theme_row.setText(self._t("ui.ed_theme_label"))
         self.ui.lbl_ed_layout_row.setText(self._t("ui.ed_layout_label"))
 
-        self.ui.lbl_ed_hide_icons_row.setText("Desktop Icons:")
+        self.ui.lbl_ed_hide_icons_row.setText(self._t("ui.ed_hide_icons_label"))
         self.ui.chk_ed_hide_icons.setText(self._t("ui.hide_icons"))
 
         self.ui.btn_ed_capture.setText(self._t("ui.ed_capture_btn"))
@@ -1094,12 +1094,15 @@ if __name__ == "__main__":
     icon_path = "/usr/share/pixmaps/equestria-os-logo.png"
     app.setWindowIcon(QIcon(icon_path) if os.path.exists(icon_path) else QIcon.fromTheme("preferences-desktop-theme"))
 
+    # Регистрируем декоративный шрифт — он нужен только для title/subtitle в QSS
     font_path = os.path.join(SYSTEM_PATH, "equestria_cyrillic.ttf")
     if os.path.exists(font_path):
-        if (font_id := QFontDatabase.addApplicationFont(font_path)) != -1:
-            if families := QFontDatabase.applicationFontFamilies(font_id):
-                app.setFont(QFont(families[0], 12))
+        QFontDatabase.addApplicationFont(font_path)
 
+    # Базовый шрифт приложения — системный, не декоративный
+    app.setFont(QFont("sans-serif", 11))
+
+    # Загружаем style.qss — font-family там только у title и subtitle
     qss_path = os.path.join(SYSTEM_PATH, "style.qss")
     if os.path.exists(qss_path):
         with open(qss_path, "r", encoding="utf-8") as f:
