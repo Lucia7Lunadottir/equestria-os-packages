@@ -1,7 +1,6 @@
 import os
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                             QPushButton, QSpinBox, QFrame, QComboBox, QListView)
-from PyQt6.QtGui import QPainter, QColor, QPixmap, QFont, QPainterPath
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
+from PyQt6.QtGui import QPainter, QColor, QPixmap, QPainterPath
 from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, pyqtProperty, QRectF, QSize
 
 PANEL_LAYOUTS = {
@@ -18,7 +17,6 @@ PANEL_LAYOUTS = {
 
 class SafeCheckBox(QWidget):
     """Красивый анимированный Toggle-переключатель с текстом справа."""
-
     toggled = pyqtSignal(bool)
 
     _COLOR_ON  = QColor(120, 80, 200)
@@ -44,21 +42,16 @@ class SafeCheckBox(QWidget):
         self.setMinimumHeight(self._TRACK_H + 4)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
-    def _get_knob_x(self):
-        return self._knob_x
-
+    def _get_knob_x(self): return self._knob_x
     def _set_knob_x(self, val):
         self._knob_x = val
         self.update()
 
     knob_x = pyqtProperty(float, _get_knob_x, _set_knob_x)
 
-    def isChecked(self):
-        return self._checked
-
+    def isChecked(self): return self._checked
     def setChecked(self, checked: bool):
-        if self._checked == checked:
-            return
+        if self._checked == checked: return
         self._checked = checked
         self._animate_to(checked)
 
@@ -67,8 +60,7 @@ class SafeCheckBox(QWidget):
         self.update()
         self.updateGeometry()
 
-    def text(self):
-        return self._label
+    def text(self): return self._label
 
     def _animate_to(self, on: bool):
         target = float(self._TRACK_W - self._PADDING - self._KNOB_D) if on else float(self._PADDING)
@@ -83,8 +75,7 @@ class SafeCheckBox(QWidget):
         self.toggled.emit(self._checked)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self._toggle()
+        if event.button() == Qt.MouseButton.LeftButton: self._toggle()
 
     def sizeHint(self):
         from PyQt6.QtGui import QFontMetrics
@@ -95,40 +86,29 @@ class SafeCheckBox(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-
         h = self.height()
         track_y = (h - self._TRACK_H) / 2
         lp = self._LEFT_PAD
 
-        t = (self._knob_x - self._PADDING) / max(
-            self._TRACK_W - 2 * self._PADDING - self._KNOB_D, 1
-        )
+        t = (self._knob_x - self._PADDING) / max(self._TRACK_W - 2 * self._PADDING - self._KNOB_D, 1)
         t = max(0.0, min(1.0, t))
         r = int(self._COLOR_OFF.red()   + t * (self._COLOR_ON.red()   - self._COLOR_OFF.red()))
         g = int(self._COLOR_OFF.green() + t * (self._COLOR_ON.green() - self._COLOR_OFF.green()))
         b = int(self._COLOR_OFF.blue()  + t * (self._COLOR_ON.blue()  - self._COLOR_OFF.blue()))
-        track_color = QColor(r, g, b)
-
         p.setPen(Qt.PenStyle.NoPen)
-        p.setBrush(track_color)
+        p.setBrush(QColor(r, g, b))
+        
         path = QPainterPath()
-        path.addRoundedRect(QRectF(lp, track_y, self._TRACK_W, self._TRACK_H),
-                            self._TRACK_H / 2, self._TRACK_H / 2)
+        path.addRoundedRect(QRectF(lp, track_y, self._TRACK_W, self._TRACK_H), self._TRACK_H / 2, self._TRACK_H / 2)
         p.drawPath(path)
 
-        knob_y = track_y + (self._TRACK_H - self._KNOB_D) / 2
         p.setBrush(self._COLOR_KNOB)
-        p.drawEllipse(QRectF(lp + self._knob_x, knob_y, self._KNOB_D, self._KNOB_D))
+        p.drawEllipse(QRectF(lp + self._knob_x, track_y + (self._TRACK_H - self._KNOB_D) / 2, self._KNOB_D, self._KNOB_D))
 
         if self._label:
             p.setPen(QColor(200, 190, 230))
-            text_x = lp + self._TRACK_W + 6
-            p.drawText(
-                int(text_x), 0,
-                self.width() - int(text_x), h,
-                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
-                self._label
-            )
+            p.drawText(int(lp + self._TRACK_W + 6), 0, self.width() - int(lp + self._TRACK_W + 6), h,
+                       Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, self._label)
         p.end()
 
 class PanelPreviewWidget(QWidget):
@@ -158,15 +138,12 @@ class PanelPreviewWidget(QWidget):
         painter.drawRect(0, 0, w, h)
 
         for cfg in self.layout_configs:
-            pw = int(w * cfg["w"])
-            ph = int(h * cfg["h"])
+            pw, ph = int(w * cfg["w"]), int(h * cfg["h"])
             x = (w - pw) // 2
             y = h - ph if cfg["pos"] == "bottom" else 0
-
             color = QColor(self.panel_color)
             color.setAlphaF(max(self.panel_opacity / 100.0, 0.70))
             painter.setBrush(color)
-
             radius = 5 if cfg.get("float") else 0
             painter.drawRoundedRect(x, y, pw, ph, radius, radius)
         painter.end()
@@ -175,8 +152,6 @@ class PresetCard(QPushButton):
     def __init__(self, preset_id, char_name, desc_text, icon_path, parent=None):
         super().__init__(parent)
         self.preset_id = preset_id
-        
-        # Задаем жесткий безопасный минимум, исключающий сдавливание разметки при многострочном тексте
         self.setMinimumSize(170, 230)
         self.setProperty("cssClass", "preset-card")
         self.setProperty("active", "false")
@@ -214,10 +189,7 @@ class PresetCard(QPushButton):
         layout.addWidget(desc_lbl)
         layout.addWidget(self.preview_widget, 0, Qt.AlignmentFlag.AlignCenter)
 
-    def sizeHint(self):
-        # Возвращаем фиксированные безопасные пропорции для идеальной сетки карточек
-        return QSize(170, 230)
-
+    def sizeHint(self): return QSize(170, 230)
     def set_active_state(self, is_active: bool):
         self.setProperty("active", "true" if is_active else "false")
         self.style().unpolish(self)
@@ -225,233 +197,3 @@ class PresetCard(QPushButton):
 
     def update_appearance(self, color, opacity):
         self.preview_widget.set_appearance(color, opacity)
-
-class PanelRowWidget(QFrame):
-    """Редактор настроек панели KDE — 3-строчный адаптивный макет."""
-    remove_requested    = pyqtSignal(object)
-    move_up_requested   = pyqtSignal(object)
-    move_down_requested = pyqtSignal(object)
-
-    _POSITIONS  = ["bottom", "top", "left", "right"]
-    _LAUNCHERS  = ["none", "kickoff", "kicker", "kickerdash"]
-    _LENGTHS    = ["fill", "fit"]
-    _LIMITS     = ["left", "center", "right"]
-    _ALIGNMENTS = ["left", "center", "right"]
-    _VISIBILITY_MODES = ["none", "autohide", "dodgewindows", "windowsgobelow"]
-
-    def __init__(self, cfg=None, parent=None):
-        super().__init__(parent)
-        cfg = cfg or {}
-        self.setObjectName("PanelRow")
-        self.setFrameShape(QFrame.Shape.StyledPanel)
-        
-        self.setStyleSheet('''
-            QFrame#PanelRow { background-color: rgb(26, 22, 40); border: 1px solid rgb(70, 60, 100); border-radius: 8px; }
-            QLabel { color: rgb(160, 150, 195); font-size: 12px; border: none; }
-            QComboBox { background-color: rgb(18, 14, 28); border: 1px solid rgb(58, 52, 88); border-radius: 5px; color: rgb(200, 190, 230); padding: 3px 28px 3px 8px; font-size: 12px; min-height: 22px; }
-            QComboBox:hover { border: 1px solid rgb(110, 80, 160); }
-            QComboBox::drop-down { background: rgb(40, 32, 65); border-left: 1px solid rgb(58, 52, 88); border-top-right-radius: 5px; border-bottom-right-radius: 5px; width: 18px; }
-            QComboBox QAbstractItemView { background-color: rgb(25, 20, 40); color: rgb(200, 190, 230); border: 1px solid rgb(80, 65, 115); selection-background-color: rgb(100, 60, 160); selection-color: white; outline: none; }
-            QSpinBox { background-color: rgb(18, 14, 28); border: 2px solid rgb(100, 80, 140); border-radius: 5px; color: rgb(200, 190, 230); padding: 5px 32px 5px 8px; font-size: 14px; min-height: 32px; }
-            QSpinBox:hover { border-color: rgb(140, 100, 200); }
-            QSpinBox::up-button, QSpinBox::down-button { background-color: rgb(42, 34, 68); border-left: 2px solid rgb(100, 80, 140); width: 22px; }
-            QSpinBox::up-button:hover, QSpinBox::down-button:hover { background-color: rgb(100, 60, 160); }
-        ''')
-
-        outer = QVBoxLayout(self)
-        outer.setContentsMargins(12, 12, 12, 12)
-        outer.setSpacing(8)
-
-        def sl():
-            l = QLabel()
-            l.setProperty("cssClass", "status-label")
-            l.setWordWrap(True)
-            return l
-
-        def spinbox(lo, hi, val, suffix=" px", w=98):
-            s = QSpinBox()
-            s.setRange(lo, hi)
-            s.setSuffix(suffix)
-            s.setValue(val)
-            s.setMinimumWidth(w)
-            return s
-
-        def make_safe_combo():
-            cb = QComboBox()
-            cb.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
-            cb.setView(QListView())
-            return cb
-
-        r1 = QHBoxLayout()
-        r1.setSpacing(8)
-
-        self.cmb_pos = make_safe_combo()
-        self.cmb_pos.addItems(["Bottom", "Top", "Left", "Right"])
-        pos = cfg.get("position", "bottom")
-        self.cmb_pos.setCurrentIndex(self._POSITIONS.index(pos) if pos in self._POSITIONS else 0)
-        self._lbl_pos = sl()
-        r1.addWidget(self._lbl_pos)
-        r1.addWidget(self.cmb_pos)
-
-        self.spn_h = spinbox(20, 200, cfg.get("height", 48))
-        self._lbl_h = sl()
-        r1.addWidget(self._lbl_h)
-        r1.addWidget(self.spn_h)
-
-        self.spn_w = spinbox(0, 9999, cfg.get("width", 0))
-        self.spn_w.setSpecialValueText("Auto")
-        self._lbl_w = sl()
-        r1.addWidget(self._lbl_w)
-        r1.addWidget(self.spn_w)
-
-        self.spn_offset = spinbox(-9999, 9999, cfg.get("offset", 0))
-        self._lbl_offset = sl()
-        r1.addWidget(self._lbl_offset)
-        r1.addWidget(self.spn_offset)
-
-        self.cmb_align = make_safe_combo()
-        self.cmb_align.addItems(["Left", "Center", "Right"])
-        align = cfg.get("alignment", "center")
-        self.cmb_align.setCurrentIndex(self._ALIGNMENTS.index(align) if align in self._ALIGNMENTS else 1)
-        self._lbl_align = sl()
-        r1.addWidget(self._lbl_align)
-        r1.addWidget(self.cmb_align)
-
-        r1.addStretch()
-        icon_font = QFont("sans-serif", 16)
-        icon_font.setBold(True)
-        btn_up = QPushButton("↑")
-        btn_up.setFont(icon_font)
-        btn_up.setObjectName("PanelMoveBtn")
-        btn_up.setFixedSize(22, 22)
-        btn_up.clicked.connect(lambda: self.move_up_requested.emit(self))
-        btn_dn = QPushButton("↓")
-        btn_dn.setFont(icon_font)
-        btn_dn.setObjectName("PanelMoveBtn")
-        btn_dn.setFixedSize(22, 22)
-        btn_dn.clicked.connect(lambda: self.move_down_requested.emit(self))
-        btn_rm = QPushButton("✕")
-        btn_rm.setFont(icon_font)
-        btn_rm.setObjectName("PanelRemoveBtn")
-        btn_rm.setFixedSize(22, 22)
-        btn_rm.clicked.connect(lambda: self.remove_requested.emit(self))
-        r1.addWidget(btn_up)
-        r1.addWidget(btn_dn)
-        r1.addWidget(btn_rm)
-        outer.addLayout(r1)
-
-        r2 = QHBoxLayout()
-        r2.setSpacing(8)
-
-        self.chk_float = SafeCheckBox()
-        self.chk_float.setChecked(cfg.get("floating", False))
-        r2.addWidget(self.chk_float)
-
-        self.cmb_vis = make_safe_combo()
-        self._lbl_vis = sl()
-        r2.addWidget(self._lbl_vis)
-        r2.addWidget(self.cmb_vis)
-
-        self.cmb_len = make_safe_combo()
-        self.cmb_len.addItems(["Fill width", "Fit content"])
-        lm = cfg.get("lengthMode", "fill")
-        self.cmb_len.setCurrentIndex(self._LENGTHS.index(lm) if lm in self._LENGTHS else 0)
-        self._lbl_len = sl()
-        r2.addWidget(self._lbl_len)
-        r2.addWidget(self.cmb_len)
-
-        self.cmb_launcher = make_safe_combo()
-        self.cmb_launcher.addItems(["None", "Kickoff", "Kicker (classic)", "KickerDash (fullscreen)"])
-        launcher = cfg.get("launcher", "none")
-        self.cmb_launcher.setCurrentIndex(self._LAUNCHERS.index(launcher) if launcher in self._LAUNCHERS else 0)
-        self._lbl_launcher = sl()
-        r2.addWidget(self._lbl_launcher)
-        r2.addWidget(self.cmb_launcher)
-
-        r2.addStretch()
-        outer.addLayout(r2)
-
-        r3 = QHBoxLayout()
-        r3.setSpacing(10)
-        self._lbl_widgets = sl()
-        r3.addWidget(self._lbl_widgets)
-        ww = cfg.get("widgets", [])
-        self.chk_taskbar = SafeCheckBox()
-        self.chk_taskbar.setChecked("taskbar" in ww)
-        self.chk_systray = SafeCheckBox()
-        self.chk_systray.setChecked("systray" in ww)
-        self.chk_clock   = SafeCheckBox()
-        self.chk_clock.setChecked("clock" in ww)
-        self.chk_pager   = SafeCheckBox()
-        self.chk_pager.setChecked("pager" in ww)
-        self.chk_monitor = SafeCheckBox()
-        self.chk_monitor.setChecked("monitor" in ww)
-        self.chk_appmenu = SafeCheckBox()
-        self.chk_appmenu.setChecked("appmenu" in ww)
-        
-        for c in (self.chk_taskbar, self.chk_systray, self.chk_clock,
-                  self.chk_pager, self.chk_monitor, self.chk_appmenu):
-            r3.addWidget(c)
-        r3.addStretch()
-        outer.addLayout(r3)
-
-        vis = cfg.get("visibilityMode", "none")
-        if vis == "windowsbelow": vis = "dodgewindows"
-        if vis == "windowscover": vis = "windowsgobelow"
-        if cfg.get("autohide", False) and vis == "none":
-            vis = "autohide"
-        self._initial_vis_idx = self._VISIBILITY_MODES.index(vis) if vis in self._VISIBILITY_MODES else 0
-
-        self.retranslate(lambda k: k)
-
-    def retranslate(self, t):
-        self._lbl_pos.setText(t("ui.pr_position"))
-        self._lbl_h.setText(t("ui.pr_height"))
-        self._lbl_w.setText(t("ui.pr_width"))
-        self._lbl_offset.setText(t("ui.pr_offset"))
-        self._lbl_align.setText(t("ui.pr_align"))
-        self._lbl_len.setText(t("ui.pr_length"))
-        self._lbl_launcher.setText(t("ui.pr_launcher"))
-        self._lbl_widgets.setText(t("ui.pr_widgets"))
-        self.chk_float.setText(t("ui.pr_floating"))
-        self.chk_taskbar.setText(t("ui.pr_taskbar"))
-        self.chk_systray.setText(t("ui.pr_systray"))
-        self.chk_clock.setText(t("ui.pr_clock"))
-        self.chk_pager.setText(t("ui.pr_pager"))
-        self.chk_monitor.setText(t("ui.pr_monitor"))
-        self.chk_appmenu.setText(t("ui.pr_appmenu"))
-
-        self._lbl_vis.setText(t("ui.pr_visibility"))
-        
-        current_vis_idx = self.cmb_vis.currentIndex() if self.cmb_vis.count() > 0 else self._initial_vis_idx
-        self.cmb_vis.blockSignals(True)
-        self.cmb_vis.clear()
-        self.cmb_vis.addItems([
-            t("ui.vis_always"),
-            t("ui.vis_auto"),
-            t("ui.vis_dodge"),
-            t("ui.vis_below")
-        ])
-        self.cmb_vis.setCurrentIndex(current_vis_idx)
-        self.cmb_vis.blockSignals(False)
-
-    def get_config(self):
-        widgets = []
-        if self.chk_taskbar.isChecked(): widgets.append("taskbar")
-        if self.chk_systray.isChecked(): widgets.append("systray")
-        if self.chk_clock.isChecked():   widgets.append("clock")
-        if self.chk_pager.isChecked():   widgets.append("pager")
-        if self.chk_monitor.isChecked(): widgets.append("monitor")
-        if self.chk_appmenu.isChecked(): widgets.append("appmenu")
-        return {
-            "position":   self._POSITIONS[self.cmb_pos.currentIndex()],
-            "height":     self.spn_h.value(),
-            "width":      self.spn_w.value(),
-            "offset":     self.spn_offset.value(),
-            "alignment":  self._ALIGNMENTS[self.cmb_align.currentIndex()],
-            "floating":   self.chk_float.isChecked(),
-            "visibilityMode": self._VISIBILITY_MODES[self.cmb_vis.currentIndex()],
-            "lengthMode": self._LENGTHS[self.cmb_len.currentIndex()],
-            "launcher":   self._LAUNCHERS[self.cmb_launcher.currentIndex()],
-            "widgets":    widgets,
-        }

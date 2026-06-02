@@ -12,7 +12,7 @@ from PyQt6.QtGui import QIcon, QColor, QFontDatabase, QFont
 from PyQt6.QtCore import Qt, QTimer, QProcess
 
 from ui import Ui_MainWindow
-from widgets import PresetCard, PanelRowWidget
+from widgets import PresetCard
 import plasma_utils
 
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +38,6 @@ class TaskPanelApp(QMainWindow):
         self._ed_color_light = "#dacac1"
         self._ed_opacity = 90
         self._ed_is_dark = True
-        self._panel_rows = []
         self._ed_layout_captured = None
 
         self.char_by_id = {}
@@ -65,6 +64,20 @@ class TaskPanelApp(QMainWindow):
         self._update_ui_state()
         self._apply_panel_appearance()
 
+    def _detect_plasma_theme_dark(self) -> bool:
+        """Интеллектуально определяет глобальный режим оформления KDE (Темный/Светлый)."""
+        try:
+            kdeglobals_path = os.path.expanduser("~/.config/kdeglobals")
+            if os.path.exists(kdeglobals_path):
+                config = configparser.ConfigParser()
+                config.read(kdeglobals_path)
+                scheme = config.get("KDE", "ColorScheme", fallback="").lower()
+                if "light" in scheme or "breezelight" in scheme:
+                    return False
+        except Exception:
+            pass
+        return True
+
     @property
     def _active_panel_color(self):
         return self.panel_color_dark if self.panel_is_dark else self.panel_color_light
@@ -81,6 +94,8 @@ class TaskPanelApp(QMainWindow):
         self._load_localization()
         self._detect_system_language()
         self._load_characters()
+
+        self.panel_is_dark = self._detect_plasma_theme_dark()
 
     def _load_appearance(self):
         path = os.path.join(USER_PATH, "appearance.json")
@@ -124,27 +139,6 @@ class TaskPanelApp(QMainWindow):
                 self.presets = []
         else:
             self.presets = []
-        self._migrate_presets()
-
-    def _migrate_presets(self):
-        sys_path = os.path.join(SYSTEM_PATH, "presets.json")
-        if not os.path.exists(sys_path):
-            return
-        try:
-            with open(sys_path, "r", encoding="utf-8") as f:
-                sys_map = {p["id"]: p for p in json.load(f).get("presets", [])}
-        except (json.JSONDecodeError, OSError):
-            return
-        changed = False
-        for preset in self.presets:
-            sys_p = sys_map.get(preset["id"])
-            if sys_p:
-                for field in ("name", "icon", "height"):
-                    if field not in preset and field in sys_p:
-                        preset[field] = sys_p[field]
-                        changed = True
-        if changed:
-            self._save_presets()
 
     def _save_presets(self):
         try:
@@ -200,15 +194,13 @@ class TaskPanelApp(QMainWindow):
         return langs.get(self.current_lang, langs.get("en", key))
 
     def _preset_display_name(self, preset):
-        if preset.get("name"):
-            return preset["name"]
+        if preset.get("name"): return preset["name"]
         char = self.char_by_id.get(preset.get("char_id", ""), {})
         return char.get("DisplayName") or preset["id"]
 
     def _preset_icon_path(self, preset):
         icon_rel = preset.get("icon") or self.char_by_id.get(preset.get("char_id", ""), {}).get("IconPath", "")
-        if not icon_rel:
-            return ""
+        if not icon_rel: return ""
         return icon_rel if os.path.isabs(icon_rel) else os.path.join(SYSTEM_PATH, icon_rel)
 
     # ─────────────────────── UI Building ───────────────────────
@@ -220,8 +212,7 @@ class TaskPanelApp(QMainWindow):
     def _build_language_selector(self):
         while self.ui.lang_layout.count():
             item = self.ui.lang_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+            if item.widget(): item.widget().deleteLater()
         for code in self.available_langs:
             btn = QPushButton(code.upper())
             btn.setProperty("cssClass", "lang-button")
@@ -232,14 +223,12 @@ class TaskPanelApp(QMainWindow):
     def _build_preset_cards(self):
         while self.ui.grid_layout.count():
             item = self.ui.grid_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+            if item.widget(): item.widget().deleteLater()
         self.cards.clear()
         all_cards = []
 
         for preset in self.presets:
             pid = preset["id"]
-            
             desc_key = preset.get("desc_key")
             final_desc = self._t(desc_key) if desc_key in self.localized_strings else (preset.get("desc") or pid)
             
@@ -262,8 +251,7 @@ class TaskPanelApp(QMainWindow):
             row_lo.setContentsMargins(0, 0, 0, 0)
             row_lo.setSpacing(14)
             row_lo.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-            for card in all_cards[row_start:row_start + MAX_COLS]:
-                row_lo.addWidget(card)
+            for card in all_cards[row_start:row_start + MAX_COLS]: row_lo.addWidget(card)
             self.ui.grid_layout.addWidget(row_w)
 
     # ─────────────────────── Events & State ───────────────────────
@@ -277,9 +265,9 @@ class TaskPanelApp(QMainWindow):
         self.ui.btn_ed_color_light.clicked.connect(lambda: self.on_ed_color_click("light"))
         self.ui.sld_ed_opacity.valueChanged.connect(self.on_ed_opacity_changed)
         self.ui.btn_ed_icon.clicked.connect(self.open_icon_picker)
-        self.ui.btn_ed_add_panel.clicked.connect(lambda: self._add_panel_row())
         self.ui.btn_ed_theme_dark.clicked.connect(lambda: self._set_editor_theme(True))
         self.ui.btn_ed_theme_light.clicked.connect(lambda: self._set_editor_theme(False))
+        self.ui.btn_ed_open_kde.clicked.connect(self.enter_plasma_edit_mode)
         self.ui.btn_ed_capture.clicked.connect(self.capture_panels)
         self.ui.btn_ed_restore.clicked.connect(self.restore_single_default)
         self.ui.btn_ed_delete.clicked.connect(self.delete_preset)
@@ -319,26 +307,32 @@ class TaskPanelApp(QMainWindow):
         self.ui.lbl_ed_desc_row.setText(self._t("ui.ed_desc_label"))
         self.ui.lbl_ed_icon_row.setText(self._t("ui.ed_icon_label"))
         self.ui.lbl_ed_color_row.setText(self._t("ui.ed_color_label"))
-        self.ui.lbl_ed_panels.setText(self._t("ui.ed_panels_label"))
-        self.ui.btn_ed_add_panel.setText(self._t("ui.ed_add_panel_btn"))
         self.ui.lbl_ed_opacity_row.setText(self._t("ui.ed_opacity_label"))
-        self.ui.lbl_ed_theme_row.setText(self._t("ui.ed_theme_label"))
         self.ui.lbl_ed_layout_row.setText(self._t("ui.ed_layout_label"))
-
         self.ui.lbl_ed_hide_icons_row.setText(self._t("ui.ed_hide_icons_label"))
         self.ui.chk_ed_hide_icons.setText(self._t("ui.hide_icons"))
+
+        self.ui.lbl_ed_theme_row.setText(self._t("ui.ed_theme_label"))
+        self.ui.btn_ed_theme_dark.setText(self._t("ui.dark_panel"))
+        self.ui.btn_ed_theme_light.setText(self._t("ui.light_panel"))
+
+        kde_label = self._t("ui.ed_kde_label")
+        if kde_label == "ui.ed_kde_label":
+            kde_label = "KDE Plasma Editor:" if self.current_lang == "en" else "Настройка KDE:"
+        self.ui.lbl_ed_kde_row.setText(kde_label)
+
+        kde_btn = self._t("ui.ed_open_kde_btn")
+        if kde_btn == "ui.ed_open_kde_btn":
+            kde_btn = "🛠 Enter KDE Panel Edit Mode" if self.current_lang == "en" else "🛠 Войти в режим настройки панелей KDE"
+        self.ui.btn_ed_open_kde.setText(kde_btn)
 
         self.ui.btn_ed_capture.setText(self._t("ui.ed_capture_btn"))
         self.ui.btn_ed_restore.setText(self._t("ui.btn_restore_default"))
         self.ui.btn_ed_delete.setText(self._t("ui.btn_delete"))
         self.ui.btn_ed_cancel.setText(self._t("ui.btn_cancel"))
         self.ui.btn_ed_save.setText(self._t("ui.btn_save"))
-        self.ui.btn_ed_theme_dark.setText(self._t("ui.dark_panel"))
-        self.ui.btn_ed_theme_light.setText(self._t("ui.light_panel"))
         self._update_theme_buttons()
         self._update_capture_label()
-        for row in self._panel_rows:
-            row.retranslate(self._t)
 
     def _update_capture_label(self):
         if self._ed_layout_captured:
@@ -350,8 +344,7 @@ class TaskPanelApp(QMainWindow):
 
     def on_preset_selected(self, preset_id):
         self.active_preset_id = preset_id
-        for pid, card in self.cards.items():
-            card.set_active_state(pid == preset_id)
+        for pid, card in self.cards.items(): card.set_active_state(pid == preset_id)
 
         preset = self._get_preset(preset_id)
         if preset:
@@ -369,7 +362,6 @@ class TaskPanelApp(QMainWindow):
     def open_editor(self, preset_id):
         self.is_new_preset = (preset_id is None)
         self.editing_preset_id = preset_id
-        self._clear_panel_rows()
 
         if self.is_new_preset:
             self._ed_color_dark = "#313060"
@@ -386,11 +378,9 @@ class TaskPanelApp(QMainWindow):
             self.ui.chk_ed_hide_icons.setChecked(False)
             self.ui.btn_ed_restore.setEnabled(False)
             self.ui.btn_ed_delete.setVisible(False)
-            self._add_panel_row(self._default_panel_config())
         else:
             preset = self._get_preset(preset_id)
-            if not preset:
-                return
+            if not preset: return
             _legacy = preset.get("color", "#313060")
             self._ed_color_dark = preset.get("color_dark", _legacy)
             self._ed_color_light = preset.get("color_light", _legacy)
@@ -416,20 +406,40 @@ class TaskPanelApp(QMainWindow):
                 try:
                     with open(sys_path, "r", encoding="utf-8") as f:
                         has_default = any(p["id"] == preset_id for p in json.load(f).get("presets", []))
-                except (json.JSONDecodeError, OSError):
-                    pass
+                except (json.JSONDecodeError, OSError): pass
             self.ui.btn_ed_restore.setEnabled(has_default)
             self.ui.btn_ed_delete.setVisible(True)
-
-            for cfg in self._parse_preset_panels_config(preset):
-                self._add_panel_row(cfg)
 
         self.ui.btn_ed_color_dark.setStyleSheet(f"background-color: {self._ed_color_dark};")
         self.ui.btn_ed_color_light.setStyleSheet(f"background-color: {self._ed_color_light};")
         self.ui.sld_ed_opacity.setValue(self._ed_opacity)
         self.ui.lbl_ed_opacity_val.setText(f"{self._ed_opacity}%")
+        self._update_theme_buttons()
         self._update_ui_state()
         self.ui.stacked_widget.setCurrentIndex(1)
+
+    def _set_editor_theme(self, is_dark: bool):
+        self._ed_is_dark = is_dark
+        self._update_theme_buttons()
+
+    def _update_theme_buttons(self):
+        for btn, active in [
+            (self.ui.btn_ed_theme_dark, self._ed_is_dark),
+            (self.ui.btn_ed_theme_light, not self._ed_is_dark),
+        ]:
+            if hasattr(self.ui, 'btn_ed_theme_dark'):
+                btn.setProperty("active", "true" if active else "false")
+                btn.style().unpolish(btn)
+                btn.style().polish(btn)
+
+    def enter_plasma_edit_mode(self):
+        qdbus = plasma_utils.find_qdbus()
+        cmd = (
+            f"{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'lockCorona(false);'; "
+            f"{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.editMode true; "
+            f"{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'toggleEditMode();' 2>/dev/null"
+        )
+        self._run_shell(cmd)
 
     def on_ed_color_click(self, which: str):
         current = self._ed_color_dark if which == "dark" else self._ed_color_light
@@ -446,36 +456,21 @@ class TaskPanelApp(QMainWindow):
         self._ed_opacity = value
         self.ui.lbl_ed_opacity_val.setText(f"{value}%")
 
-    def _set_editor_theme(self, is_dark: bool):
-        self._ed_is_dark = is_dark
-        self._update_theme_buttons()
-
-    def _update_theme_buttons(self):
-        for btn, active in [
-            (self.ui.btn_ed_theme_dark, self._ed_is_dark),
-            (self.ui.btn_ed_theme_light, not self._ed_is_dark),
-        ]:
-            btn.setProperty("active", "true" if active else "false")
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
-
     def open_icon_picker(self):
         current = self.ui.fld_ed_icon.text().strip()
         start = SYSTEM_PATH
         if current:
             full = current if os.path.isabs(current) else os.path.join(SYSTEM_PATH, current)
             start = os.path.dirname(full)
-        path, _ = QFileDialog.getOpenFileName(
-            self, "Select Icon", start, "Images (*.png *.jpg *.svg *.xpm *.ico)"
-        )
+        path, _ = QFileDialog.getOpenFileName(self, "Select Icon", start, "Images (*.png *.jpg *.svg *.xpm *.ico)")
         if path:
             try:
                 rel = os.path.relpath(path, SYSTEM_PATH)
-                if not rel.startswith(".."):
-                    path = rel
-            except ValueError:
-                pass
+                if not rel.startswith(".."): path = rel
+            except ValueError: pass
             self.ui.fld_ed_icon.setText(path)
+
+    
 
     def capture_panels(self):
         pid = self.editing_preset_id if not self.is_new_preset else self.ui.fld_ed_id.text().strip()
@@ -485,35 +480,42 @@ class TaskPanelApp(QMainWindow):
         if not os.path.exists(plasma_utils.PLASMA_CONFIG):
             QMessageBox.warning(self, "", f"Config not found:\n{plasma_utils.PLASMA_CONFIG}")
             return
+
+        import subprocess
+        import time
+        try:
+            subprocess.run(["kquitapp6", "plasmashell"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
+        except Exception:
+            pass
+        
+        time.sleep(1.5)
+
         layout_file = self._preset_layout_file(pid)
-        shutil.copy2(plasma_utils.PLASMA_CONFIG, layout_file)
-        if os.path.exists(plasma_utils.PLASMA_SHELLRC):
-            shutil.copy2(plasma_utils.PLASMA_SHELLRC, layout_file + "_shellrc")
-        self._ed_layout_captured = datetime.now().strftime("%Y-%m-%d %H:%M")
+        try:
+            shutil.copy2(plasma_utils.PLASMA_CONFIG, layout_file)
+            if os.path.exists(plasma_utils.PLASMA_SHELLRC):
+                shutil.copy2(plasma_utils.PLASMA_SHELLRC, layout_file + "_shellrc")
+            self._ed_layout_captured = datetime.now().strftime("%Y-%m-%d %H:%M")
+        except OSError as e:
+            QMessageBox.warning(self, "Ошибка", f"Не удалось сохранить: {e}")
+
+        QProcess.startDetached("plasmashell")
         self._update_capture_label()
 
     def delete_preset(self):
-        """Полностью удаляет пресет и его конфигурационные файлы."""
-        if self.is_new_preset or not self.editing_preset_id:
-            return
-
+        if self.is_new_preset or not self.editing_preset_id: return
         reply = QMessageBox.question(
-            self,
-            self._t("ui.delete_confirm_title"),
-            self._t("ui.delete_confirm_msg"),
+            self, self._t("ui.delete_confirm_title"), self._t("ui.delete_confirm_msg"),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
-
         if reply == QMessageBox.StandardButton.Yes:
             self.presets = [p for p in self.presets if p["id"] != self.editing_preset_id]
             self._save_presets()
 
             layout_file = self._preset_layout_file(self.editing_preset_id)
-            if os.path.exists(layout_file):
-                os.remove(layout_file)
+            if os.path.exists(layout_file): os.remove(layout_file)
             shellrc_file = layout_file + "_shellrc"
-            if os.path.exists(shellrc_file):
-                os.remove(shellrc_file)
+            if os.path.exists(shellrc_file): os.remove(shellrc_file)
 
             if self.active_preset_id == self.editing_preset_id:
                 self.active_preset_id = None
@@ -524,10 +526,6 @@ class TaskPanelApp(QMainWindow):
             self.ui.stacked_widget.setCurrentIndex(0)
 
     def save_editor(self):
-        panels_config = [row.get_config() for row in self._panel_rows]
-        if not panels_config:
-            return
-
         if self.is_new_preset:
             new_id = self.ui.fld_ed_id.text().strip()
             if not new_id:
@@ -545,42 +543,33 @@ class TaskPanelApp(QMainWindow):
                 "opacity": self._ed_opacity,
                 "is_dark": self._ed_is_dark,
                 "desktop_icons_hidden": self.ui.chk_ed_hide_icons.isChecked(),
-                "height": panels_config[0]["height"],
-                "panels_config": panels_config,
+                "height": 48,
+                "panels_config": [],
                 "script": "",
             }
             self.presets.append(preset)
         else:
             preset = self._get_preset(self.editing_preset_id)
-            if not preset:
-                return
+            if not preset: return
             preset["color_dark"] = self._ed_color_dark
             preset["color_light"] = self._ed_color_light
             preset["opacity"] = self._ed_opacity
             preset["is_dark"] = self._ed_is_dark
             preset["desktop_icons_hidden"] = self.ui.chk_ed_hide_icons.isChecked()
-            preset["height"] = panels_config[0]["height"]
-            preset["panels_config"] = panels_config
-
-        preset["script"] = plasma_utils.generate_script_from_panels(panels_config)
 
         name = self.ui.fld_ed_name.text().strip()
-        if name:
-            preset["name"] = name
+        if name: preset["name"] = name
         desc = self.ui.fld_ed_desc.text().strip()
         if desc:
             preset["desc"] = desc
-        elif "desc" in preset:
-            del preset["desc"]
+        elif "desc" in preset: del preset["desc"]
         icon = self.ui.fld_ed_icon.text().strip()
         if icon:
             preset["icon"] = icon
-        elif "icon" in preset:
-            del preset["icon"]
+        elif "icon" in preset: del preset["icon"]
         if self._ed_layout_captured:
             preset["layout_captured"] = self._ed_layout_captured
-        elif "layout_captured" in preset:
-            del preset["layout_captured"]
+        elif "layout_captured" in preset: del preset["layout_captured"]
 
         self._save_presets()
         self._build_preset_cards()
@@ -595,7 +584,7 @@ class TaskPanelApp(QMainWindow):
             self.panel_color_dark  = self._ed_color_dark
             self.panel_color_light = self._ed_color_light
             self.panel_opacity     = self._ed_opacity
-            self.panel_is_dark = self._ed_is_dark
+            self.panel_is_dark     = self._ed_is_dark
 
             self._pending_layout_preset = self.editing_preset_id
             if appearance_changed:
@@ -606,144 +595,27 @@ class TaskPanelApp(QMainWindow):
 
         self.ui.stacked_widget.setCurrentIndex(0)
 
-    def cancel_editor(self):
-        self.ui.stacked_widget.setCurrentIndex(0)
-
-    # ─────────────────────── Panel rows (editor) ───────────────────────
-
-    def _add_panel_row(self, cfg=None):
-        row = PanelRowWidget(cfg)
-        row.retranslate(self._t)
-        row.remove_requested.connect(self._remove_panel_row)
-        row.move_up_requested.connect(self._move_panel_row_up)
-        row.move_down_requested.connect(self._move_panel_row_down)
-        self.ui.ed_panels_layout.addWidget(row)
-        self._panel_rows.append(row)
-
-    def _remove_panel_row(self, row):
-        if len(self._panel_rows) <= 1:
-            return
-        self.ui.ed_panels_layout.removeWidget(row)
-        row.setParent(None)
-        row.deleteLater()
-        self._panel_rows.remove(row)
-
-    def _move_panel_row_up(self, row):
-        idx = self._panel_rows.index(row)
-        if idx <= 0:
-            return
-        self._panel_rows[idx], self._panel_rows[idx - 1] = self._panel_rows[idx - 1], self._panel_rows[idx]
-        self._rebuild_panels_layout()
-
-    def _move_panel_row_down(self, row):
-        idx = self._panel_rows.index(row)
-        if idx >= len(self._panel_rows) - 1:
-            return
-        self._panel_rows[idx], self._panel_rows[idx + 1] = self._panel_rows[idx + 1], self._panel_rows[idx]
-        self._rebuild_panels_layout()
-
-    def _rebuild_panels_layout(self):
-        for row in self._panel_rows:
-            self.ui.ed_panels_layout.removeWidget(row)
-        for row in self._panel_rows:
-            self.ui.ed_panels_layout.addWidget(row)
-
-    def _clear_panel_rows(self):
-        for row in self._panel_rows:
-            self.ui.ed_panels_layout.removeWidget(row)
-            row.setParent(None)
-            row.deleteLater()
-        self._panel_rows.clear()
-
-    def _default_panel_config(self, height=48):
-        return {
-            "position": "bottom", "height": height,
-            "width": 0, "offset": 0, "alignment": "left",
-            "floating": False, "visibilityMode": "none",
-            "lengthMode": "fill", "launcher": "kickoff",
-            "widgets": ["taskbar", "systray", "clock"],
-        }
+    def cancel_editor(self): self.ui.stacked_widget.setCurrentIndex(0)
 
     def _parse_preset_panels_config(self, preset):
-        if "panels_config" in preset:
-            cfg_list = preset["panels_config"]
-            for c in cfg_list:
-                vis = c.get("visibilityMode", "none")
-                if vis == "windowsbelow": c["visibilityMode"] = "dodgewindows"
-                if vis == "windowscover": c["visibilityMode"] = "windowsgobelow"
-            return cfg_list
-
-        script = preset.get("script", "")
-        if not script:
-            return [self._default_panel_config(preset.get("height", 48))]
-
-        panels = []
-        for ps in re.split(r'var \w+=new Panel;', script)[1:]:
-            cfg = {}
-            m = re.search(r"\.location='(\w+)'", ps)
-            cfg["position"] = m.group(1) if m else "bottom"
-            m = re.search(r'\.height=(\d+)', ps)
-            cfg["height"] = int(m.group(1)) if m else preset.get("height", 48)
-            cfg["floating"] = "floating=true" in ps
-
-            m_hide = re.search(r"\.hiding='(\w+)'", ps)
-            if m_hide:
-                val = m_hide.group(1)
-                if val == "windowsbelow": val = "dodgewindows"
-                if val == "windowscover": val = "windowsgobelow"
-                cfg["visibilityMode"] = val
-            elif "autohide" in ps:
-                cfg["visibilityMode"] = "autohide"
-            else:
-                cfg["visibilityMode"] = "none"
-
-            m = re.search(r"\.lengthMode='(\w+)'", ps)
-            cfg["lengthMode"] = m.group(1) if m else "fill"
-            m = re.search(r"\.alignment='(\w+)'", ps)
-            cfg["alignment"] = m.group(1) if m else ("center" if cfg.get("floating") else "left")
-            m = re.search(r"\.minimumLength=(\d+)", ps)
-            cfg["width"] = int(m.group(1)) if m else 0
-            m = re.search(r"\.offset=(\d+)", ps)
-            cfg["offset"] = int(m.group(1)) if m else 0
-            if "plasma.kickerdash'" in ps:
-                cfg["launcher"] = "kickerdash"
-            elif "plasma.kicker'" in ps:
-                cfg["launcher"] = "kicker"
-            elif "plasma.kickoff'" in ps:
-                cfg["launcher"] = "kickoff"
-            else:
-                cfg["launcher"] = "none"
-            widgets = []
-            if "plasma.icontasks'" in ps:    widgets.append("taskbar")
-            if "plasma.systemtray'" in ps:   widgets.append("systray")
-            if "plasma.digitalclock'" in ps: widgets.append("clock")
-            if "plasma.pager'" in ps:        widgets.append("pager")
-            if "plasma.systemmonitor'" in ps: widgets.append("monitor")
-            if "plasma.appmenu'" in ps:      widgets.append("appmenu")
-            cfg["widgets"] = widgets
-            panels.append(cfg)
-        return panels or [self._default_panel_config(preset.get("height", 48))]
+        if "panels_config" in preset: return preset["panels_config"]
+        return [{"position": "bottom", "height": preset.get("height", 48)}]
 
     def restore_single_default(self):
-        if self.is_new_preset or not self.editing_preset_id:
-            return
+        if self.is_new_preset or not self.editing_preset_id: return
         sys_path = os.path.join(SYSTEM_PATH, "presets.json")
-        if not os.path.exists(sys_path):
-            return
+        if not os.path.exists(sys_path): return
         try:
             with open(sys_path, "r", encoding="utf-8") as f:
                 sys_preset = next((p for p in json.load(f).get("presets", []) if p["id"] == self.editing_preset_id), None)
-        except (json.JSONDecodeError, OSError):
-            return
-        if not sys_preset:
-            return
+        except (json.JSONDecodeError, OSError): return
+        if not sys_preset: return
 
         layout_file = self._preset_layout_file(self.editing_preset_id)
-        if os.path.exists(layout_file):
-            os.remove(layout_file)
+        if os.path.exists(layout_file): os.remove(layout_file)
         shellrc_file = layout_file + "_shellrc"
-        if os.path.exists(shellrc_file):
-            os.remove(shellrc_file)
+        if os.path.exists(shellrc_file): os.remove(shellrc_file)
+        
         for i, p in enumerate(self.presets):
             if p["id"] == self.editing_preset_id:
                 self.presets[i] = dict(sys_preset)
@@ -754,30 +626,25 @@ class TaskPanelApp(QMainWindow):
     def restore_all_defaults(self):
         title = self._t("ui.restore_all_title")
         msg = self._t("ui.restore_all_msg")
-        reply = QMessageBox.question(self, title, msg,
-                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        if reply != QMessageBox.StandardButton.Yes:
-            return
+        reply = QMessageBox.question(self, title, msg, QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if reply != QMessageBox.StandardButton.Yes: return
+        
         sys_path = os.path.join(SYSTEM_PATH, "presets.json")
         user_path = os.path.join(USER_PATH, "presets.json")
-        if os.path.exists(sys_path):
-            shutil.copy2(sys_path, user_path)
+        if os.path.exists(sys_path): shutil.copy2(sys_path, user_path)
 
         layouts_dir = os.path.join(USER_PATH, "layouts")
         if os.path.isdir(layouts_dir):
             for f in os.listdir(layouts_dir):
-                if f.endswith(".bak") or f.endswith("_shellrc"):
-                    os.remove(os.path.join(layouts_dir, f))
+                if f.endswith(".bak") or f.endswith("_shellrc"): os.remove(os.path.join(layouts_dir, f))
         self._load_presets()
-        if self.active_preset_id and not self._get_preset(self.active_preset_id):
-            self.active_preset_id = None
+        if self.active_preset_id and not self._get_preset(self.active_preset_id): self.active_preset_id = None
         self._build_preset_cards()
         self._update_ui_state()
 
     # ─────────────────────── Panel Appearance & Layout ───────────────────────
 
-    def _apply_panel_appearance(self):
-        self._appearance_timer.start()
+    def _apply_panel_appearance(self): self._appearance_timer.start()
 
     def _apply_panel_appearance_immediate(self):
         self._appearance_timer.stop()
@@ -798,162 +665,54 @@ class TaskPanelApp(QMainWindow):
             "X-Plasma-API-Minimum-Version": "6.0",
             "fallbackPackage": "default",
         }
-        with open(os.path.join(theme_dir, "metadata.json"), "w", encoding="utf-8") as f:
-            json.dump(metadata, f, indent=4)
+        with open(os.path.join(theme_dir, "metadata.json"), "w", encoding="utf-8") as f: json.dump(metadata, f, indent=4)
 
         if self.panel_is_dark:
-            txt = "252,252,252"
-            txt_inactive = "161,169,177"
-            bg = "36,36,36"
-            bg_alt = "41,44,48"
-            view_bg = "49,54,59"
-            view_bg_alt = "29,31,34"
-            wm_bg = "39,44,49"
-            wm_blend = "252,252,252"
-            wm_fg = "252,252,252"
-            wm_ibg = "32,36,40"
-            wm_iblend = "161,169,177"
-            wm_ifg = "161,169,177"
-            header_bg = "41,44,48"
-            header_bg_alt = "32,35,38"
-            sel_fg = "252,252,252"
-            sel_link = "253,188,75"
+            txt, txt_inactive = "252,252,252", "161,169,177"
+            bg, bg_alt = "36,36,36", "41,44,48"
+            view_bg, view_bg_alt = "49,54,59", "29,31,34"
+            wm_bg, wm_blend, wm_fg = "39,44,49", "252,252,252", "252,252,252"
+            wm_ibg, wm_iblend, wm_ifg = "32,36,40", "161,169,177", "161,169,177"
+            header_bg, header_bg_alt = "41,44,48", "32,35,38"
+            sel_fg, sel_link = "252,252,252", "253,188,75"
             color_scheme = "Breeze Dark"
         else:
-            txt = "35,38,41"
-            txt_inactive = "112,125,138"
-            bg = "239,240,241"
-            bg_alt = "227,229,231"
-            view_bg = "252,252,252"
-            view_bg_alt = "247,247,247"
-            wm_bg = "227,229,231"
-            wm_blend = "227,229,231"
-            wm_fg = "35,38,41"
-            wm_ibg = "239,240,241"
-            wm_iblend = "239,240,241"
-            wm_ifg = "112,125,138"
-            header_bg = "222,224,226"
-            header_bg_alt = "239,240,241"
-            sel_fg = "255,255,255"
-            sel_link = "41,128,185"
+            txt, txt_inactive = "35,38,41", "112,125,138"
+            bg, bg_alt = "239,240,241", "227,229,231"
+            view_bg, view_bg_alt = "252,252,252", "247,247,247"
+            wm_bg, wm_blend, wm_fg = "227,229,231", "227,229,231", "35,38,41"
+            wm_ibg, wm_iblend, wm_ifg = "239,240,241", "239,240,241", "112,125,138"
+            header_bg, header_bg_alt = "222,224,226", "239,240,241"
+            sel_fg, sel_link = "255,255,255", "41,128,185"
             color_scheme = "Breeze Light"
 
-        lnk = "29,153,243"
-        neg = "218,68,83"
-        neu = "246,116,0"
-        pos = "39,174,96"
-        vis = "155,89,182"
+        lnk, neg, neu, pos, vis = "29,153,243", "218,68,83", "246,116,0", "39,174,96", "155,89,182"
 
         colors_data = "\n".join([
-            f"[General]",
-            f"ColorScheme={color_scheme}",
-            f"Name=EquestriaPanel",
-            f"shadeSortColumn=true",
-            f"",
-            f"[KDE]",
-            f"contrast=4",
-            f"",
-            f"[Colors:Window]",
-            f"BackgroundNormal={bg}",
-            f"BackgroundAlternate={bg_alt}",
-            f"ForegroundNormal={txt}",
-            f"ForegroundInactive={txt_inactive}",
-            f"ForegroundLink={lnk}",
-            f"ForegroundNegative={neg}",
-            f"ForegroundNeutral={neu}",
-            f"ForegroundPositive={pos}",
-            f"ForegroundVisited={vis}",
-            f"",
-            f"[Colors:View]",
-            f"BackgroundNormal={view_bg}",
-            f"BackgroundAlternate={view_bg_alt}",
-            f"ForegroundNormal={txt}",
-            f"ForegroundInactive={txt_inactive}",
-            f"ForegroundLink={lnk}",
-            f"ForegroundNegative={neg}",
-            f"ForegroundNeutral={neu}",
-            f"ForegroundPositive={pos}",
-            f"ForegroundVisited={vis}",
-            f"",
-            f"[Colors:Button]",
-            f"BackgroundNormal={bg}",
-            f"BackgroundAlternate={bg_alt}",
-            f"ForegroundNormal={txt}",
-            f"ForegroundInactive={txt_inactive}",
-            f"ForegroundLink={lnk}",
-            f"ForegroundNegative={neg}",
-            f"ForegroundNeutral={neu}",
-            f"ForegroundPositive={pos}",
-            f"ForegroundVisited={vis}",
-            f"",
-            f"[Colors:Tooltip]",
-            f"BackgroundNormal={bg}",
-            f"BackgroundAlternate={bg_alt}",
-            f"ForegroundNormal={txt}",
-            f"ForegroundInactive={txt_inactive}",
-            f"ForegroundLink={lnk}",
-            f"ForegroundNegative={neg}",
-            f"ForegroundNeutral={neu}",
-            f"ForegroundPositive={pos}",
-            f"ForegroundVisited={vis}",
-            f"",
-            f"[Colors:Complementary]",
-            f"BackgroundNormal=42,46,50",
-            f"BackgroundAlternate=27,30,32",
-            f"ForegroundNormal=252,252,252",
-            f"ForegroundInactive=161,169,177",
-            f"ForegroundLink=29,153,243",
-            f"ForegroundNegative=218,68,83",
-            f"ForegroundNeutral=246,116,0",
-            f"ForegroundPositive=39,174,96",
-            f"ForegroundVisited=155,89,182",
-            f"",
-            f"[Colors:Header]",
-            f"BackgroundNormal={header_bg}",
-            f"BackgroundAlternate={header_bg_alt}",
-            f"ForegroundNormal={txt}",
-            f"ForegroundInactive={txt_inactive}",
-            f"ForegroundLink={lnk}",
-            f"ForegroundNegative={neg}",
-            f"ForegroundNeutral={neu}",
-            f"ForegroundPositive={pos}",
-            f"ForegroundVisited={vis}",
-            f"",
-            f"[Colors:Selection]",
-            f"BackgroundAlternate={bg_alt}",
-            f"ForegroundNormal={sel_fg}",
-            f"ForegroundInactive={txt_inactive}",
-            f"ForegroundLink={sel_link}",
-            f"ForegroundNegative={neg}",
-            f"ForegroundNeutral={neu}",
-            f"ForegroundPositive={pos}",
-            f"ForegroundVisited={vis}",
-            f"",
-            f"[WM]",
-            f"activeBackground={wm_bg}",
-            f"activeBlend={wm_blend}",
-            f"activeForeground={wm_fg}",
-            f"inactiveBackground={wm_ibg}",
-            f"inactiveBlend={wm_iblend}",
-            f"inactiveForeground={wm_ifg}",
+            f"[General]", f"ColorScheme={color_scheme}", f"Name=EquestriaPanel", f"shadeSortColumn=true", "",
+            f"[KDE]", f"contrast=4", "",
+            f"[Colors:Window]", f"BackgroundNormal={bg}", f"BackgroundAlternate={bg_alt}", f"ForegroundNormal={txt}", f"ForegroundInactive={txt_inactive}", f"ForegroundLink={lnk}", f"ForegroundNegative={neg}", f"ForegroundNeutral={neu}", f"ForegroundPositive={pos}", f"ForegroundVisited={vis}", "",
+            f"[Colors:View]", f"BackgroundNormal={view_bg}", f"BackgroundAlternate={view_bg_alt}", f"ForegroundNormal={txt}", f"ForegroundInactive={txt_inactive}", f"ForegroundLink={lnk}", f"ForegroundNegative={neg}", f"ForegroundNeutral={neu}", f"ForegroundPositive={pos}", f"ForegroundVisited={vis}", "",
+            f"[Colors:Button]", f"BackgroundNormal={bg}", f"BackgroundAlternate={bg_alt}", f"ForegroundNormal={txt}", f"ForegroundInactive={txt_inactive}", f"ForegroundLink={lnk}", f"ForegroundNegative={neg}", f"ForegroundNeutral={neu}", f"ForegroundPositive={pos}", f"ForegroundVisited={vis}", "",
+            f"[Colors:Tooltip]", f"BackgroundNormal={bg}", f"BackgroundAlternate={bg_alt}", f"ForegroundNormal={txt}", f"ForegroundInactive={txt_inactive}", f"ForegroundLink={lnk}", f"ForegroundNegative={neg}", f"ForegroundNeutral={neu}", f"ForegroundPositive={pos}", f"ForegroundVisited={vis}", "",
+            f"[Colors:Complementary]", f"BackgroundNormal=42,46,50", f"BackgroundAlternate=27,30,32", f"ForegroundNormal=252,252,252", f"ForegroundInactive=161,169,177", f"ForegroundLink=29,153,243", f"ForegroundNegative=218,68,83", f"ForegroundNeutral=246,116,0", f"ForegroundPositive=39,174,96", f"ForegroundVisited=155,89,182", "",
+            f"[Colors:Header]", f"BackgroundNormal={header_bg}", f"BackgroundAlternate={header_bg_alt}", f"ForegroundNormal={txt}", f"ForegroundInactive={txt_inactive}", f"ForegroundLink={lnk}", f"ForegroundNegative={neg}", f"ForegroundNeutral={neu}", f"ForegroundPositive={pos}", f"ForegroundVisited={vis}", "",
+            f"[Colors:Selection]", f"BackgroundAlternate={bg_alt}", f"ForegroundNormal={sel_fg}", f"ForegroundInactive={txt_inactive}", f"ForegroundLink={sel_link}", f"ForegroundNegative={neg}", f"ForegroundNeutral={neu}", f"ForegroundPositive={pos}", f"ForegroundVisited={vis}", "",
+            f"[WM]", f"activeBackground={wm_bg}", f"activeBlend={wm_blend}", f"activeForeground={wm_fg}", f"inactiveBackground={wm_ibg}", f"inactiveBlend={wm_iblend}", f"inactiveForeground={wm_ifg}",
         ]) + "\n"
-        with open(os.path.join(theme_dir, "colors"), "w", encoding="utf-8") as f:
-            f.write(colors_data)
+        with open(os.path.join(theme_dir, "colors"), "w", encoding="utf-8") as f: f.write(colors_data)
 
         color_schemes_dir = os.path.expanduser("~/.local/share/color-schemes")
         os.makedirs(color_schemes_dir, exist_ok=True)
-        with open(os.path.join(color_schemes_dir, "EquestriaPanel.colors"), "w", encoding="utf-8") as f:
-            f.write(colors_data)
+        with open(os.path.join(color_schemes_dir, "EquestriaPanel.colors"), "w", encoding="utf-8") as f: f.write(colors_data)
 
         svg = plasma_utils.generate_panel_svg(self._active_panel_color, self.panel_opacity / 100.0)
-        with open(os.path.join(widgets_dir, "panel-background.svg"), "w", encoding="utf-8") as f:
-            f.write(svg)
+        with open(os.path.join(widgets_dir, "panel-background.svg"), "w", encoding="utf-8") as f: f.write(svg)
 
         self._save_appearance()
 
         old_dir = os.path.expanduser("~/.local/share/plasma/themes/EquestriaPanel")
-        if os.path.exists(old_dir):
-            shutil.rmtree(old_dir, ignore_errors=True)
+        if os.path.exists(old_dir): shutil.rmtree(old_dir, ignore_errors=True)
 
         plasmarc = os.path.expanduser("~/.config/plasmarc")
         cfg = configparser.ConfigParser()
@@ -970,10 +729,8 @@ class TaskPanelApp(QMainWindow):
             cmd = cache_clear + apply_colorscheme + "plasma-apply-desktoptheme EquestriaPanel"
 
         self._run_shell(cmd, on_finished=self._on_theme_applied)
-
         self._update_ui_state()
-        for card in self.cards.values():
-            card.update_appearance(self._active_panel_color, self.panel_opacity)
+        for card in self.cards.values(): card.update_appearance(self._active_panel_color, self.panel_opacity)
 
     def _on_theme_applied(self):
         if self._pending_layout_preset:
@@ -983,88 +740,75 @@ class TaskPanelApp(QMainWindow):
     def _do_apply_pending_layout(self):
         pid = self._pending_layout_preset
         self._pending_layout_preset = None
-        if pid:
-            self._apply_preset_layout(pid)
+        if pid: self._apply_preset_layout(pid)
 
     def _apply_preset_layout(self, preset_id):
         preset = self._get_preset(preset_id)
-        if not preset:
-            return
+        if not preset: return
 
         layout_file = self._preset_layout_file(preset_id)
         hide_icons = preset.get("desktop_icons_hidden", False)
-
-        panels_cfg = self._parse_preset_panels_config(preset)
-        height_script = "var ps=panels(); "
-        for i, cfg in enumerate(panels_cfg):
-            h = cfg.get("height", 48)
-            height_script += f"if(ps.length > {i}) {{ ps[{i}].height = {h}; }} "
-
         qdbus = plasma_utils.find_qdbus()
 
         if os.path.exists(layout_file):
             shellrc_file = layout_file + "_shellrc"
             restore_shellrc = f"cp '{shellrc_file}' '{plasma_utils.PLASMA_SHELLRC}'; " if os.path.exists(shellrc_file) else ""
 
+            # 1. СНАЧАЛА синхронно закрываем plasmashell, чтобы она выгрузила текущую сессию на диск
+            import subprocess
+            import time
+            try:
+                subprocess.run(["kquitapp6", "plasmashell"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
+            except Exception:
+                pass
+            
+            # Обязательная пауза для завершения операций ввода-вывода подсистемы KDE
+            time.sleep(1.5)
+
+            # 2. ТЕПЕРЬ, когда живые иконки сохранены на диск, производим чтение и инжекцию в структуру нового пресета
+            plasma_utils.preserve_user_launchers(layout_file, plasma_utils.PLASMA_CONFIG)
+
+            # Подготовка скрипта изменения геометрии
+            panels_cfg = self._parse_preset_panels_config(preset)
+            height_script = "var ps=panels(); "
+            for i, cfg in enumerate(panels_cfg):
+                height_script += f"if(ps.length > {i}) {{ ps[{i}].height = {cfg.get('height', 48)}; }} "
+
             tmp_script = os.path.join(USER_PATH, ".tmp_height.js")
             try:
-                with open(tmp_script, "w", encoding="utf-8") as f:
+                with open(tmp_script, "w", encoding="utf-8") as f: 
                     f.write(height_script)
-            except OSError:
+            except OSError: 
                 tmp_script = None
 
-            height_cmd = ""
-            if tmp_script:
-                height_cmd = f'{qdbus} org.kde.plasmashell /PlasmaShell evaluateScript "$(cat \'{tmp_script}\')"'
+            height_cmd = f'{qdbus} org.kde.plasmashell /PlasmaShell evaluateScript "$(cat \'{tmp_script}\')"' if tmp_script else ""
 
-            shutil.copy2(layout_file, plasma_utils.PLASMA_CONFIG)
-            plasma_utils.set_desktop_icons_state(hide_icons)
-
-            cmd = (
-                f"kquitapp6 plasmashell 2>/dev/null; "
-                f"sleep 1; "
-                f"killall -9 plasmashell 2>/dev/null; "
-                f"sleep 0.5; "
-                f"{restore_shellrc}"
-                f"nohup plasmashell &>/dev/null & disown; "
-                f"sleep 4; "
-                f"{height_cmd}"
-            )
+            # 3. Запускаем оболочку обратно с уже модифицированным файлом конфигурации
+            cmd = f"{restore_shellrc}nohup plasmashell &>/dev/null & disown; sleep 4; {height_cmd}"
             self._run_shell(cmd)
         else:
             script = preset.get("script", "")
             if script:
-                script += height_script
-
-            changed_containment = plasma_utils.set_desktop_icons_state(hide_icons)
-
-            if changed_containment:
-                tmp_script = os.path.join(USER_PATH, ".tmp_eval.js")
-                try:
-                    with open(tmp_script, "w", encoding="utf-8") as f:
-                        f.write(script)
-                    cmd = (
-                        f"kquitapp6 plasmashell 2>/dev/null; "
-                        f"sleep 1; "
-                        f"killall -9 plasmashell 2>/dev/null; "
-                        f"sleep 0.5; "
-                        f"nohup plasmashell &>/dev/null & disown; "
-                        f"sleep 4; "
-                        f'{qdbus} org.kde.plasmashell /PlasmaShell evaluateScript "$(cat \'{tmp_script}\')"'
-                    )
-                    self._run_shell(cmd)
-                except OSError:
-                    pass
-            else:
-                if script:
+                changed_containment = plasma_utils.set_desktop_icons_state(hide_icons)
+                if changed_containment:
+                    tmp_script = os.path.join(USER_PATH, ".tmp_eval.js")
+                    try:
+                        with open(tmp_script, "w", encoding="utf-8") as f: f.write(script)
+                        cmd = (
+                            f"kquitapp6 plasmashell 2>/dev/null; sleep 1.5; "
+                            f"nohup plasmashell &>/dev/null & disown; sleep 4; "
+                            f'{qdbus} org.kde.plasmashell /PlasmaShell evaluateScript "$(cat \'{tmp_script}\')"'
+                        )
+                        self._run_shell(cmd)
+                    except OSError: pass
+                else:
                     self._run_evaluate_script(script)
 
     def _run_evaluate_script(self, script):
         qdbus = plasma_utils.find_qdbus()
         tmp_script = os.path.join(USER_PATH, ".tmp_eval.js")
         try:
-            with open(tmp_script, "w", encoding="utf-8") as f:
-                f.write(script)
+            with open(tmp_script, "w", encoding="utf-8") as f: f.write(script)
             cmd = f'{qdbus} org.kde.plasmashell /PlasmaShell evaluateScript "$(cat \'{tmp_script}\')"'
             self._run_shell(cmd)
         except OSError:
@@ -1074,15 +818,11 @@ class TaskPanelApp(QMainWindow):
     def _run_shell(self, command, on_finished=None):
         proc = QProcess(self)
         proc.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
-
         def _cleanup(exit_code, exit_status):
             try:
                 self._active_process = None
-                if on_finished:
-                    on_finished()
-            except RuntimeError:
-                pass
-
+                if on_finished: on_finished()
+            except RuntimeError: pass
         proc.finished.connect(_cleanup)
         proc.start("/bin/bash", ["-c", command])
         self._active_process = proc
@@ -1090,23 +830,16 @@ class TaskPanelApp(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setDesktopFileName("equestria-os-task-panel-changer")
-
     icon_path = "/usr/share/pixmaps/equestria-os-logo.png"
     app.setWindowIcon(QIcon(icon_path) if os.path.exists(icon_path) else QIcon.fromTheme("preferences-desktop-theme"))
 
-    # Регистрируем декоративный шрифт — он нужен только для title/subtitle в QSS
     font_path = os.path.join(SYSTEM_PATH, "equestria_cyrillic.ttf")
-    if os.path.exists(font_path):
-        QFontDatabase.addApplicationFont(font_path)
-
-    # Базовый шрифт приложения — системный, не декоративный
+    if os.path.exists(font_path): QFontDatabase.addApplicationFont(font_path)
     app.setFont(QFont("sans-serif", 11))
 
-    # Загружаем style.qss — font-family там только у title и subtitle
     qss_path = os.path.join(SYSTEM_PATH, "style.qss")
     if os.path.exists(qss_path):
-        with open(qss_path, "r", encoding="utf-8") as f:
-            app.setStyleSheet(f.read())
+        with open(qss_path, "r", encoding="utf-8") as f: app.setStyleSheet(f.read())
 
     window = TaskPanelApp()
     window.show()

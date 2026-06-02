@@ -180,27 +180,6 @@ class Ui_MainWindow:
         color_lo.addWidget(self.btn_ed_color_light)
         _, self.lbl_ed_color_row = add_row("Panel Colors:", color_w)
 
-        panels_hdr = QWidget()
-        panels_hdr_lo = QHBoxLayout(panels_hdr)
-        panels_hdr_lo.setContentsMargins(0, 0, 0, 0)
-        panels_hdr_lo.setSpacing(8)
-        self.lbl_ed_panels = QLabel("Panels:")
-        self.lbl_ed_panels.setProperty("cssClass", "status-label")
-        self.lbl_ed_panels.setFixedWidth(150)
-        self.btn_ed_add_panel = QPushButton("+ Add Panel")
-        self.btn_ed_add_panel.setProperty("cssClass", "action-btn")
-        self.btn_ed_add_panel.setStyleSheet("QPushButton { background-color: rgb(60, 45, 90); border: 1px solid rgb(90, 80, 130); padding: 5px 12px; font-size: 11px; } QPushButton:hover { background-color: rgb(80, 65, 120); border: 1px solid rgb(110, 100, 150); }")
-        panels_hdr_lo.addWidget(self.lbl_ed_panels)
-        panels_hdr_lo.addWidget(self.btn_ed_add_panel)
-        panels_hdr_lo.addStretch()
-        ed_form.addWidget(panels_hdr)
-
-        self.ed_panels_container = QWidget()
-        self.ed_panels_layout = QVBoxLayout(self.ed_panels_container)
-        self.ed_panels_layout.setSpacing(6)
-        self.ed_panels_layout.setContentsMargins(0, 0, 0, 0)
-        ed_form.addWidget(self.ed_panels_container)
-
         opacity_w = QWidget()
         opacity_lo = QHBoxLayout(opacity_w)
         opacity_lo.setContentsMargins(0, 0, 0, 0)
@@ -231,6 +210,14 @@ class Ui_MainWindow:
         theme_lo.addWidget(self.btn_ed_theme_dark)
         theme_lo.addWidget(self.btn_ed_theme_light)
         _, self.lbl_ed_theme_row = add_row("Panel Theme:", theme_w)
+
+        self.btn_ed_open_kde = QPushButton("🛠 Enter KDE Panel Edit Mode")
+        self.btn_ed_open_kde.setProperty("cssClass", "action-btn")
+        self.btn_ed_open_kde.setStyleSheet("""
+            QPushButton { background-color: rgb(50, 40, 85); border: 1px solid rgb(110, 80, 180); padding: 6px 16px; font-weight: bold; }
+            QPushButton:hover { background-color: rgb(70, 55, 115); border-color: rgb(140, 100, 220); }
+        """)
+        self.row_ed_kde, self.lbl_ed_kde_row = add_row("KDE Plasma Shell:", self.btn_ed_open_kde)
 
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)

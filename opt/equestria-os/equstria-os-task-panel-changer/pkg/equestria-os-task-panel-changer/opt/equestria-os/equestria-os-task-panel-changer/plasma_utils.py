@@ -1,7 +1,6 @@
 import os
 import shutil
-import configparser
-import subprocess
+import re
 
 PLASMA_CONFIG = os.path.expanduser("~/.config/plasma-org.kde.plasma.desktop-appletsrc")
 PLASMA_SHELLRC = os.path.expanduser("~/.config/plasmashellrc")
@@ -16,23 +15,180 @@ def find_qdbus():
         if shutil.which(candidate):
             _QDBUS_BIN = candidate
             return _QDBUS_BIN
-    _QDBUS_BIN = "qdbus6"  # fallback
+    _QDBUS_BIN = "qdbus6"
     return _QDBUS_BIN
 
+def validate_launchers_string(launchers_str: str) -> str:
+    """Проверяет каждый ярлык в системе. Если приложения нет в XDG — убирает из панели."""
+    if not launchers_str: 
+        return ""
+    
+    xdg_dirs = [
+        os.path.expanduser("~/.local/share/applications"),
+        "/usr/share/applications",
+        "/usr/local/share/applications",
+        "/var/lib/flatpak/exports/share/applications"
+    ]
+    
+    valid_items = []
+    for item in launchers_str.split(","):
+        item = item.strip()
+        if not item: 
+            continue
+        if item.startswith("preferred://") or item.startswith("file://"):
+            valid_items.append(item)
+            continue
+        if item.startswith("applications:"):
+            desktop_name = item.split(":", 1)[1]
+            if any(os.path.exists(os.path.join(d, desktop_name)) for d in xdg_dirs):
+                valid_items.append(item)
+            continue
+        if item.endswith(".desktop"):
+            if any(os.path.exists(os.path.join(d, item)) for d in xdg_dirs):
+                valid_items.append(f"applications:{item}")
+            continue
+        valid_items.append(item)
+        
+    return ",".join(valid_items)
+
+def extract_launchers(file_path):
+    """Безопасно извлекает launchers из указанного файла конфигурации на основе блоков."""
+    if not os.path.exists(file_path):
+        return None
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except Exception:
+        return None
+
+    raw_sections = re.split(r'\n(?=\s*\[)', content)
+    sections_dict = {}
+    for chunk in raw_sections:
+        if not chunk.strip(): continue
+        lines = chunk.split('\n')
+        header = lines[0].strip()
+        if header.startswith('[') and header.endswith(']'):
+            sections_dict[header] = lines[1:]
+
+    task_applets = []
+    for sec, lines in sections_dict.items():
+        for line in lines:
+            if line.strip().startswith('plugin='):
+                p_val = line.split('=', 1)[1].strip()
+                if p_val in ("org.kde.plasma.icontasks", "org.kde.plasma.taskmanager"):
+                    task_applets.append(sec)
+
+    for applet in task_applets:
+        gen_sec = f"{applet[:-1]}][Configuration][General]"
+        if gen_sec in sections_dict:
+            for line in sections_dict[gen_sec]:
+                if line.strip().startswith('launchers='):
+                    return line.split('=', 1)[1].strip()
+
+    # Резервный поиск по всему файлу
+    for line in content.split('\n'):
+        if line.strip().startswith('launchers='):
+            val = line.split('=', 1)[1].strip()
+            if val: return val
+    return None
+
+def preserve_user_launchers(src_preset_path, dest_live_path):
+    """
+    Извлекает текущие launchers из dest_live_path, генерирует или обновляет подсекцию 
+    [Configuration][General] в структуре src_preset_path и сохраняет результат в dest_live_path.
+    """
+    if not os.path.exists(src_preset_path):
+        return
+        
+    current_launchers = None
+    if os.path.exists(dest_live_path):
+        current_launchers = extract_launchers(dest_live_path)
+        
+    if not current_launchers:
+        try:
+            shutil.copy2(src_preset_path, dest_live_path)
+        except Exception:
+            pass
+        return
+
+    current_launchers = validate_launchers_string(current_launchers)
+
+    try:
+        with open(src_preset_path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except Exception:
+        return
+
+    raw_sections = re.split(r'\n(?=\s*\[)', content)
+    sections_dict = {}
+    sections_order = []
+
+    for chunk in raw_sections:
+        if not chunk.strip(): continue
+        lines = chunk.split('\n')
+        header = lines[0].strip()
+        if header.startswith('[') and header.endswith(']'):
+            sections_dict[header] = lines[1:]
+            sections_order.append(header)
+        else:
+            if '' not in sections_dict: sections_dict[''] = []
+            sections_dict[''].extend(lines)
+            if '' not in sections_order: sections_order.append('')
+
+    task_applets = []
+    for sec, lines in sections_dict.items():
+        for line in lines:
+            if line.strip().startswith('plugin='):
+                p_val = line.split('=', 1)[1].strip()
+                if p_val in ("org.kde.plasma.icontasks", "org.kde.plasma.taskmanager"):
+                    task_applets.append(sec)
+
+    for applet in task_applets:
+        gen_sec = f"{applet[:-1]}][Configuration][General]"
+        if gen_sec in sections_dict:
+            lines = sections_dict[gen_sec]
+            new_lines = []
+            found_launchers = False
+            for line in lines:
+                if line.strip().startswith('launchers='):
+                    new_lines.append(f"launchers={current_launchers}")
+                    found_launchers = True
+                else:
+                    new_lines.append(line)
+            if not found_launchers:
+                new_lines.append(f"launchers={current_launchers}")
+            sections_dict[gen_sec] = new_lines
+        else:
+            # Секции не существовало — создаем её с нуля и помещаем сразу за апплетом
+            sections_dict[gen_sec] = [f"launchers={current_launchers}"]
+            idx = sections_order.index(applet)
+            sections_order.insert(idx + 1, gen_sec)
+
+    try:
+        with open(dest_live_path, "w", encoding="utf-8") as f:
+            for sec in sections_order:
+                if sec == '':
+                    f.write('\n'.join(sections_dict[sec]) + '\n')
+                else:
+                    sec_lines = [l for l in sections_dict[sec] if l.strip() or l == '']
+                    f.write(f"{sec}\n" + '\n'.join(sec_lines) + '\n')
+    except Exception:
+        pass
+
+def get_current_launchers():
+    val = extract_launchers(PLASMA_CONFIG)
+    return validate_launchers_string(val) if val else None
+
 def set_desktop_icons_state(hide: bool) -> bool:
-    """Modifies plasma-org.kde.plasma.desktop-appletsrc directly to change folder/containment state."""
     if not os.path.exists(PLASMA_CONFIG):
         return False
-
     try:
         with open(PLASMA_CONFIG, "r", encoding="utf-8") as f:
             lines = f.readlines()
     except OSError:
         return False
-
     old_plugin = "org.kde.plasma.folder" if hide else "org.kde.desktopcontainment"
     new_plugin = "org.kde.desktopcontainment" if hide else "org.kde.plasma.folder"
-
     changed = False
     new_lines = []
     in_containments = False
@@ -42,20 +198,17 @@ def set_desktop_icons_state(hide: bool) -> bool:
             in_containments = True
         elif stripped.startswith("[") and not stripped.startswith("[Containments]"):
             in_containments = False
-
         if in_containments and stripped == f"plugin={old_plugin}":
             new_lines.append(f"plugin={new_plugin}\n")
             changed = True
         else:
             new_lines.append(line)
-
     if changed:
         try:
             with open(PLASMA_CONFIG, "w", encoding="utf-8") as f:
                 f.writelines(new_lines)
         except OSError:
             return False
-
     return changed
 
 def generate_script_from_panels(panels_config):
@@ -65,6 +218,7 @@ def generate_script_from_panels(panels_config):
         "kickerdash": "org.kde.plasma.kickerdash",
     }
     ICON = "/usr/share/pixmaps/equestria-os-logo.png"
+    current_launchers = get_current_launchers()
     parts = ["var a=panels();for(var i=0;i<a.length;i++){a[i].remove();}"]
     for i, p in enumerate(panels_config):
         v = f"p{i}"
@@ -74,67 +228,49 @@ def generate_script_from_panels(panels_config):
         offset   = p.get("offset", 0)
         align    = p.get("alignment", "center" if p.get("floating") else "left")
         floatP   = p.get("floating", False)
-
         vis      = p.get("visibilityMode", "none")
         if vis == "windowsbelow": vis = "dodgewindows"
         if vis == "windowscover": vis = "windowsgobelow"
-        if p.get("autohide", False) and vis == "none":
-            vis = "autohide"
-
+        if p.get("autohide", False) and vis == "none": vis = "autohide"
         lmode    = p.get("lengthMode", "fill")
         launch   = p.get("launcher", "none")
         ww       = p.get("widgets", [])
-
         parts.append(f"var {v}=new Panel;")
         parts.append(f"{v}.location='{pos}';")
         parts.append(f"{v}.height={height};")
         parts.append(f"{v}.alignment='{align}';")
-        if floatP:
-            parts.append(f"{v}.floating=true;")
+        if floatP: parts.append(f"{v}.floating=true;")
         parts.append(f"{v}.lengthMode='{lmode}';")
-        if width_px > 0:
-            parts.append(f"{v}.minimumLength={width_px};{v}.maximumLength={width_px};")
-        if offset != 0:
-            parts.append(f"{v}.offset={offset};")
-
-        if vis != "none":
-            parts.append(f"{v}.hiding='{vis}';")
-
+        if width_px > 0: parts.append(f"{v}.minimumLength={width_px};{v}.maximumLength={width_px};")
+        if offset != 0: parts.append(f"{v}.offset={offset};")
+        if vis != "none": parts.append(f"{v}.hiding='{vis}';")
         has_launcher = launch in LAUNCHER_MAP
         has_taskbar  = "taskbar" in ww
         has_right    = any(x in ww for x in ("pager", "monitor", "systray", "clock"))
-
         if has_launcher:
             pid = LAUNCHER_MAP[launch]
             parts.append(f"var k{i}={v}.addWidget('{pid}');")
             parts.append(f"k{i}.currentConfigGroup=['General'];")
             parts.append(f"k{i}.writeConfig('icon','{ICON}');")
-
-        if "appmenu" in ww:
-            parts.append(f"{v}.addWidget('org.kde.plasma.appmenu');")
-
-        if has_launcher and (has_taskbar or has_right):
-            parts.append(f"{v}.addWidget('org.kde.plasma.panelspacer');")
-
+        if "appmenu" in ww: parts.append(f"{v}.addWidget('org.kde.plasma.appmenu');")
+        if has_launcher and (has_taskbar or has_right): parts.append(f"{v}.addWidget('org.kde.plasma.panelspacer');")
         if has_taskbar:
-            parts.append(f"{v}.addWidget('org.kde.plasma.icontasks');")
-            if has_right:
-                parts.append(f"{v}.addWidget('org.kde.plasma.panelspacer');")
-
+            parts.append(f"var t{i}={v}.addWidget('org.kde.plasma.icontasks');")
+            if current_launchers:
+                parts.append(f"t{i}.currentConfigGroup=['General'];")
+                parts.append(f"t{i}.writeConfig('launchers','{current_launchers}');")
+            if has_right: parts.append(f"{v}.addWidget('org.kde.plasma.panelspacer');")
         if "pager"   in ww: parts.append(f"{v}.addWidget('org.kde.plasma.pager');")
         if "monitor" in ww: parts.append(f"{v}.addWidget('org.kde.plasma.systemmonitor');")
         if "systray" in ww: parts.append(f"{v}.addWidget('org.kde.plasma.systemtray');")
         if "clock"   in ww: parts.append(f"{v}.addWidget('org.kde.plasma.digitalclock');")
-
         parts.append(f"{v}.height={height};")
-
     return "".join(parts)
 
 def generate_panel_svg(hex_color, opacity_float):
     c = hex_color
     op = f"{opacity_float:.2f}"
     r = 8
-
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">\n'
@@ -158,7 +294,7 @@ def generate_panel_svg(hex_color, opacity_float):
         '  <rect id="shadow-left"        x="0" y="0" width="0" height="0" fill="none" fill-opacity="0"/>\n'
         '  <rect id="shadow-right"       x="0" y="0" width="0" height="0" fill="none" fill-opacity="0"/>\n'
         '  <rect id="shadow-topleft"     x="0" y="0" width="0" height="0" fill="none" fill-opacity="0"/>\n'
-        '  <rect id="shadow-topright"    x="0" y="0" width="0" height="0" fill="none" fill-opacity="0"/>\n'
+        '  <rect id="shadow-topright"    x="94" y="0" width="6" height="6" fill="none" fill-opacity="0"/>\n'
         '  <rect id="shadow-bottomleft"  x="0" y="0" width="0" height="0" fill="none" fill-opacity="0"/>\n'
         '  <rect id="shadow-bottomright" x="0" y="0" width="0" height="0" fill="none" fill-opacity="0"/>\n'
         '\n'
@@ -196,59 +332,39 @@ def generate_panel_svg(hex_color, opacity_float):
     )
 
 def apply_system_theme_fixes():
-    """
-    Программно исправляет проблему черного текста на системных экранах
-    и купирует баг с неконтролируемой яркостью демона PowerDevil.
-    Не требует вмешательства в системные QML-исходники ОС.
-    """
+    desktop_theme_dir = os.path.expanduser("~/.local/share/plasma/desktoptheme/default")
+    os.makedirs(desktop_theme_dir, exist_ok=True)
+    import configparser
     kdeglobals_path = os.path.expanduser("~/.config/kdeglobals")
     config = configparser.ConfigParser()
     config.optionxform = str
-
     if os.path.exists(kdeglobals_path):
         config.read(kdeglobals_path)
-
     if 'Colors:Complementary' not in config:
         config.add_section('Colors:Complementary')
-
     config.set('Colors:Complementary', 'BackgroundNormal', '0,0,0')
     config.set('Colors:Complementary', 'ForegroundNormal', '255,255,255')
     config.set('Colors:Complementary', 'ForegroundInactive', '200,200,200')
-
     try:
-        with open(kdeglobals_path, 'w', encoding='utf-8') as f:
-            config.write(f)
-    except OSError:
-        pass
-
-    desktop_theme_dir = os.path.expanduser("~/.local/share/plasma/desktoptheme/default")
-    os.makedirs(desktop_theme_dir, exist_ok=True)
-
+        with open(kdeglobals_path, 'w', encoding='utf-8') as f: config.write(f)
+    except OSError: pass
     theme_rc_path = os.path.join(desktop_theme_dir, "metadata.desktop")
     if not os.path.exists(theme_rc_path):
         try:
             with open(theme_rc_path, 'w', encoding='utf-8') as f:
                 f.write("\nName=Equestria Fallback\nX-KDE-PluginInfo-Name=default\n")
-        except OSError:
-            pass
-
+        except OSError: pass
     settings_path = os.path.join(desktop_theme_dir, "settings")
     try:
         with open(settings_path, 'w', encoding='utf-8') as f:
             f.write("baseTheme=breeze\nShutdown Dialog=breeze\nLockScreen=breeze\n")
-    except OSError:
-        pass
-
+    except OSError: pass
     try:
-        subprocess.run(
-            ["systemctl", "--user", "restart", "plasma-powerdevil.service"],
-            check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
-    except Exception:
-        pass
-
+        import subprocess
+        subprocess.run(["systemctl", "--user", "restart", "plasma-powerdevil.service"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception: pass
     qdbus = find_qdbus()
     try:
+        import subprocess
         subprocess.run(f"{qdbus} org.kde.KWin /KWin reconfigure", shell=True, check=False)
-    except Exception:
-        pass
+    except Exception: pass
