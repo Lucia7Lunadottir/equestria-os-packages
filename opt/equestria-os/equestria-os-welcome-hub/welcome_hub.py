@@ -108,7 +108,6 @@ class main_app(QMainWindow, Ui_WelcomeHub):
                 Item(self.t("app.tutorial"), "equestria-os-tutorial", "command"),
                 Item(self.t("app.theme"), "equestria-os-character-theme", "command"),
                 Item(self.t("app.panel"), "equestria-os-task-panel-changer", "command"),
-                Item(self.t("app.essentials"), "equestria-os-software-center", "command"),
                 Item(self.t("app.store"), "equestria-os-software-center", "command"),
                 Item(self.t("app.pkgs"), "equestria-os-package-manager", "command")
             ]),
