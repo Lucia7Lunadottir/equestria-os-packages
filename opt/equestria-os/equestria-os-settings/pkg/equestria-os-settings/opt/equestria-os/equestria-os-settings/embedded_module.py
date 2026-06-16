@@ -25,6 +25,7 @@ _COMMON_NAMES = [
     "backend", "disk_backend", "models", "utils", "workers",
     "core", "privilege", "hooks", "screenshot", "plasma_utils",
     "auto_restore", "restore_system",
+    "settings", "settings_dialog",
 ]
 
 _LANG_METHOD_1ARG = ("change_lang", "set_language", "_change_lang")

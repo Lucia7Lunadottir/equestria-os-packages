@@ -100,5 +100,15 @@
   "ui.flatpak_install_btn": "Install Flatpak",
   "ui.source_updates": "Updates",
   "ui.integrity_check": "Check System Files",
-  "ui.cache_clean": "Clean Package Cache"
+  "ui.cache_clean": "Clean Package Cache",
+  "settings.title": "Settings",
+  "settings.language_group": "Interface Language",
+  "settings.lang_auto": "System Default (Auto)",
+  "settings.sources_group": "Package Framework Visibility",
+  "settings.enable_aur": "Enable AUR Ecosystem Sub-layers",
+  "settings.enable_flatpak": "Enable Flatpak Deployment Layers",
+  "settings.updates_group": "Targeted Core Upgrades Scope",
+  "settings.upd_pacman": "Synchronize Pacman official repositories",
+  "settings.upd_aur": "Compile updates from active AUR trees",
+  "settings.upd_flatpak": "Download Flatpak runtime branch assets"
 }

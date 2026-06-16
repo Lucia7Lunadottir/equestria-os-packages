@@ -100,5 +100,15 @@
   "ui.flatpak_install_btn": "安装Flatpak",
   "ui.source_updates": "更新",
   "ui.integrity_check": "检查系统文件",
-  "ui.cache_clean": "清理包缓存"
+  "ui.cache_clean": "清理包缓存",
+  "settings.title": "软件源设置",
+  "settings.language_group": "界面语言",
+  "settings.lang_auto": "系统默认 (自动)",
+  "settings.sources_group": "软件源显示设置",
+  "settings.enable_aur": "启用 AUR 支持",
+  "settings.enable_flatpak": "启用 Flatpak 支持",
+  "settings.updates_group": "自动更新范围",
+  "settings.upd_pacman": "更新官方软件包 (Pacman)",
+  "settings.upd_aur": "检查并编译 AUR 更新",
+  "settings.upd_flatpak": "下载 Flatpak 更新"
 }

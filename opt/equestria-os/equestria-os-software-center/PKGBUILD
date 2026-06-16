@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-software-center
-pkgver=1.3.3
+pkgver=1.4.0
 pkgrel=2
 pkgdesc="Центр программного обеспечения для Equestria OS"
 arch=('any')
@@ -13,7 +13,7 @@ package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
     install -dm755 "$_lib"
 
-    for f in main.py models.py utils.py workers.py ui_software.py style.qss equestria_cyrillic.ttf EquestriaApps.csv EquestriaLocalizations.csv equestria-os-software-center.png; do
+    for f in main.py models.py utils.py workers.py ui_software.py settings.py settings_dialog.py style.qss equestria_cyrillic.ttf EquestriaApps.csv equestria-os-software-center.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
 

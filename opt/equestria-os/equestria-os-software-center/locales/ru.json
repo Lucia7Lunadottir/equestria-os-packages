@@ -100,5 +100,15 @@
   "ui.flatpak_install_btn": "Установить Flatpak",
   "ui.source_updates": "Обновления",
   "ui.integrity_check": "Проверка системных файлов",
-  "ui.cache_clean": "Очистка кэша пакетов"
+  "ui.cache_clean": "Очистка кэша пакетов",
+  "settings.title": "Настройки источников",
+  "settings.language_group": "Язык интерфейса центра",
+  "settings.lang_auto": "Системный по умолчанию (Авто)",
+  "settings.sources_group": "Отображение источников софта",
+  "settings.enable_aur": "Включить поддержку репозиториев AUR",
+  "settings.enable_flatpak": "Включить поддержку пакетов Flatpak",
+  "settings.updates_group": "Область автоматического обновления",
+  "settings.upd_pacman": "Обновлять официальные пакеты (Pacman)",
+  "settings.upd_aur": "Проверять и собирать обновления AUR",
+  "settings.upd_flatpak": "Загружать обновления контейнеров Flatpak"
 }

@@ -302,3 +302,105 @@ QPushButton#PaginationBtn:disabled {
     color: rgb(69, 71, 90);
     border: 1px solid rgb(49, 50, 68);
 }
+
+
+/* --- Settings Dialog Layout Extensions --- */
+QDialog#SettingsDialog {
+    background-color: rgb(26, 24, 41);
+}
+
+QGroupBox#SettingsGroup {
+    color: rgb(137, 180, 250);
+    font-weight: bold;
+    border: 1px solid rgb(49, 50, 68);
+    border-radius: 8px;
+    margin-top: 10px;
+    padding-top: 15px;
+}
+
+/* Premium Checkbox Toggle with Embedded Base64 SVG Vectors */
+QCheckBox#SettingsToggle {
+    color: rgb(205, 214, 244);
+    font-size: 14px;
+    spacing: 12px;
+    padding: 6px;
+}
+
+QCheckBox#SettingsToggle::indicator {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+}
+
+/* Unchecked state: Dark input background with crisp red cross icon placeholder */
+QCheckBox#SettingsToggle::indicator:unchecked {
+    background-color: rgb(17, 17, 27);
+    border: 2px solid rgb(49, 50, 68);
+    image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjM4YmE4IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGxpbmUgeDE9IjE4IiB5MT0iNiIgeDI9IjYiIHkyPSIxOCIvPjxsaW5lIHgxPSI2IiB5MT0iNiIgeDI9IjE4IiB5Mj0iMTgiLz48L3N2Zz4=);
+}
+
+QCheckBox#SettingsToggle::indicator:unchecked:hover {
+    background-color: rgb(49, 50, 68);
+    border: 2px solid rgb(137, 180, 250);
+}
+
+/* Checked state: Smooth Catppuccin Green accent filling with dark contrast checkmark vector */
+QCheckBox#SettingsToggle::indicator:checked {
+    background-color: rgb(166, 227, 161);
+    border: 2px solid rgb(166, 227, 161);
+    image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTExMTFiIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBvbHlsaW5lIHBvaW50cz0iMjAgNiA5IDE3IDQgMTIiLz48L3N2Zz4=);
+}
+
+QCheckBox#SettingsToggle::indicator:checked:hover {
+    background-color: rgb(148, 226, 213);
+    border: 2px solid rgb(148, 226, 213);
+}
+
+QCheckBox#SettingsToggle::indicator:disabled {
+    background-color: rgb(24, 24, 37);
+    border: 2px solid rgb(49, 50, 68);
+}
+
+QComboBox#SettingsDropdown {
+    background-color: rgb(17, 17, 27);
+    border: 1px solid rgb(49, 50, 68);
+    border-radius: 6px;
+    padding: 4px 8px;
+    color: white;
+    min-height: 25px;
+}
+
+QComboBox#SettingsDropdown QAbstractItemView {
+    background-color: rgb(17, 17, 27);
+    color: white;
+    selection-background-color: rgb(49, 50, 68);
+    border: 1px solid rgb(49, 50, 68);
+}
+
+QPushButton#SettingsSaveBtn {
+    background-color: rgb(166, 227, 161);
+    color: rgb(17, 17, 27);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-weight: bold;
+    font-size: 13px;
+    border: none;
+}
+
+QPushButton#SettingsSaveBtn:hover {
+    background-color: rgb(148, 226, 213);
+}
+
+QPushButton#SettingsCancelBtn {
+    background-color: rgb(49, 50, 68);
+    color: white;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-weight: bold;
+    font-size: 13px;
+    border: 1px solid rgb(69, 71, 90);
+}
+
+QPushButton#SettingsCancelBtn:hover {
+    background-color: rgb(69, 71, 90);
+}

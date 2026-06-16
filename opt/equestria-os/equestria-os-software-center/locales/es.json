@@ -100,5 +100,15 @@
   "ui.flatpak_install_btn": "Instalar Flatpak",
   "ui.source_updates": "Actualizaciones",
   "ui.integrity_check": "Verificar archivos del sistema",
-  "ui.cache_clean": "Limpiar caché de paquetes"
+  "ui.cache_clean": "Limpiar caché de paquetes",
+  "settings.title": "Ajustes de fuentes",
+  "settings.language_group": "Idioma de la interfaz",
+  "settings.lang_auto": "Predeterminado del sistema (Auto)",
+  "settings.sources_group": "Visibilidad de fuentes de software",
+  "settings.enable_aur": "Activar soporte de AUR",
+  "settings.enable_flatpak": "Activar soporte de Flatpak",
+  "settings.updates_group": "Área de actualización automática",
+  "settings.upd_pacman": "Actualizar paquetes oficiales (Pacman)",
+  "settings.upd_aur": "Verificar y compilar actualizaciones de AUR",
+  "settings.upd_flatpak": "Descargar actualizaciones de Flatpak"
 }

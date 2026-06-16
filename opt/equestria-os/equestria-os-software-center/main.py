@@ -6,7 +6,7 @@ import subprocess
 import shutil
 
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem,
-                              QPushButton, QLabel, QVBoxLayout, QWidget)
+                              QPushButton, QLabel, QVBoxLayout, QWidget, QComboBox)
 from PyQt6.QtGui import QIcon, QFontDatabase, QFont
 from PyQt6.QtCore import Qt, QThread, QTimer, QFileSystemWatcher, QProcess
 
@@ -18,7 +18,10 @@ from workers import (AppStoreLoader, FlatpakLoader,
                      ScreenshotDownloadThread, LocalAppStreamLoader,
                      PacmanInfoLoader)
 from ui_software import Ui_SoftwareCenter, EssentialAppRow, StoreAppRow, AppDetailWidget
+from settings import load_settings, save_settings, resolve_language
+from settings_dialog import SettingsDialog
 
+# All code comments inside the script are written in English as requested
 
 class main_app(QMainWindow, Ui_SoftwareCenter):
     def __init__(self):
@@ -27,9 +30,12 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.setupUi(self)
         self.setWindowTitle("Equestria Software Center")
 
-        self.current_lang = "ru"
         self.langs = []
         self.localizations = {}
+
+        # Load persistent settings first so language and source flags are ready
+        self._settings = load_settings()
+        self.current_lang = ""  # resolved after discover_langs()
 
         self.essentials_data = []
         self.store_packages = []
@@ -63,6 +69,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.init_resources()
         cleanup_screenshot_cache()
         self.discover_langs()
+        
+        # Resolve language: saved preference → system locale → "en"
+        self.current_lang = resolve_language(self._settings, self.langs)
         self.load_localizations()
         self.refresh_system_status()
         self.load_essentials_csv()
@@ -94,7 +103,6 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "echo; read -rp 'Database has been updated! Press Enter to close...'"
         )
 
-        # Используем QProcess, чтобы поймать момент закрытия терминала
         self._init_process = QProcess(self)
         self._init_process.finished.connect(self.start_loaders)
         self._init_process.start("konsole", ["-e", "bash", "-c", cmd])
@@ -107,28 +115,26 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.loader.finished.connect(self.on_store_loaded)
         self.loader.start()
 
-        if shutil.which("flatpak") and os.path.exists(FLATPAK_APPSTREAM):
+        if (self._settings.get("enable_flatpak", True)
+                and shutil.which("flatpak") and os.path.exists(FLATPAK_APPSTREAM)):
             self.flatpak_loader = FlatpakLoader()
             self.flatpak_loader.finished.connect(self.on_flatpak_loaded)
             self.flatpak_loader.start()
 
-        self._aur_popular_thread = AURPopularLoader()
-        self._aur_popular_thread.finished.connect(self._on_aur_popular_loaded)
-        self._aur_popular_thread.start()
+        if self._settings.get("enable_aur", True):
+            self._aur_popular_thread = AURPopularLoader()
+            self._aur_popular_thread.finished.connect(self._on_aur_popular_loaded)
+            self._aur_popular_thread.start()
 
-        self._aur_upgradable_loader = AURUpgradableLoader()
-        self._aur_upgradable_loader.finished.connect(self._on_aur_upgradable_loaded)
-        self._aur_upgradable_loader.start()
+            self._aur_upgradable_loader = AURUpgradableLoader()
+            self._aur_upgradable_loader.finished.connect(self._on_aur_upgradable_loaded)
+            self._aur_upgradable_loader.start()
 
         self._flatpak_watcher = QFileSystemWatcher()
         flatpak_dir = os.path.dirname(FLATPAK_APPSTREAM)
         if os.path.exists(flatpak_dir):
             self._flatpak_watcher.addPath(flatpak_dir)
         self._flatpak_watcher.directoryChanged.connect(self._on_flatpak_dir_changed)
-
-
-
-
 
     def closeEvent(self, event):
         threads = [
@@ -295,30 +301,114 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.btn_cache_clean.clicked.connect(self.execute_cache_clean)
         self.btn_install_essentials.clicked.connect(self.install_selected_essentials)
 
-        for i, lang in enumerate(self.langs):
-            btn = QPushButton(lang.upper())
-            btn.setObjectName("LangBtn")
-            btn.setProperty("lang", lang)
-            btn.clicked.connect(self.change_language)
-            self.lang_layout.addWidget(btn, i // 5, i % 5)
+        # FIXED: Create an elegant Dropdown selection for the left sidebar area
+        self.lang_dropdown = QComboBox()
+        self.lang_dropdown.setObjectName("CategoryDropdown") # Inherits default styling framework cleanly
+        for lang in self.langs:
+            self.lang_dropdown.addItem(lang.upper(), lang)
+        
+        # Set accurate visual marker mapping current system state index
+        idx = self.lang_dropdown.findData(self.current_lang)
+        if idx != -1:
+            self.lang_dropdown.setCurrentIndex(idx)
+        self.lang_dropdown.currentIndexChanged.connect(self._on_main_lang_dropdown_changed)
+        
+        # Insert dropdown into the layout container grid panel
+        self.lang_layout.addWidget(self.lang_dropdown, 0, 0)
+
+        # FIXED: Cleanly inject settings action trigger directly into the navigation layout container
+        self._btn_settings = QPushButton("⚙  " + self.t("settings.title"))
+        self._btn_settings.setObjectName("NavBtn") # Matches visual alignment patterns perfectly
+        self._btn_settings.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._btn_settings.clicked.connect(self.open_settings_dialog)
+        
+        if hasattr(self, 'left_panel') and self.left_panel.layout() is not None:
+            # Structurally stacks the item right above system diagnostic button sets
+            self.left_panel.layout().insertWidget(self.left_panel.layout().count() - 3, self._btn_settings)
 
         self.page_detail = AppDetailWidget(self._go_back_from_detail)
         self.stacked_widget.addWidget(self.page_detail)
 
-    def change_language(self):
-        self.current_lang = self.sender().property("lang")
+    def _on_main_lang_dropdown_changed(self):
+        """Monitors sidebar language selector transactions to sync UI localized fields."""
+        selected_lang = self.lang_dropdown.currentData()
+        if not selected_lang or selected_lang == self.current_lang:
+            return
+        self.current_lang = selected_lang
+        self._settings["language"] = self.current_lang
+        save_settings(self._settings)
         self.load_localizations()
         self.update_ui_texts()
         self.load_essentials_csv()
         if self.store_packages:
             self.filter_store()
-        for i in range(self.lang_layout.count()):
-            btn = self.lang_layout.itemAt(i).widget()
-            if btn:
-                is_active = "true" if btn.property("lang") == self.current_lang else "false"
-                btn.setProperty("active", is_active)
-                btn.style().unpolish(btn)
-                btn.style().polish(btn)
+
+    def change_language(self):
+        # Legacy stub preserved to avoid external reference disruptions
+        pass
+
+    def open_settings_dialog(self):
+        dlg = SettingsDialog(
+            parent=self,
+            settings=self._settings,
+            available_langs=self.langs,
+            t=self.t,
+            on_save=self._apply_settings,
+        )
+        dlg.exec()
+
+    def _apply_settings(self, new_settings: dict):
+        old_enable_aur = self._settings.get("enable_aur", True)
+        old_enable_flatpak = self._settings.get("enable_flatpak", True)
+
+        self._settings = new_settings
+        save_settings(self._settings)
+
+        # Language payload updates tracking
+        new_lang = resolve_language(new_settings, self.langs)
+        if new_lang != self.current_lang:
+            self.current_lang = new_lang
+            self.load_localizations()
+            self.update_ui_texts()
+            self.load_essentials_csv()
+            if self.store_packages:
+                self.filter_store()
+            
+            # FIXED: Synchronize main UI dropdown selection index seamlessly
+            self.lang_dropdown.blockSignals(True)
+            idx = self.lang_dropdown.findData(self.current_lang)
+            if idx != -1:
+                self.lang_dropdown.setCurrentIndex(idx)
+            self.lang_dropdown.blockSignals(False)
+
+        # Source runtime validation tracking flags updates
+        enable_aur = new_settings.get("enable_aur", True)
+        enable_flatpak = new_settings.get("enable_flatpak", True)
+
+        if enable_aur and not old_enable_aur:
+            if not self._aur_popular_cached:
+                self._aur_popular_thread = AURPopularLoader()
+                self._aur_popular_thread.finished.connect(self._on_aur_popular_loaded)
+                self._aur_popular_thread.start()
+            self._aur_upgradable_loader = AURUpgradableLoader()
+            self._aur_upgradable_loader.finished.connect(self._on_aur_upgradable_loaded)
+            self._aur_upgradable_loader.start()
+        elif not enable_aur and old_enable_aur:
+            self._aur_popular_cached = []
+            self._aur_query_cache = {}
+            self.aur_packages = []
+            self._rebuild_merged()
+            self.filter_store()
+
+        if enable_flatpak and not old_enable_flatpak:
+            if shutil.which("flatpak") and os.path.exists(FLATPAK_APPSTREAM):
+                self.flatpak_loader = FlatpakLoader()
+                self.flatpak_loader.finished.connect(self.on_flatpak_loaded)
+                self.flatpak_loader.start()
+        elif not enable_flatpak and old_enable_flatpak:
+            self.flatpak_packages = []
+            self._rebuild_merged()
+            self.filter_store()
 
     def update_ui_texts(self):
         self.cat_header.setText(self.t("ui.essentials_header"))
@@ -331,6 +421,11 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.btn_prev_page.setText(self.t("ui.prev_page"))
         self.btn_next_page.setText(self.t("ui.next_page"))
         self.store_loading_lbl.setText(self.t("ui.loading"))
+        
+        # FIXED: Update internal configurations overlay button label smoothly
+        if hasattr(self, "_btn_settings"):
+            self._btn_settings.setText("⚙  " + self.t("settings.title"))
+
         self.combo_source.blockSignals(True)
         self.combo_source.setItemText(0, self.t("ui.source_all"))
         self.combo_source.setItemText(1, self.t("ui.source_pacman"))
@@ -792,7 +887,6 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         if not desc:
             return
         pkg_data.desc = desc
-        # Update the label only if this package is still the one being shown
         try:
             self.page_detail.lbl_desc.setText(desc)
         except RuntimeError:
@@ -941,50 +1035,84 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
 
     def execute_system_update(self):
-        cmd = (
-            "LOG=$(mktemp /tmp/equestria_update.XXXXXX.log); "
-            # Step 1: official + custom repos via pacman — never blocked by AUR
-            "echo '==> [1/2] Updating repositories...'; echo; "
-            "pkexec pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
-            "EXIT=${PIPESTATUS[0]}; "
-            # Mirror failure → re-rank and retry
-            "if [ $EXIT -ne 0 ] && grep -qE "
-            "'Operation too slow|failed to retrieve|не удалось получить' \"$LOG\"; then "
-            "  echo; echo '==> Mirror failure detected. Re-ranking mirrors...'; "
-            "  COUNTRY=$(curl -s --max-time 5 https://ipinfo.io/country 2>/dev/null | tr -d '\\n\\r'); "
-            "  [ -z \"$COUNTRY\" ] && COUNTRY='DE,US,FR,GB'; "
-            "  pkexec pg-rankmirrors-backend rank \"$COUNTRY\" "
-            "    && echo '==> Mirrors updated. Retrying...' || true; "
-            "  echo; pkexec pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; EXIT=${PIPESTATUS[0]}; "
-            "fi; "
-            # Package conflict → remove conflicting package and retry
-            "if [ $EXIT -ne 0 ] && grep -q 'are in conflict' \"$LOG\"; then "
-            "  echo; echo '==> Package conflict detected. Resolving automatically...'; "
-            "  CONFLICT_PKGS=$(grep -oP '(?<=Remove )[^?]+' \"$LOG\" | tr -d ' ' | tr '\\n' ' '); "
-            "  if [ -n \"$CONFLICT_PKGS\" ]; then "
-            "    echo \"==> Removing conflicting packages: $CONFLICT_PKGS\"; "
-            "    pkexec pacman -Rdd --noconfirm $CONFLICT_PKGS; "
-            "    echo '==> Retrying update...'; echo; "
-            "    pkexec pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; EXIT=${PIPESTATUS[0]}; "
-            "  fi; "
-            "fi; "
-            # Step 2: AUR — each package individually so one broken dep can't block others
-            "echo; echo '==> [2/2] Updating AUR packages...'; echo; "
-            "AUR_PKGS=$(yay -Qua 2>/dev/null | awk '{print $1}'); "
-            "if [ -n \"$AUR_PKGS\" ]; then "
-            "  for pkg in $AUR_PKGS; do "
-            "    echo \"-- $pkg\"; "
-            "    yay -S --noconfirm \"$pkg\" "
-            "      || echo \"==> Warning: $pkg skipped (build/dependency error)\"; "
-            "    echo; "
-            "  done; "
-            "else "
-            "  echo 'AUR packages are up to date.'; "
-            "fi; "
-            "rm -f \"$LOG\"; "
-            "if command -v flatpak >/dev/null; then echo; flatpak update -y; fi; "
-            "echo; read -rp 'Done. Press Enter to close...'"
-        )
+        do_pacman = self._settings.get("update_pacman", True)
+        do_aur = self._settings.get("update_aur", True) and self._settings.get("enable_aur", True)
+        do_flatpak = (self._settings.get("update_flatpak", True)
+                      and self._settings.get("enable_flatpak", True))
+
+        steps = []
+        step_n = 0
+
+        if do_pacman:
+            step_n += 1
+            steps.append(
+                f"echo '==> [{step_n}] Updating official repositories (pacman)...'; echo; "
+                "LOG=$(mktemp /tmp/equestria_update.XXXXXX.log); "
+                "pkexec pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
+                "EXIT=${PIPESTATUS[0]}; "
+                "if [ $EXIT -ne 0 ] && grep -qE "
+                "'Operation too slow|failed to retrieve|не удалось получить' \"$LOG\"; then "
+                "  echo; echo '==> Mirror failure detected. Re-ranking mirrors...'; "
+                "  COUNTRY=$(curl -s --max-time 5 https://ipinfo.io/country 2>/dev/null | tr -d '\\n\\r'); "
+                "  [ -z \"$COUNTRY\" ] && COUNTRY='DE,US,FR,GB'; "
+                "  pkexec pg-rankmirrors-backend rank \"$COUNTRY\" "
+                "    && echo '==> Mirrors updated. Retrying...' || true; "
+                "  echo; pkexec pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; EXIT=${PIPESTATUS[0]}; "
+                "fi; "
+                "if [ $EXIT -ne 0 ] && grep -q 'are in conflict' \"$LOG\"; then "
+                "  echo; echo '==> Package conflict detected. Resolving automatically...'; "
+                "  CONFLICT_PKGS=$(grep -oP '(?<=Remove )[^?]+' \"$LOG\" | tr -d ' ' | tr '\\n' ' '); "
+                "  if [ -n \"$CONFLICT_PKGS\" ]; then "
+                "    pkexec pacman -Rdd --noconfirm $CONFLICT_PKGS; "
+                "    echo '==> Retrying update...'; echo; "
+                "    pkexec pacman -Syu --noconfirm 2>&1 | tee \"$LOG\"; "
+                "  fi; "
+                "fi; "
+                "rm -f \"$LOG\"; echo; "
+            )
+
+        if do_aur:
+            step_n += 1
+            steps.append(
+                f"echo '==> [{step_n}] Updating AUR packages (yay)...'; echo; "
+                "if command -v yay >/dev/null 2>&1; then "
+                "  AUR_PKGS=$(yay -Qua 2>/dev/null | awk '{print $1}'); "
+                "  if [ -n \"$AUR_PKGS\" ]; then "
+                "    for pkg in $AUR_PKGS; do "
+                "      echo \"-- $pkg\"; "
+                "      yay -S --noconfirm \"$pkg\" "
+                "        || echo \"==> Warning: $pkg skipped (build/dependency error)\"; "
+                "      echo; "
+                "    done; "
+                "  else "
+                "    echo 'AUR packages are up to date.'; "
+                "  fi; "
+                "else "
+                "  echo 'yay not found — skipping AUR update.'; "
+                "fi; echo; "
+            )
+
+        if do_flatpak:
+            step_n += 1
+            steps.append(
+                f"echo '==> [{step_n}] Updating Flatpak apps...'; echo; "
+                "if command -v flatpak >/dev/null 2>&1; then "
+                "  flatpak update -y; "
+                "else "
+                "  echo 'flatpak not installed — skipping.'; "
+                "fi; echo; "
+            )
+
+        if not steps:
+            cmd = "echo 'No update sources are enabled. Enable at least one in Settings.'; echo; read -rp 'Press Enter to close...'"
+        else:
+            total = step_n
+            cmd = (
+                f"echo '=== Equestria OS System Update ({total} step(s)) ==='; echo; "
+                + "".join(steps)
+                + "echo 'All done!'; echo; read -rp 'Done. Press Enter to close...'"
+            )
+
         subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
 
 
