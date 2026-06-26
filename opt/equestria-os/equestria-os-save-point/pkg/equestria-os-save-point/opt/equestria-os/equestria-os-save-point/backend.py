@@ -37,6 +37,22 @@ RESTIC_EXCLUDES = [
     # Large game/app data
     "/root/.local/share/Steam",
     "/opt/steam",
+
+    # Containers & VMs — large, easily re-deployable
+    "/var/lib/docker",
+    "/var/lib/containers",      # Podman
+    "/var/lib/libvirt/images",
+    "/var/lib/machines",        # systemd-nspawn containers
+    "/var/lib/snapd",           # Snap packages
+
+    # Flatpak runtimes — large, re-downloadable
+    "/var/lib/flatpak",
+
+    # Debug symbols — huge, always re-installable
+    "/usr/lib/debug",
+
+    # Wine/Proton prefixes (Equestria OS game data — not system config)
+    "/root/.local/share/Equestria OS/ProtonApps",
 ]
 
 
@@ -176,6 +192,10 @@ class TimeshiftBackend:
     def delete_cmd(self, snap_id: str) -> str:
         return f"timeshift --delete --snapshot {shlex.quote(snap_id)}"
 
+    def delete_multiple_cmd(self, snap_ids: list) -> str:
+        cmds = [f"timeshift --delete --snapshot {shlex.quote(s)}" for s in snap_ids]
+        return " && ".join(cmds) if cmds else "echo 'Nothing to delete'"
+
     def fstype_label(self) -> str:
         return "Btrfs CoW" if detect_root_fstype() == "btrfs" else "rsync"
 
@@ -309,6 +329,16 @@ class BtrfsBackend:
             return "echo 'Protected daily snapshot cannot be deleted'"
         path = shlex.quote(os.path.join(self.snap_dir, snap_id))
         return f"btrfs subvolume delete {path}"
+
+    def delete_multiple_cmd(self, snap_ids: list) -> str:
+        paths = [
+            shlex.quote(os.path.join(self.snap_dir, s))
+            for s in snap_ids
+            if not s.startswith("daily/")
+        ]
+        if not paths:
+            return "echo 'Nothing to delete'"
+        return "btrfs subvolume delete " + " ".join(paths)
 
     def get_repo_size(self) -> str:
         return ""
@@ -445,6 +475,12 @@ class ResticBackend:
         k = shlex.quote(self.key)
         s = shlex.quote(snap_id)
         return f"restic -r {r} --password-file {k} forget {s} --prune"
+
+    def delete_multiple_cmd(self, snap_ids: list) -> str:
+        r = shlex.quote(self.repo)
+        k = shlex.quote(self.key)
+        ids = " ".join(shlex.quote(s) for s in snap_ids)
+        return f"restic -r {r} --password-file {k} forget {ids} --prune"
 
     def restore_cmd(self, snap_id: str) -> str:
         r = shlex.quote(self.repo)

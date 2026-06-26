@@ -8,6 +8,7 @@
   "modal.title": "✨ Potwierdzenie",
   "modal.confirm": "Przywrócić system do migawki z {0}?",
   "modal.delete_confirm": "Usunąć migawkę z {0}?\n\nTej operacji nie można cofnąć.",
+  "modal.delete_confirm_multi": "Usunąć {0} wybranych migawek?\n\nTej operacji nie można cofnąć.",
   "status.loading": "Ładowanie migawek…",
   "status.loaded": "Znaleziono migawek: {0}",
   "status.empty": "Nie znaleziono migawek",

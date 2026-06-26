@@ -3,12 +3,12 @@
 pkgname = equestria-os-proton-starter
 pkgbase = equestria-os-proton-starter
 xdata = pkgtype=pkg
-pkgver = 1.5.3-3
+pkgver = 1.6.0-3
 pkgdesc = Native Windows .exe launcher for Equestria OS (double-click support via Proton)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1777078361
+builddate = 1782489651
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 422263
+size = 429332
 arch = any
 license = GPL
 depend = python-pyqt6

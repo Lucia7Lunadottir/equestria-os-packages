@@ -11,6 +11,7 @@ import hashlib
 import subprocess
 import re
 import shlex
+import shutil
 
 from PyQt6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QLabel,
                              QProgressBar, QPushButton, QTextEdit, QHBoxLayout)
@@ -19,6 +20,55 @@ from PyQt6.QtCore import Qt, QTimer
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
 SYSTEM_PATH = sys._MEIPASS if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
+SHARED_BASE = os.path.join(APPS_DATA_DIR, "_shared")
+SHARED_WINDOWS = os.path.join(SHARED_BASE, "windows")
+SHARED_MARKER = os.path.join(SHARED_BASE, ".proton-shared")
+
+
+def _prefix_windows_path(prefix_path):
+    return os.path.join(prefix_path, "pfx", "drive_c", "windows")
+
+
+def _migrate_windows_to_shared(prefix_path):
+    """
+    Move pfx/drive_c/windows/ from prefix to _shared/ and replace with a symlink.
+    Uses os.rename (atomic, instant on same filesystem — no data is copied).
+    Safe to call before umu-run starts (no open file handles yet).
+    """
+    windows_path = _prefix_windows_path(prefix_path)
+
+    if os.path.islink(windows_path):
+        if not os.path.exists(windows_path):
+            os.remove(windows_path)
+        return
+
+    if not os.path.isdir(windows_path):
+        return
+
+    try:
+        os.makedirs(SHARED_BASE, exist_ok=True)
+        if not os.path.exists(SHARED_WINDOWS):
+            shutil.move(windows_path, SHARED_WINDOWS)
+            open(SHARED_MARKER, "w").close()
+        else:
+            shutil.rmtree(windows_path)
+        os.symlink(SHARED_WINDOWS, windows_path)
+    except Exception:
+        pass
+
+
+def _preseed_shared_windows(prefix_path):
+    """
+    For a brand-new prefix: pre-create windows/ as a symlink to _shared/ so that
+    umu-run skips repopulating the DLLs and only sets up the registry (much faster).
+    """
+    if not os.path.exists(SHARED_MARKER):
+        return
+    windows_path = _prefix_windows_path(prefix_path)
+    drive_c = os.path.dirname(windows_path)
+    os.makedirs(drive_c, exist_ok=True)
+    if not os.path.exists(windows_path):
+        os.symlink(SHARED_WINDOWS, windows_path)
 
 _locales: dict = {}
 _lang: str = "en"
@@ -215,7 +265,12 @@ def main():
         with open(config_file, "r", encoding="utf-8") as f:
             settings = json.load(f)
 
-    os.makedirs(prefix_path, exist_ok=True)
+    _migrate_windows_to_shared(prefix_path)
+
+    if not os.path.exists(prefix_path):
+        os.makedirs(prefix_path, exist_ok=True)
+        _preseed_shared_windows(prefix_path)
+
     env = os.environ.copy()
     env["WINEPREFIX"] = prefix_path
     env["GAMEID"] = app_id
@@ -238,6 +293,11 @@ def main():
     # Запускаем SplashWindow
     splash = SplashWindow(exe_name, log_path, cmd, env, game_dir)
     splash.exec()
+
+    # Post-launch migration: handles the case where umu-run just initialised a brand-new
+    # prefix (windows/ didn't exist before launch, so pre-launch migration did nothing).
+    # os.rename is atomic on Linux — safe even while the game process is still running.
+    _migrate_windows_to_shared(prefix_path)
 
 if __name__ == "__main__":
     main()

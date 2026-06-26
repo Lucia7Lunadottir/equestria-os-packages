@@ -8,6 +8,7 @@
   "modal.title": "✨ Confirmación",
   "modal.confirm": "¿Restaurar el sistema al snapshot del {0}?",
   "modal.delete_confirm": "¿Eliminar el snapshot del {0}?\n\nEsta acción no se puede deshacer.",
+  "modal.delete_confirm_multi": "¿Eliminar {0} snapshot(s) seleccionado(s)?\n\nEsta acción no se puede deshacer.",
   "status.loading": "Cargando snapshots…",
   "status.loaded": "{0} snapshot(s) encontrado(s)",
   "status.empty": "No se encontraron snapshots",

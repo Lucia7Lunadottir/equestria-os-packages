@@ -8,6 +8,7 @@
   "modal.title": "✨ 确认恢复",
   "modal.confirm": "将系统恢复到 {0} 的快照吗？",
   "modal.delete_confirm": "删除 {0} 的快照？\n\n此操作无法撤销。",
+  "modal.delete_confirm_multi": "删除所选的 {0} 个快照？\n\n此操作无法撤销。",
   "status.loading": "正在加载快照…",
   "status.loaded": "找到 {0} 个快照",
   "status.empty": "未找到快照",

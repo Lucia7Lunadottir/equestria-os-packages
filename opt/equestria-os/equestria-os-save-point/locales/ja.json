@@ -8,6 +8,7 @@
   "modal.title": "✨ 復元の確認",
   "modal.confirm": "{0} のスナップショットにシステムを復元しますか？",
   "modal.delete_confirm": "{0} のスナップショットを削除しますか？\n\nこの操作は元に戻せません。",
+  "modal.delete_confirm_multi": "選択した {0} 件のスナップショットを削除しますか？\n\nこの操作は元に戻せません。",
   "status.loading": "スナップショットを読み込み中…",
   "status.loaded": "{0} 個のスナップショットが見つかりました",
   "status.empty": "スナップショットが見つかりません",

@@ -8,6 +8,7 @@
   "modal.title": "✨ Confirm Restore",
   "modal.confirm": "Restore system to snapshot from {0}?",
   "modal.delete_confirm": "Delete snapshot from {0}?\n\nThis cannot be undone.",
+  "modal.delete_confirm_multi": "Delete {0} selected snapshot(s)?\n\nThis cannot be undone.",
   "status.loading": "Loading snapshots…",
   "status.loaded": "{0} snapshot(s) found",
   "status.empty": "No snapshots found",

@@ -18,6 +18,9 @@ from PyQt6.QtGui import QIcon
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
 SYSTEM_PATH = sys._MEIPASS if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
+SHARED_BASE = os.path.join(APPS_DATA_DIR, "_shared")
+SHARED_WINDOWS = os.path.join(SHARED_BASE, "windows")
+SHARED_MARKER = os.path.join(SHARED_BASE, ".proton-shared")
 
 MESA_CACHE_DIRS = [
     os.path.expanduser("~/.cache/mesa_shader_cache"),
@@ -144,6 +147,8 @@ class AppCard(QWidget):
         layout.addWidget(self.btn_shaders)
         layout.addWidget(self.btn_prefix)
 
+
+
     def _refresh_size(self):
         size = get_dir_size(self.prefix_path) if os.path.isdir(self.prefix_path) else 0
         self.lbl_size.setText(f"{t('cleaner.size')}: {format_size(size)}")
@@ -212,6 +217,39 @@ class CleanerWindow(QMainWindow):
         self._build_ui()
         self._load_apps()
 
+    def _rebuild_shared(self):
+        """Delete shared windows base so it is recreated on next launch."""
+        if not os.path.isdir(SHARED_BASE):
+            QMessageBox.information(self, t("cleaner.msg_info_title"),
+                                    "No shared Windows base found.")
+            return
+        reply = QMessageBox.question(
+            self, t("cleaner.msg_confirm_title"),
+            "Delete the shared Windows base?\n"
+            "All app prefixes will reinitialise their own windows/ on next launch.\n"
+            "Existing saves are NOT affected.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            # Restore real windows/ dirs in each prefix before deleting shared
+            if os.path.isdir(APPS_DATA_DIR):
+                for entry in os.listdir(APPS_DATA_DIR):
+                    if entry.startswith("_"):
+                        continue
+                    win_link = os.path.join(APPS_DATA_DIR, entry,
+                                            "pfx", "drive_c", "windows")
+                    if os.path.islink(win_link):
+                        os.remove(win_link)
+            shutil.rmtree(SHARED_BASE)
+            QMessageBox.information(self, t("cleaner.msg_success_title"),
+                                    "Shared base deleted. Prefixes will reinitialise on next launch.")
+            self._load_apps()
+        except Exception as e:
+            QMessageBox.critical(self, t("cleaner.msg_error_title"), str(e))
+
     def _build_ui(self):
         central = QWidget()
         self.setCentralWidget(central)
@@ -265,6 +303,17 @@ class CleanerWindow(QMainWindow):
 
         root.addWidget(self.group_global)
 
+        template_row = QHBoxLayout()
+        self.lbl_template = QLabel()
+        template_row.addWidget(self.lbl_template)
+        template_row.addStretch()
+        self.btn_template = QPushButton("Rebuild Template")
+        self.btn_template.clicked.connect(self._rebuild_shared)
+        template_row.addWidget(self.btn_template)
+        global_layout.addLayout(template_row)
+
+
+
         # Bottom
         bottom = QHBoxLayout()
         bottom.addStretch()
@@ -281,9 +330,19 @@ class CleanerWindow(QMainWindow):
                 item.widget().deleteLater()
         self._app_cards.clear()
 
+    def _refresh_template_label(self):
+        if os.path.exists(SHARED_MARKER):
+            size = get_dir_size(SHARED_BASE)
+            self.lbl_template.setText(f"Shared Windows base ({format_size(size)})")
+            self.btn_template.setEnabled(True)
+        else:
+            self.lbl_template.setText("Shared Windows base: not created yet")
+            self.btn_template.setEnabled(False)
+
     def _load_apps(self):
         self._clear_scroll()
         self._refresh_mesa_label()
+        self._refresh_template_label()
 
         if not os.path.isdir(APPS_DATA_DIR):
             self._show_empty()
@@ -291,7 +350,7 @@ class CleanerWindow(QMainWindow):
 
         entries = sorted(
             e for e in os.listdir(APPS_DATA_DIR)
-            if os.path.isdir(os.path.join(APPS_DATA_DIR, e))
+            if os.path.isdir(os.path.join(APPS_DATA_DIR, e)) and not e.startswith("_")
         )
 
         if not entries:

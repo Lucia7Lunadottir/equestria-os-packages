@@ -24,7 +24,7 @@ class SnapshotRow(QFrame):
     """
 
     def __init__(self, snap_data, tag_info: tuple, screenshot_path: str | None,
-                 on_select_callback):
+                 on_select_callback, on_check_changed=None):
         super().__init__()
         self.snap_data = snap_data
         self.setObjectName("SnapshotRow")
@@ -34,6 +34,16 @@ class SnapshotRow(QFrame):
         root = QHBoxLayout(self)
         root.setContentsMargins(12, 12, 18, 12)
         root.setSpacing(14)
+
+        # ── Checkbox (for batch delete) ───────────────────────────────────────
+        self.chk = QCheckBox()
+        self.chk.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        if snap_data.protected:
+            self.chk.setEnabled(False)
+            self.chk.setToolTip("Protected snapshots cannot be deleted")
+        if on_check_changed:
+            self.chk.toggled.connect(on_check_changed)
+        root.addWidget(self.chk)
 
         # ── Thumbnail ─────────────────────────────────────────────────────────
         self.lbl_thumb = QLabel()
@@ -116,6 +126,9 @@ class SnapshotRow(QFrame):
         root.addLayout(right)
 
         self.mousePressEvent = lambda e: on_select_callback(snap_data, self)
+
+    def is_checked(self) -> bool:
+        return self.chk.isChecked()
 
     def _set_placeholder(self):
         self.lbl_thumb.setText("📷")

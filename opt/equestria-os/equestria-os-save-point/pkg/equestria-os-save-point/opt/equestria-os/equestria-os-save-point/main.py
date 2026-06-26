@@ -253,7 +253,7 @@ class main_app(QMainWindow, Ui_SavePoint):
         for snap in snapshots:
             tag_info   = self._tag_info(snap.tags)
             screenshot = find_screenshot(snap)
-            row = SnapshotRow(snap, tag_info, screenshot, self.on_select)
+            row = SnapshotRow(snap, tag_info, screenshot, self.on_select, self._on_check_changed)
             self._snap_rows[snap.snapshot_id] = row
             self.list_layout.addWidget(row)
 
@@ -321,7 +321,7 @@ class main_app(QMainWindow, Ui_SavePoint):
         for snap in self.all_snapshots:
             tag_info   = self._tag_info(snap.tags)
             screenshot = find_screenshot(snap)
-            row = SnapshotRow(snap, tag_info, screenshot, self.on_select)
+            row = SnapshotRow(snap, tag_info, screenshot, self.on_select, self._on_check_changed)
             self._snap_rows[snap.snapshot_id] = row
             self.list_layout.addWidget(row)
 
@@ -330,10 +330,13 @@ class main_app(QMainWindow, Ui_SavePoint):
         if row:
             row.set_size(size_str)
 
+    def _on_check_changed(self):
+        has_checked = any(row.is_checked() for row in self._snap_rows.values())
+        self.btn_delete.setEnabled(has_checked)
+
     def on_select(self, snap, row_widget):
         self.selected_snapshot = snap
         self.btn_restore.setEnabled(True)
-        self.btn_delete.setEnabled(not snap.protected)
         for i in range(self.list_layout.count()):
             w = self.list_layout.itemAt(i).widget()
             if isinstance(w, SnapshotRow):
@@ -461,22 +464,31 @@ class main_app(QMainWindow, Ui_SavePoint):
         self.load_snapshots()
 
     def delete_snapshot(self):
-        if not self.selected_snapshot:
-            return
-        if self.selected_snapshot.protected:
-            return
         from PyQt6.QtWidgets import QMessageBox
-        snap = self.selected_snapshot
+
+        checked_ids = {sid for sid, row in self._snap_rows.items() if row.is_checked()}
+        to_delete = [s for s in self.all_snapshots
+                     if s.snapshot_id in checked_ids and not s.protected]
+        if not to_delete:
+            return
+
+        if len(to_delete) == 1:
+            msg = self.t("modal.delete_confirm").format(to_delete[0].date_str)
+        else:
+            msg = self.t("modal.delete_confirm_multi").format(len(to_delete))
+
         reply = QMessageBox.question(
             self,
             self.t("btn.delete"),
-            self.t("modal.delete_confirm").format(snap.date_str),
+            msg,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
-        cmd = self.backend.delete_cmd(snap.snapshot_id)
+
+        snap_ids = [s.snapshot_id for s in to_delete]
+        cmd = self.backend.delete_multiple_cmd(snap_ids)
         dlg = ProgressDialog(self, self.t("btn.delete"), self.t)
         dlg.run("pkexec", ["bash", "-c", cmd])
         dlg.exec()

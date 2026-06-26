@@ -8,6 +8,7 @@
   "modal.title": "✨ Bestätigung",
   "modal.confirm": "System auf Snapshot vom {0} wiederherstellen?",
   "modal.delete_confirm": "Snapshot vom {0} löschen?\n\nDiese Aktion kann nicht rückgängig gemacht werden.",
+  "modal.delete_confirm_multi": "{0} ausgewählte Snapshots löschen?\n\nDiese Aktion kann nicht rückgängig gemacht werden.",
   "status.loading": "Snapshots werden geladen…",
   "status.loaded": "{0} Snapshot(s) gefunden",
   "status.empty": "Keine Snapshots gefunden",
