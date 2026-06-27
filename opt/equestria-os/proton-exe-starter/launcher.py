@@ -99,13 +99,14 @@ def t(key: str, *args) -> str:
     return text
 
 class SplashWindow(QDialog):
-    def __init__(self, exe_name, log_path, cmd, env, cwd):
+    def __init__(self, exe_name, log_path, cmd, env, cwd, debug=False):
         super().__init__()
         self.exe_name = exe_name
         self.log_path = log_path
         self.cmd = cmd
         self.env = env
         self.cwd = cwd
+        self.debug = debug
         self.proc = None
         self.log_file = None
 
@@ -194,19 +195,49 @@ class SplashWindow(QDialog):
 
     def _show_error_ui(self, code):
         self.timer.stop()
-        self.setFixedSize(500, 400) # Увеличиваем окно
+        self.setFixedSize(500, 400)
         self.lbl_status.setText(f"Error: Process exited with code {code}")
         self.lbl_status.setStyleSheet("color: rgb(243, 139, 168); font-weight: bold;")
         self.progress.hide()
 
-        # Показываем лог
         self.log_file.seek(0)
         full_log = self.log_file.read()
-        self.log_view.setText(full_log)
+        self.log_view.setText(self._build_log_text(full_log))
         self.log_view.show()
         self.log_view.verticalScrollBar().setValue(self.log_view.verticalScrollBar().maximum())
 
         self.btn_retry.show()
+        self.btn_close.show()
+
+    def _build_log_text(self, base_log: str) -> str:
+        """Assemble display log: our captured output + proton log if present."""
+        lines = [f"=== {self.log_path} ===", base_log.strip()]
+        gameid = self.env.get("GAMEID", "")
+        if gameid:
+            proton_log = os.path.expanduser(f"~/proton_{gameid}.log")
+            if os.path.exists(proton_log):
+                try:
+                    with open(proton_log, "r", encoding="utf-8", errors="ignore") as f:
+                        lines += [f"\n=== {proton_log} ===", f.read().strip()]
+                except Exception:
+                    pass
+        return "\n".join(lines)
+
+    def _show_debug_exit_ui(self):
+        """Called when game exits with code 0 in debug mode — show log instead of silently closing."""
+        self.timer.stop()
+        self.setFixedSize(500, 480)
+        status = t("launcher.debug_exited")
+        self.lbl_status.setText(f"{status}\n{self.log_path}")
+        self.lbl_status.setStyleSheet("color: rgb(166, 227, 161); font-weight: bold; font-size: 10px;")
+        self.progress.hide()
+
+        self.log_file.seek(0)
+        full_log = self.log_file.read()
+        self.log_view.setText(self._build_log_text(full_log))
+        self.log_view.show()
+        self.log_view.verticalScrollBar().setValue(self.log_view.verticalScrollBar().maximum())
+
         self.btn_close.show()
 
     def check_status(self):
@@ -214,7 +245,10 @@ class SplashWindow(QDialog):
         ret_code = self.proc.poll()
         if ret_code is not None:
             if ret_code == 0:
-                self.accept()
+                if self.debug:
+                    self._show_debug_exit_ui()
+                else:
+                    self.accept()
             else:
                 self._show_error_ui(ret_code)
             return
@@ -239,8 +273,10 @@ class SplashWindow(QDialog):
                 elif "setting up" in l_lower or "prefix" in l_lower:
                     self.lbl_status.setText(t("launcher.setup_prefix"))
                 elif "fsync: up and running" in l_lower or "wineserver: starting" in l_lower:
-                    self.timer.stop()
-                    self.accept()
+                    # В debug-режиме не закрываем окно досрочно — ждём реального выхода
+                    if not self.debug:
+                        self.timer.stop()
+                        self.accept()
 
 def main():
     _load_localization()
@@ -278,6 +314,13 @@ def main():
     if settings.get("dxvk_hud"): env["DXVK_HUD"] = "compiler,frametimes,fps"
     if settings.get("fsr"): env["WINE_FULLSCREEN_FSR"] = "1"
 
+    debug = settings.get("debug_log", False)
+    if debug:
+        env["DXVK_LOG_LEVEL"] = "info"
+        env["VK_LOADER_DEBUG"] = "warn"
+        env["WINEDEBUG"] = "err"
+        env["PROTON_LOG"] = "1"
+
     extra_args = shlex.split(settings.get("launch_args", "").strip())
     game_dir = os.path.dirname(exe_path)
 
@@ -291,7 +334,7 @@ def main():
     log_path = os.path.join(APPS_DATA_DIR, f"{app_id}.log")
 
     # Запускаем SplashWindow
-    splash = SplashWindow(exe_name, log_path, cmd, env, game_dir)
+    splash = SplashWindow(exe_name, log_path, cmd, env, game_dir, debug=debug)
     splash.exec()
 
     # Post-launch migration: handles the case where umu-run just initialised a brand-new

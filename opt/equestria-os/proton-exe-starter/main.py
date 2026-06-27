@@ -95,6 +95,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         self.chk_fps.setText(self.t_str("proton.chk_fps"))
         self.chk_desktop.setText(self.t_str("proton.chk_desktop"))
         self.chk_fsr.setText(self.t_str("proton.chk_fsr"))
+        self.chk_debug.setText(self.t_str("proton.chk_debug"))
         self.group_args.setTitle(self.t_str("proton.group_args"))
         self.group_danger.setTitle(self.t_str("proton.group_danger"))
         self.lbl_danger.setText(self.t_str("proton.lbl_danger"))
@@ -110,6 +111,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
                     self.chk_fps.setChecked(settings.get("dxvk_hud", False))
                     self.chk_desktop.setChecked(settings.get("virtual_desktop", False))
                     self.chk_fsr.setChecked(settings.get("fsr", False))
+                    self.chk_debug.setChecked(settings.get("debug_log", False))
                     self.txt_args.setText(settings.get("launch_args", ""))
             except Exception:
                 pass
@@ -124,6 +126,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
             "dxvk_hud": self.chk_fps.isChecked(),
             "virtual_desktop": self.chk_desktop.isChecked(),
             "fsr": self.chk_fsr.isChecked(),
+            "debug_log": self.chk_debug.isChecked(),
             "launch_args": self.txt_args.text().strip()
         }
         with open(self.config_file, "w", encoding="utf-8") as f:

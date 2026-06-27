@@ -242,6 +242,10 @@ BuildPackageLists() {
             esac
         fi
 
+        if [ "$OPTIMUS" = yes ]; then
+            IsInstalled nvidia-prime || INSTALL+=(nvidia-prime)
+        fi
+
         if [ "$NO_DKMS" = no ]; then
             IsInstalled dkms || INSTALL+=(dkms)
             INSTALL+=("${HEADERS_TO_INSTALL[@]}")
@@ -827,17 +831,16 @@ Main() {
     # 11. Enable nvidia suspend/resume/hibernate systemd services
     EnableNvidiaSleepServices
 
-    # 12. mkinitcpio/dracut MODULES injection
-    ConfigureMkinitcpio
-
-    # 13. Verify DKMS module is built, then rebuild initramfs.
-    # If INSTALL_FAILED=yes or DKMS module is absent, skip initramfs rebuild
-    # and do NOT save GPU state — so the service retries on the next boot.
+    # 12+13. mkinitcpio/dracut config + initramfs rebuild.
+    # Only inject NVIDIA modules and rebuild when the driver is confirmed installed.
+    # If INSTALL_FAILED=yes or DKMS module is absent, skip both steps and do NOT
+    # save GPU state — so the service retries on the next boot.
     if [ "${INSTALL_FAILED}" = yes ]; then
-        Warn "Driver installation was incomplete — skipping initramfs rebuild."
+        Warn "Driver installation was incomplete — skipping mkinitcpio config and initramfs rebuild."
         Warn "  GPU state NOT saved. The service will retry on the next boot."
         Warn "  Ensure network access or place packages in $DRIVER_CACHE_DIR/"
     elif VerifyDkmsModule; then
+        ConfigureMkinitcpio
         RebuildInitramfs
         SaveGpuState
     else

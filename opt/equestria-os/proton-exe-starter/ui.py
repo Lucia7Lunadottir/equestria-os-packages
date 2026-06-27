@@ -38,6 +38,9 @@ class Ui_SettingsWindow:
 
         self.chk_fsr = QCheckBox()
         glayout.addWidget(self.chk_fsr)
+
+        self.chk_debug = QCheckBox()
+        glayout.addWidget(self.chk_debug)
         layout.addWidget(self.group_graphics)
 
         # Группа: Параметры запуска
