@@ -3,12 +3,12 @@
 pkgname = equestria-os-settings
 pkgbase = equestria-os-settings
 xdata = pkgtype=pkg
-pkgver = 1.3.4-1
+pkgver = 1.4.0-1
 pkgdesc = Unified settings panel for Equestria OS — all system tools in one place
 url = https://github.com/Lucia7Lunadottir
-builddate = 1781598830
+builddate = 1782684781
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 647755
+size = 750683
 arch = any
 license = GPL
 depend = python-pyqt6
@@ -25,3 +25,6 @@ optdepend = equestria-os-character-theme: character theme switcher module
 optdepend = equestria-os-software-center: software installation module
 optdepend = equestria-os-swap-manager: swap and memory pressure management module
 optdepend = plasma-workspace: Open KDE System Settings button
+optdepend = networkmanager: internet module — DNS and connection management
+optdepend = iw: internet module — WiFi power-save detection
+optdepend = speedtest-cli: internet module — speed test

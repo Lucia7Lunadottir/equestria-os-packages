@@ -7,7 +7,7 @@
 #   Btrfs root + btrfs-progs  →  btrfs subvolume snapshot (native CoW)
 #   Otherwise                 →  restic (must be initialised)
 
-KEEP_FILE="/opt/equestria-os/equestria-os-save-point/hook-config"
+KEEP_FILE="/var/lib/equestria-save-point/hook-config"
 TAG="${1:-auto}"
 
 # Read keep_last from config (default: 10)
@@ -106,10 +106,18 @@ if [[ "$_fstype" == "btrfs" ]] && command -v btrfs &>/dev/null; then
         chmod 755 "$DAILY_DIR"
 
         # Idempotent: only one snapshot per calendar day
-        if ! ls -1d "$DAILY_DIR"/daily-${TODAY}_* 2>/dev/null | grep -q .; then
-            _take_screenshot "$SNAP_TS"
-            btrfs subvolume snapshot -r / "$DAILY_DIR/daily-$SNAP_TS" \
-                >/dev/null 2>&1 || exit 0
+        if ls -1d "$DAILY_DIR"/daily-${TODAY}_* 2>/dev/null | grep -q .; then
+            echo ":: Save Point: daily snapshot already exists for $TODAY, skipping."
+            exit 0
+        fi
+
+        echo ":: Save Point: creating daily protected snapshot..."
+        _take_screenshot "$SNAP_TS"
+        if btrfs subvolume snapshot -r / "$DAILY_DIR/daily-$SNAP_TS" >/dev/null 2>&1; then
+            echo ":: Save Point: daily snapshot created successfully."
+        else
+            echo ":: Save Point: WARNING — could not create daily snapshot. Continuing."
+            exit 0
         fi
 
         # Keep only the 7 most recent daily snapshots
@@ -126,9 +134,14 @@ if [[ "$_fstype" == "btrfs" ]] && command -v btrfs &>/dev/null; then
 
     # ── Regular snapshot path ─────────────────────────────────────────────────
     SNAP_TS=$(date +%Y-%m-%d_%H-%M-%S)
+    echo ":: Save Point: creating restore point before package operation..."
     _take_screenshot "$SNAP_TS"
-    btrfs subvolume snapshot -r / "$SNAP_DIR/$SNAP_TS" \
-        >/dev/null 2>&1 || exit 0
+    if btrfs subvolume snapshot -r / "$SNAP_DIR/$SNAP_TS" >/dev/null 2>&1; then
+        echo ":: Save Point: restore point created ($SNAP_TS)."
+    else
+        echo ":: Save Point: WARNING — could not create restore point. Installation will continue."
+        exit 0
+    fi
 
     # Prune: keep newest KEEP snapshots (daily/ subdirectory is not touched)
     mapfile -t _snaps < <(
@@ -136,6 +149,9 @@ if [[ "$_fstype" == "btrfs" ]] && command -v btrfs &>/dev/null; then
     )
     _count=${#_snaps[@]}
     _delete=$(( _count - KEEP ))
+    if (( _delete > 0 )); then
+        echo ":: Save Point: cleaning up old snapshots (keeping last $KEEP)..."
+    fi
     for (( i=0; i<_delete; i++ )); do
         btrfs subvolume delete "${_snaps[$i]}" >/dev/null 2>&1 || true
     done
@@ -153,8 +169,15 @@ if [[ -f "$REPO_PATH_FILE" ]]; then
     [[ -n "$_override" ]] && REPO="$_override"
 fi
 
-# Exit silently if repository is not yet initialised
-[[ -f "$KEY" && -d "$REPO" ]] || exit 0
+# Exit gracefully if repository is not yet initialised
+if [[ ! -f "$KEY" ]]; then
+    echo ":: Save Point: repository key not found. Skipping restore point."
+    exit 0
+fi
+if [[ ! -d "$REPO" ]]; then
+    echo ":: Save Point: repository not found at $REPO (disk not mounted?). Skipping restore point."
+    exit 0
+fi
 
 # ── Restic daily protected path (TAG="D") ────────────────────────────────────
 if [[ "$TAG" == "D" ]]; then
@@ -173,9 +196,12 @@ except Exception:
     print(False)
 " 2>/dev/null)
 
-    if [[ "$_existing" != "True" ]]; then
+    if [[ "$_existing" == "True" ]]; then
+        echo ":: Save Point: daily snapshot already exists for $_today, skipping."
+    else
+        echo ":: Save Point: creating daily protected snapshot..."
         _take_screenshot "$_snap_ts"
-        restic -r "$REPO" --password-file "$KEY" \
+        if restic -r "$REPO" --password-file "$KEY" \
             backup / \
             --exclude=/proc      \
             --exclude=/sys       \
@@ -193,7 +219,11 @@ except Exception:
             --exclude="$REPO"               \
             --tag daily-protected \
             --compression auto    \
-            --quiet 2>/dev/null
+            --quiet 2>/dev/null; then
+            echo ":: Save Point: daily snapshot created successfully."
+        else
+            echo ":: Save Point: WARNING — could not create daily snapshot. Continuing."
+        fi
     fi
 
     # Keep only 7 daily-protected snapshots — delete the oldest if more exist
@@ -223,9 +253,10 @@ fi
 
 # ── Restic regular snapshot path ─────────────────────────────────────────────
 _snap_ts=$(date +%Y-%m-%d_%H-%M-%S)
+echo ":: Save Point: creating restore point before package operation..."
 _take_screenshot "$_snap_ts"
 
-restic -r "$REPO" --password-file "$KEY" \
+if restic -r "$REPO" --password-file "$KEY" \
     backup / \
     --exclude=/proc      \
     --exclude=/sys       \
@@ -243,7 +274,11 @@ restic -r "$REPO" --password-file "$KEY" \
     --exclude="$REPO"               \
     --tag "$TAG"         \
     --compression auto   \
-    --quiet 2>/dev/null
+    --quiet 2>/dev/null; then
+    echo ":: Save Point: restore point created successfully."
+else
+    echo ":: Save Point: WARNING — could not create restore point. Installation will continue."
+fi
 
 # Prune regular snapshots; always preserve daily-protected ones
 restic -r "$REPO" --password-file "$KEY" \

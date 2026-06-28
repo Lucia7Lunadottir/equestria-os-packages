@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-software-center
-pkgver=1.4.0
-pkgrel=2
+pkgver=1.5.0
+pkgrel=1
 pkgdesc="Центр программного обеспечения для Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"

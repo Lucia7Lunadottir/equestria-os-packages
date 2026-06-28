@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-settings
-pkgver=1.3.4
+pkgver=1.4.0
 pkgrel=1
 pkgdesc="Unified settings panel for Equestria OS — all system tools in one place"
 arch=('any')
@@ -22,6 +22,9 @@ optdepends=(
     'equestria-os-software-center: software installation module'
     'equestria-os-swap-manager: swap and memory pressure management module'
     'plasma-workspace: Open KDE System Settings button'
+    'networkmanager: internet module — DNS and connection management'
+    'iw: internet module — WiFi power-save detection'
+    'speedtest-cli: internet module — speed test'
 )
 
 package() {
