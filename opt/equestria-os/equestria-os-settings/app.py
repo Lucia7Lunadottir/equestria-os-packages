@@ -3,6 +3,7 @@ import importlib.util
 import inspect
 import json
 import os
+import shutil
 import subprocess
 import threading
 
@@ -550,5 +551,8 @@ class SettingsWindow(QMainWindow):
     def _launch_kde_settings(self):
         for binary in ["systemsettings", "systemsettings5", "kcontrol"]:
             if shutil.which(binary):
-                subprocess.Popen([binary], start_new_session=True)
+                try:
+                    subprocess.Popen([binary], start_new_session=True)
+                except Exception:
+                    continue
                 return
