@@ -1076,7 +1076,7 @@ class NetworkModule(BaseModule):
         layout.addWidget(self._tcp_file_lbl)
 
         # Individual group checkboxes + value grid
-        self._tcp_checkboxes: list[tuple[QCheckBox, dict, QLabel]] = []
+        self._tcp_checkboxes: list[tuple[QCheckBox, dict, QLabel, QLabel]] = []
         for group in _SYSCTL_GROUPS:
             cb = QCheckBox(self.t(group["label_key"]))
             cb.setChecked(True)
@@ -1096,7 +1096,7 @@ class NetworkModule(BaseModule):
             values_lbl.setContentsMargins(26, 0, 0, 4)
             layout.addWidget(values_lbl)
 
-            self._tcp_checkboxes.append((cb, group, values_lbl))
+            self._tcp_checkboxes.append((cb, group, values_lbl, desc_lbl))
 
         # Buttons
         btn_row = QHBoxLayout()
@@ -1123,7 +1123,7 @@ class NetworkModule(BaseModule):
     def _update_tcp_values(self, sysctl_current: dict):
         """Update the current/proposed value labels for each TCP group."""
         all_match = True
-        for cb, group, values_lbl in self._tcp_checkboxes:
+        for cb, group, values_lbl, _desc in self._tcp_checkboxes:
             lines = []
             group_match = True
             for key, proposed in group["params"].items():
@@ -1343,8 +1343,10 @@ class NetworkModule(BaseModule):
         self._tcp_hint_lbl.setText(self.t("network.tcp_hint"))
         self._tcp_apply_btn.setText(self.t("network.tcp_apply"))
         self._tcp_remove_btn.setText(self.t("network.tcp_remove"))
-        for cb, group, _ in self._tcp_checkboxes:
+        for cb, group, _, desc_lbl in self._tcp_checkboxes:
             cb.setText(self.t(group["label_key"]))
+            cb.setToolTip(self.t(group["desc_key"]))
+            desc_lbl.setText(self.t(group["desc_key"]))
         self._wifi_title_lbl.setText(self.t("network.wifi_title"))
         self._wifi_hint_lbl.setText(self.t("network.wifi_hint"))
         self._wifi_disable_btn.setText(self.t("network.wifi_disable_powersave"))
@@ -1365,6 +1367,8 @@ class NetworkModule(BaseModule):
         self._drv_reload_btn.setText(self.t("network.drv_reload"))
         self._drv_reconnect_btn.setText(self.t("network.drv_reconnect"))
         self._drv_reboot_lbl.setText(self.t("network.drv_reboot_hint"))
+        # Re-fetch and rebuild all dynamic content (status, driver checkboxes, etc.)
+        self._refresh_status()
 
     # ── Refresh status ────────────────────────────────────────────────────────
 
@@ -1617,7 +1621,7 @@ class NetworkModule(BaseModule):
     def _apply_tcp(self):
         # Collect only checked groups
         selected_params = {}
-        for cb, group, _ in self._tcp_checkboxes:
+        for cb, group, _, _d in self._tcp_checkboxes:
             if cb.isChecked():
                 selected_params.update(group["params"])
 
