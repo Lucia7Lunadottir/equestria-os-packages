@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team <info@psyche-games.com>
 
 pkgname=equestria-os-branding
-pkgver=1.4.3
+pkgver=1.4.4
 pkgrel=1
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
@@ -12,10 +12,12 @@ provides=('equestria-os-branding')
 source=()
 
 package() {
-    # 1. SDDM тема
+    # 1. SDDM тема — ставим в системный путь И сохраняем эталон
     if [ -d "$startdir/sddm/equestria-os-breeze" ]; then
         install -d "$pkgdir/usr/share/sddm/themes"
         cp -r "$startdir/sddm/equestria-os-breeze" "$pkgdir/usr/share/sddm/themes/"
+        install -d "$pkgdir/usr/share/equestria-os/sddm"
+        cp -r "$startdir/sddm/equestria-os-breeze" "$pkgdir/usr/share/equestria-os/sddm/"
     fi
 
     # 2. GRUB тема
@@ -24,10 +26,12 @@ package() {
         cp -r "$startdir/grub/equestria-os" "$pkgdir/usr/share/grub/themes/"
     fi
 
-    # 3. Plasma Splash Screen (Look and Feel)
+    # 3. Plasma Splash Screen (Look and Feel) — ставим и сохраняем эталон
     if [ -d "$startdir/look-and-feel/Equestria-OS" ]; then
         install -d "$pkgdir/usr/share/plasma/look-and-feel"
         cp -r "$startdir/look-and-feel/Equestria-OS" "$pkgdir/usr/share/plasma/look-and-feel/"
+        install -d "$pkgdir/usr/share/equestria-os/look-and-feel"
+        cp -r "$startdir/look-and-feel/Equestria-OS" "$pkgdir/usr/share/equestria-os/look-and-feel/"
     fi
 
     # 4. Plasma Lockscreen
@@ -50,11 +54,19 @@ package() {
         cp -r "$startdir/cutiemarks/"* "$pkgdir/usr/share/equestria-os/cutiemarks/" 2>/dev/null || true
     fi
 
-    # 6. Cursor theme
+    # 6. Cursor theme — ставим и сохраняем эталон
     if [ -d "$startdir/icons/Vimix-white-cursors" ]; then
         install -d "$pkgdir/usr/share/icons"
         cp -r "$startdir/icons/Vimix-white-cursors" "$pkgdir/usr/share/icons/"
+        install -d "$pkgdir/usr/share/equestria-os/icons"
+        cp -r "$startdir/icons/Vimix-white-cursors" "$pkgdir/usr/share/equestria-os/icons/"
     fi
+
+    # 6a. Скрипт восстановления KDE-брендинга и хук
+    install -Dm755 "$startdir/scripts/restore-kde-branding.sh" \
+        "$pkgdir/usr/lib/equestria-os/restore-kde-branding.sh"
+    install -Dm644 "$startdir/hooks/equestria-os-kde-branding.hook" \
+        "$pkgdir/usr/share/libalpm/hooks/equestria-os-kde-branding.hook"
 
     # 7. Только уникальные наши pixmaps
     install -d "$pkgdir/usr/share/pixmaps"
@@ -90,5 +102,7 @@ package() {
     install -Dm755 "$startdir/equestria-os-plymouth-fix" "$pkgdir/usr/bin/equestria-os-plymouth-fix"
 
     # 3. Устанавливаем хук, который будет дергать этот скрипт
-    install -Dm644 "$startdir/plymouth-branding.hook" "$pkgdir/usr/share/libalpm/hooks/plymouth-branding.hook"
+    #    Имя 80- гарантирует запуск ДО 90-mkinitcpio-install.hook,
+    #    чтобы initramfs собирался уже с нашим брендингом.
+    install -Dm644 "$startdir/plymouth-branding.hook" "$pkgdir/usr/share/libalpm/hooks/80-equestria-plymouth-branding.hook"
 }

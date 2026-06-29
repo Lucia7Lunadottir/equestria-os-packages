@@ -1,0 +1,14 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = sddm
+Target = plasma-workspace
+Target = plasma-desktop
+Target = breeze
+Target = equestria-os-branding
+
+[Action]
+Description = Restoring Equestria OS KDE branding (SDDM, Look and Feel, cursors)...
+When = PostTransaction
+Exec = /usr/lib/equestria-os/restore-kde-branding.sh
