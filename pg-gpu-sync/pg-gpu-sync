@@ -90,17 +90,20 @@ FamilyName() {
 
 # ── Driver Selection ──────────────────────────────────────────
 #
-#  nvidia-open-dkms  = open-source kernel modules (GSP firmware)
-#                      Full support: Turing (TU) and newer ONLY
+#  nvidia-open-dkms            = open kernel modules (GSP firmware)
+#                                Turing (TU) and newer ONLY
 #
-#  nvidia-dkms       = proprietary closed-source kernel modules
-#                      Required for Maxwell (GM) / Pascal (GP) / Volta (GV)
-#                      nvidia-open-dkms causes kernel panics on these GPUs
+#  equestria-nvidia-580xx-dkms = proprietary closed-source kernel modules (v580)
+#  equestria-nvidia-580xx-utils = userspace libraries (v580)
+#                                Last driver branch supporting Maxwell / Pascal / Volta.
+#                                NVIDIA 590+ dropped these GPU architectures.
+#                                nvidia-open-dkms causes kernel panics on them.
 
 SelectDriver() {
     DRIVER_TYPE=""
     DRIVER_PKG=""
     DRIVER_UTILS_PKG="nvidia-utils"
+    DRIVER_32BIT_UTILS_PKG="lib32-nvidia-utils"
     GPU_GENERATION=""
 
     if [ "$MODE" = "nouveau" ]; then
@@ -114,26 +117,31 @@ SelectDriver() {
             DRIVER_TYPE="open"
             DRIVER_PKG="nvidia-open-dkms"
             DRIVER_UTILS_PKG="nvidia-utils"
+            DRIVER_32BIT_UTILS_PKG="lib32-nvidia-utils"
             GPU_GENERATION="modern"
             ;;
         GM*|GP*|GV*)
-            # Maxwell / Pascal / Volta → proprietary closed-source driver required.
-            # nvidia-open-dkms does NOT support pre-Turing (GP10X/GM10X compiled out).
-            # Try: equestria-nvidia-dkms (Equestria repo) → nvidia-dkms (AUR/cache) → nouveau fallback.
+            # Maxwell / Pascal / Volta → proprietary 580.x (last branch with support).
+            # NVIDIA 590+ dropped these architectures entirely.
+            # nvidia-open-dkms causes kernel panics on pre-Turing GPUs.
             GPU_GENERATION="legacy"
-            if PkgAvailableInRepos "equestria-nvidia-dkms" || [ -n "$(FindCachedPkg equestria-nvidia-dkms)" ]; then
+            if PkgAvailableInRepos "equestria-nvidia-580xx-dkms" || [ -n "$(FindCachedPkg equestria-nvidia-580xx-dkms)" ]; then
+                DRIVER_TYPE="proprietary"
+                DRIVER_PKG="equestria-nvidia-580xx-dkms"
+                DRIVER_UTILS_PKG="equestria-nvidia-580xx-utils"
+                DRIVER_32BIT_UTILS_PKG="lib32-equestria-nvidia-580xx-utils"
+            elif PkgAvailableInRepos "equestria-nvidia-dkms" || [ -n "$(FindCachedPkg equestria-nvidia-dkms)" ]; then
+                # Legacy fallback: self-updating package (downloads .run at install time)
                 DRIVER_TYPE="proprietary"
                 DRIVER_PKG="equestria-nvidia-dkms"
                 DRIVER_UTILS_PKG="nvidia-utils"
-            elif PkgAvailableInRepos "nvidia-dkms" || [ -n "$(FindCachedPkg nvidia-dkms)" ]; then
-                DRIVER_TYPE="proprietary"
-                DRIVER_PKG="nvidia-dkms"
-                DRIVER_UTILS_PKG="nvidia-utils"
+                DRIVER_32BIT_UTILS_PKG="lib32-nvidia-utils"
             else
                 Warn "No proprietary NVIDIA driver available for $(FamilyName "$GPU_FAMILY") GPU."
-                Warn "  nvidia-open-dkms does NOT support this GPU architecture."
+                Warn "  NVIDIA 590+ dropped support for this architecture."
+                Warn "  nvidia-open-dkms causes kernel panics on pre-Turing GPUs."
                 Warn "  Falling back to nouveau. Gaming performance will be limited."
-                Warn "  For full NVIDIA support, place equestria-nvidia-dkms pkg in $DRIVER_CACHE_DIR/"
+                Warn "  For full support, place equestria-nvidia-580xx-dkms pkg in $DRIVER_CACHE_DIR/"
                 DRIVER_TYPE="nouveau"
             fi
             ;;
@@ -173,9 +181,8 @@ SelectDriver() {
                 DRIVER_PKG="nvidia-open"
                 Note "--no-dkms: using 'nvidia-open' instead of 'nvidia-open-dkms'."
                 ;;
-            nvidia-dkms|equestria-nvidia-dkms)
-                DRIVER_PKG="nvidia"
-                Note "--no-dkms: using 'nvidia' instead of '$DRIVER_PKG'."
+            equestria-nvidia-580xx-dkms|equestria-nvidia-dkms|nvidia-dkms)
+                Note "--no-dkms: ignored for $DRIVER_PKG (DKMS-only package)."
                 ;;
             *)
                 Note "--no-dkms: ignored for $DRIVER_PKG (DKMS-only package)."
@@ -220,6 +227,7 @@ BuildPackageLists() {
         local rm_list=(
             nvidia-open-dkms nvidia-open nvidia-open-lts
             nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts nvidia-utils
+            equestria-nvidia-580xx-dkms equestria-nvidia-580xx-utils lib32-equestria-nvidia-580xx-utils
             nvidia-470xx-dkms nvidia-470xx-utils
             nvidia-390xx-dkms nvidia-390xx-utils
             nvidia-settings
@@ -237,7 +245,7 @@ BuildPackageLists() {
 
         if HasRepo multilib && [ "$BIT32" = yes ]; then
             case "$GPU_GENERATION" in
-                modern|legacy) INSTALL+=(lib32-nvidia-utils) ;;
+                modern|legacy) INSTALL+=("$DRIVER_32BIT_UTILS_PKG") ;;
                 *) Note "32-bit libs not available for $DRIVER_PKG — skipping." ;;
             esac
         fi
@@ -251,23 +259,48 @@ BuildPackageLists() {
             INSTALL+=("${HEADERS_TO_INSTALL[@]}")
         fi
 
-        # Remove conflicting drivers
+        # Remove conflicting drivers.
+        # All branches are mutually exclusive: only one set of kernel modules
+        # and one nvidia-utils version can be active at a time.
         local rm_list=(xf86-video-nouveau vulkan-nouveau lib32-vulkan-nouveau)
         case "$DRIVER_PKG" in
             nvidia-open-dkms|nvidia-open|nvidia-open-lts)
-                rm_list+=(nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts nvidia-470xx-dkms nvidia-470xx-utils nvidia-390xx-dkms nvidia-390xx-utils)
+                # Modern (Turing+) — remove all legacy
+                rm_list+=(nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts
+                          equestria-nvidia-580xx-dkms equestria-nvidia-580xx-utils lib32-equestria-nvidia-580xx-utils
+                          nvidia-470xx-dkms nvidia-470xx-utils
+                          nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
-            nvidia-dkms|nvidia|nvidia-lts|equestria-nvidia-dkms)
-                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-470xx-dkms nvidia-470xx-utils nvidia-390xx-dkms nvidia-390xx-utils)
-                # Remove the other proprietary package if switching between them
-                [[ "$DRIVER_PKG" = "equestria-nvidia-dkms" ]] && rm_list+=(nvidia-dkms nvidia nvidia-lts)
-                [[ "$DRIVER_PKG" = "nvidia-dkms" ]] && rm_list+=(equestria-nvidia-dkms)
+            equestria-nvidia-580xx-dkms)
+                # Legacy 580xx (Pascal/Maxwell/Volta) — remove modern and other legacy
+                # Also remove nvidia-utils (590+) since 580xx-utils replaces it
+                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts
+                          nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts
+                          nvidia-utils lib32-nvidia-utils
+                          nvidia-470xx-dkms nvidia-470xx-utils
+                          nvidia-390xx-dkms nvidia-390xx-utils)
+                ;;
+            equestria-nvidia-dkms)
+                # Old self-updating package (fallback)
+                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts
+                          equestria-nvidia-580xx-dkms equestria-nvidia-580xx-utils lib32-equestria-nvidia-580xx-utils
+                          nvidia-dkms nvidia nvidia-lts
+                          nvidia-470xx-dkms nvidia-470xx-utils
+                          nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
             nvidia-470xx-dkms)
-                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts nvidia-utils nvidia-390xx-dkms nvidia-390xx-utils)
+                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts
+                          nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts
+                          equestria-nvidia-580xx-dkms equestria-nvidia-580xx-utils lib32-equestria-nvidia-580xx-utils
+                          nvidia-utils lib32-nvidia-utils
+                          nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
             nvidia-390xx-dkms)
-                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts nvidia-utils nvidia-470xx-dkms nvidia-470xx-utils)
+                rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts
+                          nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts
+                          equestria-nvidia-580xx-dkms equestria-nvidia-580xx-utils lib32-equestria-nvidia-580xx-utils
+                          nvidia-utils lib32-nvidia-utils
+                          nvidia-470xx-dkms nvidia-470xx-utils)
                 ;;
         esac
         for p in "${rm_list[@]}"; do
@@ -679,21 +712,24 @@ ShowHelp() {
         --show-gpu      Print detected GPU info and exit.
 
   GPU support:
-    Turing / Ampere / Ada / Blackwell  →  nvidia-open-dkms      (open, official repos)
-    Maxwell / Pascal / Volta           →  equestria-nvidia-dkms  (Equestria repo, proprietary)
-                                          nvidia-dkms            (AUR/cache fallback)
-                                          nouveau                (fallback if no pkg available)
-    Kepler  (GTX 600/700, GT 7xxM)    →  nvidia-470xx-dkms     (offline cache / AUR)
-    Fermi   (GT 400/500, GT 5xxM)     →  nvidia-390xx-dkms     (offline cache / AUR)
+    Turing / Ampere / Ada / Blackwell  →  nvidia-open-dkms              (open, official repos)
+    Maxwell / Pascal / Volta           →  equestria-nvidia-580xx-dkms   (Equestria repo, v580)
+                                          nouveau                       (fallback if no pkg)
+    Kepler  (GTX 600/700, GT 7xxM)    →  nvidia-470xx-dkms             (offline cache)
+    Fermi   (GT 400/500, GT 5xxM)     →  nvidia-390xx-dkms             (offline cache)
     Older                              →  nouveau
 
-  Note: nvidia-open-dkms does NOT support Maxwell/Pascal/Volta (pre-Turing).
-        For GTX 10xx/900/750 series, equestria-nvidia-dkms is required.
+  Note: NVIDIA 590+ dropped support for Maxwell/Pascal/Volta (pre-Turing).
+        nvidia-open-dkms causes kernel panics on these GPUs.
+        For GTX 10xx/900/750 series, equestria-nvidia-580xx-dkms is required.
 
   Offline cache:
     Place pre-built .pkg.tar.zst files in:
       $DRIVER_CACHE_DIR/
     Packages found there are installed with 'pacman -U' (no internet required).
+    Recommended cache contents for offline installs:
+      equestria-nvidia-580xx-dkms, equestria-nvidia-580xx-utils,
+      lib32-equestria-nvidia-580xx-utils (for Steam/Proton)
 
 EOF
 }
@@ -759,7 +795,9 @@ Main() {
         SaveGpuState
         # On non-NVIDIA systems: remove leftover NVIDIA packages and clean mkinitcpio
         if [ "$AUTO" = yes ] && [ "$DRY_RUN" = no ]; then
-            local nvidia_pkgs=(nvidia-lts nvidia-open-dkms nvidia-open nvidia-dkms equestria-nvidia-dkms nvidia-utils lib32-nvidia-utils nvidia-settings)
+            local nvidia_pkgs=(nvidia-lts nvidia-open-dkms nvidia-open nvidia-dkms equestria-nvidia-dkms
+                equestria-nvidia-580xx-dkms equestria-nvidia-580xx-utils lib32-equestria-nvidia-580xx-utils
+                nvidia-utils lib32-nvidia-utils nvidia-settings)
             local to_remove=()
             for p in "${nvidia_pkgs[@]}"; do IsInstalled "$p" && to_remove+=("$p"); done
             if [ ${#to_remove[@]} -gt 0 ]; then
@@ -819,32 +857,60 @@ Main() {
     # 7. Remove conflicting packages + install new ones
     ExecuteChanges
 
-    # 8. Nouveau blacklist
-    ConfigureNouveauBlacklist
+    # 7b. Retry DKMS build for equestria-nvidia-dkms (legacy fallback).
+    # The package's post_install uses "|| true", so pacman reports success
+    # even when the .run download fails (~400 MB from nvidia.com).
+    # Detect this: package installed but DKMS module not built → retry.
+    # Note: primary path for Pascal/Maxwell is now equestria-nvidia-580xx-dkms
+    # which builds DKMS during makepkg (no runtime download). This retry
+    # only applies if equestria-nvidia-dkms was used as a fallback.
+    if [ "$INSTALL_FAILED" = no ] && IsInstalled equestria-nvidia-dkms; then
+        if ! dkms status 2>/dev/null | grep -qE "^nvidia[^,]*.+: installed"; then
+            Info "equestria-nvidia-dkms installed but DKMS module not built — retrying download..."
+            if /usr/lib/equestria-nvidia-dkms/equestria-nvidia-dkms-update --no-initramfs; then
+                Info "DKMS module built successfully on retry."
+            else
+                INSTALL_FAILED=yes
+                Warn "NVIDIA .run download/build failed. Internet required."
+            fi
+        fi
+    fi
 
-    # 9. Wayland modeset config (generation-aware)
-    ConfigureWayland
-
-    # 10. KDE KWin compositor config for NVIDIA
-    ConfigureKwinCompositor
-
-    # 11. Enable nvidia suspend/resume/hibernate systemd services
-    EnableNvidiaSleepServices
-
-    # 12+13. mkinitcpio/dracut config + initramfs rebuild.
-    # Only inject NVIDIA modules and rebuild when the driver is confirmed installed.
-    # If INSTALL_FAILED=yes or DKMS module is absent, skip both steps and do NOT
-    # save GPU state — so the service retries on the next boot.
+    # 8–13. Configure the system for NVIDIA — but ONLY if the driver
+    # is fully working.  We check BOTH INSTALL_FAILED (pacman-level failure)
+    # and VerifyDkmsModule (DKMS-level failure, e.g. .run download succeeded
+    # but kernel module compilation failed).
+    #
+    # If driver is broken, we must NOT blacklist nouveau — it's the only
+    # working GPU driver.  Without this guard the system boots into
+    # software rendering (no nouveau, no nvidia → no KWin animations,
+    # no Proton, no GPU acceleration at all).
     if [ "${INSTALL_FAILED}" = yes ]; then
-        Warn "Driver installation was incomplete — skipping mkinitcpio config and initramfs rebuild."
+        Warn "Driver installation was incomplete — skipping all NVIDIA configuration."
+        Warn "  Nouveau will remain active as fallback."
         Warn "  GPU state NOT saved. The service will retry on the next boot."
         Warn "  Ensure network access or place packages in $DRIVER_CACHE_DIR/"
-    elif VerifyDkmsModule; then
+    elif ! VerifyDkmsModule; then
+        Warn "DKMS module not verified — skipping all NVIDIA configuration."
+        Warn "  Nouveau will remain active as fallback."
+        Warn "  GPU state NOT saved. The service will retry on the next boot."
+    else
+        # 8. Nouveau blacklist
+        ConfigureNouveauBlacklist
+
+        # 9. Wayland modeset config (generation-aware)
+        ConfigureWayland
+
+        # 10. KDE KWin compositor config for NVIDIA
+        ConfigureKwinCompositor
+
+        # 11. Enable nvidia suspend/resume/hibernate systemd services
+        EnableNvidiaSleepServices
+
+        # 12+13. mkinitcpio config + initramfs rebuild
         ConfigureMkinitcpio
         RebuildInitramfs
         SaveGpuState
-    else
-        Warn "GPU state NOT saved. The service will retry on the next boot."
     fi
 
     Header "Done!"

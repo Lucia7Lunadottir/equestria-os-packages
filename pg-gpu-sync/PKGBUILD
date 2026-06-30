@@ -2,7 +2,7 @@
 
 pkgname=pg-gpu-sync
 pkgver=2.2.0
-pkgrel=2
+pkgrel=4
 pkgdesc='NVIDIA GPU driver manager with boot-time detection and KDE compositor config (Equestria OS)'
 arch=('any')
 license=('GPL3')
@@ -12,10 +12,12 @@ optdepends=(
     'dkms: required for DKMS driver packages'
     'linux-headers: required for DKMS with linux kernel'
     'linux-lts-headers: required for DKMS with linux-lts kernel'
-    'nvidia-open-dkms: open kernel modules for Turing+ GPUs'
-    'equestria-nvidia-dkms: proprietary kernel modules for Maxwell/Pascal/Volta GPUs'
-    'nvidia-utils: userspace libraries and tools'
+    'nvidia-open-dkms: open kernel modules for Turing+ GPUs (590+)'
+    'equestria-nvidia-580xx-dkms: proprietary kernel modules for Pascal/Maxwell/Volta (v580)'
+    'equestria-nvidia-580xx-utils: userspace libraries for Pascal/Maxwell/Volta (v580)'
+    'nvidia-utils: userspace libraries for Turing+ GPUs (590+)'
     'nvidia-settings: GUI settings panel'
+    'nvidia-prime: GPU switching for Optimus laptops'
 )
 install=pg-gpu-sync.install
 

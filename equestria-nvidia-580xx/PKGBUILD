@@ -1,0 +1,209 @@
+# Maintainer: Equestria OS Team
+#
+# Legacy NVIDIA proprietary driver — last branch supporting Pascal/Maxwell/Volta.
+#
+# NVIDIA 590+ dropped Pascal (GTX 10xx) and Maxwell (GTX 900/750) support.
+# This package provides the last working driver (580.x) for these GPUs.
+#
+# Split package:
+#   equestria-nvidia-580xx-utils  — userspace libraries (replaces nvidia-utils)
+#   equestria-nvidia-580xx-dkms   — DKMS kernel modules
+#
+# .run file is downloaded at `makepkg` time — no LFS, only this PKGBUILD in git.
+
+pkgbase=equestria-nvidia-580xx
+pkgname=('equestria-nvidia-580xx-utils' 'equestria-nvidia-580xx-dkms')
+pkgver=580.173.02
+pkgrel=1
+arch=('x86_64')
+url='https://www.nvidia.com/'
+license=('LicenseRef-NVIDIA-proprietary')
+options=('!strip')
+
+_pkg="NVIDIA-Linux-x86_64-${pkgver}"
+
+source=("https://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/${_pkg}.run")
+sha256sums=('SKIP')
+
+prepare() {
+    # NVIDIA's .run script uses $0 without quoting internally —
+    # breaks when ANY part of the path contains spaces.
+    # Symlink to /tmp so the .run sees a clean path.
+    local _work="/tmp/equestria-nvidia-build-$$"
+    rm -rf "$_work"
+    mkdir -p "$_work"
+    ln -sf "${srcdir}/${_pkg}.run" "$_work/${_pkg}.run"
+    cd "$_work"
+    bash "${_work}/${_pkg}.run" --extract-only
+    rm -rf "${srcdir}/${_pkg}"
+    mv "$_work/${_pkg}" "${srcdir}/${_pkg}"
+    rm -rf "$_work"
+}
+
+# ── nvidia-580xx-utils ────────────────────────────────────────────
+
+package_equestria-nvidia-580xx-utils() {
+    pkgdesc="NVIDIA 580.x userspace libraries and tools (legacy: Pascal/Maxwell/Volta)"
+    depends=('libglvnd' 'egl-wayland')
+    provides=("nvidia-utils=${pkgver}" "opencl-nvidia=${pkgver}"
+              "vulkan-driver" "opengl-driver" "opencl-driver")
+    conflicts=('nvidia-utils' 'opencl-nvidia')
+    replaces=()
+
+    cd "${srcdir}/${_pkg}"
+
+    # ── Binaries ──────────────────────────────────────────────
+    for _bin in nvidia-smi nvidia-debugdump nvidia-cuda-mps-control \
+                nvidia-cuda-mps-server nvidia-persistenced; do
+        [ -f "$_bin" ] && install -Dm755 "$_bin" "$pkgdir/usr/bin/$_bin"
+    done
+    [ -f nvidia-modprobe ] && install -Dm4755 nvidia-modprobe "$pkgdir/usr/bin/nvidia-modprobe"
+
+    # ── ALL versioned .so libraries ───────────────────────────
+    # Single loop: install every lib*.so.<pkgver>, create .so.1 symlink.
+    # Also handles libcuda, libnvcuvid, libGLX_nvidia, etc.
+    for _lib in lib*.so.${pkgver}; do
+        [ -f "$_lib" ] || continue
+        install -Dm755 "$_lib" "$pkgdir/usr/lib/$_lib"
+        local _base="${_lib%.so.*}.so"
+        ln -sf "$_lib" "$pkgdir/usr/lib/${_base}.1"
+    done
+
+    # Extra symlinks: .so → .so.1 (for -lcuda, -lnvcuvid, etc.)
+    for _name in libcuda libnvcuvid libnvidia-encode libnvidia-opencl \
+                 libnvidia-ptxjitcompiler libcudadebugger; do
+        [ -L "$pkgdir/usr/lib/${_name}.so.1" ] && \
+            ln -sf "${_name}.so.1" "$pkgdir/usr/lib/${_name}.so"
+    done
+
+    # GLVND compat symlinks (.so.0 / .so.2)
+    ln -sf "libGLX_nvidia.so.${pkgver}"  "$pkgdir/usr/lib/libGLX_nvidia.so.0"
+    ln -sf "libEGL_nvidia.so.${pkgver}"  "$pkgdir/usr/lib/libEGL_nvidia.so.0"
+    [ -f "$pkgdir/usr/lib/libGLESv2_nvidia.so.${pkgver}" ] && \
+        ln -sf "libGLESv2_nvidia.so.${pkgver}" "$pkgdir/usr/lib/libGLESv2_nvidia.so.2"
+    [ -f "$pkgdir/usr/lib/libGLESv1_CM_nvidia.so.${pkgver}" ] && \
+        ln -sf "libGLESv1_CM_nvidia.so.${pkgver}" "$pkgdir/usr/lib/libGLESv1_CM_nvidia.so.1"
+
+    # Non-versioned NVIDIA libs
+    for _lib in libnvidia-api.so.1 libnvidia-nvvm70.so.4; do
+        [ -f "$_lib" ] && install -Dm755 "$_lib" "$pkgdir/usr/lib/$_lib"
+    done
+
+    # EGL platform plugins (non-pkgver versioned)
+    for _lib in libnvidia-egl-gbm.so.* libnvidia-egl-wayland.so.* \
+                libnvidia-egl-xcb.so.* libnvidia-egl-xlib.so.*; do
+        [ -f "$_lib" ] || continue
+        # Skip if already installed by the main loop
+        [ -f "$pkgdir/usr/lib/$_lib" ] && continue
+        install -Dm755 "$_lib" "$pkgdir/usr/lib/$_lib"
+    done
+
+    # VDPAU (goes to /usr/lib/vdpau/)
+    [ -f "libvdpau_nvidia.so.${pkgver}" ] && {
+        install -Dm755 "libvdpau_nvidia.so.${pkgver}" "$pkgdir/usr/lib/vdpau/libvdpau_nvidia.so.${pkgver}"
+        ln -sf "libvdpau_nvidia.so.${pkgver}" "$pkgdir/usr/lib/vdpau/libvdpau_nvidia.so.1"
+    }
+
+    # OptiX
+    [ -f "libnvoptix.so.${pkgver}" ] && {
+        install -Dm755 "libnvoptix.so.${pkgver}" "$pkgdir/usr/lib/libnvoptix.so.${pkgver}"
+        ln -sf "libnvoptix.so.${pkgver}" "$pkgdir/usr/lib/libnvoptix.so.1"
+    }
+    [ -f nvoptix.bin ] && install -Dm644 nvoptix.bin "$pkgdir/usr/share/nvidia/nvoptix.bin"
+
+    # ── JSON configs ──────────────────────────────────────────
+    install -Dm644 nvidia_icd.json "$pkgdir/usr/share/vulkan/icd.d/nvidia_icd.json"
+    install -Dm644 10_nvidia.json "$pkgdir/usr/share/glvnd/egl_vendor.d/10_nvidia.json"
+    [ -f nvidia_layers.json ] && install -Dm644 nvidia_layers.json "$pkgdir/usr/share/vulkan/implicit_layer.d/nvidia_layers.json"
+    for _json in 10_nvidia_wayland.json 15_nvidia_gbm.json 20_nvidia_xcb.json 20_nvidia_xlib.json; do
+        [ -f "$_json" ] && install -Dm644 "$_json" "$pkgdir/usr/share/egl/egl_external_platform.d/$_json"
+    done
+
+    # ── OpenCL ICD ────────────────────────────────────────────
+    install -dm755 "$pkgdir/etc/OpenCL/vendors"
+    echo "libnvidia-opencl.so.1" > "$pkgdir/etc/OpenCL/vendors/nvidia.icd"
+
+    # ── Xorg ──────────────────────────────────────────────────
+    [ -f nvidia_drv.so ] && install -Dm755 nvidia_drv.so "$pkgdir/usr/lib/xorg/modules/drivers/nvidia_drv.so"
+    [ -f "libglxserver_nvidia.so.${pkgver}" ] && {
+        install -Dm755 "libglxserver_nvidia.so.${pkgver}" "$pkgdir/usr/lib/nvidia/xorg/libglxserver_nvidia.so.${pkgver}"
+        ln -sf "libglxserver_nvidia.so.${pkgver}" "$pkgdir/usr/lib/nvidia/xorg/libglxserver_nvidia.so"
+    }
+    [ -f nvidia-drm-outputclass.conf ] && install -Dm644 nvidia-drm-outputclass.conf "$pkgdir/usr/share/X11/xorg.conf.d/10-nvidia-drm-outputclass.conf"
+
+    # ── Firmware (GSP) ────────────────────────────────────────
+    [ -d firmware ] && install -Dm644 firmware/gsp*.bin -t "$pkgdir/usr/lib/firmware/nvidia/${pkgver}/" 2>/dev/null || true
+
+    # ── systemd ───────────────────────────────────────────────
+    for _svc in nvidia-suspend nvidia-resume nvidia-hibernate; do
+        [ -f "${_svc}.service" ] && install -Dm644 "${_svc}.service" "$pkgdir/usr/lib/systemd/system/${_svc}.service"
+    done
+    [ -f nvidia-sleep.sh ] && install -Dm755 nvidia-sleep.sh "$pkgdir/usr/lib/systemd/system-sleep/nvidia-sleep.sh"
+
+    # ── nvidia-settings ───────────────────────────────────────
+    [ -f nvidia-settings ] && {
+        install -Dm755 nvidia-settings "$pkgdir/usr/bin/nvidia-settings"
+        [ -f nvidia-settings.desktop ] && install -Dm644 nvidia-settings.desktop "$pkgdir/usr/share/applications/nvidia-settings.desktop"
+        [ -f nvidia-settings.png ] && install -Dm644 nvidia-settings.png "$pkgdir/usr/share/pixmaps/nvidia-settings.png"
+    }
+
+    # ── Application profiles ──────────────────────────────────
+    [ -f "nvidia-application-profiles-${pkgver}-rc" ] && \
+        install -Dm644 "nvidia-application-profiles-${pkgver}-rc" "$pkgdir/usr/share/nvidia/nvidia-application-profiles-rc"
+    [ -f "nvidia-application-profiles-${pkgver}-key-documentation" ] && \
+        install -Dm644 "nvidia-application-profiles-${pkgver}-key-documentation" "$pkgdir/usr/share/nvidia/nvidia-application-profiles-key-documentation"
+
+    # ── License ───────────────────────────────────────────────
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+# ── nvidia-580xx-dkms ─────────────────────────────────────────────
+
+package_equestria-nvidia-580xx-dkms() {
+    pkgdesc="NVIDIA 580.x DKMS kernel modules (legacy: Pascal/Maxwell/Volta)"
+    depends=("equestria-nvidia-580xx-utils=${pkgver}" 'dkms')
+    provides=('NVIDIA-MODULE' "nvidia-dkms=${pkgver}")
+    conflicts=('nvidia-open-dkms' 'nvidia-open' 'nvidia-open-lts'
+               'nvidia-dkms' 'nvidia' 'nvidia-lts'
+               'equestria-nvidia-dkms')
+
+    cd "${srcdir}/${_pkg}/kernel"
+
+    local _dkms_dir="$pkgdir/usr/src/nvidia-${pkgver}"
+    install -dm755 "$_dkms_dir"
+
+    # Copy all kernel module source
+    cp -a . "$_dkms_dir/"
+
+    # Generate dkms.conf
+    cat > "$_dkms_dir/dkms.conf" <<DKMSEOF
+PACKAGE_NAME="nvidia"
+PACKAGE_VERSION="${pkgver}"
+
+BUILT_MODULE_NAME[0]="nvidia"
+BUILT_MODULE_LOCATION[0]=""
+DEST_MODULE_LOCATION[0]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[1]="nvidia-modeset"
+BUILT_MODULE_LOCATION[1]=""
+DEST_MODULE_LOCATION[1]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[2]="nvidia-uvm"
+BUILT_MODULE_LOCATION[2]=""
+DEST_MODULE_LOCATION[2]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[3]="nvidia-drm"
+BUILT_MODULE_LOCATION[3]=""
+DEST_MODULE_LOCATION[3]="/kernel/drivers/video"
+
+BUILT_MODULE_NAME[4]="nvidia-peermem"
+BUILT_MODULE_LOCATION[4]=""
+DEST_MODULE_LOCATION[4]="/kernel/drivers/video"
+
+MAKE[0]="make SYSSRC=\${kernel_source_dir} NV_EXCLUDE_BUILD_MODULES=''"
+CLEAN="make clean"
+AUTOINSTALL="yes"
+DKMSEOF
+
+    install -Dm644 "${srcdir}/${_pkg}/LICENSE" "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}

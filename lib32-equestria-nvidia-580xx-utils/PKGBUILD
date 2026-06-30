@@ -1,0 +1,95 @@
+# Maintainer: Equestria OS Team
+#
+# 32-bit NVIDIA 580.x userspace libraries for Steam / Proton / Wine.
+#
+# .run file is downloaded at `makepkg` time — no LFS.
+
+pkgname=lib32-equestria-nvidia-580xx-utils
+pkgver=580.173.02
+pkgrel=1
+pkgdesc='NVIDIA 580.x 32-bit userspace libraries (legacy: Pascal/Maxwell/Volta) — Steam/Proton'
+arch=('x86_64')
+url='https://www.nvidia.com/'
+license=('LicenseRef-NVIDIA-proprietary')
+depends=("equestria-nvidia-580xx-utils=${pkgver}" 'lib32-libglvnd')
+provides=("lib32-nvidia-utils=${pkgver}" "lib32-opencl-nvidia=${pkgver}"
+          'lib32-vulkan-driver' 'lib32-opengl-driver' 'lib32-opencl-driver')
+conflicts=('lib32-nvidia-utils' 'lib32-opencl-nvidia')
+options=('!strip')
+
+_pkg="NVIDIA-Linux-x86_64-${pkgver}"
+
+source=("https://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/${_pkg}.run")
+sha256sums=('SKIP')
+
+prepare() {
+    # NVIDIA's .run script uses $0 without quoting internally —
+    # breaks when ANY part of the path contains spaces.
+    # Symlink to /tmp so the .run sees a clean path.
+    local _work="/tmp/equestria-nvidia-build-$$"
+    rm -rf "$_work"
+    mkdir -p "$_work"
+    ln -sf "${srcdir}/${_pkg}.run" "$_work/${_pkg}.run"
+    cd "$_work"
+    bash "${_work}/${_pkg}.run" --extract-only
+    rm -rf "${srcdir}/${_pkg}"
+    mv "$_work/${_pkg}" "${srcdir}/${_pkg}"
+    rm -rf "$_work"
+}
+
+package() {
+    cd "${srcdir}/${_pkg}/32"
+
+    # ── 32-bit libraries — install all versioned .so ──────────
+    for _lib in lib*.so.${pkgver}; do
+        [ -f "$_lib" ] || continue
+        install -Dm755 "$_lib" "$pkgdir/usr/lib32/$_lib"
+        local _base="${_lib%.so.*}.so"
+        ln -sf "$_lib" "$pkgdir/usr/lib32/${_base}.1" 2>/dev/null || true
+    done
+
+    # Key symlinks for CUDA/NVENC/nvcuvid (.so → .so.1)
+    for _lib in libcuda libnvcuvid libnvidia-encode libnvidia-ptxjitcompiler libnvidia-opencl; do
+        [ -f "$pkgdir/usr/lib32/${_lib}.so.1" ] && \
+            ln -sf "${_lib}.so.1" "$pkgdir/usr/lib32/${_lib}.so"
+    done
+
+    # GLX/EGL/GLESv2 compat symlinks
+    [ -f "$pkgdir/usr/lib32/libGLX_nvidia.so.1" ] && \
+        ln -sf "libGLX_nvidia.so.${pkgver}" "$pkgdir/usr/lib32/libGLX_nvidia.so.0"
+    [ -f "$pkgdir/usr/lib32/libEGL_nvidia.so.1" ] && \
+        ln -sf "libEGL_nvidia.so.${pkgver}" "$pkgdir/usr/lib32/libEGL_nvidia.so.0"
+    [ -f "libGLESv2_nvidia.so.${pkgver}" ] && \
+        ln -sf "libGLESv2_nvidia.so.${pkgver}" "$pkgdir/usr/lib32/libGLESv2_nvidia.so.2"
+
+    # Non-versioned libs
+    for _lib in libnvidia-egl-gbm.so.* libnvidia-egl-wayland.so.* libnvidia-egl-xcb.so.* libnvidia-egl-xlib.so.*; do
+        [ -f "$_lib" ] || continue
+        install -Dm755 "$_lib" "$pkgdir/usr/lib32/$_lib"
+    done
+
+    # VDPAU
+    [ -f "libvdpau_nvidia.so.${pkgver}" ] && {
+        install -Dm755 "libvdpau_nvidia.so.${pkgver}" "$pkgdir/usr/lib32/vdpau/libvdpau_nvidia.so.${pkgver}"
+        ln -sf "libvdpau_nvidia.so.${pkgver}" "$pkgdir/usr/lib32/vdpau/libvdpau_nvidia.so.1"
+    }
+
+    # ── 32-bit Vulkan ICD ─────────────────────────────────────
+    install -dm755 "$pkgdir/usr/share/vulkan/icd.d"
+    cat > "$pkgdir/usr/share/vulkan/icd.d/nvidia_icd_32.json" <<ICDEOF
+{
+    "file_format_version" : "1.0.0",
+    "ICD": {
+        "library_path": "/usr/lib32/libGLX_nvidia.so.0",
+        "api_version" : "1.3"
+    }
+}
+ICDEOF
+
+    # ── 32-bit OpenCL ICD ─────────────────────────────────────
+    install -dm755 "$pkgdir/etc/OpenCL/vendors"
+    echo "libnvidia-opencl.so.1" > "$pkgdir/etc/OpenCL/vendors/nvidia32.icd"
+
+    # ── License ───────────────────────────────────────────────
+    install -Dm644 "${srcdir}/${_pkg}/LICENSE" "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}
