@@ -12,5 +12,11 @@
 !docs/x86_64/*.files
 !docs/x86_64/*.files.tar.gz
 
+# Артефакты makepkg (src/, pkg/, .run, логи)
+*/src/
+*/pkg/
+*.run
+*.log
+
 # Вложенные git-репозитории (не сабмодули)
 imagefinish/src/Linux-Photoshop
