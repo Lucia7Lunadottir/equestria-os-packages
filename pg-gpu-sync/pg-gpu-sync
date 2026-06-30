@@ -272,11 +272,13 @@ BuildPackageLists() {
                           nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
             equestria-nvidia-580xx-dkms)
-                # Legacy 580xx (Pascal/Maxwell/Volta) — remove modern and other legacy
-                # Also remove nvidia-utils (590+) since 580xx-utils replaces it
+                # Legacy 580xx (Pascal/Maxwell/Volta) — remove modern and other legacy.
+                # Do NOT add nvidia-utils / lib32-nvidia-utils here: they have
+                # dependents, so pacman -Rns would fail and block the whole
+                # REMOVE transaction.  pacman replaces them automatically when
+                # installing equestria-nvidia-580xx-utils (conflicts/provides).
                 rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts
                           nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts
-                          nvidia-utils lib32-nvidia-utils
                           nvidia-470xx-dkms nvidia-470xx-utils
                           nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
@@ -289,17 +291,17 @@ BuildPackageLists() {
                           nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
             nvidia-470xx-dkms)
+                # nvidia-utils removed via conflicts/provides by nvidia-470xx-utils
                 rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts
                           nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts
                           equestria-nvidia-580xx-dkms equestria-nvidia-580xx-utils lib32-equestria-nvidia-580xx-utils
-                          nvidia-utils lib32-nvidia-utils
                           nvidia-390xx-dkms nvidia-390xx-utils)
                 ;;
             nvidia-390xx-dkms)
+                # nvidia-utils removed via conflicts/provides by nvidia-390xx-utils
                 rm_list+=(nvidia-open-dkms nvidia-open nvidia-open-lts
                           nvidia-dkms equestria-nvidia-dkms nvidia nvidia-lts
                           equestria-nvidia-580xx-dkms equestria-nvidia-580xx-utils lib32-equestria-nvidia-580xx-utils
-                          nvidia-utils lib32-nvidia-utils
                           nvidia-470xx-dkms nvidia-470xx-utils)
                 ;;
         esac
