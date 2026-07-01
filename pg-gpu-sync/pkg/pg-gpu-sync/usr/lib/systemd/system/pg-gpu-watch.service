@@ -8,7 +8,7 @@ DefaultDependencies=no
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/pg-gpu-sync --auto
+ExecStart=/usr/bin/pg-gpu-sync --auto --32
 RemainAfterExit=no
 TimeoutStartSec=7200
 

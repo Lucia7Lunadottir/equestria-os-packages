@@ -568,17 +568,39 @@ ExecuteChanges() {
     if [ ${#INSTALL[@]} -gt 0 ]; then
         Info "Installing: ${INSTALL[*]}"
         if [ "$DRY_RUN" = no ]; then
-            local failed=()
+            # Split packages into cached (pacman -U) and repo (pacman -S).
+            # Install each group in ONE transaction so pacman handles
+            # conflicts/provides atomically (e.g. equestria-nvidia-580xx-utils
+            # replacing nvidia-utils while equestria-nvidia-580xx-dkms depends on it).
+            local cached_files=()
+            local repo_pkgs=()
             for pkg in "${INSTALL[@]}"; do
-                InstallPkg "$pkg" || failed+=("$pkg")
+                local cached
+                cached=$(FindCachedPkg "$pkg")
+                if [ -n "$cached" ]; then
+                    cached_files+=("$cached")
+                else
+                    repo_pkgs+=("$pkg")
+                fi
             done
-            if [ ${#failed[@]} -gt 0 ]; then
+
+            local fail=no
+            if [ ${#cached_files[@]} -gt 0 ]; then
+                Info "  From cache: ${cached_files[*]##*/}"
+                pacman -U --needed --noconfirm "${cached_files[@]}" || fail=yes
+            fi
+            if [ ${#repo_pkgs[@]} -gt 0 ]; then
+                Info "  From repos: ${repo_pkgs[*]}"
+                pacman -S --needed --noconfirm "${repo_pkgs[@]}" || fail=yes
+            fi
+
+            if [ "$fail" = yes ]; then
                 INSTALL_FAILED=yes
                 if [ "$AUTO" = yes ]; then
-                    Warn "Some packages could not be installed: ${failed[*]}"
+                    Warn "Some packages could not be installed."
                     Warn "  Place pre-built packages in $DRIVER_CACHE_DIR/ to enable offline install."
                 else
-                    DIE "Package installation failed for: ${failed[*]}\nCheck the output above."
+                    DIE "Package installation failed.\nCheck the output above."
                 fi
             fi
         else
