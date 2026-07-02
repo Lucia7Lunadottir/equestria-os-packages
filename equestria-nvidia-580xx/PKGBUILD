@@ -14,7 +14,7 @@
 pkgbase=equestria-nvidia-580xx
 pkgname=('equestria-nvidia-580xx-utils' 'equestria-nvidia-580xx-dkms')
 pkgver=580.173.02
-pkgrel=1
+pkgrel=2
 arch=('x86_64')
 url='https://www.nvidia.com/'
 license=('LicenseRef-NVIDIA-proprietary')
@@ -44,7 +44,8 @@ prepare() {
 
 package_equestria-nvidia-580xx-utils() {
     pkgdesc="NVIDIA 580.x userspace libraries and tools (legacy: Pascal/Maxwell/Volta)"
-    depends=('libglvnd' 'egl-wayland')
+    depends=('libglvnd' 'egl-wayland' 'egl-gbm' 'egl-x11')
+    optdepends=('nvidia-settings: GUI settings panel')
     provides=("nvidia-utils=${pkgver}" "opencl-nvidia=${pkgver}"
               "vulkan-driver" "opengl-driver" "opencl-driver")
     conflicts=('nvidia-utils' 'opencl-nvidia')
@@ -64,6 +65,10 @@ package_equestria-nvidia-580xx-utils() {
     # Also handles libcuda, libnvcuvid, libGLX_nvidia, etc.
     for _lib in lib*.so.${pkgver}; do
         [ -f "$_lib" ] || continue
+        # Skip non-GLVND libs — these are provided by libglvnd
+        case "$_lib" in
+            libEGL.so.*|libGLESv1_CM.so.*|libGLESv2.so.*|libGL.so.*|libGLX.so.*|libOpenGL.so.*) continue ;;
+        esac
         install -Dm755 "$_lib" "$pkgdir/usr/lib/$_lib"
         local _base="${_lib%.so.*}.so"
         ln -sf "$_lib" "$pkgdir/usr/lib/${_base}.1"
@@ -89,14 +94,8 @@ package_equestria-nvidia-580xx-utils() {
         [ -f "$_lib" ] && install -Dm755 "$_lib" "$pkgdir/usr/lib/$_lib"
     done
 
-    # EGL platform plugins (non-pkgver versioned)
-    for _lib in libnvidia-egl-gbm.so.* libnvidia-egl-wayland.so.* \
-                libnvidia-egl-xcb.so.* libnvidia-egl-xlib.so.*; do
-        [ -f "$_lib" ] || continue
-        # Skip if already installed by the main loop
-        [ -f "$pkgdir/usr/lib/$_lib" ] && continue
-        install -Dm755 "$_lib" "$pkgdir/usr/lib/$_lib"
-    done
+    # EGL platform plugins — provided by egl-wayland, egl-gbm, egl-x11 packages.
+    # Do NOT install them here to avoid file conflicts.
 
     # VDPAU (goes to /usr/lib/vdpau/)
     [ -f "libvdpau_nvidia.so.${pkgver}" ] && {
@@ -115,9 +114,8 @@ package_equestria-nvidia-580xx-utils() {
     install -Dm644 nvidia_icd.json "$pkgdir/usr/share/vulkan/icd.d/nvidia_icd.json"
     install -Dm644 10_nvidia.json "$pkgdir/usr/share/glvnd/egl_vendor.d/10_nvidia.json"
     [ -f nvidia_layers.json ] && install -Dm644 nvidia_layers.json "$pkgdir/usr/share/vulkan/implicit_layer.d/nvidia_layers.json"
-    for _json in 10_nvidia_wayland.json 15_nvidia_gbm.json 20_nvidia_xcb.json 20_nvidia_xlib.json; do
-        [ -f "$_json" ] && install -Dm644 "$_json" "$pkgdir/usr/share/egl/egl_external_platform.d/$_json"
-    done
+    # EGL external platform JSONs — provided by egl-wayland, egl-gbm, egl-x11.
+    # Do NOT install them here to avoid file conflicts.
 
     # ── OpenCL ICD ────────────────────────────────────────────
     install -dm755 "$pkgdir/etc/OpenCL/vendors"
@@ -140,12 +138,8 @@ package_equestria-nvidia-580xx-utils() {
     done
     [ -f nvidia-sleep.sh ] && install -Dm755 nvidia-sleep.sh "$pkgdir/usr/lib/systemd/system-sleep/nvidia-sleep.sh"
 
-    # ── nvidia-settings ───────────────────────────────────────
-    [ -f nvidia-settings ] && {
-        install -Dm755 nvidia-settings "$pkgdir/usr/bin/nvidia-settings"
-        [ -f nvidia-settings.desktop ] && install -Dm644 nvidia-settings.desktop "$pkgdir/usr/share/applications/nvidia-settings.desktop"
-        [ -f nvidia-settings.png ] && install -Dm644 nvidia-settings.png "$pkgdir/usr/share/pixmaps/nvidia-settings.png"
-    }
+    # nvidia-settings — provided by separate 'nvidia-settings' package.
+    # Do NOT install here to avoid file conflicts.
 
     # ── Application profiles ──────────────────────────────────
     [ -f "nvidia-application-profiles-${pkgver}-rc" ] && \

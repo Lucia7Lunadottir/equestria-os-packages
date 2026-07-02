@@ -587,11 +587,17 @@ ExecuteChanges() {
             local fail=no
             if [ ${#cached_files[@]} -gt 0 ]; then
                 Info "  From cache: ${cached_files[*]##*/}"
-                pacman -U --needed --noconfirm "${cached_files[@]}" || fail=yes
+                # --noconfirm alone answers "N" to conflict-resolution prompts
+                # (e.g. "Remove nvidia-utils? [y/N]"), aborting the transaction.
+                # Pipe 'yes' so pacman accepts replacing conflicting packages
+                # (e.g. nvidia-utils → equestria-nvidia-580xx-utils).
+                # --overwrite '*' handles file conflicts between split packages
+                # (e.g. 580xx-utils ships files now owned by egl-gbm, egl-x11).
+                yes | pacman -U --needed --overwrite '*' "${cached_files[@]}" || fail=yes
             fi
             if [ ${#repo_pkgs[@]} -gt 0 ]; then
                 Info "  From repos: ${repo_pkgs[*]}"
-                pacman -S --needed --noconfirm "${repo_pkgs[@]}" || fail=yes
+                yes | pacman -S --needed --overwrite '*' "${repo_pkgs[@]}" || fail=yes
             fi
 
             if [ "$fail" = yes ]; then

@@ -6,7 +6,7 @@
 
 pkgname=lib32-equestria-nvidia-580xx-utils
 pkgver=580.173.02
-pkgrel=1
+pkgrel=2
 pkgdesc='NVIDIA 580.x 32-bit userspace libraries (legacy: Pascal/Maxwell/Volta) — Steam/Proton'
 arch=('x86_64')
 url='https://www.nvidia.com/'
@@ -43,6 +43,10 @@ package() {
     # ── 32-bit libraries — install all versioned .so ──────────
     for _lib in lib*.so.${pkgver}; do
         [ -f "$_lib" ] || continue
+        # Skip non-GLVND libs — provided by lib32-libglvnd
+        case "$_lib" in
+            libEGL.so.*|libGLESv1_CM.so.*|libGLESv2.so.*|libGL.so.*|libGLX.so.*|libOpenGL.so.*) continue ;;
+        esac
         install -Dm755 "$_lib" "$pkgdir/usr/lib32/$_lib"
         local _base="${_lib%.so.*}.so"
         ln -sf "$_lib" "$pkgdir/usr/lib32/${_base}.1" 2>/dev/null || true
@@ -62,11 +66,8 @@ package() {
     [ -f "libGLESv2_nvidia.so.${pkgver}" ] && \
         ln -sf "libGLESv2_nvidia.so.${pkgver}" "$pkgdir/usr/lib32/libGLESv2_nvidia.so.2"
 
-    # Non-versioned libs
-    for _lib in libnvidia-egl-gbm.so.* libnvidia-egl-wayland.so.* libnvidia-egl-xcb.so.* libnvidia-egl-xlib.so.*; do
-        [ -f "$_lib" ] || continue
-        install -Dm755 "$_lib" "$pkgdir/usr/lib32/$_lib"
-    done
+    # EGL platform plugins — provided by egl-wayland, egl-gbm, egl-x11.
+    # Do NOT install here to avoid file conflicts.
 
     # VDPAU
     [ -f "libvdpau_nvidia.so.${pkgver}" ] && {
