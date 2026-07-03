@@ -6,6 +6,7 @@ This repository contains the source code, build scripts, and the compiled Arch L
 
 ## 📦 What's inside?
 
+
 Here you will find the core packages built specifically for Equestria OS:
 
 * **`equestria-os-package-manager`**: A custom, GUI for managing system packages without touching the terminal.
