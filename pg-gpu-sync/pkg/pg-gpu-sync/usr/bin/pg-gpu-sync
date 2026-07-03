@@ -887,6 +887,21 @@ Main() {
     # 7. Remove conflicting packages + install new ones
     ExecuteChanges
 
+    # 7a. Explicit DKMS autoinstall.
+    # Cached packages (e.g. equestria-nvidia-580xx-dkms) are installed via
+    # 'pacman -U' BEFORE repo packages (e.g. linux-headers) via 'pacman -S'.
+    # The DKMS pacman hook fires after the first transaction, but kernel
+    # headers may not be installed yet → module ends up "added" not "installed".
+    # Running 'dkms autoinstall' after ALL packages are in place fixes this.
+    if [ "$INSTALL_FAILED" = no ] && [ "$DRY_RUN" = no ] && [ "$DRIVER_TYPE" != "nouveau" ]; then
+        if command -v dkms &>/dev/null; then
+            if ! dkms status 2>/dev/null | grep -qE "^nvidia[^,]*.+: installed"; then
+                Info "DKMS module not yet built — running dkms autoinstall..."
+                dkms autoinstall 2>&1 | while IFS= read -r line; do Info "  dkms: $line"; done
+            fi
+        fi
+    fi
+
     # 7b. Retry DKMS build for equestria-nvidia-dkms (legacy fallback).
     # The package's post_install uses "|| true", so pacman reports success
     # even when the .run download fails (~400 MB from nvidia.com).

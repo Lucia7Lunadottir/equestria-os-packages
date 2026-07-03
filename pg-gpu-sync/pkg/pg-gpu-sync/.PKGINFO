@@ -3,12 +3,12 @@
 pkgname = pg-gpu-sync
 pkgbase = pg-gpu-sync
 xdata = pkgtype=pkg
-pkgver = 2.2.0-7
+pkgver = 2.2.0-8
 pkgdesc = NVIDIA GPU driver manager with boot-time detection and KDE compositor config (Equestria OS)
 url = https://psyche-games.com
-builddate = 1783004852
+builddate = 1783097189
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 38890
+size = 39751
 arch = any
 license = GPL3
 depend = bash
