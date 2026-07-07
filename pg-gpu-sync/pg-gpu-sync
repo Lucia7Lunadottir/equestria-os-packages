@@ -44,7 +44,11 @@ SaveGpuState() {
 
 # ── Helper functions ──────────────────────────────────────────
 
-IsInstalled() { pacman -Qq "$1" &>/dev/null; }
+# Точное совпадение имени: 'pacman -Qq' разрешает и provides (запрос
+# nvidia-dkms вернёт equestria-nvidia-580xx-dkms). Без этой проверки в REMOVE
+# попадает фантомное имя, и pacman -Rns отменяет всю транзакцию —
+# vulkan-nouveau остаётся в системе вторым Vulkan ICD рядом с nvidia.
+IsInstalled() { [ "$(pacman -Qq "$1" 2>/dev/null)" = "$1" ]; }
 
 HasRepo() { grep -q "^\[$1\]" /etc/pacman.conf; }
 
