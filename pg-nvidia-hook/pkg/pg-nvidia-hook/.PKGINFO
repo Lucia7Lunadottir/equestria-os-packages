@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 1.0.4-1
 pkgdesc = Pacman hook for NVIDIA — auto-rebuilds initramfs after driver updates (Equestria OS)
 url = https://psyche-games.com
-builddate = 1777578210
+builddate = 1783452947
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 2913
 arch = any

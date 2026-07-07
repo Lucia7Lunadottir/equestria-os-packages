@@ -13,6 +13,8 @@ from PyQt6.QtWidgets import (
 
 from base_module import BaseModule
 
+_QDBUS = shutil.which("qdbus6") or shutil.which("qdbus") or "qdbus"
+
 # ── Styles ────────────────────────────────────────────────────────────────────
 
 _BTN_ACTION = (
@@ -142,7 +144,7 @@ def _detect_kwin_compositor() -> str:
     """Return KWin compositor backend and status."""
     try:
         out = subprocess.run(
-            ["qdbus", "org.kde.KWin", "/Compositor", "org.kde.kwin.Compositing.compositingType"],
+            [_QDBUS, "org.kde.KWin", "/Compositor", "org.kde.kwin.Compositing.compositingType"],
             capture_output=True, text=True, timeout=5
         )
         comp_type = out.stdout.strip()
@@ -154,7 +156,7 @@ def _detect_kwin_compositor() -> str:
 
     try:
         out2 = subprocess.run(
-            ["qdbus", "org.kde.KWin", "/Compositor", "org.kde.kwin.Compositing.active"],
+            [_QDBUS, "org.kde.KWin", "/Compositor", "org.kde.kwin.Compositing.active"],
             capture_output=True, text=True, timeout=5
         )
         active = out2.stdout.strip().lower() == "true"

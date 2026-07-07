@@ -5,16 +5,25 @@
 # NVIDIA 590+ dropped Pascal (GTX 10xx) and Maxwell (GTX 900/750) support.
 # This package provides the last working driver (580.x) for these GPUs.
 #
-# Split package:
-#   equestria-nvidia-580xx-utils  — userspace libraries (replaces nvidia-utils)
-#   equestria-nvidia-580xx-dkms   — DKMS kernel modules
+# Split package (дробление нужно, чтобы каждый файл пакета был < 100 МБ —
+# лимит GitHub на файл в репозитории):
+#   equestria-nvidia-580xx-utils   — GL/Vulkan/VDPAU + X11 (ядро для игр/Proton)
+#   equestria-nvidia-580xx-dkms    — DKMS kernel modules
+#   equestria-nvidia-580xx-compute — CUDA / OpenCL / NVENC / NVDEC (опционально)
+#   equestria-nvidia-580xx-optix   — OptiX / ray tracing (опционально, тянет compute)
 #
 # .run file is downloaded at `makepkg` time — no LFS, only this PKGBUILD in git.
 
 pkgbase=equestria-nvidia-580xx
-pkgname=('equestria-nvidia-580xx-utils' 'equestria-nvidia-580xx-dkms')
+pkgname=('equestria-nvidia-580xx-utils' 'equestria-nvidia-580xx-dkms'
+         'equestria-nvidia-580xx-compute' 'equestria-nvidia-580xx-optix')
+
+# Библиотеки, уходящие в -compute (CUDA-стек; NVENC/NVDEC зависят от libcuda)
+_compute_re='^(libcuda|libcudadebugger|libnvidia-opencl|libnvidia-nvvm|libnvidia-ptxjitcompiler|libnvcuvid|libnvidia-encode|libnvidia-opticalflow)\.so\.'
+# Библиотеки, уходящие в -optix
+_optix_re='^(libnvoptix|libnvidia-rtcore)\.so\.'
 pkgver=580.173.02
-pkgrel=2
+pkgrel=3
 arch=('x86_64')
 url='https://www.nvidia.com/'
 license=('LicenseRef-NVIDIA-proprietary')
@@ -45,40 +54,39 @@ prepare() {
 package_equestria-nvidia-580xx-utils() {
     pkgdesc="NVIDIA 580.x userspace libraries and tools (legacy: Pascal/Maxwell/Volta)"
     depends=('libglvnd' 'egl-wayland' 'egl-gbm' 'egl-x11')
-    optdepends=('nvidia-settings: GUI settings panel')
-    provides=("nvidia-utils=${pkgver}" "opencl-nvidia=${pkgver}"
-              "vulkan-driver" "opengl-driver" "opencl-driver")
-    conflicts=('nvidia-utils' 'opencl-nvidia')
+    optdepends=('nvidia-settings: GUI settings panel'
+                'equestria-nvidia-580xx-compute: CUDA / OpenCL / NVENC / NVDEC'
+                'equestria-nvidia-580xx-optix: OptiX ray tracing (Blender и т.п.)')
+    provides=("nvidia-utils=${pkgver}" "vulkan-driver" "opengl-driver")
+    conflicts=('nvidia-utils')
     replaces=()
 
     cd "${srcdir}/${_pkg}"
 
     # ── Binaries ──────────────────────────────────────────────
-    for _bin in nvidia-smi nvidia-debugdump nvidia-cuda-mps-control \
-                nvidia-cuda-mps-server nvidia-persistenced; do
+    # (nvidia-cuda-mps-* уехали в -compute)
+    for _bin in nvidia-smi nvidia-debugdump nvidia-persistenced; do
         [ -f "$_bin" ] && install -Dm755 "$_bin" "$pkgdir/usr/bin/$_bin"
     done
     [ -f nvidia-modprobe ] && install -Dm4755 nvidia-modprobe "$pkgdir/usr/bin/nvidia-modprobe"
 
-    # ── ALL versioned .so libraries ───────────────────────────
+    # ── Versioned .so libraries (кроме compute/optix) ─────────
     # Single loop: install every lib*.so.<pkgver>, create .so.1 symlink.
-    # Also handles libcuda, libnvcuvid, libGLX_nvidia, etc.
     for _lib in lib*.so.${pkgver}; do
         [ -f "$_lib" ] || continue
         # Skip non-GLVND libs — these are provided by libglvnd
         case "$_lib" in
             libEGL.so.*|libGLESv1_CM.so.*|libGLESv2.so.*|libGL.so.*|libGLX.so.*|libOpenGL.so.*) continue ;;
+            # Xorg GLX-модуль ставится отдельно в /usr/lib/nvidia/xorg —
+            # копия в /usr/lib не нужна (раньше дублировался, +13 МБ)
+            libglxserver_nvidia.so.*) continue ;;
         esac
+        # CUDA/OptiX-стек — в подпакетах -compute и -optix
+        [[ "$_lib" =~ $_compute_re ]] && continue
+        [[ "$_lib" =~ $_optix_re ]] && continue
         install -Dm755 "$_lib" "$pkgdir/usr/lib/$_lib"
         local _base="${_lib%.so.*}.so"
         ln -sf "$_lib" "$pkgdir/usr/lib/${_base}.1"
-    done
-
-    # Extra symlinks: .so → .so.1 (for -lcuda, -lnvcuvid, etc.)
-    for _name in libcuda libnvcuvid libnvidia-encode libnvidia-opencl \
-                 libnvidia-ptxjitcompiler libcudadebugger; do
-        [ -L "$pkgdir/usr/lib/${_name}.so.1" ] && \
-            ln -sf "${_name}.so.1" "$pkgdir/usr/lib/${_name}.so"
     done
 
     # GLVND compat symlinks (.so.0 / .so.2)
@@ -89,10 +97,16 @@ package_equestria-nvidia-580xx-utils() {
     [ -f "$pkgdir/usr/lib/libGLESv1_CM_nvidia.so.${pkgver}" ] && \
         ln -sf "libGLESv1_CM_nvidia.so.${pkgver}" "$pkgdir/usr/lib/libGLESv1_CM_nvidia.so.1"
 
-    # Non-versioned NVIDIA libs
-    for _lib in libnvidia-api.so.1 libnvidia-nvvm70.so.4; do
+    # Non-versioned NVIDIA libs (libnvidia-nvvm70 уехала в -compute)
+    for _lib in libnvidia-api.so.1; do
         [ -f "$_lib" ] && install -Dm755 "$_lib" "$pkgdir/usr/lib/$_lib"
     done
+
+    # GBM backend — загрузчик Mesa ищет /usr/lib/gbm/nvidia-drm_gbm.so.
+    # Без этого симлинка kwin_wayland не может открыть рендер-устройство
+    # и сессия Plasma падает сразу после логина (логин-луп).
+    install -dm755 "$pkgdir/usr/lib/gbm"
+    ln -sf ../libnvidia-allocator.so.1 "$pkgdir/usr/lib/gbm/nvidia-drm_gbm.so"
 
     # EGL platform plugins — provided by egl-wayland, egl-gbm, egl-x11 packages.
     # Do NOT install them here to avoid file conflicts.
@@ -103,12 +117,7 @@ package_equestria-nvidia-580xx-utils() {
         ln -sf "libvdpau_nvidia.so.${pkgver}" "$pkgdir/usr/lib/vdpau/libvdpau_nvidia.so.1"
     }
 
-    # OptiX
-    [ -f "libnvoptix.so.${pkgver}" ] && {
-        install -Dm755 "libnvoptix.so.${pkgver}" "$pkgdir/usr/lib/libnvoptix.so.${pkgver}"
-        ln -sf "libnvoptix.so.${pkgver}" "$pkgdir/usr/lib/libnvoptix.so.1"
-    }
-    [ -f nvoptix.bin ] && install -Dm644 nvoptix.bin "$pkgdir/usr/share/nvidia/nvoptix.bin"
+    # OptiX — в подпакете equestria-nvidia-580xx-optix
 
     # ── JSON configs ──────────────────────────────────────────
     install -Dm644 nvidia_icd.json "$pkgdir/usr/share/vulkan/icd.d/nvidia_icd.json"
@@ -117,9 +126,7 @@ package_equestria-nvidia-580xx-utils() {
     # EGL external platform JSONs — provided by egl-wayland, egl-gbm, egl-x11.
     # Do NOT install them here to avoid file conflicts.
 
-    # ── OpenCL ICD ────────────────────────────────────────────
-    install -dm755 "$pkgdir/etc/OpenCL/vendors"
-    echo "libnvidia-opencl.so.1" > "$pkgdir/etc/OpenCL/vendors/nvidia.icd"
+    # OpenCL ICD — в подпакете equestria-nvidia-580xx-compute
 
     # ── Xorg ──────────────────────────────────────────────────
     [ -f nvidia_drv.so ] && install -Dm755 nvidia_drv.so "$pkgdir/usr/lib/xorg/modules/drivers/nvidia_drv.so"
@@ -129,8 +136,11 @@ package_equestria-nvidia-580xx-utils() {
     }
     [ -f nvidia-drm-outputclass.conf ] && install -Dm644 nvidia-drm-outputclass.conf "$pkgdir/usr/share/X11/xorg.conf.d/10-nvidia-drm-outputclass.conf"
 
-    # ── Firmware (GSP) ────────────────────────────────────────
-    [ -d firmware ] && install -Dm644 firmware/gsp*.bin -t "$pkgdir/usr/lib/firmware/nvidia/${pkgver}/" 2>/dev/null || true
+    # ── Firmware (GSP) — НЕ устанавливаем ─────────────────────
+    # GSP-прошивки нужны только Turing и новее, а эти GPU обслуживает
+    # nvidia-open из официальных репозиториев. Pascal/Maxwell/Volta
+    # (целевые GPU этого пакета) GSP не используют вообще.
+    # Бонус: без прошивок пакет помещается в лимит GitHub 100 МБ на файл.
 
     # ── systemd ───────────────────────────────────────────────
     for _svc in nvidia-suspend nvidia-resume nvidia-hibernate; do
@@ -194,10 +204,75 @@ BUILT_MODULE_NAME[4]="nvidia-peermem"
 BUILT_MODULE_LOCATION[4]=""
 DEST_MODULE_LOCATION[4]="/kernel/drivers/video"
 
-MAKE[0]="make SYSSRC=\${kernel_source_dir} NV_EXCLUDE_BUILD_MODULES=''"
-CLEAN="make clean"
+# 'make' в кавычках — обязательно: иначе DKMS подставит KERNELRELEASE=<ver>
+# в команду, Makefile NVIDIA решит, что его вызвал Kbuild, и упадёт на
+# "include \$(src)/Kbuild" (см. dkms(8), секция MAKE).
+MAKE[0]="'make' -j\$(nproc) SYSSRC=\${kernel_source_dir} KERNEL_UNAME=\${kernelver} IGNORE_PREEMPT_RT_PRESENCE=1 NV_EXCLUDE_BUILD_MODULES='' modules"
+CLEAN="'make' SYSSRC=\${kernel_source_dir} clean"
 AUTOINSTALL="yes"
 DKMSEOF
 
     install -Dm644 "${srcdir}/${_pkg}/LICENSE" "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+# ── nvidia-580xx-compute ──────────────────────────────────────────
+
+package_equestria-nvidia-580xx-compute() {
+    pkgdesc="NVIDIA 580.x CUDA / OpenCL / NVENC / NVDEC libraries (legacy: Pascal/Maxwell/Volta)"
+    depends=("equestria-nvidia-580xx-utils=${pkgver}")
+    provides=("opencl-nvidia=${pkgver}" "opencl-driver" "cuda-driver")
+    conflicts=('opencl-nvidia')
+
+    cd "${srcdir}/${_pkg}"
+
+    # MPS-демоны CUDA
+    for _bin in nvidia-cuda-mps-control nvidia-cuda-mps-server; do
+        [ -f "$_bin" ] && install -Dm755 "$_bin" "$pkgdir/usr/bin/$_bin"
+    done
+
+    for _lib in lib*.so.${pkgver}; do
+        [ -f "$_lib" ] || continue
+        [[ "$_lib" =~ $_compute_re ]] || continue
+        install -Dm755 "$_lib" "$pkgdir/usr/lib/$_lib"
+        local _base="${_lib%.so.*}.so"
+        ln -sf "$_lib" "$pkgdir/usr/lib/${_base}.1"
+    done
+
+    # .so → .so.1 (для -lcuda, -lnvcuvid и т.д.)
+    for _name in libcuda libnvcuvid libnvidia-encode libnvidia-opencl \
+                 libnvidia-ptxjitcompiler libcudadebugger; do
+        [ -L "$pkgdir/usr/lib/${_name}.so.1" ] && \
+            ln -sf "${_name}.so.1" "$pkgdir/usr/lib/${_name}.so"
+    done
+
+    # NVVM-компилятор (не имеет версии pkgver в имени)
+    [ -f libnvidia-nvvm70.so.4 ] && install -Dm755 libnvidia-nvvm70.so.4 \
+        "$pkgdir/usr/lib/libnvidia-nvvm70.so.4"
+
+    # ── OpenCL ICD ────────────────────────────────────────────
+    install -dm755 "$pkgdir/etc/OpenCL/vendors"
+    echo "libnvidia-opencl.so.1" > "$pkgdir/etc/OpenCL/vendors/nvidia.icd"
+
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+# ── nvidia-580xx-optix ────────────────────────────────────────────
+
+package_equestria-nvidia-580xx-optix() {
+    pkgdesc="NVIDIA 580.x OptiX / ray tracing libraries (legacy: Pascal/Maxwell/Volta)"
+    depends=("equestria-nvidia-580xx-compute=${pkgver}")
+
+    cd "${srcdir}/${_pkg}"
+
+    for _lib in lib*.so.${pkgver}; do
+        [ -f "$_lib" ] || continue
+        [[ "$_lib" =~ $_optix_re ]] || continue
+        install -Dm755 "$_lib" "$pkgdir/usr/lib/$_lib"
+        local _base="${_lib%.so.*}.so"
+        ln -sf "$_lib" "$pkgdir/usr/lib/${_base}.1"
+    done
+
+    [ -f nvoptix.bin ] && install -Dm644 nvoptix.bin "$pkgdir/usr/share/nvidia/nvoptix.bin"
+
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
 }

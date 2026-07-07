@@ -85,8 +85,10 @@ BUILT_MODULE_NAME[4]="nvidia-peermem"
 BUILT_MODULE_LOCATION[4]=""
 DEST_MODULE_LOCATION[4]="/kernel/drivers/video"
 
-MAKE[0]="make SYSSRC=\${kernel_source_dir} NV_EXCLUDE_BUILD_MODULES=''"
-CLEAN="make clean"
+# 'make' в кавычках — иначе DKMS добавит KERNELRELEASE=<ver> и Makefile NVIDIA
+# упадёт на "include \$(src)/Kbuild" (см. dkms(8), секция MAKE).
+MAKE[0]="'make' -j\$(nproc) SYSSRC=\${kernel_source_dir} KERNEL_UNAME=\${kernelver} IGNORE_PREEMPT_RT_PRESENCE=1 NV_EXCLUDE_BUILD_MODULES='' modules"
+CLEAN="'make' SYSSRC=\${kernel_source_dir} clean"
 AUTOINSTALL="yes"
 DKMSEOF
 

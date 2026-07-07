@@ -1,0 +1,103 @@
+# Maintainer: Equestria OS Team
+#
+# 32-bit userspace libraries for the legacy NVIDIA 580.x driver.
+# Needed by Proton / Wine / 32-bit games (Vulkan, OpenGL, VDPAU, NVENC).
+#
+# Companion to equestria-nvidia-580xx (see its PKGBUILD for details).
+# .run file is downloaded at `makepkg` time — no LFS, only this PKGBUILD in git.
+
+pkgname=lib32-equestria-nvidia-580xx-utils
+pkgver=580.173.02
+pkgrel=3
+pkgdesc="NVIDIA 580.x 32-bit userspace libraries (legacy: Pascal/Maxwell/Volta)"
+arch=('x86_64')
+url='https://www.nvidia.com/'
+license=('LicenseRef-NVIDIA-proprietary')
+options=('!strip')
+depends=("equestria-nvidia-580xx-utils=${pkgver}" 'lib32-libglvnd')
+provides=("lib32-nvidia-utils=${pkgver}" "lib32-opencl-nvidia=${pkgver}"
+          "lib32-vulkan-driver" "lib32-opengl-driver" "lib32-opencl-driver")
+conflicts=('lib32-nvidia-utils' 'lib32-opencl-nvidia')
+
+_pkg="NVIDIA-Linux-x86_64-${pkgver}"
+
+source=("https://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/${_pkg}.run")
+sha256sums=('SKIP')
+
+prepare() {
+    # NVIDIA's .run script uses $0 without quoting internally —
+    # breaks when ANY part of the path contains spaces.
+    # Symlink to /tmp so the .run sees a clean path.
+    local _work="/tmp/equestria-nvidia-lib32-build-$$"
+    rm -rf "$_work"
+    mkdir -p "$_work"
+    ln -sf "${srcdir}/${_pkg}.run" "$_work/${_pkg}.run"
+    cd "$_work"
+    bash "${_work}/${_pkg}.run" --extract-only
+    rm -rf "${srcdir}/${_pkg}"
+    mv "$_work/${_pkg}" "${srcdir}/${_pkg}"
+    rm -rf "$_work"
+}
+
+package() {
+    # 32-bit compat libraries live in the '32' subdirectory of the .run
+    cd "${srcdir}/${_pkg}/32"
+
+    # ── ALL versioned .so libraries ───────────────────────────
+    # Single loop: install every lib*.so.<pkgver>, create .so.1 symlink.
+    for _lib in lib*.so.${pkgver}; do
+        [ -f "$_lib" ] || continue
+        # Skip non-GLVND libs — these are provided by lib32-libglvnd
+        case "$_lib" in
+            libEGL.so.*|libGLESv1_CM.so.*|libGLESv2.so.*|libGL.so.*|libGLX.so.*|libOpenGL.so.*) continue ;;
+        esac
+        install -Dm755 "$_lib" "$pkgdir/usr/lib32/$_lib"
+        local _base="${_lib%.so.*}.so"
+        ln -sf "$_lib" "$pkgdir/usr/lib32/${_base}.1"
+    done
+
+    # Extra symlinks: .so → .so.1 (for 32-bit -lcuda, -lnvcuvid, etc.)
+    for _name in libcuda libnvcuvid libnvidia-encode libnvidia-opencl \
+                 libnvidia-ptxjitcompiler; do
+        [ -L "$pkgdir/usr/lib32/${_name}.so.1" ] && \
+            ln -sf "${_name}.so.1" "$pkgdir/usr/lib32/${_name}.so"
+    done
+
+    # GLVND compat symlinks (.so.0 / .so.2)
+    ln -sf "libGLX_nvidia.so.${pkgver}" "$pkgdir/usr/lib32/libGLX_nvidia.so.0"
+    ln -sf "libEGL_nvidia.so.${pkgver}" "$pkgdir/usr/lib32/libEGL_nvidia.so.0"
+    [ -f "$pkgdir/usr/lib32/libGLESv2_nvidia.so.${pkgver}" ] && \
+        ln -sf "libGLESv2_nvidia.so.${pkgver}" "$pkgdir/usr/lib32/libGLESv2_nvidia.so.2"
+
+    # GBM backend — загрузчик Mesa ищет /usr/lib32/gbm/nvidia-drm_gbm.so
+    # (32-битные GBM-клиенты; парный симлинк для 64-бит ставит
+    # equestria-nvidia-580xx-utils).
+    install -dm755 "$pkgdir/usr/lib32/gbm"
+    ln -sf ../libnvidia-allocator.so.1 "$pkgdir/usr/lib32/gbm/nvidia-drm_gbm.so"
+
+    # VDPAU (goes to /usr/lib32/vdpau/)
+    [ -f "libvdpau_nvidia.so.${pkgver}" ] && {
+        install -Dm755 "libvdpau_nvidia.so.${pkgver}" "$pkgdir/usr/lib32/vdpau/libvdpau_nvidia.so.${pkgver}"
+        ln -sf "libvdpau_nvidia.so.${pkgver}" "$pkgdir/usr/lib32/vdpau/libvdpau_nvidia.so.1"
+    }
+
+    # ── Vulkan ICD (32-bit) ───────────────────────────────────
+    # The .run ships only the 64-bit json — generate the 32-bit one.
+    install -dm755 "$pkgdir/usr/share/vulkan/icd.d"
+    cat > "$pkgdir/usr/share/vulkan/icd.d/nvidia_icd_32.json" <<EOF
+{
+    "file_format_version" : "1.0.0",
+    "ICD": {
+        "library_path": "/usr/lib32/libGLX_nvidia.so.0",
+        "api_version" : "1.3"
+    }
+}
+EOF
+
+    # ── OpenCL ICD (32-bit) ───────────────────────────────────
+    install -dm755 "$pkgdir/etc/OpenCL/vendors"
+    echo "libnvidia-opencl.so.1" > "$pkgdir/etc/OpenCL/vendors/nvidia32.icd"
+
+    # ── License ───────────────────────────────────────────────
+    install -Dm644 "${srcdir}/${_pkg}/LICENSE" "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}
