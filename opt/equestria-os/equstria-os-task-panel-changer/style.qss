@@ -76,26 +76,21 @@ QPushButton[cssClass="theme-btn"][active="true"] {
     font-weight: bold;
 }
 
-/* Language Buttons */
-QPushButton[cssClass="lang-button"] {
-    background-color: transparent;
-    color: rgb(180, 170, 210);
-    border: 1px solid rgb(69, 71, 90);
-    border-radius: 4px;
-    padding: 2px 5px;
-    font-size: 11px;
-}
-
-QPushButton[cssClass="lang-button"]:hover {
+/* Language Dropdown.
+   No ::drop-down/::down-arrow rules here on purpose: declaring them makes
+   Qt stop drawing the native arrow. */
+QComboBox#LangCombo {
     background-color: rgb(40, 35, 60);
     color: rgb(220, 200, 255);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    min-width: 46px;
 }
 
-QPushButton[cssClass="lang-button"][active="true"] {
-    background-color: rgb(100, 60, 160);
-    color: white;
+QComboBox#LangCombo:hover {
     border: 1px solid rgb(140, 90, 200);
-    font-weight: bold;
 }
 
 /* Scroll Area */

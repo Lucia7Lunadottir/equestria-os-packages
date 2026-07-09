@@ -7,7 +7,8 @@ import shutil
 import configparser
 from datetime import datetime
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout,
-                             QPushButton, QColorDialog, QMessageBox, QFileDialog)
+                             QPushButton, QColorDialog, QMessageBox, QFileDialog,
+                             QComboBox)
 from PyQt6.QtGui import QIcon, QColor, QFontDatabase, QFont
 from PyQt6.QtCore import Qt, QTimer, QProcess
 
@@ -213,12 +214,18 @@ class TaskPanelApp(QMainWindow):
         while self.ui.lang_layout.count():
             item = self.ui.lang_layout.takeAt(0)
             if item.widget(): item.widget().deleteLater()
+        # Компактный выпадающий список языков вместо ряда кнопок
+        self.lang_combo = QComboBox()
+        self.lang_combo.setObjectName("LangCombo")
         for code in self.available_langs:
-            btn = QPushButton(code.upper())
-            btn.setProperty("cssClass", "lang-button")
-            btn.setProperty("active", "true" if code == self.current_lang else "false")
-            btn.clicked.connect(lambda _, c=code: self.set_language(c))
-            self.ui.lang_layout.addWidget(btn)
+            self.lang_combo.addItem(code.upper(), code)
+        idx = self.lang_combo.findData(self.current_lang)
+        if idx != -1:
+            self.lang_combo.setCurrentIndex(idx)
+        # activated срабатывает только при выборе пользователем — без рекурсии
+        self.lang_combo.activated.connect(
+            lambda i: self.set_language(self.lang_combo.itemData(i)))
+        self.ui.lang_layout.addWidget(self.lang_combo)
 
     def _build_preset_cards(self):
         while self.ui.grid_layout.count():
@@ -276,12 +283,9 @@ class TaskPanelApp(QMainWindow):
 
     def set_language(self, code):
         self.current_lang = code
-        for i in range(self.ui.lang_layout.count()):
-            btn = self.ui.lang_layout.itemAt(i).widget()
-            if btn:
-                btn.setProperty("active", "true" if btn.text().lower() == code else "false")
-                btn.style().unpolish(btn)
-                btn.style().polish(btn)
+        idx = self.lang_combo.findData(code)
+        if idx != -1 and self.lang_combo.currentIndex() != idx:
+            self.lang_combo.setCurrentIndex(idx)
         self._build_preset_cards()
         self._update_ui_state()
 

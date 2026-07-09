@@ -221,18 +221,23 @@ QProgressBar#ProgressBar::chunk {
 }
 
 /* =========================================
- *  LANG BUTTONS
+ *  LANG DROPDOWN
+ *  (no ::drop-down/::down-arrow rules on purpose: declaring them makes
+ *   Qt stop drawing the native arrow)
  * ========================================= */
-QPushButton#LangBtn {
-    background-color: transparent; color: rgb(180, 180, 200);
-    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 2px 6px;
+QComboBox#LangCombo {
+    background-color: rgb(49, 50, 68); color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 2px 8px;
+    min-width: 46px;
 }
-QPushButton#LangBtn:hover {
-    background-color: rgb(49, 50, 68); color: rgb(220, 220, 255);
+QComboBox#LangCombo:hover {
+    border: 1px solid rgb(203, 166, 247); color: rgb(220, 220, 255);
 }
-QPushButton#LangBtn[active="true"] {
-    background-color: rgb(203, 166, 247); color: rgb(30, 30, 46);
-    font-weight: bold; border: 1px solid rgb(203, 166, 247);
+QComboBox#LangCombo QAbstractItemView {
+    background-color: rgb(49, 50, 68); color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90);
+    selection-background-color: rgb(108, 112, 134);
+    outline: none;
 }
 
 /* =========================================

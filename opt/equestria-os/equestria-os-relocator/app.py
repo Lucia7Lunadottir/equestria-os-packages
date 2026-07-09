@@ -2,7 +2,7 @@ import os
 
 from PyQt6.QtWidgets import (
     QMainWindow, QHBoxLayout, QLineEdit, QPushButton,
-    QFileDialog, QWidget
+    QFileDialog, QWidget, QComboBox
 )
 from PyQt6.QtGui import QFontDatabase, QFont, QIcon
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
@@ -143,16 +143,19 @@ class RelocatorApp(QMainWindow, Ui_Relocator):
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 
-        # Language buttons
-        self._lang_btns = {}
+        # Компактный выпадающий список языков вместо ряда кнопок
+        self.lang_combo = QComboBox()
+        self.lang_combo.setObjectName("LangCombo")
+        self.lang_combo.setCursor(Qt.CursorShape.PointingHandCursor)
         for code in LANGS:
-            btn = QPushButton(code.upper())
-            btn.setProperty("cssClass", "lang-button")
-            btn.setProperty("active", "true" if code == self.current_lang else "false")
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.clicked.connect(lambda _, c=code: self._change_lang(c))
-            self.lang_row.addWidget(btn)
-            self._lang_btns[code] = btn
+            self.lang_combo.addItem(code.upper(), code)
+        idx = self.lang_combo.findData(self.current_lang)
+        if idx != -1:
+            self.lang_combo.setCurrentIndex(idx)
+        # activated срабатывает только при выборе пользователем — без рекурсии
+        self.lang_combo.activated.connect(
+            lambda i: self._change_lang(self.lang_combo.itemData(i)))
+        self.lang_row.addWidget(self.lang_combo)
 
         # Create initial source rows
         sources = initial_sources or []
@@ -180,10 +183,9 @@ class RelocatorApp(QMainWindow, Ui_Relocator):
 
     def _change_lang(self, lang):
         self.current_lang = lang
-        for code, btn in self._lang_btns.items():
-            btn.setProperty("active", "true" if code == lang else "false")
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
+        idx = self.lang_combo.findData(lang)
+        if idx != -1 and self.lang_combo.currentIndex() != idx:
+            self.lang_combo.setCurrentIndex(idx)
         self._refresh_ui()
 
     def _refresh_ui(self):

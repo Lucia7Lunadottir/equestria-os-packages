@@ -140,18 +140,16 @@ QPushButton#BtnAction[btnAction="na"]:disabled {
     border-color: rgba(75, 70, 95, 40);
 }
 
-/* ── Language buttons ─────────────────────────────────────────────────── */
-QPushButton#LangBtn {
-    background-color: transparent; color: rgb(170, 165, 195);
-    border: 1px solid rgb(65, 62, 88); border-radius: 4px;
-    padding: 2px 6px;
-}
-QPushButton#LangBtn:hover {
+/* ── Language dropdown ────────────────────────────────────────────────
+   No ::drop-down/::down-arrow rules on purpose: declaring them makes Qt
+   stop drawing the native arrow. */
+QComboBox#LangCombo {
     background-color: rgb(50, 47, 70); color: rgb(215, 210, 245);
+    border: 1px solid rgb(65, 62, 88); border-radius: 4px;
+    padding: 2px 8px; min-width: 46px;
 }
-QPushButton#LangBtn[active="true"] {
-    background-color: rgb(203, 166, 247); color: rgb(28, 26, 42);
-    font-weight: bold; border: 1px solid rgb(203, 166, 247);
+QComboBox#LangCombo:hover {
+    border: 1px solid rgb(203, 166, 247);
 }
 
 /* ── Modal ────────────────────────────────────────────────────────────── */

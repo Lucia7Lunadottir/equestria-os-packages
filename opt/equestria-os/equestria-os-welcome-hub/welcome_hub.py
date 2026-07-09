@@ -1,5 +1,5 @@
 import sys, os, subprocess, webbrowser
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QComboBox
 from PyQt6.QtGui import QFontDatabase, QFont, QIcon
 from PyQt6.QtCore import Qt, QLocale # Добавили QLocale
 from ui_welcome import Ui_WelcomeHub
@@ -77,23 +77,25 @@ class main_app(QMainWindow, Ui_WelcomeHub):
     def t(self, key): return self.strings.get(key, {}).get(self.current_lang, self.strings.get(key, {}).get("en", key))
 
     def setup_ui_logic(self):
-        for i, code in enumerate(self.langs):
-            btn = QPushButton(code.upper())
-            btn.setProperty("cssClass", "lang-button")
-            btn.setProperty("active", "true" if code == self.current_lang else "false")
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.clicked.connect(lambda chk, c=code: self.change_lang(c))
-            if i < 5: self.lang_row1.addWidget(btn)
-            else: self.lang_row2.addWidget(btn)
+        # Компактный выпадающий список языков вместо двух рядов кнопок
+        self.lang_combo = QComboBox()
+        self.lang_combo.setObjectName("LangCombo")
+        self.lang_combo.setCursor(Qt.CursorShape.PointingHandCursor)
+        for code in self.langs:
+            self.lang_combo.addItem(code.upper(), code)
+        idx = self.lang_combo.findData(self.current_lang)
+        if idx != -1:
+            self.lang_combo.setCurrentIndex(idx)
+        # activated срабатывает только при выборе пользователем — без рекурсии
+        self.lang_combo.activated.connect(
+            lambda i: self.change_lang(self.lang_combo.itemData(i)))
+        self.lang_row1.addWidget(self.lang_combo)
 
     def change_lang(self, lang):
         self.current_lang = lang
-        for layout in [self.lang_row1, self.lang_row2]:
-            for i in range(layout.count()):
-                btn = layout.itemAt(i).widget()
-                if isinstance(btn, QPushButton):
-                    btn.setProperty("active", "true" if btn.text().lower() == lang else "false")
-                    btn.style().unpolish(btn); btn.style().polish(btn)
+        idx = self.lang_combo.findData(lang)
+        if idx != -1 and self.lang_combo.currentIndex() != idx:
+            self.lang_combo.setCurrentIndex(idx)
         self.refresh_ui()
 
     def refresh_ui(self):

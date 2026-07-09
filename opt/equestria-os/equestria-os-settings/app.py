@@ -10,7 +10,7 @@ import threading
 from PyQt6.QtCore import Qt, pyqtSignal, QObject
 from PyQt6.QtGui import QColor, QFont, QFontDatabase, QPainter, QPen
 from PyQt6.QtWidgets import (
-    QApplication, QFrame, QHBoxLayout, QLabel, QListWidget,
+    QApplication, QComboBox, QFrame, QHBoxLayout, QLabel, QListWidget,
     QListWidgetItem, QMainWindow, QPushButton, QScrollArea,
     QSizePolicy, QSplitter, QStackedWidget, QStyledItemDelegate,
     QStyleOptionViewItem, QVBoxLayout, QWidget,
@@ -289,10 +289,12 @@ class SettingsWindow(QMainWindow):
         if os.path.exists(qss_path):
             with open(qss_path, encoding="utf-8") as f:
                 raw = f.read()
-            # ИСПРАВЛЕНО: Безопасно заполняем все шаблоны стилей при загрузке, убирая спам логов в Qt
-            base = base_path.replace("\\", "/").replace(" ", "%20")
+            # %20-экранирование пробелов ломает парсинг url() в QSS и вместе
+            # с ним все правила ниже по файлу (Qt читает локальный путь
+            # буквально, а не как URI) — путь передаём как есть.
+            base = base_path.replace("\\", "/")
             raw = raw.replace("{{BASE_PATH}}", base)
-            raw = raw.replace("{{CHECKMARK_SVG_PATH}}", os.path.join(base_path, "icons", "cb_checked.svg").replace(" ", "%20"))
+            raw = raw.replace("{{CHECKMARK_SVG_PATH}}", os.path.join(base_path, "icons", "cb_checked.svg"))
             raw = raw.replace("{{TITLE_FONT}}", f'"{self._eq_font_family}"')
             self._qss = raw
             self.setStyleSheet(self._qss)
@@ -394,18 +396,18 @@ class SettingsWindow(QMainWindow):
 
         layout.addStretch()
 
-        self._lang_btn_map: dict[str, QPushButton] = {}
-        lang_layout = QHBoxLayout()
-        lang_layout.setSpacing(4)
+        # Компактный выпадающий список языков вместо ряда кнопок
+        self._lang_combo = QComboBox()
+        self._lang_combo.setObjectName("LangCombo")
         for code in sorted(self.langs.keys()):
-            btn = QPushButton(code.upper())
-            btn.setObjectName("LangBtn")
-            btn.setFixedSize(30, 24)
-            btn.setProperty("active", code == self.current_lang)
-            btn.clicked.connect(lambda _, c=code: self._apply_language(c))
-            lang_layout.addWidget(btn)
-            self._lang_btn_map[code] = btn
-        layout.addLayout(lang_layout)
+            self._lang_combo.addItem(code.upper(), code)
+        idx = self._lang_combo.findData(self.current_lang)
+        if idx != -1:
+            self._lang_combo.setCurrentIndex(idx)
+        # activated срабатывает только при выборе пользователем — без рекурсии
+        self._lang_combo.activated.connect(
+            lambda i: self._apply_language(self._lang_combo.itemData(i)))
+        layout.addWidget(self._lang_combo)
 
         layout.addSpacing(12)
 
@@ -513,10 +515,9 @@ class SettingsWindow(QMainWindow):
     def _apply_language(self, code: str):
         self.current_lang = code
 
-        for c, btn in self._lang_btn_map.items():
-            btn.setProperty("active", c == code)
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
+        idx = self._lang_combo.findData(code)
+        if idx != -1 and self._lang_combo.currentIndex() != idx:
+            self._lang_combo.setCurrentIndex(idx)
 
         self._app_title_lbl.setText(self.t("app.title"))
         self._kde_btn.setText(self.t("header.kde_btn"))

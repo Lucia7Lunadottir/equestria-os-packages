@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-services-manager
 pkgver=2.2.0
-pkgrel=3
+pkgrel=4
 pkgdesc="Official Equestria OS Service Manager (Enable, Disable, Start, Stop)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"

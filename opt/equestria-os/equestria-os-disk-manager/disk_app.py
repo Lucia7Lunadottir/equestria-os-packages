@@ -411,10 +411,9 @@ class DiskManagerApp(QMainWindow):
 
     def _change_lang(self, lang):
         self.current_lang = lang
-        for code, btn in self._lang_btns.items():
-            btn.setProperty("active", "true" if code == lang else "false")
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
+        idx = self.lang_combo.findData(lang)
+        if idx != -1 and self.lang_combo.currentIndex() != idx:
+            self.lang_combo.setCurrentIndex(idx)
         self._refresh_ui()
 
     def _refresh_ui(self):
@@ -532,18 +531,19 @@ class DiskManagerApp(QMainWindow):
         title_row.addWidget(self.app_title)
         title_row.addStretch()
 
-        self._lang_btns = {}
-        lang_row = QHBoxLayout()
-        lang_row.setSpacing(4)
+        # Компактный выпадающий список языков вместо ряда кнопок
+        self.lang_combo = QComboBox()
+        self.lang_combo.setObjectName("LangCombo")
+        self.lang_combo.setCursor(Qt.CursorShape.PointingHandCursor)
         for code in LANGS:
-            btn = QPushButton(code.upper())
-            btn.setProperty("cssClass", "lang-button")
-            btn.setProperty("active", "true" if code == self.current_lang else "false")
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.clicked.connect(lambda _, c=code: self._change_lang(c))
-            lang_row.addWidget(btn)
-            self._lang_btns[code] = btn
-        title_row.addLayout(lang_row)
+            self.lang_combo.addItem(code.upper(), code)
+        idx = self.lang_combo.findData(self.current_lang)
+        if idx != -1:
+            self.lang_combo.setCurrentIndex(idx)
+        # activated срабатывает только при выборе пользователем — без рекурсии
+        self.lang_combo.activated.connect(
+            lambda i: self._change_lang(self.lang_combo.itemData(i)))
+        title_row.addWidget(self.lang_combo)
         main_layout.addLayout(title_row)
         main_layout.addWidget(self._make_divider())
 

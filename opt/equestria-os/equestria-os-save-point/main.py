@@ -1,6 +1,6 @@
 import sys, os, threading, json, shlex
 from datetime import datetime
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QComboBox
 from PyQt6.QtGui import QIcon, QFontDatabase, QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 from backend import (SnapshotData, detect_backend,
@@ -135,13 +135,19 @@ class main_app(QMainWindow, Ui_SavePoint):
 
         self.spin_keep_last.valueChanged.connect(lambda _: self._save_config())
 
+        # Компактный выпадающий список языков вместо ряда кнопок
+        self.lang_combo = QComboBox()
+        self.lang_combo.setObjectName("LangCombo")
+        self.lang_combo.setCursor(Qt.CursorShape.PointingHandCursor)
         for code in SUPPORTED_LANGS:
-            btn = QPushButton(code.upper())
-            btn.setObjectName("LangBtn")
-            btn.setProperty("active", "true" if code == self.current_lang else "false")
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.clicked.connect(lambda chk, c=code: self.change_lang(c))
-            self.lang_layout.addWidget(btn)
+            self.lang_combo.addItem(code.upper(), code)
+        idx = self.lang_combo.findData(self.current_lang)
+        if idx != -1:
+            self.lang_combo.setCurrentIndex(idx)
+        # activated срабатывает только при выборе пользователем — без рекурсии
+        self.lang_combo.activated.connect(
+            lambda i: self.change_lang(self.lang_combo.itemData(i)))
+        self.lang_layout.addWidget(self.lang_combo)
 
     def resizeEvent(self, event):
         self.modal_overlay.resize(event.size())
@@ -149,12 +155,9 @@ class main_app(QMainWindow, Ui_SavePoint):
 
     def change_lang(self, lang):
         self.current_lang = lang
-        for i in range(self.lang_layout.count()):
-            btn = self.lang_layout.itemAt(i).widget()
-            if btn and isinstance(btn, QPushButton):
-                btn.setProperty("active", "true" if btn.text().lower() == lang else "false")
-                btn.style().unpolish(btn)
-                btn.style().polish(btn)
+        idx = self.lang_combo.findData(lang)
+        if idx != -1 and self.lang_combo.currentIndex() != idx:
+            self.lang_combo.setCurrentIndex(idx)
         self.apply_localization()
 
     def apply_localization(self):

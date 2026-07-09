@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-tutorial
 pkgver=1.4.3
-pkgrel=2
+pkgrel=3
 pkgdesc="Interactive tour for new Equestria OS users"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"

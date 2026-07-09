@@ -6,7 +6,7 @@ import glob
 import shlex
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QStackedWidget, QTextBrowser, QLabel,
-                             QGraphicsDropShadowEffect, QSizePolicy, QCheckBox)
+                             QGraphicsDropShadowEffect, QSizePolicy, QCheckBox, QComboBox)
 from PyQt6.QtGui import QFontDatabase, QFont, QPixmap, QPainter, QPainterPath, QColor, QIcon
 from PyQt6.QtCore import Qt, QLocale
 
@@ -201,14 +201,19 @@ class TutorialApp(QMainWindow):
 
         self.top_layout.addStretch()
 
-        self.lang_buttons = {}
+        # Компактный выпадающий список языков вместо ряда кнопок
+        self.lang_combo = QComboBox()
+        self.lang_combo.setObjectName("LangCombo")
+        self.lang_combo.setCursor(Qt.CursorShape.PointingHandCursor)
         for lang in self.langs:
-            btn = QPushButton(lang.upper())
-            btn.setObjectName("LangBtn")
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.clicked.connect(lambda checked, l=lang: self.change_language(l))
-            self.lang_buttons[lang] = btn
-            self.top_layout.addWidget(btn)
+            self.lang_combo.addItem(lang.upper(), lang)
+        idx = self.lang_combo.findData(self.current_lang)
+        if idx != -1:
+            self.lang_combo.setCurrentIndex(idx)
+        # activated срабатывает только при выборе пользователем — без рекурсии
+        self.lang_combo.activated.connect(
+            lambda i: self.change_language(self.lang_combo.itemData(i)))
+        self.top_layout.addWidget(self.lang_combo)
 
         self.main_layout.addWidget(self.top_bar)
 
@@ -436,10 +441,9 @@ class TutorialApp(QMainWindow):
     def update_ui_texts(self):
         self.logo_label.setText(self.t("app_title"))
         self.autostart_checkbox.setText(self.t("autostart_label"))
-        for lang, btn in self.lang_buttons.items():
-            btn.setProperty("active", "true" if lang == self.current_lang else "false")
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
+        idx = self.lang_combo.findData(self.current_lang)
+        if idx != -1 and self.lang_combo.currentIndex() != idx:
+            self.lang_combo.setCurrentIndex(idx)
 
         if self.current_slide == len(self.slides_config) - 1:
             self.btn_next.setText(self.t("btn_close"))

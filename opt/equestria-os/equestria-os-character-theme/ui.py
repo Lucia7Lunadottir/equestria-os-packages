@@ -18,24 +18,27 @@ QLabel[cssClass="subtitle"] {
     color: rgb(140, 130, 160);
     margin-bottom: 24px;
 }
-/* Language Buttons */
-QPushButton[cssClass="lang-button"] {
-    background-color: transparent;
-    color: rgb(180, 170, 210);
+/* Language Dropdown.
+   No ::drop-down/::down-arrow rules here on purpose: declaring them makes
+   Qt stop drawing the native arrow. */
+QComboBox#LangCombo {
+    background-color: rgb(40, 35, 60);
+    color: rgb(220, 200, 255);
     border: 1px solid rgb(69, 71, 90);
     border-radius: 6px;
     padding: 4px 12px;
     font-size: 14px;
+    min-width: 52px;
 }
-QPushButton[cssClass="lang-button"]:hover {
+QComboBox#LangCombo:hover {
+    border: 1px solid rgb(140, 90, 200);
+}
+QComboBox QAbstractItemView {
     background-color: rgb(40, 35, 60);
     color: rgb(220, 200, 255);
-}
-QPushButton[cssClass="lang-button"][active="true"] {
-    background-color: rgb(100, 60, 160);
-    color: white;
-    border: 1px solid rgb(140, 90, 200);
-    font-weight: bold;
+    selection-background-color: rgb(100, 60, 160);
+    border: 1px solid rgb(69, 71, 90);
+    outline: none;
 }
 /* Status Bar */
 QWidget[cssClass="status-bar"] {

@@ -15,7 +15,9 @@ import os
 import sys
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QCheckBox, QLabel, QPushButton, QSizePolicy, QWidget
+from PyQt6.QtWidgets import (
+    QCheckBox, QComboBox, QLabel, QPushButton, QSizePolicy, QWidget,
+)
 
 from base_module import BaseModule
 
@@ -139,10 +141,12 @@ class EmbeddedAppModule(BaseModule):
             with open(qss_path, "r", encoding="utf-8") as f:
                 raw = f.read()
 
-            base = self.lib_dir.replace("\\", "/").replace(" ", "%20")
+            # %20-экранирование пробелов ломает парсинг url() в QSS и вместе
+            # с ним все правила ниже по файлу — путь передаём как есть.
+            base = self.lib_dir.replace("\\", "/")
             raw = raw.replace("{{BASE_PATH}}", base)
 
-            svg_path = os.path.join(self.lib_dir, "check_mark.svg").replace(" ", "%20")
+            svg_path = os.path.join(self.lib_dir, "check_mark.svg")
             raw = raw.replace("{{CHECKMARK_SVG_PATH}}", svg_path)
 
             font_path = os.path.join(self.lib_dir, "equestria_cyrillic.ttf")
@@ -170,7 +174,8 @@ class EmbeddedAppModule(BaseModule):
             return
 
         def _q(p: str) -> str:
-            return p.replace("\\", "/").replace(" ", "%20")
+            # без %20: Qt читает локальный путь в url() буквально
+            return p.replace("\\", "/")
 
         u, uh, c = _q(cb_u), _q(cb_uh), _q(cb_c)
 
@@ -211,6 +216,12 @@ class EmbeddedAppModule(BaseModule):
             container = getattr(holder, "lang_container", None)
             if isinstance(container, QWidget):
                 _collapse(container)
+
+        # Language switchers are now QComboBox#LangCombo; legacy button
+        # variants are still matched for older embedded apps.
+        for combo in win.findChildren(QComboBox):
+            if combo.objectName() == "LangCombo":
+                _collapse(combo)
 
         for btn in win.findChildren(QPushButton):
             is_lang = (

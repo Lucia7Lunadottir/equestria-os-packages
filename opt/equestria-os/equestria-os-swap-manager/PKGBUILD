@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-swap-manager
 pkgver=2.0.1
-pkgrel=3
+pkgrel=4
 pkgdesc="GUI tool for managing swap files, partitions, and swappiness"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
