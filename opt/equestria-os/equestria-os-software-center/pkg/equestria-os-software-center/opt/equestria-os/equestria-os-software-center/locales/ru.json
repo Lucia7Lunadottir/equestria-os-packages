@@ -110,5 +110,18 @@
   "settings.updates_group": "Область автоматического обновления",
   "settings.upd_pacman": "Обновлять официальные пакеты (Pacman)",
   "settings.upd_aur": "Проверять и собирать обновления AUR",
-  "settings.upd_flatpak": "Загружать обновления контейнеров Flatpak"
+  "settings.upd_flatpak": "Загружать обновления контейнеров Flatpak",
+  "settings.manage_repos": "Управление кастомными репозиториями...",
+  "settings.repo_manager_title": "Кастомные репозитории Pacman",
+  "settings.repo_manager_hint": "Кастомные репозитории хранятся напрямую в /etc/pacman.conf. Изменения требуют прав администратора и вступят в силу после следующего обновления системы.",
+  "settings.repo_add": "Добавить",
+  "settings.repo_edit": "Изменить",
+  "settings.repo_remove": "Удалить",
+  "settings.repo_add_title": "Добавить репозиторий",
+  "settings.repo_edit_title": "Изменить репозиторий",
+  "settings.repo_name": "Имя репозитория",
+  "settings.repo_servers": "URL сервера(ов) — по одному на строку",
+  "settings.repo_siglevel": "SigLevel (необязательно)",
+  "settings.repo_error_title": "Ошибка репозитория",
+  "settings.repo_remove_confirm": "Удалить репозиторий '{0}'? Потребуются права администратора."
 }

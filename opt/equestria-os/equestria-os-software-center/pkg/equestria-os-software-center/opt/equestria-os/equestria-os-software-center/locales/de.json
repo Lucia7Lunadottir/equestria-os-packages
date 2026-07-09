@@ -110,5 +110,18 @@
   "settings.updates_group": "Bereich für automatische Updates",
   "settings.upd_pacman": "Offizielle Pakete aktualisieren (Pacman)",
   "settings.upd_aur": "AUR-Updates prüfen und erstellen",
-  "settings.upd_flatpak": "Flatpak-Container-Updates herunterladen"
+  "settings.upd_flatpak": "Flatpak-Container-Updates herunterladen",
+  "settings.manage_repos": "Benutzerdefinierte Repositories verwalten...",
+  "settings.repo_manager_title": "Benutzerdefinierte Pacman-Repositories",
+  "settings.repo_manager_hint": "Benutzerdefinierte Repositories werden direkt in /etc/pacman.conf gespeichert. Änderungen erfordern Administratorrechte und werden beim nächsten Systemupdate wirksam.",
+  "settings.repo_add": "Hinzufügen",
+  "settings.repo_edit": "Bearbeiten",
+  "settings.repo_remove": "Entfernen",
+  "settings.repo_add_title": "Repository hinzufügen",
+  "settings.repo_edit_title": "Repository bearbeiten",
+  "settings.repo_name": "Repository-Name",
+  "settings.repo_servers": "Server-URL(s) — eine pro Zeile",
+  "settings.repo_siglevel": "SigLevel (optional)",
+  "settings.repo_error_title": "Repository-Fehler",
+  "settings.repo_remove_confirm": "Repository '{0}' entfernen? Dies erfordert Administratorrechte."
 }

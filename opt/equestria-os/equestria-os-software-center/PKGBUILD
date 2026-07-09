@@ -1,19 +1,19 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-software-center
-pkgver=1.5.0
-pkgrel=2
-pkgdesc="Центр программного обеспечения для Equestria OS"
+pkgver=1.6.0
+pkgrel=3
+pkgdesc="Software Center for Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('pacman' 'yay' 'python-pyqt6')
+depends=('pacman' 'yay' 'polkit' 'python-pyqt6')
 
 package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
     install -dm755 "$_lib"
 
-    for f in main.py models.py utils.py workers.py ui_software.py settings.py settings_dialog.py style.qss equestria_cyrillic.ttf EquestriaApps.csv equestria-os-software-center.png; do
+    for f in main.py models.py utils.py workers.py ui_software.py settings.py settings_dialog.py pacman_repo.py repository_dialog.py style.qss chevron_down.svg equestria_cyrillic.ttf EquestriaApps.csv equestria-os-software-center.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
 

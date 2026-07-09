@@ -110,5 +110,18 @@
   "settings.updates_group": "自动更新范围",
   "settings.upd_pacman": "更新官方软件包 (Pacman)",
   "settings.upd_aur": "检查并编译 AUR 更新",
-  "settings.upd_flatpak": "下载 Flatpak 更新"
+  "settings.upd_flatpak": "下载 Flatpak 更新",
+  "settings.manage_repos": "管理自定义软件源...",
+  "settings.repo_manager_title": "自定义 Pacman 软件源",
+  "settings.repo_manager_hint": "自定义软件源直接存储在 /etc/pacman.conf 中。更改需要管理员权限，并将在下次系统更新后生效。",
+  "settings.repo_add": "添加",
+  "settings.repo_edit": "编辑",
+  "settings.repo_remove": "删除",
+  "settings.repo_add_title": "添加软件源",
+  "settings.repo_edit_title": "编辑软件源",
+  "settings.repo_name": "软件源名称",
+  "settings.repo_servers": "服务器 URL（每行一个）",
+  "settings.repo_siglevel": "SigLevel（可选）",
+  "settings.repo_error_title": "软件源错误",
+  "settings.repo_remove_confirm": "删除软件源 '{0}'？这需要管理员权限。"
 }

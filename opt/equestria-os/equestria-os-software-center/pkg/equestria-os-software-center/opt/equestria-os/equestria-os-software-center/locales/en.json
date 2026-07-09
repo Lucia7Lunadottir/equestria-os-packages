@@ -110,5 +110,18 @@
   "settings.updates_group": "Targeted Core Upgrades Scope",
   "settings.upd_pacman": "Synchronize Pacman official repositories",
   "settings.upd_aur": "Compile updates from active AUR trees",
-  "settings.upd_flatpak": "Download Flatpak runtime branch assets"
+  "settings.upd_flatpak": "Download Flatpak runtime branch assets",
+  "settings.manage_repos": "Manage Custom Repositories...",
+  "settings.repo_manager_title": "Custom Pacman Repositories",
+  "settings.repo_manager_hint": "Custom repositories are stored directly in /etc/pacman.conf. Changes require administrator privileges and take effect after your next system update.",
+  "settings.repo_add": "Add",
+  "settings.repo_edit": "Edit",
+  "settings.repo_remove": "Remove",
+  "settings.repo_add_title": "Add Repository",
+  "settings.repo_edit_title": "Edit Repository",
+  "settings.repo_name": "Repository name",
+  "settings.repo_servers": "Server URL(s) — one per line",
+  "settings.repo_siglevel": "SigLevel (optional)",
+  "settings.repo_error_title": "Repository Error",
+  "settings.repo_remove_confirm": "Remove repository '{0}'? This requires administrator privileges."
 }

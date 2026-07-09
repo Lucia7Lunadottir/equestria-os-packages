@@ -121,7 +121,7 @@ QWidget#AppScrollContent, QWidget#ScrollContent {
     background-color: transparent;
 }
 
-QLineEdit#SearchField, QComboBox#CategoryDropdown {
+QLineEdit#SearchField, QComboBox#CategoryDropdown, QPlainTextEdit#SearchField {
     background-color: rgb(17, 17, 27);
     border: 1px solid rgb(49, 50, 68);
     border-radius: 8px;
@@ -129,8 +129,28 @@ QLineEdit#SearchField, QComboBox#CategoryDropdown {
     color: white;
 }
 
-QLineEdit#SearchField:focus {
+QLineEdit#SearchField:focus, QPlainTextEdit#SearchField:focus {
     border: 1px solid rgb(203, 166, 247);
+}
+
+/* A custom border/background on QComboBox makes Qt stop drawing its native
+   drop-down arrow, so it must be redrawn explicitly (same fix applies to
+   QComboBox#SettingsDropdown below). */
+QComboBox#CategoryDropdown::drop-down, QComboBox#SettingsDropdown::drop-down {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 24px;
+    border: none;
+    background: transparent;
+}
+
+QComboBox#CategoryDropdown::down-arrow, QComboBox#SettingsDropdown::down-arrow {
+    /* Base64 data: URIs silently fail to render for QSS image properties on
+       this Qt build (verified — same is true of the checkbox icons below),
+       so this must be a real file, resolved via {{BASE_PATH}} at load time. */
+    image: url({{BASE_PATH}}/chevron_down.svg);
+    width: 12px;
+    height: 12px;
 }
 
 QComboBox QAbstractItemView {
@@ -139,6 +159,21 @@ QComboBox QAbstractItemView {
     selection-background-color: rgb(49, 50, 68);
     border: 1px solid rgb(49, 50, 68);
     outline: none;
+}
+
+/* Without explicit ::item rules, Qt paints the keyboard-"current" (but not
+   yet selected) row with the native system highlight color instead of the
+   theme's selection-background-color above. */
+QComboBox QAbstractItemView::item {
+    background-color: transparent;
+    color: white;
+    padding: 6px 10px;
+    border: none;
+}
+
+QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:selected {
+    background-color: rgb(49, 50, 68);
+    color: white;
 }
 
 QFrame#AppRow, QFrame#PackageRow {

@@ -169,7 +169,13 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         qss_path = os.path.join(self.base_path, "style.qss")
         if os.path.exists(qss_path):
             with open(qss_path, "r", encoding="utf-8") as f:
-                qss = f.read().replace("{{TITLE_FONT}}", f'"{self.custom_font_family}"')
+                # Qt's QSS url() treats a bare local path literally rather than
+                # percent-decoding it, so %20-escaping spaces actually breaks
+                # local file resolution (verified) -- pass the raw path.
+                base = self.base_path.replace("\\", "/")
+                qss = (f.read()
+                       .replace("{{TITLE_FONT}}", f'"{self.custom_font_family}"')
+                       .replace("{{BASE_PATH}}", base))
                 self.setStyleSheet(qss)
 
     def discover_langs(self):

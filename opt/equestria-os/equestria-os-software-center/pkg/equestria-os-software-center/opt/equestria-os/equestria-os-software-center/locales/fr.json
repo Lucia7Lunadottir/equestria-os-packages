@@ -110,5 +110,18 @@
   "settings.updates_group": "Zone de mise à jour automatique",
   "settings.upd_pacman": "Mettre à jour les paquets officiels (Pacman)",
   "settings.upd_aur": "Vérifier et compiler les mises à jour AUR",
-  "settings.upd_flatpak": "Télécharger les mises à jour Flatpak"
+  "settings.upd_flatpak": "Télécharger les mises à jour Flatpak",
+  "settings.manage_repos": "Gérer les dépôts personnalisés...",
+  "settings.repo_manager_title": "Dépôts Pacman personnalisés",
+  "settings.repo_manager_hint": "Les dépôts personnalisés sont stockés directement dans /etc/pacman.conf. Les modifications nécessitent des droits administrateur et prennent effet à la prochaine mise à jour du système.",
+  "settings.repo_add": "Ajouter",
+  "settings.repo_edit": "Modifier",
+  "settings.repo_remove": "Supprimer",
+  "settings.repo_add_title": "Ajouter un dépôt",
+  "settings.repo_edit_title": "Modifier le dépôt",
+  "settings.repo_name": "Nom du dépôt",
+  "settings.repo_servers": "URL(s) du serveur — une par ligne",
+  "settings.repo_siglevel": "SigLevel (facultatif)",
+  "settings.repo_error_title": "Erreur de dépôt",
+  "settings.repo_remove_confirm": "Supprimer le dépôt '{0}' ? Cela nécessite des droits administrateur."
 }

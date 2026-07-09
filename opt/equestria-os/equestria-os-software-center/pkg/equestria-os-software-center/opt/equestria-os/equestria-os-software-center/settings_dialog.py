@@ -7,6 +7,9 @@ import os
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QGroupBox, QWidget
 from PyQt6.QtCore import Qt
 
+from pacman_repo import FileRepositoryStore
+from repository_dialog import RepositoryManagerDialog
+
 # All code comments inside the script are written in English as requested
 
 class SettingsDialog(QDialog):
@@ -28,7 +31,9 @@ class SettingsDialog(QDialog):
         qss_path = os.path.join(base_path, "style.qss")
         if os.path.exists(qss_path):
             with open(qss_path, "r", encoding="utf-8") as f:
-                qss_content = f.read()
+                # See main.py: %20-escaping spaces breaks Qt's local url() resolution.
+                base = base_path.replace("\\", "/")
+                qss_content = f.read().replace("{{BASE_PATH}}", base)
                 # Appending local GroupBox container adjustments to match Catppuccin theme
                 qss_content += """
                 QGroupBox {
@@ -82,6 +87,14 @@ class SettingsDialog(QDialog):
 
         src_layout.addWidget(row_aur)
         src_layout.addWidget(row_flat)
+
+        # Entry point into custom Pacman repository CRUD management
+        self.btn_manage_repos = QPushButton(self.t("settings.manage_repos"), self)
+        self.btn_manage_repos.setObjectName("DetailBackBtn")
+        self.btn_manage_repos.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_manage_repos.clicked.connect(self._open_repo_manager)
+        src_layout.addWidget(self.btn_manage_repos)
+
         layout.addWidget(src_group)
 
         # 3. Automation Update Scope Target Parameters Group
@@ -143,6 +156,11 @@ class SettingsDialog(QDialog):
         row_layout.addWidget(btn)
         
         return container, btn
+
+    def _open_repo_manager(self):
+        """Opens the custom Pacman repository CRUD dialog."""
+        dlg = RepositoryManagerDialog(self, self.t, FileRepositoryStore())
+        dlg.exec()
 
     def _sync_interdependencies(self):
         """Enforces safe state constraints. Prevents updating disabled core branches."""

@@ -110,5 +110,18 @@
   "settings.updates_group": "Área de actualización automática",
   "settings.upd_pacman": "Actualizar paquetes oficiales (Pacman)",
   "settings.upd_aur": "Verificar y compilar actualizaciones de AUR",
-  "settings.upd_flatpak": "Descargar actualizaciones de Flatpak"
+  "settings.upd_flatpak": "Descargar actualizaciones de Flatpak",
+  "settings.manage_repos": "Gestionar repositorios personalizados...",
+  "settings.repo_manager_title": "Repositorios Pacman personalizados",
+  "settings.repo_manager_hint": "Los repositorios personalizados se guardan directamente en /etc/pacman.conf. Los cambios requieren privilegios de administrador y se aplican tras la siguiente actualización del sistema.",
+  "settings.repo_add": "Añadir",
+  "settings.repo_edit": "Editar",
+  "settings.repo_remove": "Eliminar",
+  "settings.repo_add_title": "Añadir repositorio",
+  "settings.repo_edit_title": "Editar repositorio",
+  "settings.repo_name": "Nombre del repositorio",
+  "settings.repo_servers": "URL(s) del servidor — una por línea",
+  "settings.repo_siglevel": "SigLevel (opcional)",
+  "settings.repo_error_title": "Error de repositorio",
+  "settings.repo_remove_confirm": "¿Eliminar el repositorio '{0}'? Esto requiere privilegios de administrador."
 }

@@ -110,5 +110,18 @@
   "settings.updates_group": "Область автоматичного оновлення",
   "settings.upd_pacman": "Оновлювати офіційні пакети (Pacman)",
   "settings.upd_aur": "Перевіряти та збирати оновлення AUR",
-  "settings.upd_flatpak": "Завантажувати оновлення контейнерів Flatpak"
+  "settings.upd_flatpak": "Завантажувати оновлення контейнерів Flatpak",
+  "settings.manage_repos": "Керування власними репозиторіями...",
+  "settings.repo_manager_title": "Власні репозиторії Pacman",
+  "settings.repo_manager_hint": "Власні репозиторії зберігаються безпосередньо у /etc/pacman.conf. Зміни потребують прав адміністратора та набудуть чинності після наступного оновлення системи.",
+  "settings.repo_add": "Додати",
+  "settings.repo_edit": "Змінити",
+  "settings.repo_remove": "Видалити",
+  "settings.repo_add_title": "Додати репозиторій",
+  "settings.repo_edit_title": "Змінити репозиторій",
+  "settings.repo_name": "Назва репозиторію",
+  "settings.repo_servers": "URL сервера(ів) — по одному в рядку",
+  "settings.repo_siglevel": "SigLevel (необов'язково)",
+  "settings.repo_error_title": "Помилка репозиторію",
+  "settings.repo_remove_confirm": "Видалити репозиторій '{0}'? Потрібні права адміністратора."
 }

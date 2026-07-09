@@ -110,5 +110,18 @@
   "settings.updates_group": "自動更新スコープ",
   "settings.upd_pacman": "公式パッケージを更新する (Pacman)",
   "settings.upd_aur": "AUR アップデートをチェックしてビルドする",
-  "settings.upd_flatpak": "Flatpak アップデートをダウンロードする"
+  "settings.upd_flatpak": "Flatpak アップデートをダウンロードする",
+  "settings.manage_repos": "カスタムリポジトリを管理...",
+  "settings.repo_manager_title": "カスタム Pacman リポジトリ",
+  "settings.repo_manager_hint": "カスタムリポジトリは /etc/pacman.conf に直接保存されます。変更には管理者権限が必要で、次回のシステム更新後に反映されます。",
+  "settings.repo_add": "追加",
+  "settings.repo_edit": "編集",
+  "settings.repo_remove": "削除",
+  "settings.repo_add_title": "リポジトリを追加",
+  "settings.repo_edit_title": "リポジトリを編集",
+  "settings.repo_name": "リポジトリ名",
+  "settings.repo_servers": "サーバー URL（1 行に 1 つ）",
+  "settings.repo_siglevel": "SigLevel（任意）",
+  "settings.repo_error_title": "リポジトリエラー",
+  "settings.repo_remove_confirm": "リポジトリ '{0}' を削除しますか？管理者権限が必要です。"
 }
