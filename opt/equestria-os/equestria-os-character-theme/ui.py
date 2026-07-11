@@ -148,12 +148,21 @@ class Ui_MainWindow:
         self.btn_restore = QPushButton("Restore Defaults")
         self.btn_restore.setStyleSheet("background-color: #8b0000;")
         self.btn_open_folder = QPushButton("Open Files")
-        self.btn_edit = QPushButton("Edit")
-        self.btn_duplicate = QPushButton("Duplicate")
-        self.btn_create = QPushButton("Create New")
+        # «Создать» — компактная кнопка «＋» (подпись живёт в тултипе);
+        # «Изменить» переехало на карточки (✎), «Дублировать» — в редактор
+        self.btn_create = QPushButton("+")
+        self.btn_create.setFixedWidth(44)
+        # обычный «+» + крупный кегль: полноширинный юникод-плюс «＋»
+        # в системном шрифте рисуется вертикальной палкой
+        self.btn_create.setStyleSheet("font-size: 20px; font-weight: bold; padding: 2px 0px;")
+        self.btn_import = QPushButton("📥")
+        self.btn_import.setFixedWidth(44)
+        # без override паддинга общий стиль (padding 8px 20px) при ширине 44px
+        # обрезает глиф до узкой полоски
+        self.btn_import.setStyleSheet("font-size: 15px; padding: 4px 0px;")
         self.btn_terminal = QPushButton("Open Terminal")
 
-        for btn in [self.btn_theme_toggle, self.btn_restore, self.btn_open_folder, self.btn_edit, self.btn_duplicate, self.btn_create, self.btn_terminal]:
+        for btn in [self.btn_theme_toggle, self.btn_restore, self.btn_open_folder, self.btn_create, self.btn_import, self.btn_terminal]:
             btn.setProperty("cssClass", "open-terminal-btn")
             self.status_layout.addWidget(btn)
 
@@ -242,6 +251,14 @@ class Ui_MainWindow:
         self.btn_delete.setProperty("cssClass", "open-terminal-btn")
         self.btn_delete.setStyleSheet("background-color: #8b0000;")
         self.ed_status_layout.addWidget(self.btn_delete)
+
+        self.btn_duplicate = QPushButton("Duplicate")
+        self.btn_duplicate.setProperty("cssClass", "open-terminal-btn")
+        self.ed_status_layout.addWidget(self.btn_duplicate)
+
+        self.btn_export = QPushButton("Export")
+        self.btn_export.setProperty("cssClass", "open-terminal-btn")
+        self.ed_status_layout.addWidget(self.btn_export)
 
         self.ed_status_layout.addStretch()
 

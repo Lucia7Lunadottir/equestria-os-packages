@@ -3,12 +3,12 @@
 pkgname = equestria-os-save-point
 pkgbase = equestria-os-save-point
 xdata = pkgtype=pkg
-pkgver = 1.4.0-1
+pkgver = 1.4.0-2
 pkgdesc = Equestria OS Save Point — system snapshot manager (Btrfs/Restic/Timeshift)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1782686266
+builddate = 1783782417
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 378568
+size = 378997
 arch = any
 license = GPL
 depend = restic

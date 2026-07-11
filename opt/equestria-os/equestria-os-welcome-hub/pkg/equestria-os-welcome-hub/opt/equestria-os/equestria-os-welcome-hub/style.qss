@@ -45,18 +45,22 @@ QPushButton#ItemCard:hover {
     border-left: 4px solid rgb(245, 194, 231); /* Появляется розовая полоска */
 }
 
-/* Языки */
-QPushButton[cssClass="lang-button"] {
-    background-color: transparent; color: rgb(180, 180, 200);
-    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 4px; font-size: 11px;
-    font-family: sans-serif;
-}
-QPushButton[cssClass="lang-button"]:hover {
+/* Выпадающий список языков.
+   Важно: без правил ::drop-down/::down-arrow — иначе Qt перестаёт
+   рисовать нативную стрелку. */
+QComboBox#LangCombo {
     background-color: rgb(49, 50, 68); color: rgb(220, 220, 255);
+    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 4px 8px;
+    font-size: 11px; font-family: sans-serif;
 }
-QPushButton[cssClass="lang-button"][active="true"] {
-    background-color: rgb(203, 166, 247); color: rgb(30, 30, 46); font-weight: bold;
+QComboBox#LangCombo:hover {
     border: 1px solid rgb(203, 166, 247);
+}
+QComboBox QAbstractItemView {
+    background-color: rgb(49, 50, 68); color: rgb(220, 220, 255);
+    selection-background-color: rgb(108, 112, 134);
+    border: 1px solid rgb(69, 71, 90);
+    outline: none;
 }
 
 /* Безопасный чекбокс (без SVG) */

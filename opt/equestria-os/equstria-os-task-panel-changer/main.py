@@ -70,8 +70,15 @@ class TaskPanelApp(QMainWindow):
         try:
             kdeglobals_path = os.path.expanduser("~/.config/kdeglobals")
             if os.path.exists(kdeglobals_path):
-                config = configparser.ConfigParser()
+                config = configparser.ConfigParser(interpolation=None, strict=False)
                 config.read(kdeglobals_path)
+                # Основной способ — яркость фона окна: работает и для схем
+                # с нейтральными именами (EG_Active_A/B из пакета тем)
+                bg = config.get("Colors:Window", "BackgroundNormal", fallback="")
+                parts = [x.strip() for x in bg.split(",")]
+                if len(parts) >= 3 and all(x.isdigit() for x in parts[:3]):
+                    r, g, b = int(parts[0]), int(parts[1]), int(parts[2])
+                    return (r * 0.299 + g * 0.587 + b * 0.114) < 128
                 scheme = config.get("KDE", "ColorScheme", fallback="").lower()
                 if "light" in scheme or "breezelight" in scheme:
                     return False
@@ -438,10 +445,11 @@ class TaskPanelApp(QMainWindow):
 
     def enter_plasma_edit_mode(self):
         qdbus = plasma_utils.find_qdbus()
+        # lockCorona() и свойство editMode проверены по скрипт-движку Plasma 6.7;
+        # toggleEditMode() в нём не существует, поэтому вызова нет
         cmd = (
             f"{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'lockCorona(false);'; "
-            f"{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.editMode true; "
-            f"{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'toggleEditMode();' 2>/dev/null"
+            f"{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.editMode true"
         )
         self._run_shell(cmd)
 
@@ -719,13 +727,19 @@ class TaskPanelApp(QMainWindow):
         if os.path.exists(old_dir): shutil.rmtree(old_dir, ignore_errors=True)
 
         plasmarc = os.path.expanduser("~/.config/plasmarc")
-        cfg = configparser.ConfigParser()
-        cfg.read(plasmarc)
-        current_theme = cfg.get("Theme", "name", fallback=None)
+        cfg = configparser.ConfigParser(interpolation=None, strict=False)
+        current_theme = None
+        try:
+            cfg.read(plasmarc)
+            current_theme = cfg.get("Theme", "name", fallback=None)
+        except configparser.Error:
+            pass
 
         plasma_utils.apply_system_theme_fixes()
 
-        cache_clear = "rm -rf ~/.cache/ksvg/ 2>/dev/null; rm -f ~/.cache/plasma_theme_*.kcache 2>/dev/null; "
+        cache_clear = ("rm -rf ~/.cache/ksvg/ 2>/dev/null; "
+                       "rm -f ~/.cache/ksvg-elements 2>/dev/null; "  # Plasma 6.7: кэш элементов KSvg — файл
+                       "rm -f ~/.cache/plasma_theme_*.kcache 2>/dev/null; ")
         apply_colorscheme = "plasma-apply-colorscheme EquestriaPanel 2>/dev/null; "
         if current_theme == "EquestriaPanel":
             cmd = cache_clear + apply_colorscheme + "plasma-apply-desktoptheme default && sleep 0.5 && plasma-apply-desktoptheme EquestriaPanel"

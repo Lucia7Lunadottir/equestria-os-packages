@@ -76,19 +76,26 @@ QScrollBar::sub-line:horizontal { width: 0; }
 QScrollBar::add-page:horizontal,
 QScrollBar::sub-page:horizontal { background: none; }
 
-/* Стили для кнопок переключения языка */
-QPushButton[cssClass="lang-button"] {
-    background-color: transparent;
-    color: rgb(140, 130, 160);
-    border: none;
-    font-weight: bold;
-    padding: 4px;
-}
-QPushButton[cssClass="lang-button"][active="true"] {
+/* Выпадающий список языков.
+   Важно: без правил ::drop-down/::down-arrow — иначе Qt перестаёт
+   рисовать нативную стрелку. */
+QComboBox#LangCombo {
+    background-color: rgb(40, 35, 60);
     color: rgb(220, 200, 255);
-    border-bottom: 2px solid rgb(100, 60, 160);
-    border-radius: 0px;
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 10px;
+    min-width: 46px;
 }
-QPushButton[cssClass="lang-button"]:hover {
+QComboBox#LangCombo:hover {
+    border: 1px solid rgb(140, 90, 200);
     color: white;
+}
+QComboBox QAbstractItemView {
+    background-color: rgb(40, 35, 60);
+    color: rgb(220, 200, 255);
+    selection-background-color: rgb(100, 60, 160);
+    border: 1px solid rgb(69, 71, 90);
+    outline: none;
 }

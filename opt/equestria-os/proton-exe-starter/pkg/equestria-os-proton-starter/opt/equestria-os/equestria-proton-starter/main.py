@@ -4,7 +4,8 @@ import csv
 import json
 import shutil
 import hashlib
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QPushButton)
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QPushButton,
+                             QComboBox)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from ui import Ui_SettingsWindow
@@ -28,7 +29,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
 
         self.load_localization()
         self.detect_language()
-        self.setup_lang_buttons()
+        self.setup_lang_selector()
 
         self.btn_save.clicked.connect(self.save_settings)
         self.btn_cancel.clicked.connect(self.close)
@@ -70,20 +71,26 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
     def t_str(self, key):
         return self.locales.get(key, {}).get(self.current_lang, key)
 
-    def setup_lang_buttons(self):
-        langs = {"en": "EN", "ru": "RU", "de": "DE", "fr": "FR",
-                 "es": "ES", "pt": "PT", "pl": "PL", "uk": "UK",
-                 "zh": "ZH", "ja": "JA"}
-        for code, flag in langs.items():
-            btn = QPushButton(flag)
-            btn.setFixedSize(28, 28)
-            btn.setStyleSheet("padding: 0px; font-size: 10px;")
-            btn.setToolTip(code.upper())
-            btn.clicked.connect(lambda checked, c=code: self.change_language(c))
-            self.lang_layout.addWidget(btn)
+    def setup_lang_selector(self):
+        # Компактный выпадающий список языков вместо ряда кнопок
+        codes = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
+        self.lang_combo = QComboBox()
+        self.lang_combo.setObjectName("LangCombo")
+        for code in codes:
+            self.lang_combo.addItem(code.upper(), code)
+        idx = self.lang_combo.findData(self.current_lang)
+        if idx != -1:
+            self.lang_combo.setCurrentIndex(idx)
+        # activated срабатывает только при выборе пользователем — без рекурсии
+        self.lang_combo.activated.connect(
+            lambda i: self.change_language(self.lang_combo.itemData(i)))
+        self.lang_layout.addWidget(self.lang_combo)
 
     def change_language(self, code):
         self.current_lang = code
+        idx = self.lang_combo.findData(code)
+        if idx != -1 and self.lang_combo.currentIndex() != idx:
+            self.lang_combo.setCurrentIndex(idx)
         self.update_ui_text()
 
     def update_ui_text(self):
@@ -95,6 +102,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         self.chk_fps.setText(self.t_str("proton.chk_fps"))
         self.chk_desktop.setText(self.t_str("proton.chk_desktop"))
         self.chk_fsr.setText(self.t_str("proton.chk_fsr"))
+        self.chk_debug.setText(self.t_str("proton.chk_debug"))
         self.group_args.setTitle(self.t_str("proton.group_args"))
         self.group_danger.setTitle(self.t_str("proton.group_danger"))
         self.lbl_danger.setText(self.t_str("proton.lbl_danger"))
@@ -110,6 +118,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
                     self.chk_fps.setChecked(settings.get("dxvk_hud", False))
                     self.chk_desktop.setChecked(settings.get("virtual_desktop", False))
                     self.chk_fsr.setChecked(settings.get("fsr", False))
+                    self.chk_debug.setChecked(settings.get("debug_log", False))
                     self.txt_args.setText(settings.get("launch_args", ""))
             except Exception:
                 pass
@@ -124,6 +133,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
             "dxvk_hud": self.chk_fps.isChecked(),
             "virtual_desktop": self.chk_desktop.isChecked(),
             "fsr": self.chk_fsr.isChecked(),
+            "debug_log": self.chk_debug.isChecked(),
             "launch_args": self.txt_args.text().strip()
         }
         with open(self.config_file, "w", encoding="utf-8") as f:

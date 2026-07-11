@@ -102,24 +102,11 @@ QPushButton#BrowseBtn {
 }
 
 /* Языковые кнопки */
-QPushButton[cssClass="lang-button"] {
-    background-color: #181825;
-    color: #7f849c;
-    font-size: 11px;
-    padding: 4px 8px;
-    font-weight: normal;
-    border-radius: 4px;
-}
-
-QPushButton[cssClass="lang-button"]:hover {
-    background-color: #313244;
+/* Language dropdown: styled by the runtime-appended QComboBox rules
+   in swap_app.py; kept here only as a hover accent. */
+QComboBox#LangCombo:hover {
+    border: 1px solid #f5c2e7;
     color: #cdd6f4;
-}
-
-QPushButton[cssClass="lang-button"][active="true"] {
-    background-color: #f5c2e7; /* Pink */
-    color: #11111b;
-    font-weight: bold;
 }
 
 /* --- СТИЛИЗАЦИЯ ГАЛОЧКИ (FIX) --- */

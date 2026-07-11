@@ -35,26 +35,14 @@ QPushButton#KDESettingsBtn:hover {
 }
 
 /* ============================================================
- *  LANG BUTTONS
+ *  LANG DROPDOWN
  * ============================================================ */
 
-QPushButton#LangBtn {
-    background-color: transparent;
-    color: rgb(180, 180, 200);
-    border: 1px solid rgb(69, 71, 90);
-    border-radius: 4px;
-    padding: 2px 4px;
-    font-size: 10px;
-}
-QPushButton#LangBtn:hover {
-    background-color: rgb(49, 50, 68);
-    color: rgb(220, 220, 255);
-}
-QPushButton#LangBtn[active="true"] {
-    background-color: rgb(203, 166, 247);
-    color: rgb(30, 30, 46);
-    font-weight: bold;
-    border: 1px solid rgb(203, 166, 247);
+/* Компактный override глобального QComboBox для переключателя языка */
+QComboBox#LangCombo {
+    min-width: 56px;
+    padding: 2px 8px;
+    font-size: 11px;
 }
 
 /* ============================================================
@@ -221,7 +209,9 @@ QComboBox:focus {
     border: 1px solid rgb(160, 120, 220);
 }
 QComboBox::drop-down {
-    subcontrol-origin: padding;
+    /* border, не padding: при padding у самого комбобокса
+       область стрелки схлопывается и стрелка исчезает */
+    subcontrol-origin: border;
     subcontrol-position: top right;
     width: 24px;
     border-left: 1px solid rgb(80, 60, 110);
@@ -230,11 +220,11 @@ QComboBox::drop-down {
     background-color: rgb(50, 44, 72);
 }
 QComboBox::down-arrow {
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 5px 4px 0 4px;
-    border-color: rgb(180, 160, 220) transparent transparent transparent;
+    /* CSS-трюк с треугольником из бордеров в Qt не рендерится —
+       нужна настоящая картинка */
+    image: url({{BASE_PATH}}/icons/cb_arrow_down.svg);
+    width: 12px;
+    height: 8px;
 }
 QComboBox QAbstractItemView {
     background-color: rgb(40, 35, 60);

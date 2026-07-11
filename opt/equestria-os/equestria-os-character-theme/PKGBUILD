@@ -2,12 +2,16 @@
 
 pkgname=equestria-os-character-theme
 pkgver=2.0.3
-pkgrel=9
+pkgrel=13
 pkgdesc="Customizing the visual style and characters of Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
 depends=('python-pyqt6')
+optdepends=('konsole: применение терминального профиля персонажа'
+            'fastfetch: приветствие с кьютимаркой в терминале'
+            'chafa: отрисовка кьютимарки в fastfetch'
+            'imagemagick: обработка изображений для fastfetch')
 
 package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"

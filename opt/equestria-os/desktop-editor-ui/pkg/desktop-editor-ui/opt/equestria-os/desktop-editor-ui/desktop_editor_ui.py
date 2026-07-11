@@ -62,7 +62,7 @@ class DesktopEditorApp(QWidget):
         self.localizations = {} 
         self.translations = {}
         self.current_lang = "ru"
-        self.lang_buttons = {}
+        self.lang_combo = None
         
         self.load_translations()
         self.initUI()
@@ -132,12 +132,15 @@ class DesktopEditorApp(QWidget):
         lang_layout.addWidget(self.title_label)
         lang_layout.addStretch()
 
+        # Компактный выпадающий список языков вместо ряда кнопок
+        self.lang_combo = QComboBox()
+        self.lang_combo.setObjectName("LangCombo")
         for lang in sorted(self.translations.keys()):
-            btn = QPushButton(lang.upper())
-            btn.setObjectName("LangBtn")
-            btn.clicked.connect(lambda checked, l=lang: self.set_language(l))
-            self.lang_buttons[lang] = btn
-            lang_layout.addWidget(btn)
+            self.lang_combo.addItem(lang.upper(), lang)
+        # activated срабатывает только при выборе пользователем — без рекурсии
+        self.lang_combo.activated.connect(
+            lambda i: self.set_language(self.lang_combo.itemData(i)))
+        lang_layout.addWidget(self.lang_combo)
 
         main_layout.addLayout(lang_layout)
 
@@ -250,10 +253,10 @@ class DesktopEditorApp(QWidget):
         self.retranslate_ui()
 
     def retranslate_ui(self):
-        for code, btn in self.lang_buttons.items():
-            btn.setProperty("active", str(code == self.current_lang).lower())
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
+        if self.lang_combo is not None:
+            idx = self.lang_combo.findData(self.current_lang)
+            if idx != -1 and self.lang_combo.currentIndex() != idx:
+                self.lang_combo.setCurrentIndex(idx)
 
         self.setWindowTitle(self.t("title"))
         self.title_label.setText(self.t("title"))

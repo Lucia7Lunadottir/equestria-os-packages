@@ -7,7 +7,8 @@ import shutil
 import configparser
 from datetime import datetime
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout,
-                             QPushButton, QColorDialog, QMessageBox, QFileDialog)
+                             QPushButton, QColorDialog, QMessageBox, QFileDialog,
+                             QComboBox)
 from PyQt6.QtGui import QIcon, QColor, QFontDatabase, QFont
 from PyQt6.QtCore import Qt, QTimer, QProcess
 
@@ -69,8 +70,15 @@ class TaskPanelApp(QMainWindow):
         try:
             kdeglobals_path = os.path.expanduser("~/.config/kdeglobals")
             if os.path.exists(kdeglobals_path):
-                config = configparser.ConfigParser()
+                config = configparser.ConfigParser(interpolation=None, strict=False)
                 config.read(kdeglobals_path)
+                # Основной способ — яркость фона окна: работает и для схем
+                # с нейтральными именами (EG_Active_A/B из пакета тем)
+                bg = config.get("Colors:Window", "BackgroundNormal", fallback="")
+                parts = [x.strip() for x in bg.split(",")]
+                if len(parts) >= 3 and all(x.isdigit() for x in parts[:3]):
+                    r, g, b = int(parts[0]), int(parts[1]), int(parts[2])
+                    return (r * 0.299 + g * 0.587 + b * 0.114) < 128
                 scheme = config.get("KDE", "ColorScheme", fallback="").lower()
                 if "light" in scheme or "breezelight" in scheme:
                     return False
@@ -213,12 +221,18 @@ class TaskPanelApp(QMainWindow):
         while self.ui.lang_layout.count():
             item = self.ui.lang_layout.takeAt(0)
             if item.widget(): item.widget().deleteLater()
+        # Компактный выпадающий список языков вместо ряда кнопок
+        self.lang_combo = QComboBox()
+        self.lang_combo.setObjectName("LangCombo")
         for code in self.available_langs:
-            btn = QPushButton(code.upper())
-            btn.setProperty("cssClass", "lang-button")
-            btn.setProperty("active", "true" if code == self.current_lang else "false")
-            btn.clicked.connect(lambda _, c=code: self.set_language(c))
-            self.ui.lang_layout.addWidget(btn)
+            self.lang_combo.addItem(code.upper(), code)
+        idx = self.lang_combo.findData(self.current_lang)
+        if idx != -1:
+            self.lang_combo.setCurrentIndex(idx)
+        # activated срабатывает только при выборе пользователем — без рекурсии
+        self.lang_combo.activated.connect(
+            lambda i: self.set_language(self.lang_combo.itemData(i)))
+        self.ui.lang_layout.addWidget(self.lang_combo)
 
     def _build_preset_cards(self):
         while self.ui.grid_layout.count():
@@ -276,12 +290,9 @@ class TaskPanelApp(QMainWindow):
 
     def set_language(self, code):
         self.current_lang = code
-        for i in range(self.ui.lang_layout.count()):
-            btn = self.ui.lang_layout.itemAt(i).widget()
-            if btn:
-                btn.setProperty("active", "true" if btn.text().lower() == code else "false")
-                btn.style().unpolish(btn)
-                btn.style().polish(btn)
+        idx = self.lang_combo.findData(code)
+        if idx != -1 and self.lang_combo.currentIndex() != idx:
+            self.lang_combo.setCurrentIndex(idx)
         self._build_preset_cards()
         self._update_ui_state()
 
@@ -434,10 +445,11 @@ class TaskPanelApp(QMainWindow):
 
     def enter_plasma_edit_mode(self):
         qdbus = plasma_utils.find_qdbus()
+        # lockCorona() и свойство editMode проверены по скрипт-движку Plasma 6.7;
+        # toggleEditMode() в нём не существует, поэтому вызова нет
         cmd = (
             f"{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'lockCorona(false);'; "
-            f"{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.editMode true; "
-            f"{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'toggleEditMode();' 2>/dev/null"
+            f"{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.editMode true"
         )
         self._run_shell(cmd)
 
@@ -715,13 +727,19 @@ class TaskPanelApp(QMainWindow):
         if os.path.exists(old_dir): shutil.rmtree(old_dir, ignore_errors=True)
 
         plasmarc = os.path.expanduser("~/.config/plasmarc")
-        cfg = configparser.ConfigParser()
-        cfg.read(plasmarc)
-        current_theme = cfg.get("Theme", "name", fallback=None)
+        cfg = configparser.ConfigParser(interpolation=None, strict=False)
+        current_theme = None
+        try:
+            cfg.read(plasmarc)
+            current_theme = cfg.get("Theme", "name", fallback=None)
+        except configparser.Error:
+            pass
 
         plasma_utils.apply_system_theme_fixes()
 
-        cache_clear = "rm -rf ~/.cache/ksvg/ 2>/dev/null; rm -f ~/.cache/plasma_theme_*.kcache 2>/dev/null; "
+        cache_clear = ("rm -rf ~/.cache/ksvg/ 2>/dev/null; "
+                       "rm -f ~/.cache/ksvg-elements 2>/dev/null; "  # Plasma 6.7: кэш элементов KSvg — файл
+                       "rm -f ~/.cache/plasma_theme_*.kcache 2>/dev/null; ")
         apply_colorscheme = "plasma-apply-colorscheme EquestriaPanel 2>/dev/null; "
         if current_theme == "EquestriaPanel":
             cmd = cache_clear + apply_colorscheme + "plasma-apply-desktoptheme default && sleep 0.5 && plasma-apply-desktoptheme EquestriaPanel"

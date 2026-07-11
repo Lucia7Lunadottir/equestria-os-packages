@@ -39,7 +39,7 @@ class main_app(QMainWindow, Ui_WelcomeHub):
             "app.theme": {"en":"Equestria OS Theme Switcher", "ru":"Переключатель тем Equestria OS", "de":"Equestria-OS-Theme-Wechsler", "fr":"Sélecteur de thèmes Equestria OS", "es":"Selector de temas de Equestria OS", "pt":"Seletor de temas Equestria OS", "pl":"Przełącznik motywów Equestria OS", "uk":"Перемикач тем Equestria OS", "zh":"Equestria OS主题切换器", "ja":"Equestria OSテーマスイッチャー"},
             "app.tutorial": {"en":"Equestria OS Tour", "ru":"Тур по Equestria OS", "de":"Equestria OS Tour", "fr":"Visite guided Equestria OS", "es":"Tour de Equestria OS", "pt":"Tour do Equestria OS", "pl":"Wycieczka po Equestria OS", "uk":"Тур по Equestria OS", "zh":"Equestria OS 导览", "ja":"Equestria OS ツアー"},
             "app.panel": {"en":"Equestria OS Task Panel Changer", "ru":"Настройка панели задач Equestria OS", "de":"Equestria OS Taskleisten-Konfigurator", "fr":"Gestionnaire de barre des tâches Equestria OS", "es":"Configurador de barra de tareas Equestria OS", "pt":"Configurador de barra de tarefas Equestria OS", "pl":"Konfigurator paska zadań Equestria OS", "uk":"Налаштування панели завдань Equestria OS", "zh":"Equestria OS任务栏配置器", "ja":"Equestria OSタスクバー設定"},
-            "app.essentials": {"en":"Equestria OS Essentials", "ru":"Базовые программы Equestria OS", "de":"Equestria OS Essentials", "fr":"Les Essentiels Equestria OS", "es":"Esenciales de Equestria OS", "pt":"Essenciais do Equestria OS", "pl":"Niezbędnik Equestria OS", "uk":"Базові програми Equestria OS", "zh":"Equestria OS 必备软件", "ja":"Equestria OS 必須アプリ"},
+            "app.net": {"en":"Equestria Net — Social Network", "ru":"Equestria Net — соцсеть", "de":"Equestria Net — Soziales Netzwerk", "fr":"Equestria Net — Réseau social", "es":"Equestria Net — Red social", "pt":"Equestria Net — Rede social", "pl":"Equestria Net — Sieć społecznościowa", "uk":"Equestria Net — соцмережа", "zh":"Equestria Net — 社交网络", "ja":"Equestria Net — SNS"},
             "app.store": {"en":"Equestria OS App Store", "ru":"Магазин Equestria OS", "de":"Equestria OS App Store", "fr":"Boutique Equestria OS", "es":"Tienda Equestria OS", "pt":"Loja Equestria OS", "pl":"Sklep Equestria OS", "uk":"Магазин Equestria OS", "zh":"Equestria OS 应用商店", "ja":"Equestria OS アプリストア"},
             "app.pkgs": {"en":"Equestria OS Packages", "ru":"Пакеты Equestria OS", "de":"Equestria OS Pakete", "fr":"Paquets Equestria OS", "es":"Paquetes de Equestria OS", "pt":"Pacotes do Equestria OS", "pl":"Pakiety Equestria OS", "uk":"Пакети Equestria OS", "zh":"Equestria OS软件包", "ja":"Equestria OSパッケージ"}
         }
@@ -110,6 +110,7 @@ class main_app(QMainWindow, Ui_WelcomeHub):
                 Item(self.t("app.tutorial"), "equestria-os-tutorial", "command"),
                 Item(self.t("app.theme"), "equestria-os-character-theme", "command"),
                 Item(self.t("app.panel"), "equestria-os-task-panel-changer", "command"),
+                Item(self.t("app.net"), "https://equestria-net.psyche-games.com"),
                 Item(self.t("app.store"), "equestria-os-software-center", "command"),
                 Item(self.t("app.pkgs"), "equestria-os-package-manager", "command")
             ]),

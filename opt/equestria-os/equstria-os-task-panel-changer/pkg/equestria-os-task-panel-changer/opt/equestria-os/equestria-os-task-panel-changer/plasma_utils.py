@@ -335,11 +335,17 @@ def apply_system_theme_fixes():
     desktop_theme_dir = os.path.expanduser("~/.local/share/plasma/desktoptheme/default")
     os.makedirs(desktop_theme_dir, exist_ok=True)
     import configparser
+    import json
     kdeglobals_path = os.path.expanduser("~/.config/kdeglobals")
-    config = configparser.ConfigParser()
+    # interpolation=None: в kdeglobals встречаются значения с '%', на которых
+    # интерполяция configparser падает; strict=False терпит дубликаты ключей
+    config = configparser.ConfigParser(interpolation=None, strict=False)
     config.optionxform = str
     if os.path.exists(kdeglobals_path):
-        config.read(kdeglobals_path)
+        try:
+            config.read(kdeglobals_path)
+        except configparser.Error:
+            return
     if 'Colors:Complementary' not in config:
         config.add_section('Colors:Complementary')
     config.set('Colors:Complementary', 'BackgroundNormal', '0,0,0')
@@ -348,11 +354,22 @@ def apply_system_theme_fixes():
     try:
         with open(kdeglobals_path, 'w', encoding='utf-8') as f: config.write(f)
     except OSError: pass
-    theme_rc_path = os.path.join(desktop_theme_dir, "metadata.desktop")
-    if not os.path.exists(theme_rc_path):
+    # KF6/KPackage: metadata.json вместо устаревшего metadata.desktop
+    # (KSvg в Plasma 6 читает .desktop только через legacy-путь с предупреждением)
+    theme_meta_path = os.path.join(desktop_theme_dir, "metadata.json")
+    if not os.path.exists(theme_meta_path):
         try:
-            with open(theme_rc_path, 'w', encoding='utf-8') as f:
-                f.write("\nName=Equestria Fallback\nX-KDE-PluginInfo-Name=default\n")
+            with open(theme_meta_path, 'w', encoding='utf-8') as f:
+                json.dump({
+                    "KPlugin": {"Id": "default", "Name": "Equestria Fallback"},
+                    "X-Plasma-API-Minimum-Version": "6.0",
+                }, f, indent=4)
+        except OSError: pass
+    # подчищаем legacy-файл, оставшийся от старых версий этой утилиты
+    legacy_meta = os.path.join(desktop_theme_dir, "metadata.desktop")
+    if os.path.exists(legacy_meta):
+        try:
+            os.remove(legacy_meta)
         except OSError: pass
     settings_path = os.path.join(desktop_theme_dir, "settings")
     try:

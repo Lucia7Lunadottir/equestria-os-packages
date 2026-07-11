@@ -1,18 +1,22 @@
 /* Base container */
 QWidget#root { background-color: rgb(30, 30, 46); }
 
-/* Language buttons */
-QPushButton[cssClass="lang-button"] {
-    background-color: transparent; color: rgb(180, 180, 200);
-    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 3px 5px; font-size: 10px;
-    font-family: sans-serif;
+/* Language dropdown.
+   No ::drop-down/::down-arrow rules on purpose: declaring them makes Qt
+   stop drawing the native arrow. */
+QComboBox#LangCombo {
+    background-color: rgb(49, 50, 68); color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 3px 8px;
+    font-size: 11px; font-family: sans-serif; min-width: 46px;
 }
-QPushButton[cssClass="lang-button"]:hover {
-    background-color: rgb(49, 50, 68); color: rgb(220, 220, 255);
+QComboBox#LangCombo:hover {
+    border: 1px solid rgb(203, 166, 247); color: rgb(220, 220, 255);
 }
-QPushButton[cssClass="lang-button"][active="true"] {
-    background-color: rgb(203, 166, 247); color: rgb(30, 30, 46); font-weight: bold;
-    border: 1px solid rgb(203, 166, 247);
+QComboBox#LangCombo QAbstractItemView {
+    background-color: rgb(49, 50, 68); color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90);
+    selection-background-color: rgb(108, 112, 134);
+    outline: none;
 }
 
 /* App title — font-family injected at runtime via {{TITLE_FONT}} */
@@ -217,7 +221,6 @@ QComboBox#SourceEdit {
     font-family: sans-serif;
 }
 QComboBox#SourceEdit:focus { border: 1px solid rgb(245, 194, 231); }
-QComboBox#SourceEdit::drop-down { border: none; width: 20px; }
 QComboBox#SourceEdit QAbstractItemView {
     background-color: rgb(49, 50, 68);
     color: rgb(205, 214, 244);

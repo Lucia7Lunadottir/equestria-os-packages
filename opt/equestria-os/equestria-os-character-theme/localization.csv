@@ -26,3 +26,7 @@ ui.btn_open_folder,Open Folder,Открыть папку,Ordner öffnen,Ouvrir l
 ui.btn_restore,Restore Defaults,Восстановить по умолчанию,Standard wiederherstellen,Restaurer par défaut,Restaurar predeterminados,Restaurar padrões,Przywróć domyślne,Відновити за замовчуванням,恢复默认,デフォルトに戻す
 ui.btn_light_mode,☀️ Light Theme,☀️ Светлая тема,☀️ Helles Design,☀️ Thème Clair,☀️ Tema Claro,☀️ Tema Claro,☀️ Jasny Motyw,☀️ Світла тема,☀️ 浅色主题,☀️ ライトテーマ
 ui.btn_dark_mode,🌙 Dark Theme,🌙 Тёмная тема,🌙 Dunkles Design,🌙 Thème Sombre,🌙 Tema Oscuro,🌙 Tema Escuro,🌙 Ciemny Motyw,🌙 Темна тема,🌙 深色主题,🌙 ダークテーマ
+ui.btn_import,Import Theme,Импорт темы,Thema importieren,Importer un thème,Importar tema,Importar tema,Importuj motyw,Імпорт теми,导入主题,テーマをインポート
+ui.btn_export,Export,Экспорт,Exportieren,Exporter,Exportar,Exportar,Eksportuj,Експорт,导出,エクスポート
+ui.import_done,Theme «{0}» imported,Тема «{0}» импортирована,Thema „{0}“ importiert,Thème « {0} » importé,Tema «{0}» importado,Tema «{0}» importado,Motyw „{0}” zaimportowany,Тему «{0}» імпортовано,主题“{0}”已导入,テーマ「{0}」をインポートしました
+ui.import_error,Failed to import theme,Не удалось импортировать тему,Thema konnte nicht importiert werden,Échec de l'importation du thème,No se pudo importar el tema,Falha ao importar o tema,Nie udało się zaimportować motywu,Не вдалося імпортувати тему,无法导入主题,テーマをインポートできませんでした

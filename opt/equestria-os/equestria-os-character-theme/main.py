@@ -4,7 +4,8 @@ import json
 import csv
 import shutil
 import subprocess
-from dataclasses import dataclass, asdict, field
+import zipfile
+from dataclasses import dataclass, asdict, field, fields
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QFileDialog, QColorDialog, QMessageBox, QComboBox)
 from PyQt6.QtGui import QIcon, QPixmap, QColor, QFontDatabase, QFont
@@ -13,6 +14,21 @@ from ui import Ui_MainWindow, APP_STYLE
 
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
 USER_PATH = os.path.expanduser("~/.local/share/EquestriaOS/Themes/")
+
+_QDBUS_BIN = None
+
+def find_qdbus():
+    """Ищет доступный бинарь qdbus: его уже переименовывали (qdbus → qdbus6),
+    поэтому перебираем известные имена вместо жёсткой привязки."""
+    global _QDBUS_BIN
+    if _QDBUS_BIN is None:
+        for candidate in ("qdbus6", "qdbus-qt6", "qdbus"):
+            if shutil.which(candidate):
+                _QDBUS_BIN = candidate
+                break
+        else:
+            _QDBUS_BIN = "qdbus6"
+    return _QDBUS_BIN
 
 @dataclass
 class KonsoleColorScheme:
@@ -39,15 +55,24 @@ class EGCharacter:
     KonsoleTheme: KonsoleColorScheme = field(default_factory=KonsoleColorScheme)
 
 class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
-    def __init__(self):
+    def __init__(self, title_font_family=None):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Equestria OS Character Theme")
-        self.setStyleSheet(APP_STYLE)
+        style = APP_STYLE
+        if title_font_family:
+            # Шрифт Эквестрии — только на заголовках и именах персонажей;
+            # кнопки и описания используют системный, читаемый шрифт
+            style += (
+                f'\nQLabel[cssClass="title"] {{ font-family: "{title_font_family}"; }}'
+                f'\nQLabel[cssClass="char-name"] {{ font-family: "{title_font_family}"; }}'
+            )
+        self.setStyleSheet(style)
 
         self.characters = []
         self.active_character = None
         self.editing_character = None
+        self.editing_original_id = None
         self.is_creating_new = False
         self.accent_toggle = 0
 
@@ -65,6 +90,9 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
 
         self.bind_events()
         self.load_characters()
+        # Отмечаем активного персонажа сразу при запуске (НЕ применяя тему):
+        # можно сразу редактировать, не кликая по карточке
+        self.restore_active_character()
 
         self.build_language_selector()
         self.build_ui()
@@ -127,7 +155,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
                 r, g, b = map(int, res.stdout.strip().split(','))
                 # Вычисляем яркость: если фон темный, значит включена темная тема
                 self.is_dark_mode = (r*0.299 + g*0.587 + b*0.114) < 128
-        except:
+        except Exception:
             self.is_dark_mode = True # По умолчанию тёмная
 
     def toggle_dark_light(self):
@@ -135,6 +163,169 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.update_texts()
         if self.active_character:
             self.apply_kde_theme(self.active_character)
+
+    def _state_path(self):
+        return os.path.join(USER_PATH, "state.json")
+
+    def _save_state(self):
+        """Запоминает выбранного персонажа, чтобы при следующем запуске
+        отметить его сразу, без повторного клика."""
+        try:
+            with open(self._state_path(), "w", encoding="utf-8") as f:
+                json.dump({"active_character":
+                           self.active_character.Id if self.active_character else None}, f)
+        except OSError:
+            pass
+
+    def restore_active_character(self):
+        """Восстанавливает отметку активного персонажа при запуске.
+        Тема при этом НЕ применяется повторно."""
+        active_id = None
+        try:
+            with open(self._state_path(), encoding="utf-8") as f:
+                active_id = json.load(f).get("active_character")
+        except (OSError, json.JSONDecodeError):
+            pass
+        char = next((c for c in self.characters if c.Id == active_id), None)
+        if char is None:
+            char = self._detect_character_by_accent()
+        self.active_character = char
+
+    def _detect_character_by_accent(self):
+        """Фолбэк для первого запуска (state.json ещё нет): угадывает
+        активного персонажа по акцентному цвету KDE."""
+        try:
+            res = subprocess.run(
+                ["kreadconfig6", "--file", "kdeglobals",
+                 "--group", "General", "--key", "AccentColor"],
+                capture_output=True, text=True, timeout=3)
+            parts = [x.strip() for x in res.stdout.strip().split(",")]
+            if len(parts) < 3:
+                return None
+            rgb = tuple(int(x) for x in parts[:3])
+        except Exception:
+            return None
+        for c in self.characters:
+            h = str(c.AccentColor).lstrip("#")
+            if len(h) != 6:
+                continue
+            try:
+                if (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)) == rgb:
+                    return c
+            except ValueError:
+                continue
+        return None
+
+    # ── Импорт / экспорт тем (.eqtheme = zip: character.json + ассеты) ──
+
+    def export_current_theme(self):
+        """Экспортирует персонажа, открытого в редакторе, в один файл .eqtheme
+        вместе с обоями и кьютимаркой — для обмена темами."""
+        char = self.editing_character
+        if not char:
+            return
+        default = os.path.expanduser(f"~/{char.Id or 'theme'}.eqtheme")
+        path, _ = QFileDialog.getSaveFileName(
+            self, self.t_str("ui.btn_export"), default,
+            "Equestria OS Theme (*.eqtheme)")
+        if not path:
+            return
+        if not path.endswith(".eqtheme"):
+            path += ".eqtheme"
+        data = asdict(char)
+        data["FormatVersion"] = 1
+        try:
+            with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+                z.writestr("character.json",
+                           json.dumps(data, indent=4, ensure_ascii=False))
+                icon_abs = os.path.join(USER_PATH, char.IconPath) if char.IconPath else ""
+                if icon_abs and os.path.isfile(icon_abs):
+                    z.write(icon_abs, f"icon/{os.path.basename(icon_abs)}")
+                wall_abs = os.path.join(USER_PATH, char.WallpaperPath) if char.WallpaperPath else ""
+                if wall_abs and os.path.isdir(wall_abs):
+                    for root, _dirs, files in os.walk(wall_abs):
+                        for fn in files:
+                            fp = os.path.join(root, fn)
+                            rel = os.path.relpath(fp, wall_abs)
+                            z.write(fp, f"wallpapers/{rel}")
+        except OSError as e:
+            QMessageBox.warning(self, "", str(e))
+
+    def import_theme(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, self.t_str("ui.btn_import"), os.path.expanduser("~"),
+            "Equestria OS Theme (*.eqtheme *.zip)")
+        if not path:
+            return
+        try:
+            char = self._import_theme_file(path)
+        except (zipfile.BadZipFile, json.JSONDecodeError, KeyError, OSError, TypeError) as e:
+            QMessageBox.warning(self, "", f"{self.t_str('ui.import_error')}\n{e}")
+            return
+        self.build_ui()
+        msg = self.t_str("ui.import_done")
+        msg = msg.replace("{0}", char.DisplayName) if "{0}" in msg else f"{msg} {char.DisplayName}"
+        QMessageBox.information(self, "", msg)
+
+    def _import_theme_file(self, path):
+        """Читает .eqtheme и добавляет персонажа. Id при конфликте получает
+        суффикс, ассеты распаковываются в отдельные подпапки персонажа —
+        чужая тема не может перезаписать файлы существующих."""
+        known_char = {f.name for f in fields(EGCharacter)}
+        known_kon = {f.name for f in fields(KonsoleColorScheme)}
+        with zipfile.ZipFile(path) as z:
+            with z.open("character.json") as f:
+                data = json.load(f)
+            if not isinstance(data, dict):
+                raise TypeError("character.json: not an object")
+            theme_dict = data.pop("KonsoleTheme", {}) or {}
+            char = EGCharacter(**{k: v for k, v in data.items() if k in known_char})
+            char.KonsoleTheme = KonsoleColorScheme(
+                **{k: v for k, v in theme_dict.items() if k in known_kon})
+
+            base_id = str(char.Id).strip() or "imported"
+            new_id, n = base_id, 2
+            while any(c.Id == new_id for c in self.characters):
+                new_id = f"{base_id}_{n}"
+                n += 1
+            char.Id = new_id
+            char.KonsoleProfile = new_id
+            char.KdeColorScheme = new_id
+
+            members = z.namelist()
+
+            icon_members = [m for m in members
+                            if m.startswith("icon/") and not m.endswith("/")]
+            char.IconPath = ""
+            if icon_members:
+                base = os.path.basename(icon_members[0])
+                if base:
+                    rel = os.path.join("MLP Cutiemarks", f"{new_id}_{base}")
+                    dest = os.path.join(USER_PATH, rel)
+                    os.makedirs(os.path.dirname(dest), exist_ok=True)
+                    with z.open(icon_members[0]) as src, open(dest, "wb") as dst:
+                        shutil.copyfileobj(src, dst)
+                    char.IconPath = rel
+
+            wall_members = [m for m in members
+                            if m.startswith("wallpapers/") and not m.endswith("/")]
+            char.WallpaperPath = ""
+            if wall_members:
+                wall_rel = os.path.join("Wallpapers", new_id)
+                for m in wall_members:
+                    rel = os.path.normpath(m[len("wallpapers/"):])
+                    # защита от zip-slip: путь не должен выходить за пределы папки
+                    if rel.startswith("..") or os.path.isabs(rel):
+                        continue
+                    dest = os.path.join(USER_PATH, wall_rel, rel)
+                    os.makedirs(os.path.dirname(dest), exist_ok=True)
+                    with z.open(m) as src, open(dest, "wb") as dst:
+                        shutil.copyfileobj(src, dst)
+                char.WallpaperPath = wall_rel
+
+        self.characters.append(char)
+        self.save_json_and_refresh()
+        return char
 
 
     def build_language_selector(self):
@@ -160,13 +351,15 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         if idx != -1 and self.lang_combo.currentIndex() != idx:
             self.lang_combo.setCurrentIndex(idx)
         self.update_texts()
+        self.build_ui()  # перестраиваем карточки ради локализованных тултипов ✎
 
     def update_texts(self):
         self.lbl_title.setText(self.t_str("ui.title"))
         self.lbl_subtitle.setText(self.t_str("ui.subtitle"))
-        self.btn_edit.setText(self.t_str("ui.btn_edit"))
         self.btn_duplicate.setText(self.t_str("ui.btn_duplicate"))
-        self.btn_create.setText(self.t_str("ui.btn_create_new"))
+        self.btn_create.setToolTip(self.t_str("ui.btn_create_new"))
+        self.btn_import.setToolTip(self.t_str("ui.btn_import"))
+        self.btn_export.setText(self.t_str("ui.btn_export"))
         self.btn_terminal.setText(self.t_str("ui.btn_open_terminal"))
         self.btn_open_folder.setText(self.t_str("ui.btn_open_folder"))
         self.btn_restore.setText(self.t_str("ui.btn_restore"))
@@ -197,9 +390,10 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.btn_restore.clicked.connect(self.on_restore_defaults)
         self.btn_open_folder.clicked.connect(lambda: self.run_shell(f'xdg-open "{USER_PATH}"'))
         self.btn_terminal.clicked.connect(lambda: self.run_shell("konsole --profile EquestriaOS &"))
-        self.btn_edit.clicked.connect(self.on_edit_current)
         self.btn_duplicate.clicked.connect(self.on_duplicate_current)
         self.btn_create.clicked.connect(self.on_create_new)
+        self.btn_import.clicked.connect(self.import_theme)
+        self.btn_export.clicked.connect(self.export_current_theme)
         self.btn_cancel.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(0))
         self.btn_save.clicked.connect(self.save_theme)
         self.btn_delete.clicked.connect(self.confirm_delete_theme)
@@ -209,16 +403,34 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.btn_theme_toggle.clicked.connect(self.toggle_dark_light)
 
     def load_characters(self):
-        json_path = os.path.join(USER_PATH, "characters.json")
         self.characters.clear()
-        if os.path.exists(json_path):
-            with open(json_path, "r", encoding='utf-8') as f:
-                data = json.load(f)
-                for c_dict in data.get("Characters", []):
-                    theme_dict = c_dict.pop("KonsoleTheme", {})
-                    char = EGCharacter(**c_dict)
-                    char.KonsoleTheme = KonsoleColorScheme(**theme_dict)
-                    self.characters.append(char)
+        data = None
+        # Битый пользовательский JSON не должен ронять приложение:
+        # откатываемся на системный набор персонажей
+        for path in (os.path.join(USER_PATH, "characters.json"),
+                     os.path.join(SYSTEM_PATH, "characters.json")):
+            if not os.path.exists(path):
+                continue
+            try:
+                with open(path, "r", encoding='utf-8') as f:
+                    data = json.load(f)
+                break
+            except (json.JSONDecodeError, OSError):
+                data = None
+        if not isinstance(data, dict):
+            return
+        known_char = {f.name for f in fields(EGCharacter)}
+        known_kon = {f.name for f in fields(KonsoleColorScheme)}
+        for c_dict in data.get("Characters", []):
+            if not isinstance(c_dict, dict):
+                continue
+            theme_dict = c_dict.pop("KonsoleTheme", {}) or {}
+            # Неизвестные поля игнорируем: файл, записанный более новой
+            # версией приложения, не должен ломать текущую
+            char = EGCharacter(**{k: v for k, v in c_dict.items() if k in known_char})
+            char.KonsoleTheme = KonsoleColorScheme(
+                **{k: v for k, v in theme_dict.items() if k in known_kon})
+            self.characters.append(char)
 
     def build_ui(self):
         while self.grid_layout.count():
@@ -259,10 +471,27 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             lo.addWidget(name_lbl)
 
             btn.clicked.connect(lambda checked, c=char: self.on_character_selected(c))
+
+            # Иконка редактирования в углу карточки: открывает редактор
+            # ЭТОГО персонажа, не применяя его тему
+            edit_btn = QPushButton("✎", btn)
+            edit_btn.setFixedSize(26, 26)
+            edit_btn.move(btn.width() - 26 - 8, 8)
+            edit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            edit_btn.setToolTip(self.t_str("ui.btn_edit"))
+            edit_btn.setStyleSheet(
+                "QPushButton { background-color: rgba(18, 18, 28, 180);"
+                " border: 1px solid rgb(69, 71, 90); border-radius: 13px;"
+                " color: rgb(220, 200, 255); font-size: 13px; padding: 0; }"
+                "QPushButton:hover { background-color: rgb(100, 60, 160);"
+                " border: 1px solid rgb(140, 90, 200); }")
+            edit_btn.clicked.connect(lambda checked, c=char: self.on_edit_character(c))
+
             self.grid_layout.addWidget(btn, i // MAX_COLS, i % MAX_COLS)
 
     def on_character_selected(self, character):
         self.active_character = character
+        self._save_state()
         self.update_texts()
         self.build_ui()
         self.apply_wallpaper_slideshow(character.WallpaperPath)
@@ -276,11 +505,13 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         try:
             r, g, b = map(int, str(val).replace(' ', '').split(','))
             return QColor(r, g, b)
-        except: return QColor(0, 0, 0)
+        except Exception: return QColor(0, 0, 0)
 
     def open_editor(self):
         self.stacked_widget.setCurrentIndex(1)
         self.btn_delete.setVisible(not self.is_creating_new)
+        self.btn_duplicate.setVisible(not self.is_creating_new)
+        self.btn_export.setVisible(not self.is_creating_new)
         self.fld_id.setText(self.editing_character.Id)
         self.fld_name.setText(self.editing_character.DisplayName)
         self.fld_wallpaper.setText(self.editing_character.WallpaperPath)
@@ -327,24 +558,31 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             col += 1
             if col > 2: col = 0; row += 1
 
-    def on_edit_current(self):
-        if not self.active_character: return
+    def on_edit_character(self, character):
+        """Открывает редактор для конкретного персонажа (✎ на карточке),
+        не делая его активным и не применяя тему."""
         self.is_creating_new = False
-        self.editing_character = EGCharacter(**asdict(self.active_character))
-        self.editing_character.KonsoleTheme = KonsoleColorScheme(**asdict(self.active_character.KonsoleTheme))
+        self.editing_original_id = character.Id
+        self.editing_character = EGCharacter(**asdict(character))
+        self.editing_character.KonsoleTheme = KonsoleColorScheme(**asdict(character.KonsoleTheme))
         self.open_editor()
 
     def on_duplicate_current(self):
-        if not self.active_character: return
+        """Дублирует персонажа, открытого в редакторе."""
+        src = self.editing_character
+        if not src: return
         self.is_creating_new = True
-        self.editing_character = EGCharacter(**asdict(self.active_character))
-        self.editing_character.KonsoleTheme = KonsoleColorScheme(**asdict(self.active_character.KonsoleTheme))
-        self.editing_character.Id += "_copy"
-        self.editing_character.DisplayName += " (Copy)"
+        self.editing_original_id = None
+        new_char = EGCharacter(**asdict(src))
+        new_char.KonsoleTheme = KonsoleColorScheme(**asdict(src.KonsoleTheme))
+        new_char.Id += "_copy"
+        new_char.DisplayName += " (Copy)"
+        self.editing_character = new_char
         self.open_editor()
 
     def on_create_new(self):
         self.is_creating_new = True
+        self.editing_original_id = None
         self.editing_character = EGCharacter(Id="new_pony", DisplayName="New Pony")
         self.open_editor()
 
@@ -358,11 +596,18 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
 
         if self.is_creating_new: self.characters.append(self.editing_character)
         else:
-            idx = next((i for i, c in enumerate(self.characters) if c.Id == self.active_character.Id), -1)
+            idx = next((i for i, c in enumerate(self.characters) if c.Id == self.editing_original_id), -1)
             if idx != -1: self.characters[idx] = self.editing_character
 
+        was_active = (not self.is_creating_new and self.active_character
+                      and self.active_character.Id == self.editing_original_id)
         self.save_json_and_refresh()
-        self.on_character_selected(self.editing_character)
+        if self.is_creating_new or was_active:
+            # прежнее поведение: активному пересобираем тему, нового применяем
+            self.on_character_selected(self.editing_character)
+        else:
+            # правка неактивного персонажа не должна трогать текущую тему
+            self.update_texts()
 
     def confirm_delete_theme(self):
         msg = self.t_str("ui.delete_msg")
@@ -373,11 +618,22 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             self.save_json_and_refresh()
             if self.active_character and self.active_character.Id == self.editing_character.Id:
                 self.active_character = None
+                self._save_state()
                 self.update_texts()
 
     def save_json_and_refresh(self):
         data = {"Characters": [asdict(c) for c in self.characters]}
-        with open(os.path.join(USER_PATH, "characters.json"), "w", encoding='utf-8') as f: json.dump(data, f, indent=4)
+        json_path = os.path.join(USER_PATH, "characters.json")
+        tmp_path = json_path + ".tmp"
+        try:
+            with open(tmp_path, "w", encoding='utf-8') as f:
+                json.dump(data, f, indent=4)
+            os.replace(tmp_path, json_path)  # атомарная подмена
+        except OSError:
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
         self.stacked_widget.setCurrentIndex(0)
         self.build_ui()
 
@@ -417,6 +673,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.init_user_folder()
         self.load_characters()
         self.active_character = None
+        self._save_state()
         self.update_texts()
         self.build_ui()
 
@@ -425,7 +682,8 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
 
     def apply_wallpaper_slideshow(self, folder_rel_path):
         full_path = os.path.join(USER_PATH, folder_rel_path).replace("\\", "/")
-        script = f"""qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var allDesktops = desktops(); for (i=0;i<allDesktops.length;i++) {{ d = allDesktops[i]; d.wallpaperPlugin = 'org.kde.slideshow'; d.currentConfigGroup = Array('Wallpaper', 'org.kde.slideshow', 'General'); d.writeConfig('SlidePaths', '{full_path}'); }}" """
+        qdbus = find_qdbus()
+        script = f"""{qdbus} org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "var allDesktops = desktops(); for (i=0;i<allDesktops.length;i++) {{ d = allDesktops[i]; d.wallpaperPlugin = 'org.kde.slideshow'; d.currentConfigGroup = Array('Wallpaper', 'org.kde.slideshow', 'General'); d.writeConfig('SlidePaths', '{full_path}'); }}" """
         self.run_shell(script)
         lock_script = f"""kwriteconfig6 --file kscreenlockerrc --group Greeter --key WallpaperPlugin "org.kde.slideshow" && kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.slideshow --group General --key SlidePaths "{full_path}" """
         self.run_shell(lock_script)
@@ -443,8 +701,40 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         os.makedirs(ff_dir, exist_ok=True)
         color = self.hex_to_fastfetch(character.AccentColor)
         icon_path = os.path.join(USER_PATH, character.IconPath)
-        json_content = f"""{{"logo": {{"source": "{icon_path}", "type": "chafa", "chafa": {{"symbols": "block"}}, "width": 18, "height": 8, "padding": {{"right": 2}}}}, "display": {{"separator": "  ", "color": {{"keys": "{color}", "title": "{color}"}}}}, "modules": ["title", "separator", {{"type": "os", "key": "  OS"}}, {{"type": "kernel", "key": "  Kernel"}}, {{"type": "de", "key": "  DE"}}, {{"type": "shell", "key": "  Shell"}}, {{"type": "terminal", "key": "  Terminal"}}, {{"type": "cpu", "key": "  CPU"}}, {{"type": "gpu", "key": "  GPU"}}, {{"type": "memory", "key": "  RAM"}}, {{"type": "disk", "key": "  Disk"}}, {{"type": "uptime", "key": "  Uptime"}}, "separator", {{"type": "colors", "symbol": "circle"}}]}}"""
-        with open(os.path.join(ff_dir, "config.jsonc"), "w", encoding='utf-8') as f: f.write(json_content)
+        # Конфиг собирается структурой и сериализуется через json.dump:
+        # ручная f-строка ломалась бы на путях с кавычками/бэкслешами
+        ff_config = {
+            "logo": {
+                "source": icon_path,
+                "type": "chafa",
+                "chafa": {"symbols": "block"},
+                "width": 18,
+                "height": 8,
+                "padding": {"right": 2},
+            },
+            "display": {
+                "separator": "  ",
+                "color": {"keys": color, "title": color},
+            },
+            "modules": [
+                "title",
+                "separator",
+                {"type": "os", "key": "  OS"},
+                {"type": "kernel", "key": "  Kernel"},
+                {"type": "de", "key": "  DE"},
+                {"type": "shell", "key": "  Shell"},
+                {"type": "terminal", "key": "  Terminal"},
+                {"type": "cpu", "key": "  CPU"},
+                {"type": "gpu", "key": "  GPU"},
+                {"type": "memory", "key": "  RAM"},
+                {"type": "disk", "key": "  Disk"},
+                {"type": "uptime", "key": "  Uptime"},
+                "separator",
+                {"type": "colors", "symbol": "circle"}
+            ],
+        }
+        with open(os.path.join(ff_dir, "config.jsonc"), "w", encoding='utf-8') as f:
+            json.dump(ff_config, f, ensure_ascii=False, indent=2)
 
     def apply_konsole_colors(self, character):
         if not character.KonsoleTheme: return
@@ -453,7 +743,10 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         c = character.KonsoleTheme
         content = f"[Background]\nColor={c.Background}\n\n[BackgroundIntense]\nColor={c.Color0Intense}\n\n[Color0]\nColor={c.Color0}\n\n[Color0Intense]\nColor={c.Color0Intense}\n\n[Color1]\nColor={c.Color1}\n\n[Color1Intense]\nColor={c.Color1Intense}\n\n[Color2]\nColor={c.Color2}\n\n[Color2Intense]\nColor={c.Color2Intense}\n\n[Color3]\nColor={c.Color3}\n\n[Color3Intense]\nColor={c.Color3Intense}\n\n[Color4]\nColor={c.Color4}\n\n[Color4Intense]\nColor={c.Color4Intense}\n\n[Color5]\nColor={c.Color5}\n\n[Color5Intense]\nColor={c.Color5Intense}\n\n[Color6]\nColor={c.Color6}\n\n[Color6Intense]\nColor={c.Color6Intense}\n\n[Color7]\nColor={c.Color7}\n\n[Color7Intense]\nColor={c.Color7Intense}\n\n[Foreground]\nColor={c.Foreground}\n\n[ForegroundIntense]\nColor={c.Color7Intense}\n\n[General]\nAnchor=0\nDescription={character.DisplayName}\nOpacity=1\nWallpaper=\n"
         with open(os.path.join(konsole_dir, "EquestriaOS.colorscheme"), "w", encoding='utf-8') as f: f.write(content)
-        self.run_shell("for s in $(qdbus6 | grep konsole); do for e in $(qdbus6 $s | grep Sessions); do qdbus6 $s $e org.kde.konsole.Session.setColorScheme EquestriaOS 2>/dev/null; done; done")
+        # setColorScheme удалён из D-Bus API новых Konsole (остался setProfile);
+        # на них вызов тихо пропускается, на старых — обновляет цвета вживую
+        qdbus = find_qdbus()
+        self.run_shell(f"for s in $({qdbus} | grep konsole); do for e in $({qdbus} $s | grep Sessions); do {qdbus} $s $e org.kde.konsole.Session.setColorScheme EquestriaOS 2>/dev/null; done; done")
 
     def apply_konsole_profile(self, character):
         konsole_dir = os.path.expanduser("~/.local/share/konsole")
@@ -492,8 +785,9 @@ fi
                 else: content = content.replace("[Desktop Entry]", "[Desktop Entry]\nDefaultProfile=EquestriaOS.profile")
             else: content += "\n[Desktop Entry]\nDefaultProfile=EquestriaOS.profile\n"
             with open(konsolerc, "w", encoding='utf-8') as f: f.write(content)
-        except: pass
-        self.run_shell("for s in $(qdbus6 | grep konsole); do for e in $(qdbus6 $s | grep Sessions); do qdbus6 $s $e org.kde.konsole.Session.setProfile EquestriaOS 2>/dev/null; done; done")
+        except Exception: pass
+        qdbus = find_qdbus()
+        self.run_shell(f"for s in $({qdbus} | grep konsole); do for e in $({qdbus} $s | grep Sessions); do {qdbus} $s $e org.kde.konsole.Session.setProfile EquestriaOS 2>/dev/null; done; done")
         # Автоматически добавляем хук в ~/.bashrc пользователя
         bashrc_path = os.path.expanduser("~/.bashrc")
         hook_comment = "# EquestriaOS Character Theme Hook\n"
@@ -586,14 +880,17 @@ if __name__ == "__main__":
         app.setWindowIcon(QIcon.fromTheme("preferences-desktop-theme"))
 
     font_path = os.path.join(SYSTEM_PATH, "equestria_cyrillic.ttf")
+    eq_family = None
     if os.path.exists(font_path):
         font_id = QFontDatabase.addApplicationFont(font_path)
         if font_id != -1:
             families = QFontDatabase.applicationFontFamilies(font_id)
             if families:
-                # ЗДЕСЬ УВЕЛИЧЕН БАЗОВЫЙ ШРИФТ ПРИЛОЖЕНИЯ (с 11 до 13)
-                app.setFont(QFont(families[0], 13))
+                eq_family = families[0]
+    # Базовый шрифт — системный: шрифт Эквестрии плохо читается на кнопках
+    # и в описаниях, поэтому он используется только в заголовках и именах
+    app.setFont(QFont("sans-serif", 12))
 
-    window = EGThemeSwitcher()
+    window = EGThemeSwitcher(title_font_family=eq_family)
     window.show()
     sys.exit(app.exec())

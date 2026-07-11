@@ -115,6 +115,13 @@ def main():
     if settings.get("fsr"):
         env["WINE_FULLSCREEN_FSR"] = "1"
 
+    debug = settings.get("debug_log", False)
+    if debug:
+        env["DXVK_LOG_LEVEL"] = "info"
+        env["VK_LOADER_DEBUG"] = "warn"
+        env["WINEDEBUG"] = "err"
+        env["PROTON_LOG"] = "1"
+
     extra_args = shlex.split(settings.get("launch_args", "").strip())
     game_dir = os.path.dirname(exe_path)
 
@@ -133,10 +140,8 @@ def main():
     _detect_language()
 
     log_path = os.path.join(APPS_DATA_DIR, f"{app_id}.log")
-    log_out = open(log_path, "w", encoding="utf-8")
 
-    # Fix SplashWindow arguments and launch safely
-    splash = SplashWindow(exe_name, log_path, cmd, env, game_dir)
+    splash = SplashWindow(exe_name, log_path, cmd, env, game_dir, debug=debug)
     splash.exec()
 
     # Post-launch migration: handles the case where umu-run just initialised a brand-new
