@@ -123,5 +123,7 @@
   "settings.repo_servers": "URL сервера(ів) — по одному в рядку",
   "settings.repo_siglevel": "SigLevel (необов'язково)",
   "settings.repo_error_title": "Помилка репозиторію",
-  "settings.repo_remove_confirm": "Видалити репозиторій '{0}'? Потрібні права адміністратора."
+  "settings.repo_remove_confirm": "Видалити репозиторій '{0}'? Потрібні права адміністратора.",
+  "ui.no_updates": "Оновлень немає — все актуально",
+  "ui.nothing_found": "Нічого не знайдено"
 }

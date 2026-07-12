@@ -4,11 +4,12 @@ import json
 import csv
 import subprocess
 import shutil
+import time
 
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem,
                               QPushButton, QLabel, QVBoxLayout, QWidget, QComboBox)
 from PyQt6.QtGui import QIcon, QFontDatabase, QFont
-from PyQt6.QtCore import Qt, QThread, QTimer, QFileSystemWatcher, QProcess
+from PyQt6.QtCore import Qt, QThread, QTimer, QFileSystemWatcher, QProcess, QEvent
 
 from models import EssentialData, StoreData
 from utils import (FLATPAK_APPSTREAM, cleanup_screenshot_cache,
@@ -65,6 +66,8 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self._screenshot_threads = []
         self._screenshot_gen = 0
         self._pacman_info_thread = None
+        self._vercmp_cache = {}
+        self._last_status_refresh = 0.0
 
         self.init_resources()
         cleanup_screenshot_cache()
@@ -126,9 +129,12 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             self._aur_popular_thread.finished.connect(self._on_aur_popular_loaded)
             self._aur_popular_thread.start()
 
-            self._aur_upgradable_loader = AURUpgradableLoader()
-            self._aur_upgradable_loader.finished.connect(self._on_aur_upgradable_loaded)
-            self._aur_upgradable_loader.start()
+        # Проверка обновлений AUR идёт всегда: enable_aur выключает только
+        # автообновление, но установленные AUR-пакеты должны показывать
+        # свои обновления в любом случае.
+        self._aur_upgradable_loader = AURUpgradableLoader()
+        self._aur_upgradable_loader.finished.connect(self._on_aur_upgradable_loaded)
+        self._aur_upgradable_loader.start()
 
         self._flatpak_watcher = QFileSystemWatcher()
         flatpak_dir = os.path.dirname(FLATPAK_APPSTREAM)
@@ -210,6 +216,75 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
                 }
         except Exception:
             pass
+
+    def event(self, e):
+        # After installs/updates run in a detached konsole, statuses go stale;
+        # re-read system state whenever the window regains focus.
+        if e.type() == QEvent.Type.WindowActivate:
+            self._refresh_status_throttled()
+        return super().event(e)
+
+    def _refresh_status_throttled(self):
+        now = time.monotonic()
+        if now - self._last_status_refresh < 10:
+            return
+        self._last_status_refresh = now
+
+        old_aur_installed = dict(self.aur_installed)
+        # pacman -Qu never sees AUR packages, so their upgradable flags
+        # (found by yay at startup) must survive the refresh — but only
+        # while the installed version is unchanged.
+        aur_flagged = {n for n in self.upgradable_packages if n in old_aur_installed}
+        self.refresh_system_status()
+        self.upgradable_packages |= {
+            n for n in aur_flagged
+            if self.aur_installed.get(n) == old_aur_installed.get(n)
+        }
+
+        self.load_essentials_csv()
+        if self.store_packages or self.aur_packages:
+            self.filter_store()
+
+    def _compute_status(self, pkg):
+        """Sets pkg.status from the current installed/upgradable system state."""
+        if pkg.source_type == "flatpak":
+            if pkg.app_id in self.flatpak_upgradable:
+                pkg.status = "upgradable"
+            elif pkg.app_id in self.flatpak_installed:
+                pkg.status = "installed"
+            else:
+                pkg.status = "available"
+            return
+        if pkg.name in self.upgradable_packages:
+            pkg.status = "upgradable"
+        elif pkg.name in self.installed_packages:
+            if pkg.source_type == "aur" and self._aur_version_newer(pkg.name, pkg.version):
+                pkg.status = "upgradable"
+            else:
+                pkg.status = "installed"
+        else:
+            pkg.status = "available"
+
+    def _aur_version_newer(self, name, rpc_version):
+        """Fallback update check: AUR RPC version vs installed (pacman -Qm).
+
+        Covers the window before/without `yay -Qu --aur` results.
+        """
+        installed = self.aur_installed.get(name)
+        if not installed or not rpc_version or installed == rpc_version:
+            return False
+        key = (rpc_version, installed)
+        cached = self._vercmp_cache.get(key)
+        if cached is None:
+            cached = False
+            try:
+                res = subprocess.run(["vercmp", rpc_version, installed],
+                                     capture_output=True, text=True)
+                cached = int(res.stdout.strip() or 0) > 0
+            except Exception:
+                pass
+            self._vercmp_cache[key] = cached
+        return cached
 
     # -------------------------------------------------------------------------
     # Localization
@@ -561,20 +636,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.filtered_store_packages = []
 
         for pkg in packages:
-            if pkg.source_type == "flatpak":
-                if pkg.app_id in self.flatpak_upgradable:
-                    pkg.status = "upgradable"
-                elif pkg.app_id in self.flatpak_installed:
-                    pkg.status = "installed"
-                else:
-                    pkg.status = "available"
-            else:
-                if pkg.name in self.upgradable_packages:
-                    pkg.status = "upgradable"
-                elif pkg.name in self.installed_packages:
-                    pkg.status = "installed"
-                else:
-                    pkg.status = "available"
+            self._compute_status(pkg)
 
             if source == "updates" and pkg.status != "upgradable":
                 continue
@@ -614,6 +676,8 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     def _on_aur_popular_loaded(self, pkgs):
         self._aur_popular_cached = pkgs
         if self._current_source == "aur" and not self.search_store.text().strip():
+            for pkg in pkgs:
+                self._compute_status(pkg)
             self.aur_packages = pkgs
             self.filtered_store_packages = list(pkgs)
             self.current_page = 1
@@ -648,6 +712,8 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             self._aur_query_cache[query] = pkgs
         if gen != self._aur_search_gen or self._current_source != "aur":
             return
+        for pkg in pkgs:
+            self._compute_status(pkg)
         self.aur_packages = pkgs
         self.filtered_store_packages = list(pkgs)
         self.current_page = 1
@@ -685,12 +751,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             if normalize_key(pkg.name) not in existing:
                 if cat != "All" and pkg.category != cat:
                     continue
-                if pkg.name in self.upgradable_packages:
-                    pkg.status = "upgradable"
-                elif pkg.name in self.installed_packages:
-                    pkg.status = "installed"
-                else:
-                    pkg.status = "available"
+                self._compute_status(pkg)
                 self.filtered_store_packages.append(pkg)
                 added = True
         if added:
@@ -701,10 +762,12 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     # -------------------------------------------------------------------------
 
     def _show_store_message(self, msg):
+        # store_loading_lbl must survive: update_ui_texts() calls setText on it
         while self.layout_store.count() > 0:
             item = self.layout_store.takeAt(0)
-            if item.widget():
+            if item.widget() and item.widget() != self.store_loading_lbl:
                 item.widget().deleteLater()
+        self.store_loading_lbl.hide()
         lbl = QLabel(msg)
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl.setStyleSheet("color: #a6adc8; font-size: 16px;")
@@ -788,6 +851,12 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             if item.widget() and item.widget() != self.store_loading_lbl:
                 item.widget().deleteLater()
         total = len(self.filtered_store_packages)
+        if total == 0 and not self.store_loading_lbl.isVisible():
+            key = "ui.no_updates" if self._current_source == "updates" else "ui.nothing_found"
+            lbl = QLabel(self.t(key))
+            lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lbl.setStyleSheet("color: #a6adc8; font-size: 16px;")
+            self.layout_store.addWidget(lbl)
         pages = max(1, (total + self.items_per_page - 1) // self.items_per_page)
         start = (self.current_page - 1) * self.items_per_page
         for pkg in self.filtered_store_packages[start:start + self.items_per_page]:
@@ -854,6 +923,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
                 if normalize_key(p.name) in (target_name, target_app_id):
                     alts["aur"] = p
                     break
+
+        for p in alts.values():
+            self._compute_status(p)
 
         self.page_detail.load_package_group(
             alts_dict=alts,

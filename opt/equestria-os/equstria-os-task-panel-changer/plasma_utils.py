@@ -18,6 +18,156 @@ def find_qdbus():
     _QDBUS_BIN = "qdbus6"
     return _QDBUS_BIN
 
+# Заголовок виджета памяти по языкам (тот же список — в fix_sysmon_title.sh,
+# который при логине превращает сырую строку в локализуемый Title-блок)
+MEMORY_TITLES = {
+    "en": "Memory Usage",
+    "de": "Speicherauslastung",
+    "es": "Uso de la memoria",
+    "fr": "Utilisation de la mémoire",
+    "ja": "メモリ使用量",
+    "pl": "Użycie pamięci",
+    "pt": "Utilização da memória",
+    "ru": "Использование памяти",
+    "uk": "Використання пам'яті",
+    "zh": "内存使用",
+}
+
+def memory_title_for_locale() -> str:
+    """Заголовок «Использование памяти» на текущем языке системы."""
+    for var in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
+        val = os.environ.get(var)
+        if not val:
+            continue
+        for part in val.split(":"):
+            code = part.split(".")[0].split("_")[0].lower()
+            if code in MEMORY_TITLES:
+                return MEMORY_TITLES[code]
+    return MEMORY_TITLES["en"]
+
+def _sysmon_config_js(var: str) -> str:
+    """JS-блок конфигурации виджета памяти (ключи из faceproperties)."""
+    return (
+        f"{var}.currentConfigGroup=['Appearance'];"
+        f"{var}.writeConfig('chartFace','org.kde.ksysguard.piechart');"
+        f"{var}.writeConfig('title','{memory_title_for_locale()}');"
+        f"{var}.currentConfigGroup=['Sensors'];"
+        f"""{var}.writeConfig('highPrioritySensorIds','["memory/physical/used"]');"""
+        f"""{var}.writeConfig('lowPrioritySensorIds','["memory/physical/total"]');"""
+        f"""{var}.writeConfig('totalSensors','["memory/physical/usedPercent"]');"""
+    )
+
+def upgrade_script_sysmon(script: str) -> str:
+    """Дополняет addWidget системного монитора конфигурацией памяти.
+
+    Скрипты пресетов (включая кастомные, сохранённые старыми версиями и
+    хранящиеся только у пользователя) содержат «голый» addWidget — такой
+    виджет создаётся пустым: faceproperties применяет только GUI-путь
+    добавления. Уже сконфигурированным скриптам повторная запись тех же
+    значений не вредит.
+    """
+    counter = [0]
+
+    def repl(m):
+        var, panel, plugin = m.group(1), m.group(2), m.group(3)
+        if not var:
+            counter[0] += 1
+            var = f"eqsm{counter[0]}"
+        return f"var {var}={panel}.addWidget('{plugin}');" + _sysmon_config_js(var)
+
+    return re.sub(
+        r"(?:var\s+(\w+)\s*=\s*)?(\w+)\.addWidget\('(org\.kde\.plasma\.systemmonitor(?:\.memory)?)'\);",
+        repl, script)
+
+def repair_sysmon_in_file(path: str) -> None:
+    """Дочиняет пустые виджеты системного монитора в файле конфигурации.
+
+    Захваченные раскладки могли сохранить виджет без сенсоров (если он был
+    создан «голым» скриптом старой версии) — при восстановлении такой
+    раскладки виджет оставался бы пустым.
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except OSError:
+        return
+
+    raw_sections = re.split(r'\n(?=\s*\[)', content)
+    sections = {}
+    order = []
+    for chunk in raw_sections:
+        if not chunk.strip():
+            continue
+        lines = chunk.split('\n')
+        header = lines[0].strip()
+        if header.startswith('[') and header.endswith(']'):
+            sections[header] = lines[1:]
+            order.append(header)
+        else:
+            sections.setdefault('', []).extend(lines)
+            if '' not in order:
+                order.insert(0, '')
+
+    sensor_keys = [
+        'highPrioritySensorIds=["memory/physical/used"]',
+        'lowPrioritySensorIds=["memory/physical/total"]',
+        'totalSensors=["memory/physical/usedPercent"]',
+    ]
+    changed = False
+    for sec in list(order):
+        if sec == '' or not any(
+                l.strip().startswith('plugin=org.kde.plasma.systemmonitor')
+                for l in sections[sec]):
+            continue
+        base = sec[:-1]
+        sensors_sec = f"{base}][Configuration][Sensors]"
+        appear_sec = f"{base}][Configuration][Appearance]"
+
+        if sensors_sec in sections:
+            if not any(l.strip().startswith('highPrioritySensorIds=')
+                       for l in sections[sensors_sec]):
+                sections[sensors_sec] = [l for l in sections[sensors_sec] if l.strip()] + sensor_keys
+                changed = True
+        else:
+            sections[sensors_sec] = list(sensor_keys)
+            order.insert(order.index(sec) + 1, sensors_sec)
+            changed = True
+
+        if appear_sec in sections:
+            if not any(l.strip().startswith('chartFace=') for l in sections[appear_sec]):
+                sections[appear_sec] = ([l for l in sections[appear_sec] if l.strip()]
+                                        + ['chartFace=org.kde.ksysguard.piechart'])
+                changed = True
+        else:
+            sections[appear_sec] = ['chartFace=org.kde.ksysguard.piechart',
+                                    f'title={memory_title_for_locale()}']
+            order.insert(order.index(sec) + 1, appear_sec)
+            changed = True
+
+    if not changed:
+        return
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            for sec in order:
+                if sec == '':
+                    f.write('\n'.join(sections[sec]) + '\n')
+                else:
+                    sec_lines = [l for l in sections[sec] if l.strip() or l == '']
+                    f.write(f"{sec}\n" + '\n'.join(sec_lines) + '\n')
+    except OSError:
+        pass
+
+def localize_script_sysmon_titles(script: str) -> str:
+    """Заменяет запечённый в скрипт пресета заголовок виджета памяти
+    на вариант для текущего языка пользователя (в момент применения)."""
+    title = memory_title_for_locale()
+    variants = "|".join(re.escape(t) for t in MEMORY_TITLES.values())
+    return re.sub(
+        rf"writeConfig\('title',\s*'({variants})'\)",
+        f"writeConfig('title','{title}')",
+        script,
+    )
+
 def validate_launchers_string(launchers_str: str) -> str:
     """Проверяет каждый ярлык в системе. Если приложения нет в XDG — убирает из панели."""
     if not launchers_str: 
@@ -107,6 +257,9 @@ def preserve_user_launchers(src_preset_path, dest_live_path):
     if not current_launchers:
         try:
             shutil.copy2(src_preset_path, dest_live_path)
+            # В раскладке пресета ярлыки запечены на момент захвата — часть
+            # приложений могла быть удалена; вычищаем несуществующие
+            validate_launchers_in_file(dest_live_path)
         except Exception:
             pass
         return
@@ -178,6 +331,60 @@ def preserve_user_launchers(src_preset_path, dest_live_path):
 def get_current_launchers():
     val = extract_launchers(PLASMA_CONFIG)
     return validate_launchers_string(val) if val else None
+
+def launchers_inject_script(launchers_str: str) -> str:
+    """JS для evaluateScript: прописывает ярлыки во все панели задач.
+
+    Запускается после пересоздания панелей пресетом — иначе новая панель
+    задач получает дефолтные ярлыки KDE, а закрепления пользователя теряются.
+    """
+    safe = str(launchers_str).replace("\\", "").replace("'", "")
+    return (
+        "var pn=panels();"
+        "for(var i=0;i<pn.length;++i){"
+        "var ids=pn[i].widgetIds;"
+        "for(var j=0;j<ids.length;++j){"
+        "var w=pn[i].widgetById(ids[j]);"
+        "if(w.type=='org.kde.plasma.icontasks'||w.type=='org.kde.plasma.taskmanager'){"
+        "w.currentConfigGroup=['General'];"
+        f"w.writeConfig('launchers','{safe}');"
+        "if(typeof w.reloadConfig==='function'){w.reloadConfig();}"
+        "}}}"
+    )
+
+def rewrite_script_launchers(script: str) -> str:
+    """Перевалидирует ярлыки, запечённые в скрипт пресета при его сохранении.
+
+    Скрипт хранит launchers статичной строкой: приложение могли удалить
+    уже после сохранения пресета — тогда панель закрепляла бы несуществующий
+    ярлык. Проверяем каждый по XDG прямо в момент применения.
+    """
+    def repl(m):
+        return f"writeConfig('launchers','{validate_launchers_string(m.group(1))}')"
+    return re.sub(r"writeConfig\('launchers',\s*'([^']*)'\)", repl, script)
+
+def validate_launchers_in_file(path: str) -> None:
+    """Валидирует строки launchers= в файле конфигурации панелей на месте."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    except OSError:
+        return
+    changed = False
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("launchers="):
+            val = stripped.split("=", 1)[1]
+            fixed = validate_launchers_string(val)
+            if fixed != val:
+                lines[i] = f"launchers={fixed}\n"
+                changed = True
+    if changed:
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                f.writelines(lines)
+        except OSError:
+            pass
 
 def set_desktop_icons_state(hide: bool) -> bool:
     if not os.path.exists(PLASMA_CONFIG):
@@ -261,7 +468,12 @@ def generate_script_from_panels(panels_config):
                 parts.append(f"t{i}.writeConfig('launchers','{current_launchers}');")
             if has_right: parts.append(f"{v}.addWidget('org.kde.plasma.panelspacer');")
         if "pager"   in ww: parts.append(f"{v}.addWidget('org.kde.plasma.pager');")
-        if "monitor" in ww: parts.append(f"{v}.addWidget('org.kde.plasma.systemmonitor');")
+        if "monitor" in ww:
+            # Пресетные плазмоиды (.memory) при добавлении скриптом НЕ применяют
+            # свой faceproperties (это делает только GUI-путь добавления виджета),
+            # поэтому сенсоры и вид записываем явно — как в рабочем виджете ISO.
+            parts.append(f"var m{i}={v}.addWidget('org.kde.plasma.systemmonitor.memory');")
+            parts.append(_sysmon_config_js(f"m{i}"))
         if "systray" in ww: parts.append(f"{v}.addWidget('org.kde.plasma.systemtray');")
         if "clock"   in ww: parts.append(f"{v}.addWidget('org.kde.plasma.digitalclock');")
         parts.append(f"{v}.height={height};")

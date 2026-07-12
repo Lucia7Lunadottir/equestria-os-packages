@@ -852,6 +852,30 @@ kwriteconfig6 --file kdeglobals --group General --key LastUsedCustomAccentColor 
 plasma-apply-colorscheme "{active_name}"
 """
         self.run_shell(script)
+        self._recolor_panel_sysmon(r, g, b)
+
+    def _recolor_panel_sysmon(self, r, g, b):
+        """Красит график памяти в виджетах системного монитора на панелях
+        под акцент персонажа (аргументы qdbus списком — без экранирования)."""
+        recolor = (
+            "var pn=panels();"
+            "for(var i=0;i<pn.length;++i){"
+            "var ids=pn[i].widgetIds;"
+            "for(var j=0;j<ids.length;++j){"
+            "var w=pn[i].widgetById(ids[j]);"
+            "if(w.type=='org.kde.plasma.systemmonitor'||w.type=='org.kde.plasma.systemmonitor.memory'){"
+            "w.currentConfigGroup=['SensorColors'];"
+            f"w.writeConfig('memory/physical/used','{r},{g},{b}');"
+            "if(typeof w.reloadConfig==='function'){w.reloadConfig();}"
+            "}}}"
+        )
+        try:
+            subprocess.run(
+                [find_qdbus(), "org.kde.plasmashell", "/PlasmaShell",
+                 "org.kde.PlasmaShell.evaluateScript", recolor],
+                capture_output=True, timeout=10)
+        except Exception:
+            pass
 
     def get_ansi_color(self, char_id):
         return {"sunset": "214", "twilight": "135", "rainbow": "39", "rarity": "189", "pinkie": "205", "applejack": "136", "fluttershy": "228"}.get(char_id, "255")

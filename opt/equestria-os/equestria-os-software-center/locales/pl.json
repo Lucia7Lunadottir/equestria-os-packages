@@ -123,5 +123,7 @@
   "settings.repo_servers": "Adres(y) URL serwera — po jednym w wierszu",
   "settings.repo_siglevel": "SigLevel (opcjonalnie)",
   "settings.repo_error_title": "Błąd repozytorium",
-  "settings.repo_remove_confirm": "Usunąć repozytorium '{0}'? Wymaga to uprawnień administratora."
+  "settings.repo_remove_confirm": "Usunąć repozytorium '{0}'? Wymaga to uprawnień administratora.",
+  "ui.no_updates": "Brak aktualizacji — wszystko jest aktualne",
+  "ui.nothing_found": "Nic nie znaleziono"
 }

@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-task-panel-changer
 pkgver=1.3.3
-pkgrel=4
+pkgrel=5
 pkgdesc="Task panel style manager for Equestria OS (KDE Plasma 6)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -14,12 +14,22 @@ package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
     install -dm755 "$_lib"
 
-    for f in main.py plasma_utils.py ui.py widgets.py style.qss equestria_cyrillic.ttf localization.csv presets.json restore_panel.sh save_panel.sh EquestriaOS-Logo.png; do
+    for f in main.py plasma_utils.py ui.py widgets.py style.qss equestria_cyrillic.ttf localization.csv presets.json restore_panel.sh save_panel.sh fix_sysmon_title.sh EquestriaOS-Logo.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
-    chmod 755 "$_lib/restore_panel.sh" "$_lib/save_panel.sh"
+    chmod 755 "$_lib/restore_panel.sh" "$_lib/save_panel.sh" "$_lib/fix_sysmon_title.sh"
 
     cp -a "$startdir/MLP Cutiemarks" "$_lib/"
+
+    # Одноразовая починка запечённого заголовка виджета памяти у старых установок
+    install -Dm644 /dev/stdin "$pkgdir/etc/xdg/autostart/equestria-fix-sysmon-title.desktop" << 'EOF'
+[Desktop Entry]
+Type=Application
+Name=Equestria OS System Monitor Title Fix
+Exec=/opt/equestria-os/equestria-os-task-panel-changer/fix_sysmon_title.sh
+OnlyShowIn=KDE;
+X-KDE-Autostart-after=panel
+EOF
 
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-task-panel-changer" << 'EOF'
 #!/bin/bash

@@ -123,5 +123,7 @@
   "settings.repo_servers": "Server-URL(s) — eine pro Zeile",
   "settings.repo_siglevel": "SigLevel (optional)",
   "settings.repo_error_title": "Repository-Fehler",
-  "settings.repo_remove_confirm": "Repository '{0}' entfernen? Dies erfordert Administratorrechte."
+  "settings.repo_remove_confirm": "Repository '{0}' entfernen? Dies erfordert Administratorrechte.",
+  "ui.no_updates": "Keine Updates — alles ist aktuell",
+  "ui.nothing_found": "Nichts gefunden"
 }

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria OS System Monitor Title Fix
+Exec=/opt/equestria-os/equestria-os-task-panel-changer/fix_sysmon_title.sh
+OnlyShowIn=KDE;
+X-KDE-Autostart-after=panel

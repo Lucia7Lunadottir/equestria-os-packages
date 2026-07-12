@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team <info@psyche-games.com>
 
 pkgname=equestria-os-branding
-pkgver=1.4.4
+pkgver=1.4.5
 pkgrel=1
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
@@ -73,14 +73,42 @@ package() {
     for f in \
         equestria-os.png \
         equestria-os-character-theme.png \
-        equestria-os-package-installer.png \
-        pgos_logo_final.png; do
+        equestria-os-package-installer.png; do
         if [ -f "$startdir/pixmaps/$f" ]; then
             install -Dm644 "$startdir/pixmaps/$f" "$pkgdir/usr/share/pixmaps/$f"
         fi
     done
 
-    # 8. App submenu
+    # 8. Kickoff/меню приложений: перекрываем стартовую иконку KDE логотипом.
+    # Каталог /usr/share/equestria-os/xdg добавляется в XDG_DATA_DIRS раньше
+    # /usr/share (см. scripts/equestria-os-xdg.sh), поэтому эти файлы
+    # выигрывают у breeze-icons, не затирая файлы чужого пакета.
+    # Внимание: каталог размера должен быть ОБЪЯВЛЕН в index.theme breeze,
+    # иначе он невидим для поиска (places/24, например, не объявлен).
+    local _master="$pkgdir/usr/share/equestria-os/xdg/icons/equestria-start-here.svg"
+    install -dm755 "$(dirname "$_master")"
+    {
+        printf '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="96" height="96" viewBox="0 0 96 96">\n'
+        printf '  <image width="96" height="96" xlink:href="data:image/png;base64,%s"/>\n' "$(base64 -w0 "$startdir/pixmaps/equestria-os-logo.png")"
+        printf '</svg>\n'
+    } > "$_master"
+    local _theme _d _n _icondir
+    for _theme in breeze breeze-dark; do
+        for _d in 16 16@2x 16@3x 22 22@2x 22@3x 32 48 64 96; do
+            _icondir="$pkgdir/usr/share/equestria-os/xdg/icons/$_theme/places/$_d"
+            install -dm755 "$_icondir"
+            for _n in start-here-kde start-here-kde-symbolic start-here-kde-plasma \
+                      start-here-kde-plasma-symbolic start-here-symbolic; do
+                ln -s ../../../equestria-start-here.svg "$_icondir/$_n.svg"
+            done
+        done
+    done
+
+    # 8a. Скрипт profile.d, включающий каталог переопределений
+    install -Dm644 "$startdir/scripts/equestria-os-xdg.sh" \
+        "$pkgdir/etc/profile.d/equestria-os-xdg.sh"
+
+    # 9. App submenu
     install -Dm644 "$startdir/equestria-os.directory" \
         "$pkgdir/usr/share/desktop-directories/equestria-os.directory"
     install -Dm644 "$startdir/equestria-os.menu" \

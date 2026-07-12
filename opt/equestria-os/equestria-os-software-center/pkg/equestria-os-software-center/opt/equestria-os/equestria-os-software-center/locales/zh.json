@@ -123,5 +123,7 @@
   "settings.repo_servers": "服务器 URL（每行一个）",
   "settings.repo_siglevel": "SigLevel（可选）",
   "settings.repo_error_title": "软件源错误",
-  "settings.repo_remove_confirm": "删除软件源 '{0}'？这需要管理员权限。"
+  "settings.repo_remove_confirm": "删除软件源 '{0}'？这需要管理员权限。",
+  "ui.no_updates": "没有更新 — 一切都是最新的",
+  "ui.nothing_found": "未找到任何内容"
 }

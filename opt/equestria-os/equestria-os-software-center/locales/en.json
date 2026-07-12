@@ -123,5 +123,7 @@
   "settings.repo_servers": "Server URL(s) — one per line",
   "settings.repo_siglevel": "SigLevel (optional)",
   "settings.repo_error_title": "Repository Error",
-  "settings.repo_remove_confirm": "Remove repository '{0}'? This requires administrator privileges."
+  "settings.repo_remove_confirm": "Remove repository '{0}'? This requires administrator privileges.",
+  "ui.no_updates": "No updates — everything is up to date",
+  "ui.nothing_found": "Nothing found"
 }

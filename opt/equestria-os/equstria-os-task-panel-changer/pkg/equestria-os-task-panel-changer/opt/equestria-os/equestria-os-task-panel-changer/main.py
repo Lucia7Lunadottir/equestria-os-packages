@@ -785,6 +785,9 @@ class TaskPanelApp(QMainWindow):
 
             # 2. ТЕПЕРЬ, когда живые иконки сохранены на диск, производим чтение и инжекцию в структуру нового пресета
             plasma_utils.preserve_user_launchers(layout_file, plasma_utils.PLASMA_CONFIG)
+            # Захваченная раскладка могла сохранить пустой виджет монитора —
+            # дочиняем его сенсоры прямо в конфиге до старта plasmashell
+            plasma_utils.repair_sysmon_in_file(plasma_utils.PLASMA_CONFIG)
 
             # Подготовка скрипта изменения геометрии
             panels_cfg = self._parse_preset_panels_config(preset)
@@ -807,6 +810,18 @@ class TaskPanelApp(QMainWindow):
         else:
             script = preset.get("script", "")
             if script:
+                # Кастомные/старые пресеты содержат «голый» addWidget монитора —
+                # дополняем конфигурацией памяти прямо в момент применения
+                script = plasma_utils.upgrade_script_sysmon(script)
+                # Запечённые в пресет ярлыки перевалидируем на этой системе
+                script = plasma_utils.rewrite_script_launchers(script)
+                # Заголовок виджета памяти — на языке применяющего пользователя
+                script = plasma_utils.localize_script_sysmon_titles(script)
+                # Текущие закрепления пользователя переносим в новые панели
+                # (скрипты пресетов создают панель задач с дефолтными ярлыками)
+                cur_launchers = plasma_utils.get_current_launchers()
+                if cur_launchers:
+                    script += plasma_utils.launchers_inject_script(cur_launchers)
                 changed_containment = plasma_utils.set_desktop_icons_state(hide_icons)
                 if changed_containment:
                     tmp_script = os.path.join(USER_PATH, ".tmp_eval.js")

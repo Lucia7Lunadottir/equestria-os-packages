@@ -123,5 +123,7 @@
   "settings.repo_servers": "サーバー URL（1 行に 1 つ）",
   "settings.repo_siglevel": "SigLevel（任意）",
   "settings.repo_error_title": "リポジトリエラー",
-  "settings.repo_remove_confirm": "リポジトリ '{0}' を削除しますか？管理者権限が必要です。"
+  "settings.repo_remove_confirm": "リポジトリ '{0}' を削除しますか？管理者権限が必要です。",
+  "ui.no_updates": "更新はありません — すべて最新です",
+  "ui.nothing_found": "見つかりませんでした"
 }

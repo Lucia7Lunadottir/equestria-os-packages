@@ -123,5 +123,7 @@
   "settings.repo_servers": "URL сервера(ов) — по одному на строку",
   "settings.repo_siglevel": "SigLevel (необязательно)",
   "settings.repo_error_title": "Ошибка репозитория",
-  "settings.repo_remove_confirm": "Удалить репозиторий '{0}'? Потребуются права администратора."
+  "settings.repo_remove_confirm": "Удалить репозиторий '{0}'? Потребуются права администратора.",
+  "ui.no_updates": "Обновлений нет — всё актуально",
+  "ui.nothing_found": "Ничего не найдено"
 }

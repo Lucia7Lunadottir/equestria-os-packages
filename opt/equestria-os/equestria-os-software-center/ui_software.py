@@ -377,11 +377,14 @@ class AppDetailWidget(QWidget):
         except TypeError:
             pass
 
+        status = getattr(pkg_data, 'status', '')
         if pkg_data.source_type == "flatpak":
             is_installed = bool(pkg_data.app_id and pkg_data.app_id in self.flatpak_installed_set)
             is_upgradable = bool(pkg_data.app_id and pkg_data.app_id in self.flatpak_upgradable_set)
         else:
-            is_upgradable = pkg_data.name in self.upgradable_set
+            # status covers AUR updates found by version comparison,
+            # which never make it into the pacman -Qu based set
+            is_upgradable = status == "upgradable" or pkg_data.name in self.upgradable_set
             is_installed = pkg_data.name in self.installed_set
 
         if is_upgradable:
