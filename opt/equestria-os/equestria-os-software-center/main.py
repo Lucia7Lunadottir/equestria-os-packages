@@ -5,11 +5,14 @@ import csv
 import subprocess
 import shutil
 import time
+import threading
 
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem,
-                              QPushButton, QLabel, QVBoxLayout, QWidget, QComboBox)
+                              QPushButton, QLabel, QVBoxLayout, QWidget, QComboBox,
+                              QMessageBox)
 from PyQt6.QtGui import QIcon, QFontDatabase, QFont
-from PyQt6.QtCore import Qt, QThread, QTimer, QFileSystemWatcher, QProcess, QEvent
+from PyQt6.QtCore import (Qt, QThread, QTimer, QFileSystemWatcher, QProcess, QEvent,
+                          pyqtSignal)
 
 from models import EssentialData, StoreData
 from utils import (FLATPAK_APPSTREAM, cleanup_screenshot_cache,
@@ -25,6 +28,9 @@ from settings_dialog import SettingsDialog
 # All code comments inside the script are written in English as requested
 
 class main_app(QMainWindow, Ui_SoftwareCenter):
+    # object, а не int: размер кэша в байтах не влезает в C-int сигнала (16 ГБ > 2^31)
+    cache_size_ready = pyqtSignal(object)
+
     def __init__(self):
         super().__init__()
         self.base_path = os.path.dirname(os.path.abspath(__file__))
@@ -68,6 +74,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self._pacman_info_thread = None
         self._vercmp_cache = {}
         self._last_status_refresh = 0.0
+        self._cache_size = None  # None = ещё не посчитан, кнопка без размера
 
         self.init_resources()
         cleanup_screenshot_cache()
@@ -80,6 +87,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.load_essentials_csv()
         self.setup_logic()
         self.update_ui_texts()
+
+        self.cache_size_ready.connect(self.on_cache_size_ready)
+        self.refresh_cache_size()
 
         if self.needs_pacman_init():
             self.run_pacman_init()
@@ -496,7 +506,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.store_header.setText(self.t("ui.store_header"))
         self.btn_switch_store.setText(self.t("ui.search_all"))
         self.btn_integrity_check.setText(self.t("ui.integrity_check"))
-        self.btn_cache_clean.setText(self.t("ui.cache_clean"))
+        self.apply_cache_btn_text()
         self.btn_update_sys.setText(self.t("ui.update_all"))
         self.search_store.setPlaceholderText(self.t("ui.search_placeholder"))
         self.btn_prev_page.setText(self.t("ui.prev_page"))
@@ -1084,15 +1094,104 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         )
         subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
 
+    def fmt_size(self, n):
+        units = {"ru": ["Б", "КБ", "МБ", "ГБ"],
+                 "uk": ["Б", "КБ", "МБ", "ГБ"]}.get(self.current_lang, ["B", "KB", "MB", "GB"])
+        size = float(n)
+        unit = units[0]
+        for unit in units:
+            if size < 1024 or unit == units[-1]:
+                break
+            size /= 1024
+        return f"{int(size)} {unit}" if unit == units[0] else f"{size:.1f} {unit}"
+
+    @staticmethod
+    def calc_cache_size():
+        """Суммарный размер кэша пакетов: /var/cache/pacman/pkg + ~/.cache/yay."""
+        total = 0
+        try:
+            with os.scandir("/var/cache/pacman/pkg") as it:
+                for e in it:
+                    try:
+                        if e.is_file(follow_symlinks=False):
+                            total += e.stat(follow_symlinks=False).st_size
+                    except OSError:
+                        pass
+        except OSError:
+            pass
+        yay_dir = os.path.expanduser("~/.cache/yay")
+        for root, dirs, files in os.walk(yay_dir, onerror=lambda e: None):
+            for f in files:
+                try:
+                    total += os.lstat(os.path.join(root, f)).st_size
+                except OSError:
+                    pass
+        return total
+
+    def refresh_cache_size(self):
+        threading.Thread(
+            target=lambda: self.cache_size_ready.emit(self.calc_cache_size()),
+            daemon=True).start()
+
+    def on_cache_size_ready(self, size):
+        self._cache_size = size
+        self.apply_cache_btn_text()
+
+    def apply_cache_btn_text(self):
+        if self._cache_size:
+            self.btn_cache_clean.setText(
+                self.t("ui.cache_clean_size").replace("{0}", self.fmt_size(self._cache_size)))
+        else:
+            self.btn_cache_clean.setText(self.t("ui.cache_clean"))
+
     def execute_cache_clean(self):
+        # Обычная очистка оставляет копии установленных версий (у pacman это
+        # страховка для отката без интернета) — поэтому даём выбор режима.
+        box = QMessageBox(self)
+        box.setWindowTitle(self.t("ui.cache_clean"))
+        size_txt = self.fmt_size(self._cache_size) if self._cache_size else "?"
+        box.setText(self.t("cache.mode_text").replace("{0}", size_txt))
+        btn_normal = box.addButton(self.t("cache.mode_normal"), QMessageBox.ButtonRole.AcceptRole)
+        btn_full = box.addButton(self.t("cache.mode_full"), QMessageBox.ButtonRole.DestructiveRole)
+        btn_cancel = box.addButton(self.t("ui.cancel"), QMessageBox.ButtonRole.RejectRole)
+        # Системный QMessageBox светлый — натягиваем стили приложения (см. style.qss)
+        btn_normal.setObjectName("DetailActionBtn")
+        btn_full.setObjectName("CacheCleanBtn")
+        btn_cancel.setObjectName("DetailBackBtn")
+        for b in (btn_normal, btn_full, btn_cancel):
+            b.setCursor(Qt.CursorShape.PointingHandCursor)
+            b.setMinimumSize(110, 36)
+            # QSS по objectName не применится без переполировки: имя задано после создания
+            b.style().unpolish(b)
+            b.style().polish(b)
+        box.exec()
+        if box.clickedButton() is not btn_normal and box.clickedButton() is not btn_full:
+            return
+
+        if box.clickedButton() is btn_full:
+            # Полная: весь кэш pacman, включая копии установленных пакетов
+            pacman_step = (
+                "if command -v paccache >/dev/null 2>&1; then "
+                "  pkexec bash -c 'rm -rf /var/cache/pacman/pkg/download-*; paccache -rvk0'; "
+                "else "
+                # pacman -Scc --noconfirm отвечает на вопрос по умолчанию «нет» — не подходит
+                "  pkexec bash -c 'rm -rf /var/cache/pacman/pkg/download-*; "
+                "find /var/cache/pacman/pkg -maxdepth 1 -type f -name \"*.pkg.tar*\" -delete'; "
+                "fi; "
+            )
+        else:
+            pacman_step = (
+                "if command -v paccache >/dev/null 2>&1; then "
+                "  pkexec bash -c 'rm -rf /var/cache/pacman/pkg/download-*; paccache -rvk2; paccache -rvuk0'; "
+                "else "
+                "  pkexec bash -c 'rm -rf /var/cache/pacman/pkg/download-*; pacman -Sc --noconfirm'; "
+                "fi; "
+            )
+
         cmd = (
             "echo '=== Package Cache Cleanup ==='; echo; "
             "echo '[1/3] Pacman cache...'; "
-            "if command -v paccache >/dev/null 2>&1; then "
-            "  pkexec bash -c 'rm -rf /var/cache/pacman/pkg/download-*; paccache -rvk2; paccache -rvuk0'; "
-            "else "
-            "  pkexec bash -c 'rm -rf /var/cache/pacman/pkg/download-*; pacman -Sc --noconfirm'; "
-            "fi; "
+            + pacman_step +
             "echo; "
             "if command -v yay >/dev/null 2>&1; then "
             "  echo '[2/3] AUR build cache (yay)...'; "
@@ -1110,7 +1209,13 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "fi; "
             "echo 'All done!'; echo; read -rp 'Press Enter to close...'"
         )
-        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
+        proc = subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
+
+        # Когда konsole закрыта — пересчитать размер на кнопке
+        def _wait_and_rescan():
+            proc.wait()
+            self.refresh_cache_size()
+        threading.Thread(target=_wait_and_rescan, daemon=True).start()
 
     def execute_system_update(self):
         do_pacman = self._settings.get("update_pacman", True)

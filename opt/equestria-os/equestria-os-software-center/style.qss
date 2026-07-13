@@ -80,6 +80,17 @@ QPushButton#IntegrityBtn:hover {
     background-color: rgb(116, 160, 230);
 }
 
+/* Диалог выбора режима очистки кэша: системный QMessageBox светлый,
+   красим под тему приложения. Кнопкам в коде назначены DetailActionBtn /
+   CacheCleanBtn / DetailBackBtn — они берут стили ниже. */
+QMessageBox {
+    background-color: rgb(30, 30, 46);
+}
+QMessageBox QLabel {
+    color: rgb(205, 214, 244);
+    font-size: 13px;
+}
+
 QPushButton#CacheCleanBtn {
     background-color: rgb(250, 179, 135);
     color: rgb(17, 17, 27);

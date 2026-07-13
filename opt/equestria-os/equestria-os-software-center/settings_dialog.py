@@ -4,13 +4,83 @@ Handles interactive toggles for software sources and explicit language mapping.
 """
 
 import os
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QGroupBox, QWidget
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+                             QComboBox, QGroupBox, QWidget, QAbstractButton)
+from PyQt6.QtCore import (Qt, pyqtSignal, pyqtProperty, QPropertyAnimation,
+                          QEasingCurve, QSize, QRectF)
+from PyQt6.QtGui import QPainter, QColor
 
 from pacman_repo import FileRepositoryStore
 from repository_dialog import RepositoryManagerDialog
 
 # All code comments inside the script are written in English as requested
+
+
+class SwitchToggle(QAbstractButton):
+    """Pill-style switch with a sliding knob (same design as disk-manager).
+    Painted manually — QSS cannot animate this. Label lives outside the widget."""
+    stateChanged = pyqtSignal(int)
+
+    TRACK_W, TRACK_H, KNOB_M = 34, 18, 3
+    C_TRACK_OFF = (69, 71, 90)
+    C_TRACK_ON  = (245, 194, 231)
+    C_KNOB_OFF  = (205, 214, 244)
+    C_KNOB_ON   = (30, 30, 46)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._pos = 0.0
+        self.setCheckable(True)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._anim = QPropertyAnimation(self, b"knobPos", self)
+        self._anim.setDuration(120)
+        self._anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self.toggled.connect(self._on_toggle)
+
+    def _on_toggle(self, checked):
+        target = 1.0 if checked else 0.0
+        if self.isVisible():
+            self._anim.stop()
+            self._anim.setEndValue(target)
+            self._anim.start()
+        else:
+            self._pos = target
+            self.update()
+        self.stateChanged.emit(2 if checked else 0)
+
+    def _get_pos(self):
+        return self._pos
+
+    def _set_pos(self, v):
+        self._pos = v
+        self.update()
+
+    knobPos = pyqtProperty(float, _get_pos, _set_pos)
+
+    @staticmethod
+    def _blend(a, b, t):
+        return QColor(*(round(x + (y - x) * t) for x, y in zip(a, b)))
+
+    def sizeHint(self):
+        return QSize(self.TRACK_W, self.TRACK_H + 4)
+
+    def paintEvent(self, _event):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        if not self.isEnabled():
+            p.setOpacity(0.35)
+        t = self._pos
+        ty = (self.height() - self.TRACK_H) / 2
+
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(self._blend(self.C_TRACK_OFF, self.C_TRACK_ON, t))
+        p.drawRoundedRect(QRectF(0, ty, self.TRACK_W, self.TRACK_H),
+                          self.TRACK_H / 2, self.TRACK_H / 2)
+
+        kd = self.TRACK_H - 2 * self.KNOB_M
+        kx = self.KNOB_M + t * (self.TRACK_W - kd - 2 * self.KNOB_M)
+        p.setBrush(self._blend(self.C_KNOB_OFF, self.C_KNOB_ON, t))
+        p.drawEllipse(QRectF(kx, ty + self.KNOB_M, kd, kd))
 
 class SettingsDialog(QDialog):
     """Configuration management setup UI dialog panel overlay."""
@@ -136,25 +206,21 @@ class SettingsDialog(QDialog):
 
         self._sync_interdependencies()
 
-    def _create_toggle_row(self, label_text: str, initial_state: bool) -> tuple[QWidget, QPushButton]:
-        """Helper to assemble native layout rows mapping directly to your AppToggle style definitions."""
+    def _create_toggle_row(self, label_text: str, initial_state: bool) -> tuple[QWidget, QAbstractButton]:
+        """Helper to assemble a row with a pill-style SwitchToggle on the right."""
         container = QWidget()
         row_layout = QHBoxLayout(container)
         row_layout.setContentsMargins(5, 2, 5, 2)
-        
+
         lbl = QLabel(label_text, container)
-        
-        btn = QPushButton("✔", container)
-        btn.setObjectName("AppToggle") # Connects directly into your style.qss checkbox engine
-        btn.setCheckable(True)
-        btn.setFixedSize(24, 24)
-        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        btn = SwitchToggle(container)
         btn.setChecked(initial_state)
-        
+
         row_layout.addWidget(lbl)
         row_layout.addStretch()
         row_layout.addWidget(btn)
-        
+
         return container, btn
 
     def _open_repo_manager(self):

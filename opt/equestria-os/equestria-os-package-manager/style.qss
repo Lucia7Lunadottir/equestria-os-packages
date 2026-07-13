@@ -81,3 +81,6 @@ QFrame#ModalOverlay {
 #ModalBox {
 background-color: rgb(35, 30, 50); border: 2px solid rgb(120, 90, 180); border-radius: 12px;
 }
+
+/* Переключатель «также удалить файлы программы» (SwitchRow) рисуется
+   вручную в ui_pkg.py — QSS для него не нужен. */

@@ -1,4 +1,4 @@
-import sys, os, subprocess, threading
+import sys, os, subprocess, threading, shutil, shlex
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QComboBox
 from PyQt6.QtGui import QIcon, QFontDatabase, QFont
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
@@ -14,6 +14,7 @@ class PackageData:
 class main_app(QMainWindow, Ui_PackageManager):
     uninstall_finished = pyqtSignal(bool, str)
     fetch_finished = pyqtSignal(list)
+    leftovers_found = pyqtSignal(str, list)
 
     def __init__(self):
         super().__init__()
@@ -22,6 +23,7 @@ class main_app(QMainWindow, Ui_PackageManager):
 
         self.uninstall_finished.connect(self.on_uninstall_finished)
         self.fetch_finished.connect(self.on_fetch_finished)
+        self.leftovers_found.connect(self.on_leftovers_found)
 
         f_path = os.path.join(self.base_path, "equestria_cyrillic.ttf")
         if os.path.exists(f_path):
@@ -71,7 +73,31 @@ class main_app(QMainWindow, Ui_PackageManager):
                 "ja": "{0} を削除しています..."
             },
             "btn.delete": {"en": "Delete", "ru": "Удалить", "de": "Löschen", "fr": "Supprimer", "es": "Eliminar", "pt": "Excluir", "pl": "Usuń", "uk": "Видалити", "zh": "删除", "ja": "削除"},
-            "btn.cancel": {"en": "Cancel", "ru": "Отмена", "de": "Abbrechen", "fr": "Annuler", "es": "Cancelar", "pt": "Cancelar", "pl": "Anuluj", "uk": "Скасувати", "zh": "取消", "ja": "キャンセル"}
+            "btn.cancel": {"en": "Cancel", "ru": "Отмена", "de": "Abbrechen", "fr": "Annuler", "es": "Cancelar", "pt": "Cancelar", "pl": "Anuluj", "uk": "Скасувати", "zh": "取消", "ja": "キャンセル"},
+            "modal.data_none": {
+                "en": "No files created by the program were found in your home folder.",
+                "ru": "Файлов, созданных программой, в домашней папке не найдено.",
+                "de": "Keine vom Programm erstellten Dateien im Home-Ordner gefunden.",
+                "fr": "Aucun fichier créé par le programme n'a été trouvé dans le dossier personnel.",
+                "es": "No se encontraron archivos creados por el programa en la carpeta personal.",
+                "pt": "Nenhum arquivo criado pelo programa foi encontrado na pasta pessoal.",
+                "pl": "Nie znaleziono plików utworzonych przez program w katalogu domowym.",
+                "uk": "Файлів, створених програмою, у домашній теці не знайдено.",
+                "zh": "未在主目录中找到程序创建的文件。",
+                "ja": "ホームフォルダーにプログラムが作成したファイルは見つかりませんでした。"
+            },
+            "modal.data": {
+                "en": "Also delete files created by the program ({0})",
+                "ru": "Также удалить файлы, созданные программой ({0})",
+                "de": "Auch vom Programm erstellte Dateien löschen ({0})",
+                "fr": "Supprimer aussi les fichiers créés par le programme ({0})",
+                "es": "Eliminar también los archivos creados por el programa ({0})",
+                "pt": "Excluir também os arquivos criados pelo programa ({0})",
+                "pl": "Usuń także pliki utworzone przez program ({0})",
+                "uk": "Також видалити файли, створені програмою ({0})",
+                "zh": "同时删除程序创建的文件（{0}）",
+                "ja": "プログラムが作成したファイルも削除する（{0}）"
+            }
         }
 
         self.current_lang = os.getenv("LANG", "en")[:2]
@@ -79,6 +105,8 @@ class main_app(QMainWindow, Ui_PackageManager):
 
         self.all_packages = []
         self.pkg_to_delete = None
+        self.leftover_paths = []
+        self.leftover_size = 0
 
         self.setup_logic()
         self.apply_localization()
@@ -86,6 +114,97 @@ class main_app(QMainWindow, Ui_PackageManager):
 
     def t(self, key):
         return self.langs_db.get(key, {}).get(self.current_lang, self.langs_db.get(key, {}).get("en", key))
+
+    def fmt_size(self, n):
+        units = {"ru": ["Б", "КБ", "МБ", "ГБ"],
+                 "uk": ["Б", "КБ", "МБ", "ГБ"]}.get(self.current_lang, ["B", "KB", "MB", "GB"])
+        size = float(n)
+        unit = units[0]
+        for unit in units:
+            if size < 1024 or unit == units[-1]:
+                break
+            size /= 1024
+        return f"{int(size)} {unit}" if unit == units[0] else f"{size:.1f} {unit}"
+
+    def leftover_candidates(self, pkg):
+        """
+        Где программа могла оставить свои файлы. Только точное совпадение
+        имени (без регистра) — никаких догадок, чтобы не удалить чужое.
+        """
+        home = os.path.expanduser("~")
+        if pkg.source == "flatpak":
+            return [os.path.join(home, ".var", "app", pkg.app_id or pkg.name)]
+        if pkg.source == "snap":
+            return [os.path.join(home, "snap", pkg.name)]
+
+        names = {pkg.name.lower()}
+        for suf in ("-bin", "-git", "-appimage"):
+            if pkg.name.lower().endswith(suf):
+                names.add(pkg.name.lower()[:-len(suf)])
+
+        bases = [os.path.join(home, ".config"),
+                 os.path.join(home, ".cache"),
+                 os.path.join(home, ".local", "share"),
+                 os.path.join(home, ".local", "state")]
+        if pkg.source == "aur":
+            bases.append(os.path.join(home, ".cache", "yay"))
+
+        found = []
+        for base in bases:
+            try:
+                for entry in os.listdir(base):
+                    if entry.lower() in names:
+                        found.append(os.path.join(base, entry))
+            except OSError:
+                pass
+        # Скрытая папка прямо в домашней: ~/.имя
+        for n in sorted(names):
+            p = os.path.join(home, "." + n)
+            if os.path.isdir(p):
+                found.append(p)
+        return found
+
+    @staticmethod
+    def _path_size(path):
+        if not os.path.isdir(path) or os.path.islink(path):
+            try:
+                return os.lstat(path).st_size
+            except OSError:
+                return 0
+        total = 0
+        for root, dirs, files in os.walk(path, onerror=lambda e: None):
+            for f in files:
+                try:
+                    total += os.lstat(os.path.join(root, f)).st_size
+                except OSError:
+                    pass
+        return total
+
+    def scan_leftovers(self, pkg):
+        found = []
+        for p in self.leftover_candidates(pkg):
+            if os.path.lexists(p):
+                found.append((p, self._path_size(p)))
+        self.leftovers_found.emit(pkg.name, found)
+
+    def on_leftovers_found(self, pkg_name, found):
+        # Модалка могла уже закрыться или перейти к другому пакету
+        if not self.pkg_to_delete or self.pkg_to_delete.name != pkg_name:
+            return
+        if not self.modal_overlay.isVisible() or self.btn_confirm_delete.isHidden():
+            return
+        if not found:
+            # Показываем и «ничего не нашлось» — иначе непонятно, есть ли функция вообще
+            self.modal_paths.setText(self.t("modal.data_none"))
+            self.modal_paths.show()
+            return
+        self.leftover_paths = [p for p, s in found]
+        self.leftover_size = sum(s for p, s in found)
+        home = os.path.expanduser("~")
+        self.chk_delete_data.setText(self.t("modal.data").format(self.fmt_size(self.leftover_size)))
+        self.modal_paths.setText("\n".join(p.replace(home, "~", 1) for p in self.leftover_paths))
+        self.chk_delete_data.show()
+        self.modal_paths.show()
 
     def setup_logic(self):
         self.search_field.textChanged.connect(self.apply_filters)
@@ -138,6 +257,8 @@ class main_app(QMainWindow, Ui_PackageManager):
 
         self.btn_confirm_cancel.setText(self.t("btn.cancel"))
         self.btn_confirm_delete.setText(self.t("btn.delete"))
+        if self.chk_delete_data.isVisible():
+            self.chk_delete_data.setText(self.t("modal.data").format(self.fmt_size(self.leftover_size)))
 
         delete_text = self.t("btn.delete")
         for i in range(self.list_layout.count()):
@@ -216,7 +337,13 @@ class main_app(QMainWindow, Ui_PackageManager):
 
     def show_confirm(self, pkg):
         self.pkg_to_delete = pkg
+        self.leftover_paths = []
+        self.leftover_size = 0
         self.modal_text.setText(self.t("modal.confirm").format(pkg.name))
+
+        self.chk_delete_data.setChecked(False)
+        self.chk_delete_data.hide()
+        self.modal_paths.hide()
 
         self.btn_confirm_delete.show()
         self.btn_confirm_cancel.show()
@@ -224,25 +351,46 @@ class main_app(QMainWindow, Ui_PackageManager):
         self.modal_overlay.show()
         self.modal_overlay.raise_()
 
+        threading.Thread(target=self.scan_leftovers, args=(pkg,), daemon=True).start()
+
     def execute_uninstall(self):
         if not self.pkg_to_delete: return
         pkg_name = self.pkg_to_delete.name
+
+        delete_data = self.chk_delete_data.isVisible() and self.chk_delete_data.isChecked()
+        leftovers = list(self.leftover_paths) if delete_data else []
 
         self.modal_text.setText(self.t("modal.wait").format(pkg_name))
 
         self.btn_confirm_delete.hide()
         self.btn_confirm_cancel.hide()
+        self.chk_delete_data.hide()
+        self.modal_paths.hide()
 
         if self.pkg_to_delete.source == "flatpak":
             app_id = self.pkg_to_delete.app_id or pkg_name
-            cmd = f"flatpak uninstall -y {app_id}"
+            # --delete-data убирает ~/.var/app сам — вручную не трогаем
+            flag = "--delete-data " if delete_data else ""
+            cmd = f"flatpak uninstall -y {flag}{shlex.quote(app_id)}"
+            leftovers = []
         elif self.pkg_to_delete.source == "snap":
-            cmd = f"pkexec snap remove {pkg_name}"
+            flag = "--purge " if delete_data else ""
+            cmd = f"pkexec snap remove {flag}{shlex.quote(pkg_name)}"
+            leftovers = []
         else:
-            cmd = f"pkexec pacman -Rns --noconfirm {pkg_name}"
+            cmd = f"pkexec pacman -Rns --noconfirm {shlex.quote(pkg_name)}"
 
         def _run():
             proc = subprocess.run(["/bin/bash", "-c", cmd])
+            if proc.returncode == 0:
+                for p in leftovers:
+                    try:
+                        if os.path.isdir(p) and not os.path.islink(p):
+                            shutil.rmtree(p, ignore_errors=True)
+                        else:
+                            os.remove(p)
+                    except OSError:
+                        pass
             self.uninstall_finished.emit(proc.returncode == 0, pkg_name)
 
         threading.Thread(target=_run, daemon=True).start()

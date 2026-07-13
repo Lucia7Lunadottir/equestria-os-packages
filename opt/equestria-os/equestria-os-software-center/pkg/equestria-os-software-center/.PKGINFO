@@ -3,15 +3,16 @@
 pkgname = equestria-os-software-center
 pkgbase = equestria-os-software-center
 xdata = pkgtype=pkg
-pkgver = 1.6.0-4
+pkgver = 1.6.3-1
 pkgdesc = Software Center for Equestria OS
 url = https://github.com/Lucia7Lunadottir
-builddate = 1783810102
+builddate = 1783959900
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 484981
+size = 496437
 arch = any
 license = GPL
 depend = pacman
+depend = pacman-contrib
 depend = yay
 depend = polkit
 depend = python-pyqt6
