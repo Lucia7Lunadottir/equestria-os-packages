@@ -76,9 +76,19 @@ QScrollBar::sub-line:horizontal { width: 0; }
 QScrollBar::add-page:horizontal,
 QScrollBar::sub-page:horizontal { background: none; }
 
-/* Выпадающий список языков.
+/* Выпадающие списки.
    Важно: без правил ::drop-down/::down-arrow — иначе Qt перестаёт
    рисовать нативную стрелку. */
+QComboBox {
+    background-color: rgb(40, 35, 60);
+    color: rgb(220, 200, 255);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-weight: normal;
+}
+QComboBox:hover { border: 1px solid rgb(140, 90, 200); }
+
 QComboBox#LangCombo {
     background-color: rgb(40, 35, 60);
     color: rgb(220, 200, 255);

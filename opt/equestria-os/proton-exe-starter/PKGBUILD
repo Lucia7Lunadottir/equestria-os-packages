@@ -1,9 +1,9 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-proton-starter
-pkgver=1.6.0
-pkgrel=5
-pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton)"
+pkgver=1.7.0
+pkgrel=2
+pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton, engine manager, Xbox 360 gamepad mode)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')

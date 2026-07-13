@@ -115,6 +115,9 @@ def main():
     if settings.get("fsr"):
         env["WINE_FULLSCREEN_FSR"] = "1"
 
+    from launcher import apply_game_env
+    apply_game_env(env, settings)
+
     debug = settings.get("debug_log", False)
     if debug:
         env["DXVK_LOG_LEVEL"] = "info"

@@ -1,10 +1,11 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
-                             QLabel, QPushButton, QCheckBox, QLineEdit, QGroupBox)
+                             QLabel, QPushButton, QCheckBox, QLineEdit, QGroupBox,
+                             QComboBox)
 from PyQt6.QtCore import Qt
 
 class Ui_SettingsWindow:
     def setupUi(self, MainWindow):
-        MainWindow.resize(450, 420)
+        MainWindow.resize(450, 540)
 
         self.central_widget = QWidget(MainWindow)
         MainWindow.setCentralWidget(self.central_widget)
@@ -39,9 +40,29 @@ class Ui_SettingsWindow:
         self.chk_fsr = QCheckBox()
         glayout.addWidget(self.chk_fsr)
 
+        self.chk_xbox_pad = QCheckBox()
+        glayout.addWidget(self.chk_xbox_pad)
+
         self.chk_debug = QCheckBox()
         glayout.addWidget(self.chk_debug)
         layout.addWidget(self.group_graphics)
+
+        # Группа: Движок Proton
+        self.group_proton = QGroupBox()
+        playout = QVBoxLayout(self.group_proton)
+
+        self.combo_proton = QComboBox()
+        playout.addWidget(self.combo_proton)
+
+        ver_layout = QHBoxLayout()
+        self.lbl_proton_ver = QLabel()
+        self.lbl_proton_ver.setStyleSheet("color: rgb(140, 130, 160); font-size: 11px; font-weight: normal;")
+        self.btn_proton_update = QPushButton()
+        ver_layout.addWidget(self.lbl_proton_ver)
+        ver_layout.addStretch()
+        ver_layout.addWidget(self.btn_proton_update)
+        playout.addLayout(ver_layout)
+        layout.addWidget(self.group_proton)
 
         # Группа: Параметры запуска
         self.group_args = QGroupBox()

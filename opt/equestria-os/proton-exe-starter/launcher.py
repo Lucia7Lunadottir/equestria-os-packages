@@ -70,6 +70,33 @@ def _preseed_shared_windows(prefix_path):
     if not os.path.exists(windows_path):
         os.symlink(SHARED_WINDOWS, windows_path)
 
+def apply_game_env(env, settings):
+    """
+    Per-game env from settings, shared by launcher.py and proton_runner.py.
+
+    xbox_pad: Proton ведёт геймпад через SDL, и игра видит его как Xbox 360 —
+    для игр, которые не распознают DualShock/DualSense. Имя ручки зависит от
+    движка, поэтому ставим все: PROTON_PREFER_SDL понимает GE-Proton/CachyOS,
+    а обычный Proton/UMU-Proton — пару PROTON_DISABLE_HIDRAW +
+    PROTON_NO_STEAMINPUT (ровно её Valve включает своим конфигом "sdlinput").
+    Нераспознанные переменные движок просто игнорирует.
+    proton_version → PROTONPATH: "" = авто (umu сам берёт и обновляет UMU-Proton),
+    "GE-Proton" = последний GE-Proton (umu обновляет), иначе абсолютный путь к
+    закреплённой сборке. Если закреплённую сборку удалили — молча падаем в авто,
+    чтобы игра всё равно запустилась.
+    """
+    if settings.get("xbox_pad"):
+        env["PROTON_PREFER_SDL"] = "1"
+        env["PROTON_DISABLE_HIDRAW"] = "1"
+        env["PROTON_NO_STEAMINPUT"] = "1"
+
+    choice = settings.get("proton_version", "")
+    if choice == "GE-Proton":
+        env["PROTONPATH"] = "GE-Proton"
+    elif choice and os.path.isdir(choice):
+        env["PROTONPATH"] = choice
+    return env
+
 _locales: dict = {}
 _lang: str = "en"
 
@@ -313,6 +340,7 @@ def main():
 
     if settings.get("dxvk_hud"): env["DXVK_HUD"] = "compiler,frametimes,fps"
     if settings.get("fsr"): env["WINE_FULLSCREEN_FSR"] = "1"
+    apply_game_env(env, settings)
 
     debug = settings.get("debug_log", False)
     if debug:
