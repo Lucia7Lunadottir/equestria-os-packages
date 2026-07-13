@@ -257,17 +257,27 @@ QLabel#OptionsSubLabel {
     font-size: 11px;
     font-family: sans-serif;
 }
-QPushButton#OptionsCb {
+/* Foldout «Расширенные» — раскрывает разметку дисков */
+QPushButton#FoldoutBtn {
     background-color: transparent;
-    color: rgb(147, 153, 178);
-    font-size: 12px;
-    font-family: monospace;
-    border: none;
-    padding: 2px 4px;
+    color: rgb(203, 166, 247);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: bold;
+    font-family: sans-serif;
     text-align: left;
 }
-QPushButton#OptionsCb:hover  { color: rgb(205, 214, 244); }
-QPushButton#OptionsCb:checked { color: rgb(203, 166, 247); }
+QPushButton#FoldoutBtn:hover {
+    border-color: rgb(203, 166, 247);
+    background-color: rgb(42, 40, 56);
+}
+QPushButton#FoldoutBtn:checked {
+    border-color: rgb(203, 166, 247);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
 QLineEdit#SmallEdit {
     background-color: rgb(49, 50, 68);
     color: rgb(205, 214, 244);
@@ -344,4 +354,74 @@ QPushButton#DangerBtn:hover { background-color: rgba(243, 139, 168, 30); }
 QPushButton#DangerBtn:disabled {
     color: rgb(127, 132, 156);
     border-color: rgb(69, 71, 90);
+}
+
+/* Терминальный предпросмотр команды mkfs */
+QLineEdit#CmdPreview, QLabel#CmdPreview {
+    background-color: rgb(24, 24, 37);
+    color: rgb(166, 227, 161);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: monospace;
+}
+
+/* Описание выбранной ФС в зоне форматирования */
+QLabel#FmtDesc {
+    color: rgb(147, 153, 178);
+    font-size: 11px;
+    font-family: sans-serif;
+}
+
+/* Ошибка валидации метки */
+QLabel#FmtLabelError {
+    color: rgb(243, 139, 168);
+    font-size: 11px;
+    font-family: sans-serif;
+}
+
+/* Диалог подтверждения форматирования */
+QDialog#FmtConfirm { background-color: rgb(30, 30, 46); }
+QLabel#DlgText {
+    color: rgb(205, 214, 244);
+    font-size: 13px;
+    font-family: sans-serif;
+}
+
+/* Профи-режим: разметка дисков */
+QFrame#ProFrame {
+    border: 1px solid rgb(203, 166, 247);
+    border-radius: 8px;
+    background-color: rgb(35, 32, 44);
+}
+QLabel#ProLabel {
+    color: rgb(203, 166, 247);
+    font-size: 13px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+QFrame#PartRow {
+    background-color: rgb(42, 40, 56);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 6px;
+}
+QLabel#PartLabel {
+    color: rgb(205, 214, 244);
+    font-size: 12px;
+    font-family: monospace;
+}
+QLabel#FreeLabel {
+    color: rgb(166, 227, 161);
+    font-size: 12px;
+    font-family: monospace;
+}
+QDoubleSpinBox#SmallEdit {
+    background-color: rgb(49, 50, 68);
+    color: rgb(205, 214, 244);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 13px;
+    font-family: monospace;
 }

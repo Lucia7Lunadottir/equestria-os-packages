@@ -1,19 +1,24 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-disk-manager
-pkgver=1.1.0
-pkgrel=9
-pkgdesc="GUI tool for managing disks: mount, fstab, permissions, labels, format"
+pkgver=1.2.0
+pkgrel=5
+pkgdesc="GUI tool for managing disks: mount, fstab, permissions, labels, format, partitioning"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
 depends=('polkit' 'python-pyqt6')
 optdepends=(
     'kdesu: alternative privilege elevation'
-    'ntfs-3g: NTFS read/write support and ntfslabel'
+    'ntfs-3g: NTFS fallback driver, ntfslabel and ntfsresize'
     'btrfs-progs: btrfs label and filesystem tools'
     'exfatprogs: exFAT format and label support'
     'dosfstools: FAT32 format and label support (mkfs.vfat, fatlabel)'
+    'e2fsprogs: ext2/3/4 format, label and resize (resize2fs)'
+    'cifs-utils: SMB network drives (mount.cifs)'
+    'nfs-utils: NFS network drives'
+    'davfs2: WebDAV network drives (Nextcloud, ownCloud)'
+    'sshfs: SSH/SFTP network drives'
 )
 
 package() {

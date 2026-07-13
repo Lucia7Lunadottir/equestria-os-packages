@@ -1,41 +1,112 @@
 import sys
 import os
+import re
+import pwd
 import json
+import shlex
 import shutil
 import subprocess
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QComboBox, QLineEdit, QFrame, QMessageBox,
-    QCheckBox, QProgressBar, QScrollArea
+    QCheckBox, QProgressBar, QScrollArea, QDialog, QDoubleSpinBox,
+    QAbstractButton
 )
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from PyQt6.QtGui import QFontDatabase, QFont, QIcon
+from PyQt6.QtCore import (
+    Qt, QThread, pyqtSignal, pyqtProperty, QPropertyAnimation,
+    QEasingCurve, QSize, QRectF
+)
+from PyQt6.QtGui import QFontDatabase, QFont, QIcon, QPainter, QColor
 
 import privilege
+import disk_backend  # только константы и build_mkfs_cmd для предпросмотра
 
 
-class SymbolToggle(QPushButton):
-    """Checkable button that shows ☐/☑ instead of a native checkbox indicator."""
+class SwitchToggle(QAbstractButton):
+    """Переключатель-пилюля с бегунком: фон плавно заливается акцентным
+    цветом, бегунок едет вправо. Рисуется вручную — QSS такое не умеет."""
     stateChanged = pyqtSignal(int)
+
+    TRACK_W, TRACK_H, KNOB_M = 34, 18, 3
+    C_TRACK_OFF = (69, 71, 90)
+    C_TRACK_ON  = (245, 194, 231)
+    C_KNOB_OFF  = (205, 214, 244)
+    C_KNOB_ON   = (30, 30, 46)
+    C_TEXT_OFF  = (147, 153, 178)
+    C_TEXT_ON   = (203, 166, 247)
 
     def __init__(self, label, parent=None):
         super().__init__(parent)
         self._label = label
+        self._pos = 0.0
         self.setCheckable(True)
-        self.setObjectName("OptionsCb")
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        f = QFont("monospace")
+        f.setPixelSize(12)
+        self.setFont(f)
+        self._anim = QPropertyAnimation(self, b"knobPos", self)
+        self._anim.setDuration(120)
+        self._anim.setEasingCurve(QEasingCurve.Type.OutCubic)
         self.toggled.connect(self._on_toggle)
-        self._refresh()
 
     def _on_toggle(self, checked):
-        self._refresh()
+        target = 1.0 if checked else 0.0
+        if self.isVisible():
+            self._anim.stop()
+            self._anim.setEndValue(target)
+            self._anim.start()
+        else:
+            self._pos = target
+            self.update()
         self.stateChanged.emit(2 if checked else 0)
-
-    def _refresh(self):
-        self.setText(f"☑  {self._label}" if self.isChecked() else f"☐  {self._label}")
 
     def setChecked(self, val):
         super().setChecked(bool(val))
-        self._refresh()
+
+    def setLabelText(self, label):
+        self._label = label
+        self.updateGeometry()
+        self.update()
+
+    def _get_pos(self):
+        return self._pos
+
+    def _set_pos(self, v):
+        self._pos = v
+        self.update()
+
+    knobPos = pyqtProperty(float, _get_pos, _set_pos)
+
+    @staticmethod
+    def _blend(a, b, t):
+        return QColor(*(round(x + (y - x) * t) for x, y in zip(a, b)))
+
+    def sizeHint(self):
+        fm = self.fontMetrics()
+        w = self.TRACK_W + 8 + fm.horizontalAdvance(self._label) + 4
+        return QSize(w, max(self.TRACK_H + 6, fm.height() + 6))
+
+    def paintEvent(self, _event):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        t = self._pos
+        ty = (self.height() - self.TRACK_H) / 2
+
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(self._blend(self.C_TRACK_OFF, self.C_TRACK_ON, t))
+        p.drawRoundedRect(QRectF(0, ty, self.TRACK_W, self.TRACK_H),
+                          self.TRACK_H / 2, self.TRACK_H / 2)
+
+        kd = self.TRACK_H - 2 * self.KNOB_M
+        kx = self.KNOB_M + t * (self.TRACK_W - kd - 2 * self.KNOB_M)
+        p.setBrush(self._blend(self.C_KNOB_OFF, self.C_KNOB_ON, t))
+        p.drawEllipse(QRectF(kx, ty + self.KNOB_M, kd, kd))
+
+        p.setPen(self._blend(self.C_TEXT_OFF, self.C_TEXT_ON, t))
+        p.drawText(QRectF(self.TRACK_W + 8, 0,
+                          self.width() - self.TRACK_W - 8, self.height()),
+                   Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+                   self._label)
 
 
 class FstabOptionsWidget(QFrame):
@@ -113,7 +184,7 @@ class FstabOptionsWidget(QFrame):
         return e
 
     def _tog(self, key):
-        t = SymbolToggle(key)
+        t = SwitchToggle(key)
         t.stateChanged.connect(self._sync)
         return t
 
@@ -138,7 +209,7 @@ class FstabOptionsWidget(QFrame):
         nf = QVBoxLayout(self._ntfs_frame)
         nf.setContentsMargins(0, 2, 0, 0)
         nf.setSpacing(4)
-        nf.addWidget(self._lbl("── ntfs / fat options ───────────────────────────────────────────"))
+        nf.addWidget(self._lbl("── NTFS / FAT options ───────────────────────────────────────────"))
 
         row_ids = QHBoxLayout()
         row_ids.setSpacing(6)
@@ -154,7 +225,7 @@ class FstabOptionsWidget(QFrame):
         row_ids.addWidget(self._lbl("fmask:"))
         self._fmask = self._mini("022", 52)
         row_ids.addWidget(self._fmask)
-        self._winnames = SymbolToggle("windows_names")
+        self._winnames = SwitchToggle("windows_names")
         self._winnames.stateChanged.connect(self._sync)
         row_ids.addWidget(self._winnames)
         row_ids.addStretch()
@@ -178,7 +249,7 @@ class FstabOptionsWidget(QFrame):
         self._compress.addItems(["zstd", "lzo", "zlib", "none"])
         self._compress.currentIndexChanged.connect(self._sync)
         row_btrfs.addWidget(self._compress)
-        self._autodefrag = SymbolToggle("autodefrag")
+        self._autodefrag = SwitchToggle("autodefrag")
         self._autodefrag.stateChanged.connect(self._sync)
         row_btrfs.addWidget(self._autodefrag)
         row_btrfs.addStretch()
@@ -275,6 +346,18 @@ class FstabOptionsWidget(QFrame):
         return self._result.text().strip() or "defaults"
 
 
+def fs_display(fstype, fsver=""):
+    """Человекочитаемое имя ФС. lsblk для любого FAT возвращает 'vfat' —
+    конкретную версию (FAT32/FAT16/FAT12) даёт только колонка FSVER.
+    Показываем её, чтобы пользователь видел точный формат, а не сокращение."""
+    if fstype == "vfat":
+        return fsver or "FAT"
+    if fstype in ("fat32", "fat16", "fat12"):
+        return fstype.upper()
+    return {"ntfs": "NTFS", "ntfs-3g": "NTFS",
+            "exfat": "exFAT", "btrfs": "Btrfs"}.get(fstype, fstype)
+
+
 LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
 STRINGS = {
     "title":        {"en": "Equestria OS Disk Manager",           "ru": "Equestria OS: Менеджер Дисков",      "de": "Equestria OS Festplatten-Manager",        "fr": "Equestria OS Gestionnaire de disques",    "es": "Equestria OS Gestor de discos",          "pt": "Equestria OS Gerenciador de discos",     "pl": "Equestria OS Menedżer dysków",           "uk": "Equestria OS Менеджер дисків",           "zh": "Equestria OS 磁盘管理器",                "ja": "Equestria OS ディスクマネージャー"},
@@ -358,7 +441,322 @@ STRINGS = {
     "warn_no_label":    {"en": "Enter a label!",                               "ru": "Введите метку!",                     "de": "Bezeichnung eingeben!",                  "fr": "Entrez une étiquette !",                 "es": "¡Introduzca una etiqueta!",              "pt": "Digite um rótulo!",                      "pl": "Podaj etykietę!",                        "uk": "Введіть мітку!",                         "zh": "请输入标签！",                           "ja": "ラベルを入力してください！"},
     "save_fstab":   {"en": "Save fstab",                                  "ru": "Сохранить fstab",                    "de": "fstab speichern",                        "fr": "Enregistrer fstab",                      "es": "Guardar fstab",                          "pt": "Salvar fstab",                           "pl": "Zapisz fstab",                           "uk": "Зберегти fstab",                         "zh": "保存 fstab",                             "ja": "fstab を保存"},
     "tt_save_fstab":{"en": "Update mount point and options in /etc/fstab", "ru": "Обновить точку монтирования и опции в /etc/fstab"},
+    "cancel":       {"en": "Cancel",                                       "ru": "Отмена",                             "de": "Abbrechen",                              "fr": "Annuler",                                "es": "Cancelar",                               "pt": "Cancelar",                               "pl": "Anuluj",                                 "uk": "Скасувати",                              "zh": "取消",                                   "ja": "キャンセル"},
+    "confirm_type_hint": {
+        "en": "Type the partition name ({dev}) to confirm:",
+        "ru": "Введите имя раздела ({dev}) для подтверждения:",
+        "de": "Gib zur Bestätigung den Partitionsnamen ({dev}) ein:",
+        "fr": "Saisissez le nom de la partition ({dev}) pour confirmer :",
+        "es": "Escribe el nombre de la partición ({dev}) para confirmar:",
+        "pt": "Digite o nome da partição ({dev}) para confirmar:",
+        "pl": "Wpisz nazwę partycji ({dev}), aby potwierdzić:",
+        "uk": "Введіть назву розділу ({dev}) для підтвердження:",
+        "zh": "输入分区名称（{dev}）以确认：",
+        "ja": "確認のためパーティション名（{dev}）を入力してください：",
+    },
+    "keep_uuid": {
+        "en": "Keep UUID (fstab entry stays valid)",
+        "ru": "Сохранить UUID (запись в fstab останется рабочей)",
+        "de": "UUID behalten (fstab-Eintrag bleibt gültig)",
+        "fr": "Conserver l'UUID (l'entrée fstab reste valide)",
+        "es": "Mantener UUID (la entrada fstab sigue válida)",
+        "pt": "Manter UUID (a entrada fstab continua válida)",
+        "pl": "Zachowaj UUID (wpis fstab pozostanie ważny)",
+        "uk": "Зберегти UUID (запис у fstab лишиться робочим)",
+        "zh": "保留 UUID（fstab 条目保持有效）",
+        "ja": "UUID を保持（fstab エントリは有効なまま）",
+    },
+    "warn_label_len": {
+        "en": "Label is too long for {fs} — maximum {max} characters",
+        "ru": "Метка слишком длинная для {fs} — максимум {max} символов",
+        "de": "Bezeichnung zu lang für {fs} — maximal {max} Zeichen",
+        "fr": "Étiquette trop longue pour {fs} — {max} caractères maximum",
+        "es": "Etiqueta demasiado larga para {fs} — máximo {max} caracteres",
+        "pt": "Rótulo muito longo para {fs} — máximo de {max} caracteres",
+        "pl": "Etykieta za długa dla {fs} — maksymalnie {max} znaków",
+        "uk": "Мітка задовга для {fs} — максимум {max} символів",
+        "zh": "标签对 {fs} 来说太长——最多 {max} 个字符",
+        "ja": "{fs} のラベルが長すぎます — 最大 {max} 文字",
+    },
+    "warn_fat16_size": {
+        "en": "FAT16 supports volumes up to 4 GiB only — use FAT32 or exFAT",
+        "ru": "FAT16 поддерживает тома только до 4 ГиБ — используй FAT32 или exFAT",
+        "de": "FAT16 unterstützt nur Volumes bis 4 GiB — nutze FAT32 oder exFAT",
+        "fr": "FAT16 ne gère que les volumes jusqu'à 4 Gio — utilisez FAT32 ou exFAT",
+        "es": "FAT16 solo admite volúmenes de hasta 4 GiB — usa FAT32 o exFAT",
+        "pt": "FAT16 só suporta volumes de até 4 GiB — use FAT32 ou exFAT",
+        "pl": "FAT16 obsługuje woluminy tylko do 4 GiB — użyj FAT32 lub exFAT",
+        "uk": "FAT16 підтримує томи лише до 4 ГіБ — використовуй FAT32 або exFAT",
+        "zh": "FAT16 仅支持最大 4 GiB 的卷——请使用 FAT32 或 exFAT",
+        "ja": "FAT16 は最大 4 GiB のボリュームのみ対応 — FAT32 か exFAT を使ってください",
+    },
+    "warn_label_chars": {
+        "en": "FAT/exFAT label: only letters, digits, space, '_', '.', '-'",
+        "ru": "Метка FAT/exFAT: только буквы, цифры, пробел, '_', '.', '-'",
+        "de": "FAT/exFAT-Bezeichnung: nur Buchstaben, Ziffern, Leerzeichen, '_', '.', '-'",
+        "fr": "Étiquette FAT/exFAT : uniquement lettres, chiffres, espace, '_', '.', '-'",
+        "es": "Etiqueta FAT/exFAT: solo letras, dígitos, espacio, '_', '.', '-'",
+        "pt": "Rótulo FAT/exFAT: apenas letras, dígitos, espaço, '_', '.', '-'",
+        "pl": "Etykieta FAT/exFAT: tylko litery, cyfry, spacja, '_', '.', '-'",
+        "uk": "Мітка FAT/exFAT: лише літери, цифри, пробіл, '_', '.', '-'",
+        "zh": "FAT/exFAT 标签：仅限字母、数字、空格、'_'、'.'、'-'",
+        "ja": "FAT/exFAT ラベル：英数字・空白・'_'・'.'・'-' のみ",
+    },
+    # Подсказки и описания ФС — en+ru, остальные языки падают на en через t()
+    "fmt_keep_fstab_note": {"en": "(UUID will be kept — the existing fstab entry stays valid)",
+                            "ru": "(UUID будет сохранён — существующая запись fstab останется рабочей)"},
+    "tt_keep_uuid": {"en": "Create the new filesystem with the same UUID so /etc/fstab and other references keep working. Available when the new filesystem is the same family as the current one.",
+                     "ru": "Создать новую ФС с прежним UUID — /etc/fstab и другие ссылки продолжат работать. Доступно, когда новая ФС той же семьи, что и текущая."},
+    "fs_desc_ext4":  {"en": "Linux standard — fast and reliable; best choice for internal drives",
+                      "ru": "Стандарт Linux — быстрая и надёжная; лучший выбор для внутренних дисков"},
+    "fs_desc_btrfs": {"en": "Modern Linux FS with snapshots and transparent compression",
+                      "ru": "Современная ФС Linux со снапшотами и прозрачным сжатием"},
+    "fs_desc_ntfs":  {"en": "Windows filesystem; use for drives shared with Windows",
+                      "ru": "ФС Windows; для дисков, общих с Windows"},
+    "fs_desc_exfat": {"en": "Flash drives and cross-OS exchange; no Linux permissions",
+                      "ru": "Флешки и обмен между ОС; без прав доступа Linux"},
+    "fs_desc_fat32": {"en": "Maximum compatibility; single file up to 4 GB",
+                      "ru": "Максимальная совместимость; файл не больше 4 ГБ"},
+    "fs_desc_fat16": {"en": "Legacy devices (cameras, MP3 players, embedded); volume up to 4 GiB",
+                      "ru": "Старые устройства (фотоаппараты, MP3-плееры, встраиваемые); том до 4 ГиБ"},
+    "fs_desc_ext3":  {"en": "Older ext generation — only for compatibility with old systems",
+                      "ru": "Старое поколение ext — только для совместимости со старыми системами"},
+    "fs_desc_ext2":  {"en": "Legacy ext without journal — loses data on power failure",
+                      "ru": "Древняя ext без журнала — теряет данные при сбое питания"},
+    # ── Профи-режим: разметка дисков ──
+    "pro_mode":     {"en": "Advanced",                 "ru": "Расширенные",                "de": "Erweitert",                   "fr": "Avancé",                       "es": "Avanzado",                     "pt": "Avançado",                     "pl": "Zaawansowane",                "uk": "Розширені",                   "zh": "高级",                  "ja": "詳細設定"},
+    "part_section": {"en": "Disk Partitioning",        "ru": "Разметка дисков",            "de": "Festplatten-Partitionierung", "fr": "Partitionnement des disques",  "es": "Particionado de discos",       "pt": "Particionamento de discos",    "pl": "Partycjonowanie dysków",      "uk": "Розмітка дисків",             "zh": "磁盘分区",              "ja": "パーティション管理"},
+    "free_space":   {"en": "Free space",               "ru": "Свободное место",            "de": "Freier Speicherplatz",        "fr": "Espace libre",                 "es": "Espacio libre",                "pt": "Espaço livre",                 "pl": "Wolne miejsce",               "uk": "Вільне місце",                "zh": "可用空间",              "ja": "空き領域"},
+    "create_part":  {"en": "Create partition",         "ru": "Создать раздел",             "de": "Partition erstellen",         "fr": "Créer une partition",          "es": "Crear partición",              "pt": "Criar partição",               "pl": "Utwórz partycję",             "uk": "Створити розділ",             "zh": "创建分区",              "ja": "パーティションを作成"},
+    "delete_part":  {"en": "Delete",                   "ru": "Удалить",                    "de": "Löschen",                     "fr": "Supprimer",                    "es": "Eliminar",                     "pt": "Excluir",                      "pl": "Usuń",                        "uk": "Видалити",                    "zh": "删除",                  "ja": "削除"},
+    "resize_part":  {"en": "Resize",                   "ru": "Изменить размер",            "de": "Größe ändern",                "fr": "Redimensionner",               "es": "Redimensionar",                "pt": "Redimensionar",                "pl": "Zmień rozmiar",               "uk": "Змінити розмір",              "zh": "调整大小",              "ja": "サイズ変更"},
+    "new_table":    {"en": "New partition table",      "ru": "Новая таблица разделов",     "de": "Neue Partitionstabelle",      "fr": "Nouvelle table de partitions", "es": "Nueva tabla de particiones",   "pt": "Nova tabela de partições",     "pl": "Nowa tablica partycji",       "uk": "Нова таблиця розділів",       "zh": "新建分区表",            "ja": "新しいパーティションテーブル"},
+    "new_size":     {"en": "New size",                 "ru": "Новый размер",               "de": "Neue Größe",                  "fr": "Nouvelle taille",              "es": "Nuevo tamaño",                 "pt": "Novo tamanho",                 "pl": "Nowy rozmiar",                "uk": "Новий розмір",                "zh": "新大小",                "ja": "新しいサイズ"},
+    "fs_none":      {"en": "no filesystem",            "ru": "без файловой системы",       "de": "kein Dateisystem",            "fr": "sans système de fichiers",     "es": "sin sistema de archivos",      "pt": "sem sistema de arquivos",      "pl": "bez systemu plików",          "uk": "без файлової системи",        "zh": "无文件系统",            "ja": "ファイルシステムなし"},
+    "external_badge": {"en": "External drive (USB)",   "ru": "Внешний диск (USB)",         "de": "Externes Laufwerk (USB)",     "fr": "Disque externe (USB)",         "es": "Disco externo (USB)",          "pt": "Disco externo (USB)",          "pl": "Dysk zewnętrzny (USB)",       "uk": "Зовнішній диск (USB)",        "zh": "外部驱动器（USB）",     "ja": "外付けドライブ（USB）"},
+    "confirm_del_part": {
+        "en": "DELETE partition /dev/{dev}?\n\nAll data on this partition will be PERMANENTLY LOST!",
+        "ru": "УДАЛИТЬ раздел /dev/{dev}?\n\nВсе данные на этом разделе будут БЕЗВОЗВРАТНО ПОТЕРЯНЫ!",
+        "de": "Partition /dev/{dev} LÖSCHEN?\n\nAlle Daten auf dieser Partition gehen UNWIDERRUFLICH verloren!",
+        "fr": "SUPPRIMER la partition /dev/{dev} ?\n\nToutes les données de cette partition seront DÉFINITIVEMENT PERDUES !",
+        "es": "¿ELIMINAR la partición /dev/{dev}?\n\n¡Todos los datos de esta partición se PERDERÁN PERMANENTEMENTE!",
+        "pt": "EXCLUIR a partição /dev/{dev}?\n\nTodos os dados desta partição serão PERDIDOS PERMANENTEMENTE!",
+        "pl": "USUNĄĆ partycję /dev/{dev}?\n\nWszystkie dane na tej partycji zostaną TRWALE UTRACONE!",
+        "uk": "ВИДАЛИТИ розділ /dev/{dev}?\n\nУсі дані на цьому розділі будуть БЕЗПОВОРОТНО ВТРАЧЕНІ!",
+        "zh": "删除分区 /dev/{dev}？\n\n该分区上的所有数据将永久丢失！",
+        "ja": "パーティション /dev/{dev} を削除しますか？\n\nこのパーティションのすべてのデータが完全に失われます！",
+    },
+    "confirm_new_table": {
+        "en": "Create a new {type} partition table on /dev/{disk}?\n\nEVERY partition and ALL data on the ENTIRE disk will be destroyed!",
+        "ru": "Создать новую таблицу разделов {type} на /dev/{disk}?\n\nВСЕ разделы и ВСЕ данные на ВСЁМ диске будут уничтожены!",
+        "de": "Neue {type}-Partitionstabelle auf /dev/{disk} erstellen?\n\nJEDE Partition und ALLE Daten auf der GESAMTEN Festplatte werden zerstört!",
+        "fr": "Créer une nouvelle table de partitions {type} sur /dev/{disk} ?\n\nTOUTES les partitions et TOUTES les données du disque ENTIER seront détruites !",
+        "es": "¿Crear una nueva tabla de particiones {type} en /dev/{disk}?\n\n¡TODAS las particiones y TODOS los datos del disco COMPLETO serán destruidos!",
+        "pt": "Criar uma nova tabela de partições {type} em /dev/{disk}?\n\nTODAS as partições e TODOS os dados do disco INTEIRO serão destruídos!",
+        "pl": "Utworzyć nową tablicę partycji {type} na /dev/{disk}?\n\nWSZYSTKIE partycje i WSZYSTKIE dane na CAŁYM dysku zostaną zniszczone!",
+        "uk": "Створити нову таблицю розділів {type} на /dev/{disk}?\n\nУСІ розділи та ВСІ дані на ВСЬОМУ диску буде знищено!",
+        "zh": "在 /dev/{disk} 上创建新的 {type} 分区表？\n\n整个磁盘上的所有分区和所有数据都将被销毁！",
+        "ja": "/dev/{disk} に新しい {type} パーティションテーブルを作成しますか？\n\nディスク全体のすべてのパーティションとデータが破壊されます！",
+    },
+    "confirm_resize": {
+        "en": "Resize /dev/{dev} to {size}?",
+        "ru": "Изменить размер /dev/{dev} до {size}?",
+        "de": "Größe von /dev/{dev} auf {size} ändern?",
+        "fr": "Redimensionner /dev/{dev} à {size} ?",
+        "es": "¿Redimensionar /dev/{dev} a {size}?",
+        "pt": "Redimensionar /dev/{dev} para {size}?",
+        "pl": "Zmienić rozmiar /dev/{dev} na {size}?",
+        "uk": "Змінити розмір /dev/{dev} до {size}?",
+        "zh": "将 /dev/{dev} 调整为 {size}？",
+        "ja": "/dev/{dev} を {size} にサイズ変更しますか？",
+    },
+    # ── Сетевые диски ──
+    "net_section":  {"en": "Network Drives",           "ru": "Сетевые диски",              "de": "Netzlaufwerke",               "fr": "Lecteurs réseau",              "es": "Unidades de red",              "pt": "Unidades de rede",             "pl": "Dyski sieciowe",              "uk": "Мережеві диски",              "zh": "网络驱动器",            "ja": "ネットワークドライブ"},
+    "add_net":      {"en": "Add network drive",        "ru": "Добавить сетевой диск",      "de": "Netzlaufwerk hinzufügen",     "fr": "Ajouter un lecteur réseau",    "es": "Añadir unidad de red",         "pt": "Adicionar unidade de rede",    "pl": "Dodaj dysk sieciowy",         "uk": "Додати мережевий диск",       "zh": "添加网络驱动器",        "ja": "ネットワークドライブを追加"},
+    "server":       {"en": "Server",                   "ru": "Сервер",                     "de": "Server",                      "fr": "Serveur",                      "es": "Servidor",                     "pt": "Servidor",                     "pl": "Serwer",                      "uk": "Сервер",                      "zh": "服务器",                "ja": "サーバー"},
+    "net_share":    {"en": "Share (folder on server)", "ru": "Шара (папка на сервере)",    "de": "Freigabe (Ordner am Server)", "fr": "Partage (dossier du serveur)", "es": "Recurso (carpeta del servidor)", "pt": "Compartilhamento (pasta)",   "pl": "Udział (folder na serwerze)", "uk": "Спільна тека на сервері",     "zh": "共享（服务器上的文件夹）", "ja": "共有（サーバー上のフォルダー）"},
+    "username":     {"en": "Username",                 "ru": "Имя пользователя",           "de": "Benutzername",                "fr": "Nom d'utilisateur",            "es": "Usuario",                      "pt": "Usuário",                      "pl": "Nazwa użytkownika",           "uk": "Ім'я користувача",            "zh": "用户名",                "ja": "ユーザー名"},
+    "password":     {"en": "Password",                 "ru": "Пароль",                     "de": "Passwort",                    "fr": "Mot de passe",                 "es": "Contraseña",                   "pt": "Senha",                        "pl": "Hasło",                       "uk": "Пароль",                      "zh": "密码",                  "ja": "パスワード"},
+    "guest_access": {"en": "Guest access (no password)", "ru": "Гостевой доступ (без пароля)", "de": "Gastzugang (ohne Passwort)", "fr": "Accès invité (sans mot de passe)", "es": "Acceso de invitado (sin contraseña)", "pt": "Acesso de convidado (sem senha)", "pl": "Dostęp gościa (bez hasła)", "uk": "Гостьовий доступ (без пароля)", "zh": "来宾访问（无密码）",    "ja": "ゲストアクセス（パスワードなし）"},
+    "connect":      {"en": "Connect",                  "ru": "Подключить",                 "de": "Verbinden",                   "fr": "Connecter",                    "es": "Conectar",                     "pt": "Conectar",                     "pl": "Połącz",                      "uk": "Підключити",                  "zh": "连接",                  "ja": "接続"},
+    "net_connected": {"en": "Connected",               "ru": "Подключён",                  "de": "Verbunden",                   "fr": "Connecté",                     "es": "Conectado",                    "pt": "Conectado",                    "pl": "Połączono",                   "uk": "Підключено",                  "zh": "已连接",                "ja": "接続済み"},
+    "net_not_conn": {"en": "Not connected",            "ru": "Не подключён",               "de": "Nicht verbunden",             "fr": "Non connecté",                 "es": "No conectado",                 "pt": "Não conectado",                "pl": "Nie połączono",               "uk": "Не підключено",               "zh": "未连接",                "ja": "未接続"},
+    "confirm_rm_net": {
+        "en": "Remove network drive {src}?\n\nData on the server is NOT affected — only the connection is removed.",
+        "ru": "Убрать сетевой диск {src}?\n\nДанные на сервере НЕ пострадают — удаляется только подключение.",
+        "de": "Netzlaufwerk {src} entfernen?\n\nDaten auf dem Server bleiben UNBERÜHRT — nur die Verbindung wird entfernt.",
+        "fr": "Supprimer le lecteur réseau {src} ?\n\nLes données du serveur ne sont PAS affectées — seule la connexion est supprimée.",
+        "es": "¿Quitar la unidad de red {src}?\n\nLos datos del servidor NO se ven afectados — solo se elimina la conexión.",
+        "pt": "Remover a unidade de rede {src}?\n\nOs dados no servidor NÃO são afetados — apenas a conexão é removida.",
+        "pl": "Usunąć dysk sieciowy {src}?\n\nDane na serwerze NIE ucierpią — usuwane jest tylko połączenie.",
+        "uk": "Прибрати мережевий диск {src}?\n\nДані на сервері НЕ постраждають — видаляється лише підключення.",
+        "zh": "移除网络驱动器 {src}？\n\n服务器上的数据不受影响——仅删除连接。",
+        "ja": "ネットワークドライブ {src} を削除しますか？\n\nサーバー上のデータは影響を受けません — 接続のみ削除されます。",
+    },
+    "ssh_key":      {"en": "SSH key file",             "ru": "Файл SSH-ключа",             "de": "SSH-Schlüsseldatei",          "fr": "Fichier de clé SSH",           "es": "Archivo de clave SSH",         "pt": "Arquivo de chave SSH",         "pl": "Plik klucza SSH",             "uk": "Файл SSH-ключа",              "zh": "SSH 密钥文件",          "ja": "SSH 鍵ファイル"},
+    "net_hint":     {"en": "The drive is mounted into a real folder visible to ALL apps (not only Dolphin). It connects on first access; boot never hangs if the server is off.",
+                     "ru": "Диск монтируется в настоящую папку, видимую ВСЕМ программам (не только Dolphin). Подключается при первом обращении; загрузка не виснет, если сервер выключен."},
+    "warn_net_fields": {"en": "Fill in server and share!", "ru": "Заполни сервер и шару!",
+                        "de": "Server und Freigabe ausfüllen!", "fr": "Renseignez le serveur et le partage !",
+                        "es": "¡Rellena el servidor y el recurso!", "pt": "Preencha o servidor e o compartilhamento!",
+                        "pl": "Wypełnij serwer i udział!", "uk": "Заповни сервер і теку!",
+                        "zh": "请填写服务器和共享！", "ja": "サーバーと共有を入力してください！"},
+    # en+ru — прочие языки берут en через t()
+    "shrink_warn":  {"en": "\n\nShrinking moves the filesystem boundary — back up important data first!",
+                     "ru": "\n\nУменьшение сдвигает границу файловой системы — сначала сделай резервную копию важных данных!"},
+    "no_pt":        {"en": "No partition table — create one to use this disk",
+                     "ru": "Нет таблицы разделов — создай её, чтобы использовать диск"},
+    "ntfs_driver_line": {"en": "NTFS driver: {drv}", "ru": "Драйвер NTFS: {drv}"},
+    "tt_pro":       {"en": "Show advanced partitioning tools for experienced users",
+                     "ru": "Показать инструменты разметки для опытных пользователей"},
+    "resize_na":    {"en": "Resize is not available for this filesystem",
+                     "ru": "Для этой файловой системы изменение размера недоступно"},
 }
+
+
+class FormatConfirmDialog(QDialog):
+    """Подтверждение форматирования: кнопка становится активной только после
+    того, как пользователь вручную введёт имя раздела. Случайный клик или
+    машинальное Enter (Enter = Отмена) стереть данные не могут."""
+
+    def __init__(self, parent, t, dev_name, info, new_fs, cmd_str, note=""):
+        super().__init__(parent)
+        self.setObjectName("FmtConfirm")
+        self.setWindowTitle(t("dlg_confirm_fmt"))
+        self.setModal(True)
+        self.setMinimumWidth(480)
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(18, 16, 18, 16)
+        lay.setSpacing(10)
+
+        head = QLabel(t("fmt_warn"))
+        head.setObjectName("DangerLabel")
+        lay.addWidget(head)
+
+        body = QLabel(t("confirm_fmt").format(dev=dev_name) + note)
+        body.setObjectName("DlgText")
+        body.setWordWrap(True)
+        lay.addWidget(body)
+
+        parts = [f"/dev/{dev_name}", info.get("size", "?")]
+        if info.get("label"):
+            parts.append(info["label"])
+        old_fs = fs_display(info.get("fstype", "?"), info.get("fsver") or "")
+        parts.append(f"{old_fs} → {fs_display(new_fs)}")
+        info_lbl = QLabel("  —  ".join(parts))
+        info_lbl.setObjectName("OrphanInfoLabel")
+        lay.addWidget(info_lbl)
+
+        if cmd_str:
+            cmd_lbl = QLabel(cmd_str)
+            cmd_lbl.setObjectName("CmdPreview")
+            cmd_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            lay.addWidget(cmd_lbl)
+
+        hint = QLabel(t("confirm_type_hint").format(dev=dev_name))
+        hint.setObjectName("DlgText")
+        hint.setWordWrap(True)
+        lay.addWidget(hint)
+
+        self._edit = QLineEdit()
+        self._edit.setObjectName("DestEdit")
+        self._edit.setPlaceholderText(dev_name)
+        lay.addWidget(self._edit)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton(t("cancel"))
+        cancel_btn.setObjectName("BrowseBtn")
+        cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        cancel_btn.setDefault(True)
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(cancel_btn)
+
+        self._ok_btn = QPushButton(t("format_btn"))
+        self._ok_btn.setObjectName("DangerBtn")
+        self._ok_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._ok_btn.setEnabled(False)
+        self._ok_btn.setAutoDefault(False)
+        self._ok_btn.clicked.connect(self.accept)
+        btn_row.addWidget(self._ok_btn)
+        lay.addLayout(btn_row)
+
+        self._edit.textChanged.connect(
+            lambda s: self._ok_btn.setEnabled(s.strip() == dev_name))
+        self._edit.setFocus()
+
+
+class ActionConfirmDialog(QDialog):
+    """Универсальное подтверждение опасной операции разметки.
+    Если задан confirm_name — кнопка активируется только после его ввода
+    (как при форматировании); без него — обычное подтверждение."""
+
+    def __init__(self, parent, t, body, info_line="", cmd_str="",
+                 confirm_name=None, ok_text=None):
+        super().__init__(parent)
+        self.setObjectName("FmtConfirm")
+        self.setWindowTitle(t("dlg_warning"))
+        self.setModal(True)
+        self.setMinimumWidth(480)
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(18, 16, 18, 16)
+        lay.setSpacing(10)
+
+        head = QLabel(t("dlg_warning"))
+        head.setObjectName("DangerLabel")
+        lay.addWidget(head)
+
+        body_lbl = QLabel(body)
+        body_lbl.setObjectName("DlgText")
+        body_lbl.setWordWrap(True)
+        lay.addWidget(body_lbl)
+
+        if info_line:
+            info_lbl = QLabel(info_line)
+            info_lbl.setObjectName("OrphanInfoLabel")
+            lay.addWidget(info_lbl)
+
+        if cmd_str:
+            cmd_lbl = QLabel(cmd_str)
+            cmd_lbl.setObjectName("CmdPreview")
+            cmd_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            lay.addWidget(cmd_lbl)
+
+        self._edit = None
+        if confirm_name:
+            hint = QLabel(t("confirm_type_hint").format(dev=confirm_name))
+            hint.setObjectName("DlgText")
+            hint.setWordWrap(True)
+            lay.addWidget(hint)
+            self._edit = QLineEdit()
+            self._edit.setObjectName("DestEdit")
+            self._edit.setPlaceholderText(confirm_name)
+            lay.addWidget(self._edit)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton(t("cancel"))
+        cancel_btn.setObjectName("BrowseBtn")
+        cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        cancel_btn.setDefault(True)
+        cancel_btn.clicked.connect(self.reject)
+        btn_row.addWidget(cancel_btn)
+
+        self._ok_btn = QPushButton(ok_text or "OK")
+        self._ok_btn.setObjectName("DangerBtn")
+        self._ok_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._ok_btn.setAutoDefault(False)
+        self._ok_btn.clicked.connect(self.accept)
+        btn_row.addWidget(self._ok_btn)
+        lay.addLayout(btn_row)
+
+        if self._edit is not None:
+            self._ok_btn.setEnabled(False)
+            self._edit.textChanged.connect(
+                lambda s: self._ok_btn.setEnabled(s.strip() == confirm_name))
+            self._edit.setFocus()
 
 
 class DiskWorker(QThread):
@@ -432,7 +830,7 @@ class DiskManagerApp(QMainWindow):
         self.label_input.setPlaceholderText(self.t("ph_label"))
         self.format_label_input.setPlaceholderText(self.t("fmt_lbl_ph"))
 
-        self.recursive_cb.setText(self.t("recursive"))
+        self.recursive_cb.setLabelText(self.t("recursive"))
         self.perms_btn.setText(self.t("fix_perms"))
         self.mount_now_btn.setText(self.t("mount_now"))
         self.umount_btn.setText(self.t("umount"))
@@ -453,6 +851,19 @@ class DiskManagerApp(QMainWindow):
         self.set_label_btn.setToolTip(self.t("tt_set_label"))
         self.save_fstab_btn.setText(self.t("save_fstab"))
         self.save_fstab_btn.setToolTip(self.t("tt_save_fstab"))
+        self.keep_uuid_cb.setLabelText(self.t("keep_uuid"))
+        self.keep_uuid_cb.setToolTip(self.t("tt_keep_uuid"))
+        self._update_fold_text()
+        self.pro_fold_btn.setToolTip(self.t("tt_pro"))
+        self.lbl_pro_section.setText(self.t("part_section"))
+        self.pro_mktable_btn.setText(self.t("new_table"))
+        if self.pro_fold_btn.isChecked():
+            self._render_pro_disk()
+        self._update_net_fold_text()
+        self.net_hint_lbl.setText(self.t("net_hint"))
+        self.net_add_btn.setText(self.t("add_net"))
+        if self.net_fold_btn.isChecked():
+            self._load_net_shares()
 
         self._fstab_health_title.setText(self.t("fstab_issues"))
         self._fstab_health_hint.setText(self.t("fstab_orphan_hint"))
@@ -637,11 +1048,13 @@ class DiskManagerApp(QMainWindow):
         idx = self.user_combo.findText(current_user)
         if idx >= 0:
             self.user_combo.setCurrentIndex(idx)
+        # Смена владельца обновляет uid/gid в сгенерированных опциях fstab,
+        # но не трогает опции, отредактированные пользователем вручную
+        self.user_combo.currentIndexChanged.connect(self._on_user_changed)
         main_layout.addWidget(self.user_combo)
 
-        self.recursive_cb = QCheckBox(self.t("recursive"))
+        self.recursive_cb = SwitchToggle(self.t("recursive"))
         self.recursive_cb.setChecked(False)
-        self.recursive_cb.setCursor(Qt.CursorShape.PointingHandCursor)
         main_layout.addWidget(self.recursive_cb)
 
         self.perms_btn = QPushButton(self.t("fix_perms"))
@@ -692,15 +1105,39 @@ class DiskManagerApp(QMainWindow):
         self.fs_combo = QComboBox()
         self.fs_combo.setObjectName("SourceEdit")
         self.fs_combo.setFixedHeight(34)
-        self.fs_combo.addItems(["ext4", "btrfs", "ntfs", "exfat", "fat32", "ext3", "ext2"])
+        # В data лежит значение для mkfs/fstab, в тексте — полное имя без сокращений
+        for fs_value in ("ext4", "btrfs", "ntfs", "exfat", "fat32", "fat16", "ext3", "ext2"):
+            self.fs_combo.addItem(fs_display(fs_value), fs_value)
         fs_row.addWidget(self.lbl_new_fs)
         fs_row.addWidget(self.fs_combo, 1)
         fmt_layout.addLayout(fs_row)
+
+        self.fs_desc_lbl = QLabel("")
+        self.fs_desc_lbl.setObjectName("FmtDesc")
+        self.fs_desc_lbl.setWordWrap(True)
+        fmt_layout.addWidget(self.fs_desc_lbl)
 
         self.format_label_input = QLineEdit()
         self.format_label_input.setObjectName("DestEdit")
         self.format_label_input.setPlaceholderText(self.t("fmt_lbl_ph"))
         fmt_layout.addWidget(self.format_label_input)
+
+        self.fmt_label_hint = QLabel("")
+        self.fmt_label_hint.setObjectName("FmtLabelError")
+        self.fmt_label_hint.setWordWrap(True)
+        self.fmt_label_hint.setVisible(False)
+        fmt_layout.addWidget(self.fmt_label_hint)
+
+        self.keep_uuid_cb = SwitchToggle(self.t("keep_uuid"))
+        self.keep_uuid_cb.setVisible(False)
+        fmt_layout.addWidget(self.keep_uuid_cb)
+
+        # Предпросмотр реальной команды — то, что действительно будет запущено
+        self.fmt_preview = QLineEdit()
+        self.fmt_preview.setObjectName("CmdPreview")
+        self.fmt_preview.setReadOnly(True)
+        self.fmt_preview.setVisible(False)
+        fmt_layout.addWidget(self.fmt_preview)
 
         self.format_btn = QPushButton(self.t("format_btn"))
         self.format_btn.setObjectName("DangerBtn")
@@ -708,7 +1145,97 @@ class DiskManagerApp(QMainWindow):
         self.format_btn.clicked.connect(self._format_disk)
         fmt_layout.addWidget(self.format_btn)
 
+        self.fs_combo.currentIndexChanged.connect(self._update_fmt_ui)
+        self.format_label_input.textChanged.connect(self._update_fmt_ui)
+        self.keep_uuid_cb.stateChanged.connect(self._update_fmt_ui)
+
         main_layout.addWidget(fmt_frame)
+
+        # --- Foldout «Сетевые диски»: SMB/NFS как настоящие папки ---
+        self.net_fold_btn = QPushButton()
+        self.net_fold_btn.setObjectName("FoldoutBtn")
+        self.net_fold_btn.setCheckable(True)
+        self.net_fold_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.net_fold_btn.toggled.connect(self._toggle_net)
+        main_layout.addWidget(self.net_fold_btn)
+
+        self.net_frame = QFrame()
+        self.net_frame.setObjectName("ProFrame")
+        net_layout = QVBoxLayout(self.net_frame)
+        net_layout.setContentsMargins(12, 10, 12, 10)
+        net_layout.setSpacing(8)
+
+        self.net_hint_lbl = QLabel(self.t("net_hint"))
+        self.net_hint_lbl.setObjectName("FmtDesc")
+        self.net_hint_lbl.setWordWrap(True)
+        net_layout.addWidget(self.net_hint_lbl)
+
+        self._net_body_widget = QWidget()
+        self._net_body = QVBoxLayout(self._net_body_widget)
+        self._net_body.setContentsMargins(0, 2, 0, 0)
+        self._net_body.setSpacing(6)
+        net_layout.addWidget(self._net_body_widget)
+
+        self.net_add_btn = QPushButton(self.t("add_net"))
+        self.net_add_btn.setObjectName("AddSourceBtn")
+        self.net_add_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.net_add_btn.clicked.connect(self._net_add)
+        net_layout.addWidget(self.net_add_btn)
+
+        main_layout.addWidget(self.net_frame)
+        self.net_frame.setVisible(False)
+        self._update_net_fold_text()
+
+        # --- Foldout «Расширенные»: базовое всегда на виду, разметка дисков
+        # раскрывается только осознанным кликом ---
+        self.pro_fold_btn = QPushButton()
+        self.pro_fold_btn.setObjectName("FoldoutBtn")
+        self.pro_fold_btn.setCheckable(True)
+        self.pro_fold_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.pro_fold_btn.toggled.connect(self._toggle_pro)
+        main_layout.addWidget(self.pro_fold_btn)
+        self._update_fold_text()
+
+        # --- Профи-режим: разметка дисков (скрыт по умолчанию) ---
+        self.pro_frame = QFrame()
+        self.pro_frame.setObjectName("ProFrame")
+        pro_layout = QVBoxLayout(self.pro_frame)
+        pro_layout.setContentsMargins(12, 10, 12, 10)
+        pro_layout.setSpacing(8)
+
+        self.lbl_pro_section = QLabel(self.t("part_section"))
+        self.lbl_pro_section.setObjectName("ProLabel")
+        pro_layout.addWidget(self.lbl_pro_section)
+
+        pro_disk_row = QHBoxLayout()
+        self.pro_disk_combo = QComboBox()
+        self.pro_disk_combo.setObjectName("SourceEdit")
+        self.pro_disk_combo.setFixedHeight(30)
+        self.pro_disk_combo.currentIndexChanged.connect(self._render_pro_disk)
+        pro_disk_row.addWidget(self.pro_disk_combo, 1)
+
+        self.pro_table_combo = QComboBox()
+        self.pro_table_combo.setObjectName("SourceEdit")
+        self.pro_table_combo.setFixedHeight(30)
+        self.pro_table_combo.addItem("GPT", "gpt")
+        self.pro_table_combo.addItem("MBR", "dos")
+        pro_disk_row.addWidget(self.pro_table_combo)
+
+        self.pro_mktable_btn = QPushButton(self.t("new_table"))
+        self.pro_mktable_btn.setObjectName("DangerBtn")
+        self.pro_mktable_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.pro_mktable_btn.clicked.connect(self._pro_mktable)
+        pro_disk_row.addWidget(self.pro_mktable_btn)
+        pro_layout.addLayout(pro_disk_row)
+
+        self._pro_body_widget = QWidget()
+        self._pro_body = QVBoxLayout(self._pro_body_widget)
+        self._pro_body.setContentsMargins(0, 4, 0, 0)
+        self._pro_body.setSpacing(6)
+        pro_layout.addWidget(self._pro_body_widget)
+
+        main_layout.addWidget(self.pro_frame)
+        self.pro_frame.setVisible(False)
         main_layout.addSpacing(10)
 
         # --- Progress (fixed at bottom, outside scroll) ---
@@ -741,7 +1268,7 @@ class DiskManagerApp(QMainWindow):
 
         try:
             result = subprocess.run(
-                ["lsblk", "-J", "-o", "NAME,UUID,FSTYPE,MOUNTPOINTS,SIZE,TYPE,LABEL"],
+                ["lsblk", "-J", "-o", "NAME,UUID,FSTYPE,FSVER,MOUNTPOINTS,SIZE,TYPE,LABEL,RM,TRAN"],
                 capture_output=True, text=True, check=True
             )
             data = json.loads(result.stdout)
@@ -756,7 +1283,8 @@ class DiskManagerApp(QMainWindow):
 
         for name, info in self.partitions.items():
             label = info.get("label") or self.t("no_label")
-            display = f"[{label}]  /dev/{name}  —  {info['size']}  ({info['fstype']})"
+            fs_name = fs_display(info.get("fstype", ""), info.get("fsver") or "")
+            display = f"[{label}]  /dev/{name}  —  {info['size']}  ({fs_name})"
             self.disk_combo.addItem(display, name)
 
         # Restore previous selection
@@ -767,22 +1295,42 @@ class DiskManagerApp(QMainWindow):
                     break
         self._refresh_fstab_health()
 
-    def _parse_lsblk(self, devices):
+    def _parse_lsblk(self, devices, parent=None):
         for dev in devices:
+            # Транспорт и признак removable известны у диска — наследуем разделам
+            if parent is not None:
+                if not dev.get("tran"):
+                    dev["tran"] = parent.get("tran")
+                dev["rm"] = dev.get("rm") or parent.get("rm")
             if dev.get("type") == "part" and dev.get("fstype") and dev.get("uuid"):
-                if dev.get("fstype") not in ["swap"]:
+                # swap монтировать нечем, LUKS сначала нужно расшифровать
+                if dev.get("fstype") not in ("swap", "crypto_LUKS"):
                     self.partitions[dev["name"]] = dev
             if "children" in dev:
-                self._parse_lsblk(dev["children"])
+                self._parse_lsblk(dev["children"], dev)
 
-    def _generate_default_opts(self, fstype):
+    @staticmethod
+    def _is_external(info):
+        return bool(info) and (info.get("tran") == "usb" or bool(info.get("rm")))
+
+    def _selected_ids(self):
+        try:
+            pw = pwd.getpwnam(self.user_combo.currentText())
+            return pw.pw_uid, pw.pw_gid
+        except (KeyError, AttributeError):
+            return 1000, 1000
+
+    def _generate_default_opts(self, fstype, info=None):
+        uid, gid = self._selected_ids()
+        # Внешний диск без nofail блокирует загрузку, если его отключить
+        nofail = ",nofail" if self._is_external(info) else ""
         if fstype in ["ntfs", "ntfs-3g", "vfat", "fat32", "exfat"]:
-            return "defaults,noatime,uid=1000,gid=1000,dmask=022,fmask=022"
+            return f"defaults,noatime,uid={uid},gid={gid},dmask=022,fmask=022{nofail}"
         elif fstype == "btrfs":
-            return "defaults,noatime,compress=zstd,autodefrag"
+            return f"defaults,noatime,compress=zstd,autodefrag{nofail}"
         elif fstype in ["ext4", "ext3"]:
-            return "defaults,noatime"
-        return "defaults"
+            return f"defaults,noatime{nofail}"
+        return "defaults" + nofail
 
     # ------------------------------------------------------------------ fstab health
 
@@ -908,6 +1456,7 @@ class DiskManagerApp(QMainWindow):
             self.info_lbl.setText("")
             for btn in (self.mount_now_btn, self.umount_btn, self.format_btn, self.set_label_btn):
                 btn.setEnabled(False)
+            self._update_fmt_ui()
             return
 
         info = self.partitions[dev_name]
@@ -918,7 +1467,7 @@ class DiskManagerApp(QMainWindow):
 
         lines = [
             f"{self.t('uuid')}: {uuid}",
-            f"{self.t('fstype')}: {fstype}   {self.t('size')}: {size}",
+            f"{self.t('fstype')}: {fs_display(fstype, info.get('fsver') or '')}   {self.t('size')}: {size}",
         ]
 
         if mounts:
@@ -934,6 +1483,12 @@ class DiskManagerApp(QMainWindow):
             lines.append(line)
         else:
             lines.append(self.t("not_mounted"))
+
+        if self._is_external(info):
+            lines.append(self.t("external_badge"))
+        if fstype in ("ntfs", "ntfs-3g"):
+            lines.append(self.t("ntfs_driver_line").format(
+                drv=disk_backend.ntfs_mount_type()))
 
         self.info_lbl.setText("\n".join(lines))
 
@@ -987,18 +1542,34 @@ class DiskManagerApp(QMainWindow):
                 self.opts_widget.set_options(raw_parts[3])
             elif mounts:
                 self.mount_input.setText(mounts[0])
-                self.opts_widget.set_options(self._generate_default_opts(fstype))
+                self._last_gen_opts = self._generate_default_opts(fstype, info)
+                self.opts_widget.set_options(self._last_gen_opts)
         else:
             self.automount_btn.setText(self.t("automount"))
             self.automount_btn.setStyleSheet("")
             label = info.get("label")
             self.mount_input.setText(f"/mnt/{label}" if label else f"/mnt/{dev_name}")
-            self.opts_widget.set_options(self._generate_default_opts(fstype))
+            self._last_gen_opts = self._generate_default_opts(fstype, info)
+            self.opts_widget.set_options(self._last_gen_opts)
 
         self.save_fstab_btn.setVisible(is_in_fstab)
 
         # Pre-fill label input with current label
         self.label_input.setText(info.get("label") or "")
+
+        self._update_fmt_ui()
+
+    def _on_user_changed(self):
+        if not getattr(self, "_last_gen_opts", None):
+            return
+        if self.opts_widget.get_options() != self._last_gen_opts:
+            return
+        dev = self.disk_combo.currentData()
+        info = self.partitions.get(dev) if dev else None
+        if info:
+            self._last_gen_opts = self._generate_default_opts(
+                info.get("fstype", ""), info)
+            self.opts_widget.set_options(self._last_gen_opts)
 
     # ------------------------------------------------------------------ backend runner
 
@@ -1007,6 +1578,8 @@ class DiskManagerApp(QMainWindow):
                   self.mount_now_btn, self.umount_btn, self.format_btn,
                   self.set_label_btn, self.recursive_cb, self.user_combo, self.disk_combo):
             w.setEnabled(False)
+        self.pro_frame.setEnabled(False)
+        self.net_frame.setEnabled(False)
         self.prog_status_lbl.setText(status or self.t("applying"))
         self.progress_frame.setVisible(True)
 
@@ -1022,10 +1595,21 @@ class DiskManagerApp(QMainWindow):
         self.progress_frame.setVisible(False)
 
         if success:
-            QMessageBox.information(self, self.t("dlg_success"), self.t("success"))
+            box = QMessageBox(QMessageBox.Icon.Information, self.t("dlg_success"),
+                              self.t("success"), parent=self)
+            if message.strip():
+                # Полный вывод mkfs и других утилит — по кнопке «Подробнее»
+                box.setDetailedText(message)
+            box.exec()
         else:
             QMessageBox.critical(self, self.t("dlg_error"), f"{self.t('err_elevate')}\n{message}")
+        self.pro_frame.setEnabled(True)
+        self.net_frame.setEnabled(True)
         self._load_disks()
+        if self.pro_fold_btn.isChecked():
+            self._load_pro_disks()
+        if self.net_fold_btn.isChecked():
+            self._load_net_shares()
 
     # ------------------------------------------------------------------ actions
 
@@ -1107,35 +1691,777 @@ class DiskManagerApp(QMainWindow):
         self._run_backend(["--set-label", dev_name, fstype, label],
                           f"Setting label '{label}' on /dev/{dev_name}...")
 
+    # ---- format helpers ---------------------------------------------------
+
+    FS_FAMILY = {"ext2": "ext", "ext3": "ext", "ext4": "ext",
+                 "btrfs": "btrfs", "vfat": "fat", "fat32": "fat", "fat16": "fat"}
+
+    def _validate_fmt_label(self, fstype, label):
+        if not label:
+            return True, ""
+        limit = disk_backend.LABEL_LIMITS.get(fstype)
+        if limit and len(label) > limit:
+            return False, self.t("warn_label_len").format(fs=fstype, max=limit)
+        if fstype in ("fat32", "fat16", "vfat", "exfat") \
+                and not disk_backend.FAT_LABEL_RE.fullmatch(label):
+            return False, self.t("warn_label_chars")
+        return True, ""
+
+    def _keep_uuid_available(self, info, new_fs):
+        """UUID переносим только внутри одной семьи ФС — форматы UUID разные."""
+        fam_old = self.FS_FAMILY.get(info.get("fstype", ""))
+        fam_new = self.FS_FAMILY.get(new_fs)
+        if not fam_old or fam_old != fam_new:
+            return False
+        uuid = info.get("uuid") or ""
+        pattern = disk_backend.FAT_ID_RE if fam_new == "fat" else disk_backend.UUID_RE
+        return bool(pattern.fullmatch(uuid))
+
+    @staticmethod
+    def _part_size_mib(dev_name):
+        try:
+            with open(f"/sys/class/block/{dev_name}/size") as f:
+                return int(f.read()) * 512 // (1024 * 1024)
+        except (OSError, ValueError):
+            return None
+
+    def _fmt_preview_text(self):
+        dev_name = self.disk_combo.currentData()
+        if not dev_name or dev_name not in self.partitions:
+            return ""
+        fstype = self.fs_combo.currentData()
+        label = self.format_label_input.text().strip() or None
+        keep = None
+        if not self.keep_uuid_cb.isHidden() and self.keep_uuid_cb.isChecked():
+            keep = self.partitions[dev_name].get("uuid")
+        try:
+            cmd = disk_backend.build_mkfs_cmd(dev_name, fstype, label, keep)
+        except ValueError:
+            return ""
+        return "$ " + shlex.join(cmd)
+
+    def _update_fmt_ui(self):
+        dev_name = self.disk_combo.currentData()
+        info = self.partitions.get(dev_name) if dev_name else None
+        fstype = self.fs_combo.currentData()
+
+        self.fs_desc_lbl.setText(self.t(f"fs_desc_{fstype}"))
+
+        can_keep = bool(info) and self._keep_uuid_available(info, fstype)
+        if not can_keep and self.keep_uuid_cb.isChecked():
+            self.keep_uuid_cb.setChecked(False)
+        self.keep_uuid_cb.setVisible(can_keep)
+
+        ok, err = self._validate_fmt_label(
+            fstype, self.format_label_input.text().strip())
+        # FAT16 физически не бывает больше 4 ГиБ — глушим кнопку заранее
+        if ok and fstype == "fat16" and dev_name:
+            size_mib = self._part_size_mib(dev_name)
+            if size_mib and size_mib > disk_backend.FAT16_MAX_MIB:
+                ok, err = False, self.t("warn_fat16_size")
+        self.fmt_label_hint.setText(err)
+        self.fmt_label_hint.setVisible(not ok)
+
+        preview = self._fmt_preview_text()
+        self.fmt_preview.setText(preview)
+        self.fmt_preview.setVisible(bool(preview))
+
+        mounts = [m for m in info.get("mountpoints", []) if m] if info else []
+        self.format_btn.setEnabled(bool(info) and not mounts and ok)
+
     def _format_disk(self):
         dev_name = self.disk_combo.currentData()
-        if not dev_name:
+        if not dev_name or dev_name not in self.partitions:
             return
         info   = self.partitions[dev_name]
-        fstype = self.fs_combo.currentText()
+        fstype = self.fs_combo.currentData()
         label  = self.format_label_input.text().strip()
         uuid   = info.get("uuid", "")
 
-        is_in_fstab = any(u == uuid for u, _, _, _ in self._parse_fstab_entries())
-
-        msg = self.t("confirm_fmt").format(dev=dev_name)
-        if is_in_fstab:
-            msg += f"\n\n{self.t('fmt_rm_fstab_note')}"
-        reply = QMessageBox.question(
-            self, self.t("dlg_confirm_fmt"), msg,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
-        )
-        if reply != QMessageBox.StandardButton.Yes:
+        ok, err = self._validate_fmt_label(fstype, label)
+        if not ok:
+            QMessageBox.warning(self, self.t("dlg_warning"), err)
             return
 
-        if is_in_fstab and uuid:
+        keep_uuid = None
+        if not self.keep_uuid_cb.isHidden() and self.keep_uuid_cb.isChecked():
+            keep_uuid = uuid
+
+        is_in_fstab = any(u == uuid for u, _, _, _ in self._parse_fstab_entries())
+
+        note = ""
+        if is_in_fstab:
+            note = "\n\n" + (self.t("fmt_keep_fstab_note") if keep_uuid
+                             else self.t("fmt_rm_fstab_note"))
+
+        dlg = FormatConfirmDialog(self, self.t, dev_name, info, fstype,
+                                  self._fmt_preview_text(), note)
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        if is_in_fstab and uuid and not keep_uuid:
             args = ["--rm-fstab-and-format", uuid, dev_name, fstype]
         else:
             args = ["--format", dev_name, fstype]
         if label:
             args.append(label)
+        if keep_uuid:
+            args += ["--keep-uuid", keep_uuid]
         self._run_backend(args, f"Formatting /dev/{dev_name} as {fstype}...")
+
+    # ------------------------------------------------------------------ pro mode
+
+    def _update_fold_text(self):
+        arrow = "▾" if self.pro_fold_btn.isChecked() else "▸"
+        self.pro_fold_btn.setText(f"{arrow}  {self.t('pro_mode')}")
+
+    def _toggle_pro(self):
+        on = self.pro_fold_btn.isChecked()
+        self._update_fold_text()
+        self.pro_frame.setVisible(on)
+        if on:
+            self._load_pro_disks()
+
+    @staticmethod
+    def _human_size(sectors):
+        b = float(sectors) * 512
+        for unit in ("B", "KiB", "MiB", "GiB", "TiB"):
+            if b < 1024 or unit == "TiB":
+                return f"{b:.0f} {unit}" if unit == "B" else f"{b:.1f} {unit}"
+            b /= 1024
+
+    def _load_pro_disks(self):
+        cur = self.pro_disk_combo.currentData()
+        self.pro_disk_combo.blockSignals(True)
+        self.pro_disk_combo.clear()
+        self._pro_disks = {}
+        try:
+            result = subprocess.run(
+                ["lsblk", "-J", "-o",
+                 "NAME,TYPE,SIZE,MODEL,PTTYPE,FSTYPE,FSVER,LABEL,MOUNTPOINTS,PARTN,RM,TRAN"],
+                capture_output=True, text=True, check=True)
+            for d in json.loads(result.stdout).get("blockdevices", []):
+                if d.get("type") != "disk":
+                    continue
+                if d["name"].startswith(("zram", "loop", "sr", "ram")):
+                    continue
+                self._pro_disks[d["name"]] = d
+        except Exception:
+            pass
+        for name, d in self._pro_disks.items():
+            model = (d.get("model") or "").strip()
+            usb = "  USB" if (d.get("tran") == "usb" or d.get("rm")) else ""
+            pt = (d.get("pttype") or "—").upper().replace("DOS", "MBR")
+            self.pro_disk_combo.addItem(
+                f"/dev/{name}  —  {d.get('size', '?')}  {model}  ({pt}){usb}", name)
+        self.pro_disk_combo.blockSignals(False)
+        if cur:
+            idx = self.pro_disk_combo.findData(cur)
+            if idx >= 0:
+                self.pro_disk_combo.setCurrentIndex(idx)
+        self._render_pro_disk()
+
+    def _pro_regions(self, disk, children):
+        """Разделы и свободные промежутки по данным sysfs (в секторах 512Б).
+        Пересекающиеся диапазоны (extended/logical на MBR) схлопываются."""
+        base = f"/sys/block/{disk}"
+        try:
+            with open(f"{base}/size") as f:
+                total = int(f.read())
+        except OSError:
+            return []
+        parts = []
+        for c in children:
+            try:
+                with open(f"{base}/{c['name']}/start") as f:
+                    start = int(f.read())
+                with open(f"{base}/{c['name']}/size") as f:
+                    size = int(f.read())
+            except OSError:
+                continue
+            parts.append({"kind": "part", "start": start, "size": size, "info": c})
+        parts.sort(key=lambda p: p["start"])
+
+        MIN_GAP = 16384              # промежутки мельче 8 MiB не предлагаем
+        first_usable = 2048          # выравнивание 1 MiB
+        last_usable = total - 2048   # запас под резервный заголовок GPT
+        regions, cursor = [], first_usable
+        for p in parts:
+            if p["start"] - cursor >= MIN_GAP:
+                regions.append({"kind": "free", "start": cursor,
+                                "size": p["start"] - cursor})
+            regions.append(p)
+            cursor = max(cursor, p["start"] + p["size"])
+        if last_usable - cursor >= MIN_GAP:
+            regions.append({"kind": "free", "start": cursor,
+                            "size": last_usable - cursor})
+        return regions
+
+    def _render_pro_disk(self):
+        while self._pro_body.count():
+            item = self._pro_body.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        disk = self.pro_disk_combo.currentData()
+        d = self._pro_disks.get(disk) if disk else None
+        if not d:
+            return
+
+        if not d.get("pttype"):
+            hint = QLabel(self.t("no_pt"))
+            hint.setObjectName("FstabHealthHint")
+            hint.setWordWrap(True)
+            self._pro_body.addWidget(hint)
+            return
+
+        for region in self._pro_regions(disk, d.get("children", [])):
+            row = QFrame()
+            row.setObjectName("PartRow")
+            rl = QHBoxLayout(row)
+            rl.setContentsMargins(8, 5, 8, 5)
+            rl.setSpacing(8)
+
+            if region["kind"] == "free":
+                lbl = QLabel(f"◇  {self.t('free_space')}  —  "
+                             f"{self._human_size(region['size'])}")
+                lbl.setObjectName("FreeLabel")
+                rl.addWidget(lbl, 1)
+                btn = QPushButton(self.t("create_part"))
+                btn.setObjectName("AddSourceBtn")
+                btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                btn.clicked.connect(
+                    lambda _, dk=disk, s=region["start"], sz=region["size"]:
+                        self._pro_create(dk, s, sz))
+                rl.addWidget(btn)
+                self._pro_body.addWidget(row)
+                continue
+
+            c = region["info"]
+            name = c["name"]
+            partn = c.get("partn")
+            fstype = c.get("fstype") or ""
+            fs = fs_display(fstype, c.get("fsver") or "") if fstype else self.t("fs_none")
+            mounts = [m for m in c.get("mountpoints", []) if m]
+
+            text = f"◆  /dev/{name}  —  {self._human_size(region['size'])}  —  {fs}"
+            if c.get("label"):
+                text += f"  [{c['label']}]"
+            lbl = QLabel(text)
+            lbl.setObjectName("PartLabel")
+            lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            rl.addWidget(lbl, 1)
+
+            if mounts:
+                m_lbl = QLabel(f"{self.t('mounted_at')}: {mounts[0]}")
+                m_lbl.setObjectName("OptionsSubLabel")
+                rl.addWidget(m_lbl)
+            elif partn is not None:
+                rz = QPushButton(self.t("resize_part"))
+                rz.setObjectName("BrowseBtn")
+                rz.setCursor(Qt.CursorShape.PointingHandCursor)
+                if fstype in disk_backend.RESIZE_UNSUPPORTED or fstype == "swap":
+                    rz.setEnabled(False)
+                    rz.setToolTip(self.t("resize_na"))
+                else:
+                    rz.clicked.connect(
+                        lambda _, dk=disk, n=partn, nm=name, sz=region["size"]:
+                            self._pro_resize(dk, n, nm, sz))
+                rl.addWidget(rz)
+
+                rm = QPushButton(self.t("delete_part"))
+                rm.setObjectName("DangerBtn")
+                rm.setCursor(Qt.CursorShape.PointingHandCursor)
+                rm.clicked.connect(
+                    lambda _, dk=disk, n=partn, nm=name: self._pro_delete(dk, n, nm))
+                rl.addWidget(rm)
+
+            self._pro_body.addWidget(row)
+
+    # -- операции разметки --------------------------------------------------
+
+    def _pro_mktable(self):
+        disk = self.pro_disk_combo.currentData()
+        if not disk:
+            return
+        table = self.pro_table_combo.currentData()
+        table_name = "GPT" if table == "gpt" else "MBR"
+        d = self._pro_disks.get(disk, {})
+        body = self.t("confirm_new_table").format(disk=disk, type=table_name)
+        info_line = f"/dev/{disk}  —  {d.get('size', '?')}  {(d.get('model') or '').strip()}"
+        cmd = f"$ echo 'label: {table}' | sfdisk --wipe always /dev/{disk}"
+        dlg = ActionConfirmDialog(self, self.t, body, info_line, cmd,
+                                  confirm_name=disk, ok_text=self.t("new_table"))
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self._run_backend(["--mktable", disk, table],
+                              f"Creating {table_name} table on /dev/{disk}...")
+
+    def _pro_create(self, disk, start_sec, size_sec):
+        mib = 1024 * 1024
+        start_mib = (start_sec * 512 + mib - 1) // mib
+        max_mib = (start_sec + size_sec) * 512 // mib - start_mib
+        if max_mib < 8:
+            return
+
+        dlg = QDialog(self)
+        dlg.setObjectName("FmtConfirm")
+        dlg.setWindowTitle(self.t("create_part"))
+        dlg.setModal(True)
+        dlg.setMinimumWidth(420)
+        lay = QVBoxLayout(dlg)
+        lay.setContentsMargins(18, 16, 18, 16)
+        lay.setSpacing(10)
+
+        head = QLabel(f"{self.t('create_part')}  —  /dev/{disk}")
+        head.setObjectName("ProLabel")
+        lay.addWidget(head)
+
+        size_row = QHBoxLayout()
+        size_lbl = QLabel(self.t("new_size"))
+        size_lbl.setObjectName("DlgText")
+        size_row.addWidget(size_lbl)
+        spin = QDoubleSpinBox()
+        spin.setObjectName("SmallEdit")
+        spin.setSuffix(" GiB")
+        spin.setDecimals(2)
+        spin.setRange(0.01, max_mib / 1024)
+        spin.setValue(max_mib / 1024)
+        size_row.addWidget(spin, 1)
+        lay.addLayout(size_row)
+
+        fs_row = QHBoxLayout()
+        fs_lbl = QLabel(self.t("new_fs"))
+        fs_lbl.setObjectName("DlgText")
+        fs_row.addWidget(fs_lbl)
+        fs_combo = QComboBox()
+        fs_combo.setObjectName("SourceEdit")
+        for fs_value in ("ext4", "btrfs", "ntfs", "exfat", "fat32", "fat16"):
+            fs_combo.addItem(fs_display(fs_value), fs_value)
+        fs_combo.addItem(self.t("fs_none"), "none")
+        fs_row.addWidget(fs_combo, 1)
+        lay.addLayout(fs_row)
+
+        label_edit = QLineEdit()
+        label_edit.setObjectName("DestEdit")
+        label_edit.setPlaceholderText(self.t("ph_label"))
+        lay.addWidget(label_edit)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton(self.t("cancel"))
+        cancel_btn.setObjectName("BrowseBtn")
+        cancel_btn.clicked.connect(dlg.reject)
+        btn_row.addWidget(cancel_btn)
+        ok_btn = QPushButton(self.t("create_part"))
+        ok_btn.setObjectName("AddSourceBtn")
+        ok_btn.clicked.connect(dlg.accept)
+        btn_row.addWidget(ok_btn)
+        lay.addLayout(btn_row)
+
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        size_mib = min(max_mib, max(8, int(round(spin.value() * 1024))))
+        fs_value = fs_combo.currentData()
+        label = label_edit.text().strip()
+        if fs_value == "fat16" and size_mib > disk_backend.FAT16_MAX_MIB:
+            QMessageBox.warning(self, self.t("dlg_warning"),
+                                self.t("warn_fat16_size"))
+            return
+        if label and fs_value != "none":
+            ok, err = self._validate_fmt_label(fs_value, label)
+            if not ok:
+                QMessageBox.warning(self, self.t("dlg_warning"), err)
+                return
+        args = ["--mkpart", disk, str(start_mib), str(size_mib), fs_value]
+        if label and fs_value != "none":
+            args.append(label)
+        self._run_backend(args, f"Creating {size_mib} MiB partition on /dev/{disk}...")
+
+    def _pro_delete(self, disk, partn, node):
+        c = None
+        for child in self._pro_disks.get(disk, {}).get("children", []):
+            if child["name"] == node:
+                c = child
+                break
+        body = self.t("confirm_del_part").format(dev=node)
+        info_parts = [f"/dev/{node}"]
+        if c:
+            fstype = c.get("fstype") or ""
+            info_parts.append(fs_display(fstype, c.get("fsver") or "")
+                              if fstype else self.t("fs_none"))
+            if c.get("label"):
+                info_parts.append(c["label"])
+        cmd = f"$ sfdisk --delete /dev/{disk} {partn}"
+        dlg = ActionConfirmDialog(self, self.t, body, "  —  ".join(info_parts), cmd,
+                                  confirm_name=node, ok_text=self.t("delete_part"))
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self._run_backend(["--rmpart", disk, str(partn)],
+                              f"Deleting /dev/{node}...")
+
+    def _resize_cmds(self, fstype, node, disk, partn, new_mib, grow):
+        dev = f"/dev/{node}"
+        sf = f"$ echo ',{new_mib}MiB' | sfdisk -N {partn} /dev/{disk}"
+        if fstype in ("ext2", "ext3", "ext4"):
+            fs_cmds = [f"$ e2fsck -f -y {dev}",
+                       f"$ resize2fs {dev}" + ("" if grow else f" {new_mib}M")]
+        elif fstype == "ntfs":
+            fs_cmds = [f"$ ntfsresize -f {dev}" if grow
+                       else f"$ ntfsresize -f -s {new_mib * 1024 * 1024} {dev}"]
+        elif fstype == "btrfs":
+            arg = "max" if grow else str(new_mib * 1024 * 1024)
+            fs_cmds = [f"$ btrfs filesystem resize {arg} <mount>"]
+        else:
+            fs_cmds = []
+        order = [sf] + fs_cmds if grow else fs_cmds + [sf]
+        return "\n".join(order)
+
+    def _pro_resize(self, disk, partn, node, cur_size_sec):
+        mib = 1024 * 1024
+        cur_mib = cur_size_sec * 512 // mib
+
+        # предел роста — свободный промежуток сразу после раздела
+        extra_mib = 0
+        regions = self._pro_regions(disk, self._pro_disks.get(disk, {}).get("children", []))
+        for i, r in enumerate(regions):
+            if r["kind"] == "part" and r["info"]["name"] == node:
+                if i + 1 < len(regions) and regions[i + 1]["kind"] == "free":
+                    extra_mib = regions[i + 1]["size"] * 512 // mib
+                break
+
+        c = next((ch for ch in self._pro_disks.get(disk, {}).get("children", [])
+                  if ch["name"] == node), {})
+        fstype = c.get("fstype") or ""
+
+        dlg = QDialog(self)
+        dlg.setObjectName("FmtConfirm")
+        dlg.setWindowTitle(self.t("resize_part"))
+        dlg.setModal(True)
+        dlg.setMinimumWidth(420)
+        lay = QVBoxLayout(dlg)
+        lay.setContentsMargins(18, 16, 18, 16)
+        lay.setSpacing(10)
+        head = QLabel(f"{self.t('resize_part')}  —  /dev/{node}")
+        head.setObjectName("ProLabel")
+        lay.addWidget(head)
+        cur_lbl = QLabel(f"{self.t('size')}: {self._human_size(cur_size_sec)}")
+        cur_lbl.setObjectName("DlgText")
+        lay.addWidget(cur_lbl)
+        size_row = QHBoxLayout()
+        size_lbl = QLabel(self.t("new_size"))
+        size_lbl.setObjectName("DlgText")
+        size_row.addWidget(size_lbl)
+        spin = QDoubleSpinBox()
+        spin.setObjectName("SmallEdit")
+        spin.setSuffix(" GiB")
+        spin.setDecimals(2)
+        spin.setRange(0.05, (cur_mib + extra_mib) / 1024)
+        spin.setValue(cur_mib / 1024)
+        size_row.addWidget(spin, 1)
+        lay.addLayout(size_row)
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton(self.t("cancel"))
+        cancel_btn.setObjectName("BrowseBtn")
+        cancel_btn.clicked.connect(dlg.reject)
+        btn_row.addWidget(cancel_btn)
+        ok_btn = QPushButton(self.t("resize_part"))
+        ok_btn.setObjectName("AddSourceBtn")
+        ok_btn.clicked.connect(dlg.accept)
+        btn_row.addWidget(ok_btn)
+        lay.addLayout(btn_row)
+
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+        new_mib = int(round(spin.value() * 1024))
+        if new_mib == cur_mib:
+            return
+        grow = new_mib > cur_mib
+
+        human_new = f"{new_mib / 1024:.2f} GiB"
+        body = self.t("confirm_resize").format(dev=node, size=human_new)
+        if not grow:
+            body += self.t("shrink_warn")
+        cmd = self._resize_cmds(fstype, node, disk, partn, new_mib, grow)
+        dlg2 = ActionConfirmDialog(self, self.t, body,
+                                   f"/dev/{node}: {self._human_size(cur_size_sec)} → {human_new}",
+                                   cmd,
+                                   confirm_name=None if grow else node,
+                                   ok_text=self.t("resize_part"))
+        if dlg2.exec() == QDialog.DialogCode.Accepted:
+            self._run_backend(["--resizepart", disk, str(partn), str(new_mib)],
+                              f"Resizing /dev/{node} to {human_new}...")
+
+    # ------------------------------------------------------------------ network drives
+
+    def _update_net_fold_text(self):
+        arrow = "▾" if self.net_fold_btn.isChecked() else "▸"
+        self.net_fold_btn.setText(f"{arrow}  {self.t('net_section')}")
+
+    def _toggle_net(self):
+        on = self.net_fold_btn.isChecked()
+        self._update_net_fold_text()
+        self.net_frame.setVisible(on)
+        if on:
+            self._load_net_shares()
+
+    def _parse_net_fstab(self):
+        """(источник, точка, тип) для cifs/nfs-записей fstab."""
+        shares = []
+        try:
+            with open("/etc/fstab") as f:
+                for line in f:
+                    parts = line.split()
+                    if len(parts) >= 4 and not line.strip().startswith("#") \
+                            and parts[2] in ("cifs", "nfs", "nfs4", "davfs", "fuse.sshfs"):
+                        shares.append((parts[0].replace("\\040", " "),
+                                       parts[1].replace("\\040", " "),
+                                       parts[2]))
+        except OSError:
+            pass
+        return shares
+
+    @staticmethod
+    def _net_is_mounted(mountpoint):
+        r = subprocess.run(["findmnt", "-no", "FSTYPE", mountpoint],
+                           capture_output=True, text=True)
+        types = [t for t in r.stdout.split() if t and t != "autofs"]
+        return bool(types)
+
+    def _load_net_shares(self):
+        while self._net_body.count():
+            item = self._net_body.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        for source, mount, fstype in self._parse_net_fstab():
+            row = QFrame()
+            row.setObjectName("PartRow")
+            rl = QHBoxLayout(row)
+            rl.setContentsMargins(8, 5, 8, 5)
+            rl.setSpacing(8)
+
+            proto = {"davfs": "WebDAV", "fuse.sshfs": "SSH"}.get(
+                fstype, "NFS" if fstype.startswith("nfs") else "SMB")
+            lbl = QLabel(f"🖧  {proto}  {source}  →  {mount}")
+            lbl.setObjectName("PartLabel")
+            lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            rl.addWidget(lbl, 1)
+
+            mounted = self._net_is_mounted(mount)
+            status = QLabel(self.t("net_connected") if mounted
+                            else self.t("net_not_conn"))
+            status.setObjectName("FreeLabel" if mounted else "OptionsSubLabel")
+            rl.addWidget(status)
+
+            if mounted:
+                un = QPushButton(self.t("umount"))
+                un.setObjectName("BrowseBtn")
+                un.setCursor(Qt.CursorShape.PointingHandCursor)
+                un.clicked.connect(
+                    lambda _, m=mount: self._run_backend(
+                        ["--umount", m], f"Unmounting {m}..."))
+                rl.addWidget(un)
+            else:
+                co = QPushButton(self.t("connect"))
+                co.setObjectName("BrowseBtn")
+                co.setCursor(Qt.CursorShape.PointingHandCursor)
+                co.clicked.connect(
+                    lambda _, m=mount: self._run_backend(
+                        ["--mount-path", m], f"Mounting {m}..."))
+                rl.addWidget(co)
+
+            rm = QPushButton(self.t("delete_part"))
+            rm.setObjectName("DangerBtn")
+            rm.setCursor(Qt.CursorShape.PointingHandCursor)
+            rm.clicked.connect(
+                lambda _, s=source, m=mount: self._net_remove(s, m))
+            rl.addWidget(rm)
+
+            self._net_body.addWidget(row)
+
+    def _net_remove(self, source, mount):
+        body = self.t("confirm_rm_net").format(src=source)
+        dlg = ActionConfirmDialog(self, self.t, body,
+                                  f"{source}  →  {mount}", "",
+                                  confirm_name=None,
+                                  ok_text=self.t("delete_part"))
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self._run_backend(["--rm-net", mount],
+                              f"Removing network drive {mount}...")
+
+    @staticmethod
+    def _write_pass_file(password):
+        """Пароль уезжает в бэкенд через файл 0600: в аргументах командной
+        строки он был бы виден всем в списке процессов."""
+        pass_dir = f"/run/user/{os.getuid()}"
+        if not os.path.isdir(pass_dir):
+            pass_dir = os.path.expanduser("~/.cache")
+            os.makedirs(pass_dir, exist_ok=True)
+        pass_file = os.path.join(pass_dir, f"eq-net-pass-{os.getpid()}")
+        fd = os.open(pass_file, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
+            f.write(password)
+        return pass_file
+
+    def _net_add(self):
+        dlg = QDialog(self)
+        dlg.setObjectName("FmtConfirm")
+        dlg.setWindowTitle(self.t("add_net"))
+        dlg.setModal(True)
+        dlg.setMinimumWidth(440)
+        lay = QVBoxLayout(dlg)
+        lay.setContentsMargins(18, 16, 18, 16)
+        lay.setSpacing(10)
+
+        head = QLabel(self.t("add_net"))
+        head.setObjectName("ProLabel")
+        lay.addWidget(head)
+
+        def field(label_key, placeholder=""):
+            lbl = QLabel(self.t(label_key))
+            lbl.setObjectName("DlgText")
+            lay.addWidget(lbl)
+            e = QLineEdit()
+            e.setObjectName("DestEdit")
+            e.setPlaceholderText(placeholder)
+            lay.addWidget(e)
+            return e
+
+        type_combo = QComboBox()
+        type_combo.setObjectName("SourceEdit")
+        type_combo.addItem("SMB (Windows / NAS)", "smb")
+        type_combo.addItem("NFS", "nfs")
+        type_combo.addItem("WebDAV (Nextcloud, ownCloud…)", "dav")
+        type_combo.addItem("SSH (SFTP)", "ssh")
+        lay.addWidget(type_combo)
+
+        server_edit = field("server", "192.168.1.10 / mynas.local")
+        share_edit = field("net_share", "Media")
+        mount_edit = field("mount_point", "/mnt/NAS")
+
+        guest_cb = SwitchToggle(self.t("guest_access"))
+        lay.addWidget(guest_cb)
+        user_edit = field("username", "")
+        pass_edit = field("password", "")
+        pass_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        default_key = ""
+        for k in ("id_ed25519", "id_rsa"):
+            p = os.path.expanduser(f"~/.ssh/{k}")
+            if os.path.isfile(p):
+                default_key = p
+                break
+        key_edit = field("ssh_key", os.path.expanduser("~/.ssh/id_ed25519"))
+        key_edit.setText(default_key)
+
+        def sync_fields():
+            kind = type_combo.currentData()
+            is_smb, is_dav, is_ssh = kind == "smb", kind == "dav", kind == "ssh"
+            share_edit.setVisible(not is_dav)   # у WebDAV путь уже в адресе
+            guest_cb.setVisible(is_smb)
+            need_creds = is_dav or (is_smb and not guest_cb.isChecked())
+            user_edit.setVisible(need_creds)
+            pass_edit.setVisible(need_creds)
+            key_edit.setVisible(is_ssh)
+            if is_dav:
+                server_edit.setPlaceholderText(
+                    "https://cloud.example.com/remote.php/webdav")
+            elif is_ssh:
+                server_edit.setPlaceholderText("user@server")
+            else:
+                server_edit.setPlaceholderText("192.168.1.10 / mynas.local")
+            share_edit.setPlaceholderText(
+                "Media" if is_smb else ("/home/user" if is_ssh else "/export/data"))
+        type_combo.currentIndexChanged.connect(sync_fields)
+        guest_cb.stateChanged.connect(sync_fields)
+        sync_fields()
+
+        # авто-точка монтирования из имени шары / адреса облака
+        def auto_mount():
+            if type_combo.currentData() == "dav":
+                m = re.search(r"://([^/:]+)", server_edit.text().strip())
+                leaf = m.group(1).split(".")[0] if m else ""
+            else:
+                leaf = share_edit.text().strip().strip("/").split("/")[-1]
+            if leaf and (not mount_edit.text().strip()
+                         or mount_edit.text().startswith("/mnt/")):
+                mount_edit.setText(f"/mnt/{leaf}")
+        share_edit.textChanged.connect(auto_mount)
+        server_edit.textChanged.connect(auto_mount)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        cancel_btn = QPushButton(self.t("cancel"))
+        cancel_btn.setObjectName("BrowseBtn")
+        cancel_btn.clicked.connect(dlg.reject)
+        btn_row.addWidget(cancel_btn)
+        ok_btn = QPushButton(self.t("add_net"))
+        ok_btn.setObjectName("AddSourceBtn")
+        ok_btn.clicked.connect(dlg.accept)
+        btn_row.addWidget(ok_btn)
+        lay.addLayout(btn_row)
+
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        server = server_edit.text().strip()
+        share = share_edit.text().strip().strip("/")
+        mount = mount_edit.text().strip()
+        kind = type_combo.currentData()
+        if not server or not mount or (kind != "dav" and not share):
+            QMessageBox.warning(self, self.t("dlg_warning"),
+                                self.t("warn_net_fields"))
+            return
+
+        if kind == "dav":
+            user = user_edit.text().strip()
+            password = pass_edit.text()
+            if not user or not password:
+                QMessageBox.warning(self, self.t("dlg_warning"),
+                                    self.t("warn_net_fields"))
+                return
+            uid, gid = self._selected_ids()
+            pass_file = self._write_pass_file(password)
+            self._run_backend(["--add-net-dav", server, mount,
+                               "--uid", str(uid), "--gid", str(gid),
+                               "--user", user, "--password-file", pass_file],
+                              f"Adding WebDAV {server}...")
+            return
+
+        if kind == "ssh":
+            key = key_edit.text().strip()
+            if not key:
+                QMessageBox.warning(self, self.t("dlg_warning"),
+                                    self.t("warn_net_fields"))
+                return
+            uid, gid = self._selected_ids()
+            src_spec = server if ":" in server else f"{server}:/{share}"
+            self._run_backend(["--add-net-ssh", src_spec, mount,
+                               "--uid", str(uid), "--gid", str(gid),
+                               "--key", key],
+                              f"Adding SSH drive {src_spec}...")
+            return
+
+        if kind == "nfs":
+            self._run_backend(["--add-net-nfs", f"{server}:/{share}", mount],
+                              f"Adding NFS share {server}:/{share}...")
+            return
+
+        uid, gid = self._selected_ids()
+        args = ["--add-net-smb", server, share, mount,
+                "--uid", str(uid), "--gid", str(gid)]
+        if guest_cb.isChecked():
+            args.append("--guest")
+        else:
+            user = user_edit.text().strip()
+            password = pass_edit.text()
+            if not user or not password:
+                QMessageBox.warning(self, self.t("dlg_warning"),
+                                    self.t("warn_net_fields"))
+                return
+            args += ["--user", user,
+                     "--password-file", self._write_pass_file(password)]
+        self._run_backend(args, f"Adding SMB share //{server}/{share}...")
 
 
 def main():
