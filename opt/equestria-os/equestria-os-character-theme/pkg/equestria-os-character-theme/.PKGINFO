@@ -6,7 +6,7 @@ xdata = pkgtype=pkg
 pkgver = 2.0.3-14
 pkgdesc = Customizing the visual style and characters of Equestria OS
 url = https://github.com/Lucia7Lunadottir
-builddate = 1783810097
+builddate = 1784044157
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 24867771
 arch = any
