@@ -787,8 +787,10 @@ class GpuModule(BaseModule):
 
         self._show_action_running(self.t("gpu.running_reconfigure"))
 
+        # --reset-mode: «перенастроить» = вернуться к авто-выбору драйвера,
+        # даже если раньше пользователь переключался на nouveau
         worker = _CmdWorker(
-            ["pkexec", "pg-gpu-sync", "--auto", "--32"],
+            ["pkexec", "pg-gpu-sync", "--auto", "--32", "--reset-mode"],
             timeout=300
         )
         worker.done.connect(lambda ok, out: self._on_action_done(ok, out, refresh=True))

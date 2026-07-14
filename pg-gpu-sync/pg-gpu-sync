@@ -26,10 +26,20 @@ Note()   { echo -e "${_CYN}[NOTE]${_RST}        $*"; }
 Header() { echo -e "\n${_CYN}══════════════════════════════════════${_RST}\n  $*\n${_CYN}══════════════════════════════════════${_RST}"; }
 
 # ── State file (для обнаружения смены GPU) ────────────────────
-STATE_FILE=/var/lib/pg-gpu-sync/gpu-family
+# Пути переопределяемы через окружение — нужно для изолированных тестов.
+STATE_FILE="${PG_GPU_STATE_FILE:-/var/lib/pg-gpu-sync/gpu-family}"
+
+# ── User driver mode (auto | nouveau) ─────────────────────────
+# Выбор пользователя («переключиться на nouveau» из настроек) должен
+# переживать перезагрузку: pg-gpu-watch.service гоняет --auto на каждом
+# старте, и без этого файла он молча переустанавливал NVIDIA обратно.
+MODE_FILE="${PG_GPU_MODE_FILE:-/var/lib/pg-gpu-sync/mode}"
+
+# Префикс для системных конфигов (пустой в бою; тесты подставляют песочницу)
+ETC_PREFIX="${PG_GPU_ETC_PREFIX:-}"
 
 # ── Offline driver cache ───────────────────────────────────────
-DRIVER_CACHE_DIR=/usr/share/pg-gpu-sync/drivers
+DRIVER_CACHE_DIR="${PG_GPU_CACHE_DIR:-/usr/share/pg-gpu-sync/drivers}"
 
 GpuChanged() {
     [ ! -f "$STATE_FILE" ] && return 0
@@ -40,6 +50,16 @@ SaveGpuState() {
     [ "$DRY_RUN" = yes ] && return
     mkdir -p "$(dirname "$STATE_FILE")"
     printf '%s\n' "$GPU_FAMILY" > "$STATE_FILE"
+}
+
+GetUserMode() {
+    if [ -f "$MODE_FILE" ]; then cat "$MODE_FILE"; else echo auto; fi
+}
+
+SaveUserMode() {
+    [ "$DRY_RUN" = yes ] && return
+    mkdir -p "$(dirname "$MODE_FILE")"
+    printf '%s\n' "$1" > "$MODE_FILE"
 }
 
 # ── Helper functions ──────────────────────────────────────────
@@ -236,7 +256,7 @@ BuildPackageLists() {
             equestria-nvidia-580xx-dkms equestria-nvidia-580xx-utils lib32-equestria-nvidia-580xx-utils equestria-nvidia-580xx-compute equestria-nvidia-580xx-optix
             nvidia-470xx-dkms nvidia-470xx-utils
             nvidia-390xx-dkms nvidia-390xx-utils
-            nvidia-settings
+            nvidia-settings nvidia-prime
         )
         for p in "${rm_list[@]}"; do
             IsInstalled "$p" && REMOVE+=("$p")
@@ -327,10 +347,39 @@ BuildPackageLists() {
     readarray -t REMOVE < <(printf "%s\n" "${REMOVE[@]}" | sort -u)
 }
 
+# ── NVIDIA config cleanup (nouveau / non-NVIDIA systems) ─────
+#
+# Убирает ВСЁ, что pg-gpu-sync когда-либо писал для NVIDIA. Без этого
+# на Intel/nouveau остаются GBM_BACKEND=nvidia-drm и EGL-вендор NVIDIA
+# в /etc/environment.d — Wayland-сессия и KWin ломаются, хотя драйвер
+# уже правильный.
+
+CleanupNvidiaConfigs() {
+    local files=(
+        "$ETC_PREFIX/etc/modprobe.d/nvidia.conf"
+        "$ETC_PREFIX/etc/environment.d/99-nvidia-wayland.conf"
+        "$ETC_PREFIX/etc/environment.d/99-kwin-nvidia.conf"
+    )
+    for f in "${files[@]}"; do
+        if [ -f "$f" ]; then
+            Info "Removing NVIDIA config: $f"
+            [ "$DRY_RUN" = no ] && rm -f "$f"
+        fi
+    done
+
+    local conf="$ETC_PREFIX/etc/mkinitcpio.conf"
+    if [ -f "$conf" ] && grep -Eq '^MODULES=.*\bnvidia' "$conf"; then
+        Info "Removing NVIDIA modules from $conf"
+        if [ "$DRY_RUN" = no ]; then
+            sed -i -E '/^MODULES=/{s/\bnvidia(_modeset|_uvm|_drm)?\b//g; s/\(  */(/; s/  *\)/)/; s/   */ /g}' "$conf"
+        fi
+    fi
+}
+
 # ── Nouveau Blacklist ─────────────────────────────────────────
 
 ConfigureNouveauBlacklist() {
-    local conf=/etc/modprobe.d/blacklist-nouveau.conf
+    local conf="$ETC_PREFIX/etc/modprobe.d/blacklist-nouveau.conf"
 
     if [ "$DRIVER_TYPE" = "nouveau" ]; then
         if [ -f "$conf" ]; then
@@ -358,7 +407,7 @@ ConfigureNouveauBlacklist() {
 ConfigureWayland() {
     [ "$DRIVER_TYPE" = "nouveau" ] && return
 
-    local conf=/etc/modprobe.d/nvidia.conf
+    local conf="$ETC_PREFIX/etc/modprobe.d/nvidia.conf"
 
     Info "Writing NVIDIA modprobe config → $conf"
     if [ "$DRY_RUN" = no ]; then
@@ -381,7 +430,7 @@ ConfigureWayland() {
         Note "[DRY RUN] Would write nvidia modprobe options → $conf  (generation: $GPU_GENERATION)"
     fi
 
-    local envconf=/etc/environment.d/99-nvidia-wayland.conf
+    local envconf="$ETC_PREFIX/etc/environment.d/99-nvidia-wayland.conf"
     if [ -f "$envconf" ]; then
         Info "NVIDIA Wayland environment already set in $envconf"
         return
@@ -389,7 +438,7 @@ ConfigureWayland() {
 
     Info "Writing NVIDIA Wayland environment → $envconf"
     if [ "$DRY_RUN" = no ]; then
-        mkdir -p /etc/environment.d
+        mkdir -p "$ETC_PREFIX/etc/environment.d"
         cat > "$envconf" <<'ENVEOF'
 # NVIDIA Wayland support — written by pg-gpu-sync
 GBM_BACKEND=nvidia-drm
@@ -405,7 +454,7 @@ ENVEOF
 ConfigureKwinCompositor() {
     [ "$DRIVER_TYPE" = "nouveau" ] && return
 
-    local kwinconf=/etc/xdg/kwinrc
+    local kwinconf="$ETC_PREFIX/etc/xdg/kwinrc"
 
     if [ -f "$kwinconf" ] && grep -q "GLCore" "$kwinconf"; then
         Info "KWin compositor config already present in $kwinconf"
@@ -414,7 +463,7 @@ ConfigureKwinCompositor() {
 
     Info "Writing KWin compositor defaults → $kwinconf"
     if [ "$DRY_RUN" = no ]; then
-        mkdir -p /etc/xdg
+        mkdir -p "$ETC_PREFIX/etc/xdg"
 
         # Remove existing [Compositing] section to avoid duplicates
         if [ -f "$kwinconf" ]; then
@@ -435,11 +484,11 @@ KWINEOF
         Note "[DRY RUN] Would write KWin compositor config → $kwinconf"
     fi
 
-    local kwinenv=/etc/environment.d/99-kwin-nvidia.conf
+    local kwinenv="$ETC_PREFIX/etc/environment.d/99-kwin-nvidia.conf"
     if [ ! -f "$kwinenv" ]; then
         Info "Writing KWin NVIDIA environment → $kwinenv"
         if [ "$DRY_RUN" = no ]; then
-            mkdir -p /etc/environment.d
+            mkdir -p "$ETC_PREFIX/etc/environment.d"
             cat > "$kwinenv" <<'KWENVEOF'
 # KWin: EGL vendor for NVIDIA
 __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/10_nvidia.json
@@ -472,7 +521,7 @@ EnableNvidiaSleepServices() {
 # ── initramfs ─────────────────────────────────────────────────
 
 DetectInitramfsTool() {
-    if [ -f /etc/mkinitcpio.conf ]; then
+    if [ -f "$ETC_PREFIX/etc/mkinitcpio.conf" ]; then
         echo "mkinitcpio"
     elif command -v dracut &>/dev/null; then
         echo "dracut"
@@ -498,7 +547,7 @@ ConfigureMkinitcpio() {
 }
 
 ConfigureMkinitcpioModules() {
-    local conf=/etc/mkinitcpio.conf
+    local conf="$ETC_PREFIX/etc/mkinitcpio.conf"
     local need="nvidia nvidia_modeset nvidia_uvm nvidia_drm"
 
     local current_line
@@ -529,7 +578,7 @@ ConfigureMkinitcpioModules() {
 }
 
 ConfigureDracut() {
-    local conf=/etc/dracut.conf.d/nvidia.conf
+    local conf="$ETC_PREFIX/etc/dracut.conf.d/nvidia.conf"
     local line='force_drivers+=" nvidia nvidia_modeset nvidia_uvm nvidia_drm "'
 
     if [ -f "$conf" ] && grep -q "nvidia" "$conf"; then
@@ -539,7 +588,7 @@ ConfigureDracut() {
 
     Info "Writing dracut NVIDIA config → $conf"
     if [ "$DRY_RUN" = no ]; then
-        mkdir -p /etc/dracut.conf.d
+        mkdir -p "$ETC_PREFIX/etc/dracut.conf.d"
         echo "$line" > "$conf"
     else
         Note "[DRY RUN] Would write: $line  →  $conf"
@@ -673,8 +722,8 @@ VerifyDkmsModule() {
 }
 
 RebuildInitramfs() {
-    [ "$DRIVER_TYPE" = "nouveau" ] && return
-
+    # Вызывается и на nouveau-пути: после CleanupNvidiaConfigs из MODULES=()
+    # убраны nvidia-модули, и initramfs надо пересобрать без них.
     local tool
     tool=$(DetectInitramfsTool)
 
@@ -741,6 +790,10 @@ ShowHelp() {
                         No prompts. Legacy GPU packages must be in cache.
     -f, --force         Install even if no NVIDIA GPU detected.
     -n, --nouveau       Force the open-source nouveau driver.
+                        The choice is remembered: the boot service will NOT
+                        reinstall NVIDIA until you run --reset-mode.
+        --reset-mode    Forget the saved nouveau choice and return to
+                        automatic driver selection.
         --no-dkms       Use non-DKMS package (nvidia/nvidia-open, linux/linux-lts only).
         --32            Add 32-bit support (Steam/Proton).
                         Requires [multilib] in /etc/pacman.conf.
@@ -780,6 +833,7 @@ ParseOptions() {
     NO_DKMS=no
     BIT32=no
     SETTINGS_PKG=yes
+    RESET_MODE=no
 
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -788,6 +842,7 @@ ParseOptions() {
             -a|--auto)        AUTO=yes ;;
             -f|--force)       FORCE=yes ;;
             -n|--nouveau)     MODE=nouveau ;;
+            --reset-mode)     RESET_MODE=yes ;;
             --no-dkms)        NO_DKMS=yes ;;
             --32)             BIT32=yes ;;
             --no-settings)    SETTINGS_PKG=no ;;
@@ -810,11 +865,22 @@ ParseOptions() {
 Main() {
     ParseOptions "$@"
 
-    [ "$EUID" -ne 0 ] && DIE "Please run as root:  sudo pg-gpu-sync $*"
+    [ "$EUID" -ne 0 ] && [ -z "$PG_GPU_TEST_NO_ROOT" ] && DIE "Please run as root:  sudo pg-gpu-sync $*"
 
     INSTALL_FAILED=no
 
     Header "PG GPU Sync — Equestria OS"
+
+    # Выбор пользователя (nouveau) переживает перезагрузки: без этой проверки
+    # pg-gpu-watch.service на каждом старте видел «DKMS-модуля нет» и молча
+    # переустанавливал NVIDIA, откатывая переключение из настроек.
+    [ "$RESET_MODE" = yes ] && SaveUserMode auto
+    if [ "$AUTO" = yes ] && [ "$RESET_MODE" = no ] && [ "$MODE" != "nouveau" ] \
+       && [ "$(GetUserMode)" = "nouveau" ]; then
+        Info "User has switched to nouveau — respecting the saved choice."
+        Info "  Run 'sudo pg-gpu-sync --auto --32 --reset-mode' to return to automatic selection."
+        exit 0
+    fi
 
     # 1. Detect GPU hardware
     Info "Scanning for NVIDIA GPU..."
@@ -829,25 +895,40 @@ Main() {
 
     if [ "$DRIVER_TYPE" = "skip" ]; then
         SaveGpuState
-        # On non-NVIDIA systems: remove leftover NVIDIA packages and clean mkinitcpio
+        # On non-NVIDIA systems: remove leftover NVIDIA packages and configs
         if [ "$AUTO" = yes ] && [ "$DRY_RUN" = no ]; then
             local nvidia_pkgs=(nvidia-lts nvidia-open-dkms nvidia-open nvidia-dkms equestria-nvidia-dkms
                 equestria-nvidia-580xx-dkms equestria-nvidia-580xx-utils lib32-equestria-nvidia-580xx-utils equestria-nvidia-580xx-compute equestria-nvidia-580xx-optix
-                nvidia-utils lib32-nvidia-utils nvidia-settings)
+                nvidia-utils lib32-nvidia-utils nvidia-settings nvidia-prime)
             local to_remove=()
             for p in "${nvidia_pkgs[@]}"; do IsInstalled "$p" && to_remove+=("$p"); done
             if [ ${#to_remove[@]} -gt 0 ]; then
                 Info "No NVIDIA GPU — removing NVIDIA packages: ${to_remove[*]}"
-                pacman -Rns --noconfirm "${to_remove[@]}" 2>/dev/null || \
-                    Warn "Some NVIDIA packages could not be removed (dependency conflict). Skipping."
+                # Одна транзакция -Rns — «всё или ничего»: один заблокированный
+                # пакет оставлял ВСЕ nvidia-пакеты в системе. Фолбэк — поштучно.
+                if ! pacman -Rns --noconfirm "${to_remove[@]}" 2>/dev/null; then
+                    Warn "Batch removal failed — retrying package by package."
+                    for p in "${to_remove[@]}"; do
+                        IsInstalled "$p" || continue
+                        pacman -Rns --noconfirm "$p" 2>/dev/null \
+                            || Warn "Could not remove $p (required by another package)."
+                    done
+                fi
             fi
-            local conf=/etc/mkinitcpio.conf
-            if [ -f "$conf" ] && grep -q "nvidia" "$conf"; then
-                Info "Removing NVIDIA modules from $conf"
-                sed -i 's/ nvidia nvidia_modeset nvidia_uvm nvidia_drm//g' "$conf"
-                sed -i 's/nvidia nvidia_modeset nvidia_uvm nvidia_drm //g' "$conf"
-                sed -i 's/\bnvidia\b//g; s/\bnvidia_modeset\b//g; s/\bnvidia_uvm\b//g; s/\bnvidia_drm\b//g' "$conf"
-                sed -i 's/MODULES=(  */MODULES=(/g; s/  *)/)/g; s/   */ /g' "$conf"
+
+            # Блэклист nouveau на без-NVIDIA системе не нужен никогда
+            local conf_bl="$ETC_PREFIX/etc/modprobe.d/blacklist-nouveau.conf"
+            if [ -f "$conf_bl" ]; then
+                Info "Removing nouveau blacklist: $conf_bl"
+                rm -f "$conf_bl"
+            fi
+
+            # GBM_BACKEND=nvidia-drm и EGL-вендор NVIDIA на Intel/AMD ломают
+            # Wayland/KWin — вычищаем вместе с nvidia-модулями в mkinitcpio
+            local _had_nvidia_modules=no
+            grep -Eq '^MODULES=.*\bnvidia' "$ETC_PREFIX/etc/mkinitcpio.conf" 2>/dev/null && _had_nvidia_modules=yes
+            CleanupNvidiaConfigs
+            if [ "$_had_nvidia_modules" = yes ]; then
                 mkinitcpio -P 2>/dev/null || Warn "mkinitcpio reported issues."
             fi
         fi
@@ -936,6 +1017,7 @@ Main() {
     # working GPU driver.  Without this guard the system boots into
     # software rendering (no nouveau, no nvidia → no KWin animations,
     # no Proton, no GPU acceleration at all).
+    CONFIG_APPLIED=no
     if [ "${INSTALL_FAILED}" = yes ]; then
         Warn "Driver installation was incomplete — skipping all NVIDIA configuration."
         Warn "  Nouveau will remain active as fallback."
@@ -946,8 +1028,14 @@ Main() {
         Warn "  Nouveau will remain active as fallback."
         Warn "  GPU state NOT saved. The service will retry on the next boot."
     else
+        CONFIG_APPLIED=yes
         # 8. Nouveau blacklist
         ConfigureNouveauBlacklist
+
+        # 8a. На nouveau вычищаем всё NVIDIA-специфичное: env-файлы
+        # (GBM_BACKEND=nvidia-drm убивает Wayland на nouveau), modprobe-опции
+        # и nvidia-модули из MODULES=() mkinitcpio
+        [ "$DRIVER_TYPE" = "nouveau" ] && CleanupNvidiaConfigs
 
         # 9. Wayland modeset config (generation-aware)
         ConfigureWayland
@@ -962,12 +1050,23 @@ Main() {
         ConfigureMkinitcpio
         RebuildInitramfs
         SaveGpuState
+
+        # Запоминаем выбор: nouveau — не переустанавливать NVIDIA при загрузке;
+        # явная установка NVIDIA-драйвера возвращает автоматический режим
+        if [ "$MODE" = "nouveau" ]; then
+            SaveUserMode nouveau
+        else
+            SaveUserMode auto
+        fi
     fi
 
     Header "Done!"
     if [ "$DRY_RUN" = yes ]; then
         Note "Dry run complete — nothing was changed on your system."
-    elif [ "$AUTO" = yes ] && [ "${_GPU_WAS_SWAPPED:-no}" = yes ]; then
+    elif [ "$AUTO" = yes ] && [ "${_GPU_WAS_SWAPPED:-no}" = yes ] && [ "$CONFIG_APPLIED" = yes ]; then
+        # Перезагружаемся ТОЛЬКО после успешной настройки: состояние при
+        # неудаче не сохраняется, и перезагрузка уводила бы систему в цикл
+        # «загрузка → неудачная установка → reboot → снова…»
         Info "GPU was swapped — rebooting in 5 seconds to apply new driver..."
         sleep 5
         systemctl reboot
