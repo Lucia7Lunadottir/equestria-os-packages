@@ -31,6 +31,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     # object, а не int: размер кэша в байтах не влезает в C-int сигнала (16 ГБ > 2^31)
     cache_size_ready = pyqtSignal(object)
     db_refresh_done = pyqtSignal(bool)
+    essentials_classified = pyqtSignal(list, list)  # (official_names, aur_names)
 
     def __init__(self):
         super().__init__()
@@ -93,6 +94,8 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.cache_size_ready.connect(self.on_cache_size_ready)
         self.refresh_cache_size()
         self.db_refresh_done.connect(self._on_refresh_db_finished)
+        self.essentials_classified.connect(self._on_essentials_classified)
+        self._essentials_installing = False
 
         if self.needs_pacman_init():
             self.run_pacman_init()
@@ -1151,11 +1154,49 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
 
     def install_selected_essentials(self):
-        if self.selected_essentials:
-            pkgs = ' '.join(self.selected_essentials)
-            subprocess.Popen(["konsole", "-e", "bash", "-c",
-                              f"pkexec pacman -S --noconfirm {pkgs}; "
-                              "echo; read -rp 'Done. Press Enter to close...'"])
+        if not self.selected_essentials or self._essentials_installing:
+            return
+        self._essentials_installing = True
+        self.btn_install_essentials.setEnabled(False)
+
+        # Каждая строка CSV может содержать несколько имён через пробел
+        # (напр. "nvidia-utils lib32-nvidia-utils") — разворачиваем в плоский список.
+        names = []
+        for entry in self.selected_essentials:
+            names.extend(entry.split())
+
+        def _classify():
+            official, aur = [], []
+            for name in names:
+                r = subprocess.run(["pacman", "-Si", name], capture_output=True)
+                (official if r.returncode == 0 else aur).append(name)
+            self.essentials_classified.emit(official, aur)
+
+        threading.Thread(target=_classify, daemon=True).start()
+
+    def _on_essentials_classified(self, official: list, aur: list):
+        self._essentials_installing = False
+        self.update_install_button_text()
+
+        # Обычные пакеты и AUR ставятся РАЗНЫМИ менеджерами: pacman не знает
+        # об AUR-именах и обрывает ВСЮ транзакцию, если среди целей есть хоть
+        # одно неизвестное (проверено: 'pacman -S unityhub krita' не поставит
+        # даже krita). Поэтому — два отдельных шага в одном окне Konsole.
+        steps = []
+        if official:
+            steps.append(
+                "echo '==> Installing from official repositories...'; echo; "
+                f"pkexec pacman -S --noconfirm {' '.join(official)}; echo; "
+            )
+        if aur:
+            steps.append(
+                "echo '==> Installing from AUR...'; echo; "
+                f"yay -S --noconfirm {' '.join(aur)}; echo; "
+            )
+        if not steps:
+            return
+        cmd = "".join(steps) + "read -rp 'Done. Press Enter to close...'"
+        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
 
     def execute_integrity_check(self):
         cmd = (

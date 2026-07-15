@@ -3,12 +3,12 @@
 pkgname = equestria-os-software-center
 pkgbase = equestria-os-software-center
 xdata = pkgtype=pkg
-pkgver = 1.7.0-1
+pkgver = 1.7.0-2
 pkgdesc = Software Center for Equestria OS
 url = https://github.com/Lucia7Lunadottir
-builddate = 1784081400
+builddate = 1784094541
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 509734
+size = 511760
 arch = any
 license = GPL
 depend = pacman
