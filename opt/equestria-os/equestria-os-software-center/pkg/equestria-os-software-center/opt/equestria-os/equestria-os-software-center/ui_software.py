@@ -510,6 +510,12 @@ class Ui_SoftwareCenter:
         self.btn_cache_clean.setMinimumHeight(45)
         left_layout.addWidget(self.btn_cache_clean)
 
+        self.btn_refresh_db = QPushButton("🔄 Refresh Package Database")
+        self.btn_refresh_db.setObjectName("RefreshDbBtn")
+        self.btn_refresh_db.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_refresh_db.setMinimumHeight(45)
+        left_layout.addWidget(self.btn_refresh_db)
+
         self.btn_update_sys = QPushButton("Update System")
         self.btn_update_sys.setObjectName("UpdateAllBtn")
         self.btn_update_sys.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -552,6 +558,39 @@ class Ui_SoftwareCenter:
         # PAGE 1: APP STORE
         self.page_store = QWidget()
         page1_layout = QVBoxLayout(self.page_store)
+
+        # Banner: shown when the local pacman sync database is outdated —
+        # the catalog reads only from what's already synced locally, so a
+        # stale database silently hides new/updated repo packages. Also
+        # doubles as the visible progress indicator while a refresh runs
+        # (indeterminate bar — pacman -Sy gives no reliable percentage).
+        self.db_stale_banner = QFrame()
+        self.db_stale_banner.setObjectName("DbStaleBanner")
+        banner_v = QVBoxLayout(self.db_stale_banner)
+        banner_v.setContentsMargins(12, 8, 12, 8)
+        banner_v.setSpacing(6)
+
+        banner_top = QHBoxLayout()
+        self.db_stale_lbl = QLabel("⚠ Package database may be outdated.")
+        self.db_stale_lbl.setObjectName("DbStaleLabel")
+        self.db_stale_lbl.setWordWrap(True)
+        banner_top.addWidget(self.db_stale_lbl, 1)
+        self.btn_refresh_db_banner = QPushButton("🔄 Refresh")
+        self.btn_refresh_db_banner.setObjectName("DetailBackBtn")
+        self.btn_refresh_db_banner.setCursor(Qt.CursorShape.PointingHandCursor)
+        banner_top.addWidget(self.btn_refresh_db_banner)
+        banner_v.addLayout(banner_top)
+
+        self.db_refresh_progress = QProgressBar()
+        self.db_refresh_progress.setObjectName("DbRefreshProgress")
+        self.db_refresh_progress.setRange(0, 0)  # indeterminate — no % from pacman -Sy
+        self.db_refresh_progress.setTextVisible(False)
+        self.db_refresh_progress.setFixedHeight(6)
+        self.db_refresh_progress.hide()
+        banner_v.addWidget(self.db_refresh_progress)
+
+        self.db_stale_banner.hide()
+        page1_layout.addWidget(self.db_stale_banner)
 
         # Top bar: search + category filter + source filter
         store_top_bar = QHBoxLayout()

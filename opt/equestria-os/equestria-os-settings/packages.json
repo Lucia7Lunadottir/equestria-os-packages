@@ -12,5 +12,6 @@
   { "pkg": "equestria-os-character-theme",   "icon": "🎨", "name_key": "pkg.character_theme.name", "desc_key": "pkg.character_theme.desc" },
   { "pkg": "equestria-os-tutorial",          "icon": "📖", "name_key": "pkg.tutorial.name",        "desc_key": "pkg.tutorial.desc" },
   { "pkg": "equestria-os-proton-starter",    "icon": "🎮", "name_key": "pkg.proton_exe.name",      "desc_key": "pkg.proton_exe.desc" },
-  { "pkg": "equestria-os-settings",         "icon": "⚙",  "name_key": "pkg.settings.name",        "desc_key": "pkg.settings.desc" }
+  { "pkg": "equestria-os-settings",         "icon": "⚙",  "name_key": "pkg.settings.name",        "desc_key": "pkg.settings.desc" },
+  { "pkg": "imagefinish",         "icon": "🖌",  "name_key": "pkg.imagefinish.name",        "desc_key": "pkg.imagefinish.desc" }
 ]

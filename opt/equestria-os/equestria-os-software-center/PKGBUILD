@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-software-center
-pkgver=1.6.3
+pkgver=1.7.0
 pkgrel=1
 pkgdesc="Software Center for Equestria OS"
 arch=('any')

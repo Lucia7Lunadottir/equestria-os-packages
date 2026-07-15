@@ -66,6 +66,8 @@
   "pkg.tutorial.desc": "Equestria OS 功能的交互式入门",
   "pkg.proton_exe.name": "Windows 应用启动器",
   "pkg.proton_exe.desc": "通过 Wine 和 Proton 运行 .exe 文件",
+  "pkg.imagefinish.name": "ImageFinish",
+  "pkg.imagefinish.desc": "Photoshop 风格图像编辑器",
   "launch.open_btn": "打开 {0} ↗",
   "launch.not_installed": "未安装",
   "launch.install_hint": "安装 {0} 以使用此模块",

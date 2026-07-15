@@ -30,6 +30,7 @@ from settings_dialog import SettingsDialog
 class main_app(QMainWindow, Ui_SoftwareCenter):
     # object, а не int: размер кэша в байтах не влезает в C-int сигнала (16 ГБ > 2^31)
     cache_size_ready = pyqtSignal(object)
+    db_refresh_done = pyqtSignal(bool)
 
     def __init__(self):
         super().__init__()
@@ -75,6 +76,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self._vercmp_cache = {}
         self._last_status_refresh = 0.0
         self._cache_size = None  # None = ещё не посчитан, кнопка без размера
+        self._db_refresh_running = False
 
         self.init_resources()
         cleanup_screenshot_cache()
@@ -90,11 +92,13 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
         self.cache_size_ready.connect(self.on_cache_size_ready)
         self.refresh_cache_size()
+        self.db_refresh_done.connect(self._on_refresh_db_finished)
 
         if self.needs_pacman_init():
             self.run_pacman_init()
         else:
             self.start_loaders()
+            self._check_db_staleness()
 
     # -------------------------------------------------------------------------
     # Startup helpers
@@ -104,6 +108,77 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         """Проверяет кэш pacman. Возвращает True, если баз нет."""
         sync_dir = "/var/lib/pacman/sync"
         return not os.path.exists(sync_dir) or not any(f.endswith('.db') for f in os.listdir(sync_dir))
+
+    # Каталог App Store читает ТОЛЬКО локально синхронизированные базы
+    # pacman — свежий пакет в репозитории останется невидимым, пока кто-то
+    # не запустит 'pacman -Sy'. Раньше это происходило только при самом первом
+    # запуске (когда баз ещё не было вообще), и дальше требовало терминала.
+    DB_STALE_HOURS = 24
+
+    def _sync_db_age_hours(self):
+        sync_dir = "/var/lib/pacman/sync"
+        try:
+            dbs = [f for f in os.listdir(sync_dir) if f.endswith(".db")]
+            if not dbs:
+                return None
+            newest = max(os.path.getmtime(os.path.join(sync_dir, f)) for f in dbs)
+            return (time.time() - newest) / 3600
+        except OSError:
+            return None
+
+    def _check_db_staleness(self):
+        age = self._sync_db_age_hours()
+        if age is not None and age >= self.DB_STALE_HOURS:
+            self.db_stale_lbl.setText(self.t("ui.db_stale").format(int(age)))
+            self.db_stale_banner.show()
+        else:
+            self.db_stale_banner.hide()
+
+    def refresh_pacman_db(self):
+        """Ручное обновление баз pacman (кнопка/баннер) — без полного
+        'Update System': только синхронизация, установленные пакеты не трогает.
+
+        Запускается в Konsole тем же способом, что и 'Update System' и
+        'Clean Package Cache' в этом приложении — subprocess.Popen без
+        отслеживания через QProcess. Это НЕ случайность: дочерний процесс
+        на Linux переживает закрытие родителя (проверено эмпирически),
+        так что закрытие Software Center или переход на другую страницу
+        Настроек не прерывает синхронизацию — она просто закончится в уже
+        открытом окне Konsole."""
+        if self._db_refresh_running:
+            return
+        self._db_refresh_running = True
+
+        self.btn_refresh_db.setEnabled(False)
+        self.btn_refresh_db_banner.setEnabled(False)
+        self.db_stale_lbl.setText(self.t("ui.refresh_db_running"))
+        self.db_refresh_progress.show()
+        self.db_stale_banner.show()
+
+        cmd = (
+            "echo '=== Refreshing package database (pacman -Sy) ==='; echo; "
+            "pkexec pacman -Sy --noconfirm; "
+            "echo; read -rp 'Done. Press Enter to close...'"
+        )
+        proc = subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
+
+        def _wait():
+            ok = proc.wait() == 0
+            self.db_refresh_done.emit(ok)
+        threading.Thread(target=_wait, daemon=True).start()
+
+    def _on_refresh_db_finished(self, ok: bool):
+        self._db_refresh_running = False
+        self.btn_refresh_db.setEnabled(True)
+        self.btn_refresh_db_banner.setEnabled(True)
+        self.db_refresh_progress.hide()
+
+        if ok:
+            self.db_stale_banner.hide()
+            self.start_loaders()
+            self.refresh_system_status()
+        else:
+            self.db_stale_lbl.setText(self.t("ui.refresh_db_error"))
 
     def run_pacman_init(self):
         """Запускает обновление баз в konsole и ждет завершения."""
@@ -391,6 +466,8 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.btn_integrity_check.clicked.connect(self.execute_integrity_check)
         self.btn_cache_clean.clicked.connect(self.execute_cache_clean)
         self.btn_install_essentials.clicked.connect(self.install_selected_essentials)
+        self.btn_refresh_db.clicked.connect(self.refresh_pacman_db)
+        self.btn_refresh_db_banner.clicked.connect(self.refresh_pacman_db)
 
         # FIXED: Create an elegant Dropdown selection for the left sidebar area
         self.lang_dropdown = QComboBox()
@@ -525,6 +602,13 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.combo_source.setItemText(4, self.t("ui.source_updates"))
         self.combo_source.blockSignals(False)
         self.update_install_button_text()
+
+        if not self._db_refresh_running:
+            self.btn_refresh_db.setText(self.t("ui.refresh_db_sidebar_btn"))
+        self.btn_refresh_db.setToolTip(self.t("ui.refresh_db_tooltip"))
+        self.btn_refresh_db_banner.setText(self.t("ui.refresh_db_btn"))
+        if self.db_stale_banner.isVisible() and not self._db_refresh_running:
+            self._check_db_staleness()
 
     def on_cat_clicked(self, item):
         self.stacked_widget.setCurrentIndex(0)

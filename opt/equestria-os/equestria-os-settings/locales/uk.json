@@ -66,6 +66,8 @@
   "pkg.tutorial.desc": "Інтерактивне знайомство з можливостями Equestria OS",
   "pkg.proton_exe.name": "Запускач Windows-програм",
   "pkg.proton_exe.desc": "Запускайте .exe файли через Wine та Proton",
+  "pkg.imagefinish.name": "ImageFinish",
+  "pkg.imagefinish.desc": "Графічний редактор у стилі Photoshop",
   "launch.open_btn": "Відкрити {0} ↗",
   "launch.not_installed": "Не встановлено",
   "launch.install_hint": "Встановіть {0} для використання цього модуля",

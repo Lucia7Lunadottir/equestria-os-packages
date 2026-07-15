@@ -66,6 +66,8 @@
   "pkg.tutorial.desc": "Equestria OS 機能のインタラクティブ紹介",
   "pkg.proton_exe.name": "Windows アプリランチャー",
   "pkg.proton_exe.desc": "Wine と Proton で .exe ファイルを実行",
+  "pkg.imagefinish.name": "ImageFinish",
+  "pkg.imagefinish.desc": "Photoshop風の画像エディター",
   "launch.open_btn": "{0}を開く ↗",
   "launch.not_installed": "未インストール",
   "launch.install_hint": "このモジュールを使用するには{0}をインストールしてください",

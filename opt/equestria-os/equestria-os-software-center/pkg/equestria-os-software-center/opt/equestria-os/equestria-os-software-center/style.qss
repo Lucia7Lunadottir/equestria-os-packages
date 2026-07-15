@@ -104,6 +104,45 @@ QPushButton#CacheCleanBtn:hover {
     background-color: rgb(230, 155, 110);
 }
 
+/* Кнопка ручного обновления базы pacman — полноразмерная, в одном ряду
+   с Check System Files / Clean Package Cache / Update System */
+QPushButton#RefreshDbBtn {
+    background-color: rgb(203, 166, 247);
+    color: rgb(17, 17, 27);
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 14px;
+    border: none;
+}
+QPushButton#RefreshDbBtn:hover {
+    background-color: rgb(190, 140, 240);
+}
+QPushButton#RefreshDbBtn:disabled {
+    background-color: rgb(69, 71, 90);
+    color: rgb(108, 112, 134);
+}
+
+/* Баннер «база устарела» / индикатор хода обновления над списком App Store */
+QFrame#DbStaleBanner {
+    background-color: rgba(250, 179, 135, 0.15);
+    border: 1px solid rgb(250, 179, 135);
+    border-radius: 8px;
+}
+QLabel#DbStaleLabel {
+    color: rgb(250, 179, 135);
+    font-size: 13px;
+    background: transparent;
+}
+QProgressBar#DbRefreshProgress {
+    background-color: rgba(250, 179, 135, 0.2);
+    border: none;
+    border-radius: 3px;
+}
+QProgressBar#DbRefreshProgress::chunk {
+    background-color: rgb(250, 179, 135);
+    border-radius: 3px;
+}
+
 QPushButton#UpdateAllBtn {
     background-color: rgb(166, 227, 161);
     color: rgb(17, 17, 27);
@@ -304,6 +343,10 @@ QPushButton#DetailBackBtn {
 }
 QPushButton#DetailBackBtn:hover {
     background-color: rgba(137, 180, 250, 0.15);
+}
+QPushButton#DetailBackBtn:disabled {
+    color: rgb(108, 112, 134);
+    border: 1px solid rgb(69, 71, 90);
 }
 
 /* Detail action button (Install / Remove) */

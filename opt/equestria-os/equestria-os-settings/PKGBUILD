@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-settings
 pkgver=1.6.0
-pkgrel=4
+pkgrel=5
 pkgdesc="Unified settings panel for Equestria OS — all system tools in one place"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"

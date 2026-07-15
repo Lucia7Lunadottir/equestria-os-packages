@@ -66,6 +66,8 @@
   "pkg.tutorial.desc": "Guía interactiva de las funciones de Equestria OS",
   "pkg.proton_exe.name": "Lanzador de apps de Windows",
   "pkg.proton_exe.desc": "Ejecutar archivos .exe mediante Wine y Proton",
+  "pkg.imagefinish.name": "ImageFinish",
+  "pkg.imagefinish.desc": "Editor de imágenes inspirado en Photoshop",
   "launch.open_btn": "Abrir {0} ↗",
   "launch.not_installed": "No instalado",
   "launch.install_hint": "Instala {0} para usar este módulo",
