@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QAbstractButton)
 from PyQt6.QtCore import (Qt, pyqtSignal, pyqtProperty, QPropertyAnimation,
                           QEasingCurve, QSize, QRectF)
-from PyQt6.QtGui import QPainter, QColor
+from PyQt6.QtGui import QPainter, QColor, QIcon
 
 
 class SwitchToggle(QAbstractButton):
@@ -112,10 +112,20 @@ class PackageRow(QFrame):
         super().__init__()
         self.pkg_data = pkg_data
         self.setObjectName("PackageRow")
-        self.setFixedHeight(70)
+        self.setFixedHeight(80)
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(15, 5, 15, 5)
+        layout.setSpacing(12)
+
+        self.lbl_icon = QLabel()
+        self.lbl_icon.setFixedSize(40, 40)
+        self.lbl_icon.setScaledContents(True)
+        icon = QIcon.fromTheme(pkg_data.icon_name) if pkg_data.icon_name else QIcon()
+        if icon.isNull():
+            icon = QIcon.fromTheme("package-x-generic")
+        if not icon.isNull():
+            self.lbl_icon.setPixmap(icon.pixmap(40, 40))
 
         info_layout = QVBoxLayout()
         self.lbl_name = QLabel(pkg_data.name)
@@ -124,8 +134,17 @@ class PackageRow(QFrame):
         self.lbl_info = QLabel(f"{pkg_data.category} ({pkg_data.source})")
         self.lbl_info.setStyleSheet("color: rgb(180, 170, 200); font-size: 12px; background: transparent;")
 
+        desc = pkg_data.description
+        self.lbl_desc = QLabel(desc if len(desc) <= 90 else desc[:87] + "...")
+        self.lbl_desc.setStyleSheet("color: rgb(150, 140, 175); font-size: 11px; background: transparent;")
+        if desc:
+            self.lbl_desc.setToolTip(desc)
+        else:
+            self.lbl_desc.hide()
+
         info_layout.addWidget(self.lbl_name)
         info_layout.addWidget(self.lbl_info)
+        info_layout.addWidget(self.lbl_desc)
 
         self.btn_delete = QPushButton(delete_text)
         self.btn_delete.setObjectName("ListDeleteBtn") # ФИКС: Жесткая привязка по ID
@@ -133,6 +152,7 @@ class PackageRow(QFrame):
         self.btn_delete.setFixedWidth(110)
         self.btn_delete.clicked.connect(lambda checked=False, p=self.pkg_data: on_delete_callback(p))
 
+        layout.addWidget(self.lbl_icon)
         layout.addLayout(info_layout)
         layout.addStretch()
         layout.addWidget(self.btn_delete)
@@ -216,6 +236,11 @@ class Ui_PackageManager:
         self.modal_paths.setWordWrap(True)
         self.modal_paths.hide()
 
+        # Появляется только при попытке удалить python-pip, если через него
+        # что-то установлено — гейтит кнопку "Удалить" до явного подтверждения
+        self.chk_pip_ack = SwitchRow()
+        self.chk_pip_ack.hide()
+
         btn_row = QHBoxLayout()
         btn_row.setSpacing(15)
 
@@ -228,14 +253,25 @@ class Ui_PackageManager:
         self.btn_confirm_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_confirm_delete.setMinimumHeight(45)
 
+        # Отдельная кнопка вместо переиспользования btn_confirm_delete — иначе
+        # пришлось бы перецеплять его click-обработчик туда-сюда между обычным
+        # удалением пакета и авто-чисткой shell rc, что ломко и легко забыть вернуть
+        self.btn_rc_auto = QPushButton("Remove automatically")
+        self.btn_rc_auto.setObjectName("ModalDeleteBtn")
+        self.btn_rc_auto.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_rc_auto.setMinimumHeight(45)
+        self.btn_rc_auto.hide()
+
         btn_row.addWidget(self.btn_confirm_cancel)
         btn_row.addWidget(self.btn_confirm_delete)
+        btn_row.addWidget(self.btn_rc_auto)
 
         m_layout.addWidget(self.modal_title)
         m_layout.addStretch()
         m_layout.addWidget(self.modal_text)
         m_layout.addWidget(self.chk_delete_data)
         m_layout.addWidget(self.modal_paths)
+        m_layout.addWidget(self.chk_pip_ack)
         m_layout.addStretch()
         m_layout.addLayout(btn_row)
         v_modal.addWidget(self.modal_box, 0, Qt.AlignmentFlag.AlignCenter)

@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-package-manager
-pkgver=2.3.1
+pkgver=2.7.0
 pkgrel=1
 pkgdesc="Official Equestria OS Package Manager (Uninstall, Manage, Clean App Data)"
 arch=('any')
