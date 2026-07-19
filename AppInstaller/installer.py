@@ -33,6 +33,7 @@ class WelcomePage(QWizardPage):
         self.setTitle(self.tr("Equestria OS Package Installer"))
         self.setSubTitle(self.tr("Local Package Installation Wizard"))
 
+
         layout = QVBoxLayout()
         self.info_label = QLabel(self.tr("Welcome to the installer!\n\nPlease select a .pkg.tar.zst file."))
         self.info_label.setWordWrap(True)
@@ -124,9 +125,13 @@ class SummaryPage(QWizardPage):
 class EquestriaInstaller(QWizard):
     def __init__(self):
         super().__init__()
+
         self.setWindowTitle(self.tr("Equestria OS Installer"))
         self.setFixedSize(600, 450)
         self.setStyleSheet(PURPLE_THEME)
+        app.setApplicationName("Equestria OS Package Installer")
+        app.setDesktopFileName("equestria-installer.desktop")
+        app.setWindowIcon(QIcon.fromTheme("equestria-installer"))
 
         self.package_path = ""
         for arg in sys.argv[1:]:
@@ -143,6 +148,7 @@ class EquestriaInstaller(QWizard):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+
 
     # Путь к директории с переводами системного пакета
     tx_dir = "/usr/share/equestria-installer/translations/"

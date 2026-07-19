@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Фон / Свечение -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E1BEE7" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#2D1B4E" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="crystal-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F8F4FF"/>
+      <stop offset="50%" stop-color="#BA68C8"/>
+      <stop offset="100%" stop-color="#6A1B9A"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="32" cy="32" r="28" fill="url(#glow)" />
+
+  <!-- Орбита интеграции пакета (кольцо) -->
+  <path d="M 12 40 C 12 25, 52 15, 52 30 C 52 45, 12 45, 12 40" fill="none" stroke="#CE93D8" stroke-width="2.5" stroke-dasharray="4 2" />
+
+  <!-- Кристалл пакета (Архив / Магия) -->
+  <g transform="translate(16, 12)">
+    <!-- Левая грань -->
+    <polygon points="16,0 0,20 16,40" fill="#E1BEE7" opacity="0.85"/>
+    <!-- Центральная главная грань -->
+    <polygon points="16,0 16,40 32,20" fill="url(#crystal-grad)"/>
+    <!-- Верхний отсвет -->
+    <polygon points="16,0 8,20 16,24 24,20" fill="#FFFFFF" opacity="0.6"/>
+  </g>
+
+  <!-- Маленькие искры магии пакета -->
+  <circle cx="48" cy="18" r="1.5" fill="#E1BEE7" />
+  <circle cx="14" cy="25" r="2" fill="#E1BEE7" />
+  <circle cx="20" cy="48" r="1" fill="#FFFFFF" />
+</svg>
