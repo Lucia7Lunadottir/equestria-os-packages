@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+import os
 import sys
 import urllib.parse
 from PyQt6.QtWidgets import (QApplication, QWizard, QWizardPage, QLabel,
                              QVBoxLayout, QPushButton, QFileDialog, QTextEdit)
+from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QProcess, Qt, QTranslator, QLocale
 
 PURPLE_THEME = """
@@ -131,7 +133,11 @@ class EquestriaInstaller(QWizard):
         self.setStyleSheet(PURPLE_THEME)
         app.setApplicationName("Equestria OS Package Installer")
         app.setDesktopFileName("equestria-installer.desktop")
-        app.setWindowIcon(QIcon.fromTheme("equestria-installer"))
+        icon = QIcon.fromTheme("equestria-installer")
+        if icon.isNull():
+            icon = QIcon(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Installer.svg"))
+        app.setWindowIcon(icon)
+        self.setWindowIcon(icon)
 
         self.package_path = ""
         for arg in sys.argv[1:]:

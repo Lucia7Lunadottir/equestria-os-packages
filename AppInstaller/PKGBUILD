@@ -1,5 +1,5 @@
 pkgname=equestria-installer
-pkgver=1.0.2
+pkgver=1.0.3
 pkgrel=1
 pkgdesc="Graphical local package installer for Equestria OS"
 arch=('any')
@@ -9,9 +9,10 @@ depends=('python' 'python-pyqt6' 'polkit')
 makedepends=('qt6-tools')
 
 source=('installer.py'
-        'equestria-installer.desktop')
+        'equestria-installer.desktop'
+        'Installer.svg')
 
-sha256sums=('SKIP' 'SKIP')
+sha256sums=('SKIP' 'SKIP' 'SKIP')
 
 _languages=('ru_RU' 'uk_UA' 'de_DE' 'en_US' 'es_ES' 'fr_FR' 'pl_PL' 'it_IT' 'kk_KZ' 'zh_CN' 'ja_JP')
 
@@ -33,6 +34,9 @@ package() {
 
     # 2. Desktop-файл
     install -Dm644 equestria-installer.desktop "${pkgdir}/usr/share/applications/equestria-installer.desktop"
+
+    # 3. Иконка (тема hicolor, чтобы QIcon.fromTheme находила её)
+    install -Dm644 Installer.svg "${pkgdir}/usr/share/icons/hicolor/scalable/apps/equestria-installer.svg"
 
     local lang
     for lang in "${_languages[@]}"; do
