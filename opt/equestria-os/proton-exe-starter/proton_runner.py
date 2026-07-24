@@ -118,6 +118,21 @@ def main():
     from launcher import apply_game_env
     apply_game_env(env, settings)
 
+    from launcher import BootstrapWindow, _load_localization, _detect_language
+    _load_localization()
+    _detect_language()
+
+    from app_profiles import BASE_PROFILE, detect_profile, apply_profile_env, needs_bootstrap
+    profiles_to_run = [("base", BASE_PROFILE)]
+    profile_id, profile = detect_profile(exe_path)
+    if profile:
+        profiles_to_run.append((profile_id, profile))
+        apply_profile_env(env, profile)
+
+    if any(needs_bootstrap(prefix_path, pid, p, env) for pid, p in profiles_to_run):
+        bootstrap_log = os.path.join(APPS_DATA_DIR, f"{app_id}-bootstrap.log")
+        BootstrapWindow(prefix_path, profiles_to_run, env, bootstrap_log).exec()
+
     debug = settings.get("debug_log", False)
     if debug:
         env["DXVK_LOG_LEVEL"] = "info"
@@ -137,10 +152,7 @@ def main():
 
     print(f"Launching via UMU: {' '.join(cmd)}")
 
-    # Чтобы консольный запуск тоже имел UI
-    from launcher import SplashWindow, t, _load_localization, _detect_language
-    _load_localization()
-    _detect_language()
+    from launcher import SplashWindow
 
     log_path = os.path.join(APPS_DATA_DIR, f"{app_id}.log")
 

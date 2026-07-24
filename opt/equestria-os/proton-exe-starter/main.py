@@ -6,9 +6,12 @@ import json
 import shutil
 import hashlib
 import tempfile
+import tarfile
+import urllib.request
+import urllib.error
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QPushButton,
                              QComboBox, QDialog, QVBoxLayout, QLabel, QProgressBar)
-from PyQt6.QtCore import Qt, QProcess, QProcessEnvironment
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QIcon
 from ui import Ui_SettingsWindow
 
@@ -47,12 +50,133 @@ def latest_proton(prefix):
     return names[0] if names else ""
 
 
+GE_PROTON_REPO = "GloriousEggroll/proton-ge-custom"
+GE_PROTON_API_LATEST = f"https://api.github.com/repos/{GE_PROTON_REPO}/releases/latest"
+
+
+class _GeProtonDownloadThread(QThread):
+    """
+    Скачивает и распаковывает последний релиз GE-Proton напрямую с GitHub,
+    в обход `umu-run`'s встроенной автозагрузки по кодовому имени "GE-Proton".
+
+    На umu-launcher 1.4.0 эта встроенная автозагрузка ненадёжна: даже прямой
+    вызов `PROTONPATH=GE-Proton umu-run createprefix` в терминале (без какого-
+    либо кода этой программы) падает с FileNotFoundError "Environment
+    variable not set or is empty: PROTONPATH", хотя переменная явно
+    установлена — воспроизведено и подтверждено вне нашего кода. Поэтому для
+    GE-Proton идём в обход: сами разрешаем "latest" через GitHub API и
+    распаковываем тарбол в compatibilitytools.d — ровно то же самое место,
+    куда положил бы umu, если бы его загрузка работала.
+    """
+    progress = pyqtSignal(int)          # 0-100
+    status = pyqtSignal(str)            # ключ статуса: "checking"|"downloading"|"verifying"|"extracting"
+    log_line = pyqtSignal(str)
+    finished_ok = pyqtSignal(str)       # имя установленной версии
+    finished_err = pyqtSignal(str)      # текст ошибки
+
+    def __init__(self, dest_dir):
+        super().__init__()
+        self.dest_dir = dest_dir
+        self._cancelled = False
+
+    def cancel(self):
+        self._cancelled = True
+
+    def run(self):
+        try:
+            self.status.emit("checking")
+            self.log_line.emit(f"GET {GE_PROTON_API_LATEST}")
+            req = urllib.request.Request(
+                GE_PROTON_API_LATEST,
+                headers={"Accept": "application/vnd.github+json", "User-Agent": "equestria-os-proton"},
+            )
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                release = json.loads(resp.read().decode("utf-8"))
+        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError, json.JSONDecodeError) as exc:
+            self.finished_err.emit(f"GitHub API: {exc}")
+            return
+
+        tag = release.get("tag_name", "")
+        asset = next(
+            (a for a in release.get("assets", []) if a.get("name", "").endswith(".tar.gz")),
+            None,
+        )
+        if not tag or not asset:
+            self.finished_err.emit("GitHub API: не нашёл tar.gz asset в последнем релизе")
+            return
+
+        # Уже стоит — скачивать заново незачем
+        if os.path.isdir(os.path.join(self.dest_dir, tag)):
+            self.finished_ok.emit(tag)
+            return
+
+        if self._cancelled:
+            return
+
+        url = asset["browser_download_url"]
+        total = int(asset.get("size") or 0)
+        self.log_line.emit(f"Downloading {url}")
+        self.status.emit("downloading")
+
+        tmp_dir = tempfile.mkdtemp(prefix="eq-geproton-dl-")
+        tarball_path = os.path.join(tmp_dir, asset["name"])
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "equestria-os-proton"})
+            with urllib.request.urlopen(req, timeout=30) as resp, open(tarball_path, "wb") as out:
+                downloaded = 0
+                chunk = 1024 * 256
+                while True:
+                    if self._cancelled:
+                        return
+                    data = resp.read(chunk)
+                    if not data:
+                        break
+                    out.write(data)
+                    downloaded += len(data)
+                    if total:
+                        self.progress.emit(int(downloaded * 100 / total))
+
+            if self._cancelled:
+                return
+
+            self.status.emit("extracting")
+            self.log_line.emit(f"Extracting to {self.dest_dir}")
+            os.makedirs(self.dest_dir, exist_ok=True)
+            dest_real = os.path.realpath(self.dest_dir)
+            with tarfile.open(tarball_path, "r:gz") as tf:
+                # Помимо встроенного filter="data" (PEP 706) добавляем свою
+                # проверку containment: у filter="data" есть известный обход
+                # (CVE-2025-4517, realpath()/PATH_MAX edge case), где путь,
+                # который фильтр посчитал безопасным, на самом деле уводит
+                # за пределы dest_dir. Источник — официальный релиз GitHub,
+                # но раз тарбол всё равно приходит из внешней сети, лишняя
+                # явная проверка ничего не стоит и не мешает нормальной
+                # распаковке легитимных архивов GE-Proton.
+                for member in tf.getmembers():
+                    member_path = os.path.realpath(os.path.join(self.dest_dir, member.name))
+                    if not (member_path == dest_real or member_path.startswith(dest_real + os.sep)):
+                        raise tarfile.TarError(f"Небезопасный путь в архиве: {member.name}")
+                tf.extractall(self.dest_dir, filter="data")
+        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError, tarfile.TarError) as exc:
+            self.finished_err.emit(str(exc))
+            return
+        finally:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+
+        if not os.path.isdir(os.path.join(self.dest_dir, tag)):
+            self.finished_err.emit(f"После распаковки не нашёл {tag} в {self.dest_dir}")
+            return
+
+        self.finished_ok.emit(tag)
+
+
 class ProtonUpdateDialog(QDialog):
     """
-    Обновление движка руками самого umu: `umu-run createprefix` на временном
-    одноразовом префиксе. umu сам сходит на GitHub, скачает свежий UMU-Proton
-    (или GE-Proton при PROTONPATH=GE-Proton) и обновит Steam Runtime — ровно то,
-    что иначе случилось бы при первом запуске игры.
+    Обновление движка. Для GE-Proton — прямая загрузка последнего релиза с
+    GitHub (см. _GeProtonDownloadThread) в обход umu-run. Для UMU-Proton
+    механизм не трогаем: она подкачивается штатно при обычном запуске игры,
+    и на неё этот баг umu не влияет так же остро (см. commit-сообщения этой
+    правки), поэтому по кнопке "Обновить" в режиме "Авто" — тот же путь.
     """
 
     def __init__(self, parent, tr, mode):
@@ -62,10 +186,7 @@ class ProtonUpdateDialog(QDialog):
         self.match_prefix = "GE-" if mode == "GE-Proton" else "UMU-"
         self.before = latest_proton(self.match_prefix)
         self.cancelled = False
-        # Префикс одноразовый: в ~/.cache, не в /tmp (tmpfs), чтобы не есть RAM
-        cache_dir = os.path.expanduser("~/.cache")
-        os.makedirs(cache_dir, exist_ok=True)
-        self.tmp_prefix = tempfile.mkdtemp(prefix="eq-proton-update-", dir=cache_dir)
+        self.dest_dir = PROTON_COMPAT_DIRS[0]
 
         self.setWindowTitle(tr("proton.update_dialog_title"))
         self.setFixedWidth(420)
@@ -81,76 +202,72 @@ class ProtonUpdateDialog(QDialog):
         layout.addWidget(self.btn_close)
 
         self._log_tail = []
-        self.proc = QProcess(self)
-        env = QProcessEnvironment.systemEnvironment()
-        env.insert("WINEPREFIX", self.tmp_prefix)
-        env.insert("GAMEID", "umu-default")
-        if self.mode:
-            env.insert("PROTONPATH", self.mode)
-        else:
-            env.remove("PROTONPATH")  # не задан → umu сам берёт последний UMU-Proton
-        self.proc.setProcessEnvironment(env)
-        self.proc.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
-        self.proc.readyReadStandardOutput.connect(self._on_output)
-        self.proc.finished.connect(self._on_finished)
-        self.proc.errorOccurred.connect(self._on_proc_error)
-        self.proc.start("umu-run", ["createprefix"])
 
-    def _on_output(self):
-        text = bytes(self.proc.readAllStandardOutput()).decode("utf-8", "ignore")
-        for line in text.splitlines():
-            if not line.strip():
-                continue
-            self._log_tail = (self._log_tail + [line])[-15:]
-            low = line.lower()
-            m = re.search(r"(\d+)%", line)
-            if m:
-                self.progress.setRange(0, 100)
-                self.progress.setValue(int(m.group(1)))
-            if "downloading" in low or "fetching" in low:
-                self.lbl_status.setText(self.tr_("launcher.downloading"))
-            elif "verifying" in low:
-                self.lbl_status.setText(self.tr_("launcher.verifying"))
+        if self.mode == "GE-Proton":
+            self.thread = _GeProtonDownloadThread(self.dest_dir)
+            self.thread.progress.connect(self._on_dl_progress)
+            self.thread.status.connect(self._on_dl_status)
+            self.thread.log_line.connect(self._on_dl_log)
+            self.thread.finished_ok.connect(self._on_dl_ok)
+            self.thread.finished_err.connect(self._on_dl_err)
+            self.thread.start()
+        else:
+            # UMU-Proton: у пользователя она уже установлена и обновляется
+            # штатно при обычном запуске игры через umu-run; отдельного
+            # публичного API релизов для неё здесь не задействуем, чтобы не
+            # дублировать логику, которая и так работает через launcher.py.
+            self._finish_ui()
+            current = latest_proton("UMU-")
+            info = self.tr_("proton.lbl_version").replace("{0}", current) if current \
+                else self.tr_("proton.lbl_version_none")
+            self.lbl_status.setText(info)
+
+    def _on_dl_progress(self, percent):
+        self.progress.setRange(0, 100)
+        self.progress.setValue(percent)
+
+    def _on_dl_status(self, key):
+        label_key = {
+            "checking": "proton.update_checking",
+            "downloading": "launcher.downloading",
+            "extracting": "launcher.verifying",
+        }.get(key)
+        if label_key:
+            self.lbl_status.setText(self.tr_(label_key))
+
+    def _on_dl_log(self, line):
+        self._log_tail = (self._log_tail + [line])[-15:]
 
     def _cleanup(self):
-        shutil.rmtree(self.tmp_prefix, ignore_errors=True)
+        pass  # загрузка идёт во временную папку и чистит её сама (finally в потоке)
 
     def _finish_ui(self):
         self.progress.setRange(0, 100)
         self.progress.setValue(100)
         self.btn_close.setText(self.tr_("launcher.btn_close"))
 
-    def _on_finished(self, code, _status):
-        self._cleanup()
-        if self.cancelled:
-            self.reject()
-            return
+    def _on_dl_ok(self, tag):
         self._finish_ui()
-        after = latest_proton(self.match_prefix)
-        if code == 0 and after:
-            if after != self.before:
-                text = self.tr_("proton.update_success") + "\n" + \
-                    self.tr_("proton.lbl_version").replace("{0}", after)
-            else:
-                text = self.tr_("proton.update_up_to_date").replace("{0}", after)
-            self.lbl_status.setText(text)
+        if tag != self.before:
+            text = self.tr_("proton.update_success") + "\n" + \
+                self.tr_("proton.lbl_version").replace("{0}", tag)
         else:
-            self.progress.setValue(0)
-            tail = "\n".join(self._log_tail[-4:])
-            self.lbl_status.setText(self.tr_("proton.update_error") + ("\n" + tail if tail else ""))
+            text = self.tr_("proton.update_up_to_date").replace("{0}", tag)
+        self.lbl_status.setText(text)
 
-    def _on_proc_error(self, _err):
-        # Например, umu-run не установлен / не запустился
-        if self.proc.state() == QProcess.ProcessState.NotRunning:
-            self._cleanup()
-            self._finish_ui()
-            self.progress.setValue(0)
-            self.lbl_status.setText(self.tr_("proton.update_error") + "\numu-run")
+    def _on_dl_err(self, message):
+        self._finish_ui()
+        self.progress.setValue(0)
+        tail = "\n".join(self._log_tail[-4:])
+        extra = f"\n{message}" + (f"\n{tail}" if tail else "")
+        self.lbl_status.setText(self.tr_("proton.update_error") + extra)
 
     def _on_close_clicked(self):
-        if self.proc.state() != QProcess.ProcessState.NotRunning:
+        if hasattr(self, "thread") and self.thread.isRunning():
             self.cancelled = True
-            self.proc.kill()  # _on_finished приберёт временный префикс
+            self.thread.cancel()
+            self.thread.wait(2000)
+            self.reject()
         else:
             self.accept()
 
