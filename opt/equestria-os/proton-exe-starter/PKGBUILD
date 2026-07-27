@@ -1,9 +1,9 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-proton-starter
-pkgver=1.7.1
-pkgrel=4
-pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton, engine manager, Xbox 360 gamepad mode, Adobe/Office compatibility profiles)"
+pkgver=1.7.0
+pkgrel=2
+pkgdesc="Native Windows .exe launcher for Equestria OS (double-click support via Proton, engine manager, Xbox 360 gamepad mode)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
@@ -11,7 +11,6 @@ license=('GPL')
 depends=(
     'python-pyqt6'
     'umu-launcher'
-    'winetricks'
     'lib32-glibc'
     'lib32-gcc-libs'
     'xdg-utils'
@@ -32,7 +31,7 @@ package() {
     local _lib="$pkgdir/opt/equestria-os/equestria-proton-starter"
     install -dm755 "$_lib"
 
-    for f in dispatch.py main.py launcher.py cleaner.py proton_runner.py app_profiles.py ui.py style.qss localization.csv EquestriaOS-Logo.png; do
+    for f in dispatch.py main.py launcher.py cleaner.py proton_runner.py ui.py style.qss localization.csv EquestriaOS-Logo.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
 

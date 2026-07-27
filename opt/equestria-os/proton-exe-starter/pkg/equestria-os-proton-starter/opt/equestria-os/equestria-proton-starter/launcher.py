@@ -12,11 +12,10 @@ import subprocess
 import re
 import shlex
 import shutil
-import threading
 
 from PyQt6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QLabel,
                              QProgressBar, QPushButton, QTextEdit, QHBoxLayout)
-from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer
 
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
@@ -81,21 +80,10 @@ def apply_game_env(env, settings):
     а обычный Proton/UMU-Proton — пару PROTON_DISABLE_HIDRAW +
     PROTON_NO_STEAMINPUT (ровно её Valve включает своим конфигом "sdlinput").
     Нераспознанные переменные движок просто игнорирует.
-    proton_version → PROTONPATH: "" = авто, "GE-Proton" = последний GE-Proton
-    (umu обновляет), иначе абсолютный путь к закреплённой сборке. Если
-    закреплённую сборку удалили — молча падаем в авто, чтобы игра всё равно
-    запустилась.
-
-    Важно: в режиме "авто" мы явно ищем уже установленную сборку (сначала
-    UMU-Proton, иначе любую) и передаём её АБСОЛЮТНЫЙ ПУТЬ, а не оставляем
-    PROTONPATH пустым/неустановленным. У umu-run пустой и отсутствующий
-    PROTONPATH трактуются по-разному в зависимости от версии
-    (см. umu-launcher#472): часть версий действительно скачивает
-    UMU-Proton сама, но по крайней мере в одной наблюдавшейся версии (1.4.0)
-    отсутствующий/пустой PROTONPATH сразу приводит к FileNotFoundError,
-    даже если подходящая сборка уже стоит в compatibilitytools.d. Если
-    ничего не установлено — PROTONPATH всё равно не ставим, чтобы дать
-    umu-run шанс скачать что-то самому при наличии сети.
+    proton_version → PROTONPATH: "" = авто (umu сам берёт и обновляет UMU-Proton),
+    "GE-Proton" = последний GE-Proton (umu обновляет), иначе абсолютный путь к
+    закреплённой сборке. Если закреплённую сборку удалили — молча падаем в авто,
+    чтобы игра всё равно запустилась.
     """
     if settings.get("xbox_pad"):
         env["PROTON_PREFER_SDL"] = "1"
@@ -107,13 +95,6 @@ def apply_game_env(env, settings):
         env["PROTONPATH"] = "GE-Proton"
     elif choice and os.path.isdir(choice):
         env["PROTONPATH"] = choice
-    else:
-        from app_profiles import installed_protons, latest_proton
-        auto_path = latest_proton("UMU-") or (installed_protons()[0][1] if installed_protons() else "")
-        if auto_path:
-            env["PROTONPATH"] = auto_path
-        else:
-            env.pop("PROTONPATH", None)
     return env
 
 _locales: dict = {}
@@ -143,108 +124,6 @@ def t(key: str, *args) -> str:
     for i, val in enumerate(args):
         text = text.replace(f"{{{i}}}", str(val))
     return text
-
-class _BootstrapThread(QThread):
-    done = pyqtSignal()
-
-    def __init__(self, prefix_path, profiles, env, log_path):
-        super().__init__()
-        self.prefix_path = prefix_path
-        self.profiles = profiles
-        self.env = env
-        self.log_path = log_path
-        self.cancel_event = threading.Event()
-
-    def cancel(self):
-        self.cancel_event.set()
-
-    def run(self):
-        from app_profiles import ensure_dependencies
-        open(self.log_path, "w", encoding="utf-8").close()  # truncate previous run's log
-        for profile_id, profile in self.profiles:
-            if self.cancel_event.is_set():
-                break
-            ensure_dependencies(self.prefix_path, profile_id, profile, self.env,
-                                 log_path=self.log_path, cancel_event=self.cancel_event)
-        self.done.emit()
-
-
-class BootstrapWindow(QDialog):
-    """Shown while one-time winetricks dependencies (.NET, fonts, ...) install,
-    so the first launch doesn't look like it hung with no window at all.
-    Every step has a hard timeout and there's a Skip button — this can never
-    block the user forever, unlike the plain subprocess.run() used before."""
-
-    def __init__(self, prefix_path, profiles, env, log_path):
-        super().__init__()
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
-        self.setFixedSize(520, 320)
-        self.setStyleSheet("""
-            QDialog { background-color: rgb(24, 24, 37); border: 2px solid rgb(69, 71, 90); border-radius: 12px; }
-            QLabel { color: rgb(205, 214, 244); font-family: 'Segoe UI', sans-serif; }
-            QProgressBar { border: 1px solid rgb(69, 71, 90); border-radius: 6px; background: rgb(30, 30, 46); height: 12px; text-align: center; color: transparent; }
-            QProgressBar::chunk { background-color: rgb(137, 180, 250); border-radius: 5px; }
-            QTextEdit { background-color: rgb(17, 17, 27); color: rgb(166, 227, 161); border: 1px solid rgb(49, 50, 68); border-radius: 4px; font-family: monospace; font-size: 10px; }
-            QPushButton { background-color: rgb(49, 50, 68); color: white; border: none; border-radius: 6px; padding: 8px 16px; font-weight: bold; }
-            QPushButton:hover { background-color: rgb(69, 71, 90); }
-        """)
-        self.log_path = log_path
-        self._log_file = None
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(25, 25, 25, 25)
-
-        self.label = QLabel(t("launcher.bootstrap"))
-        self.label.setWordWrap(True)
-        self.label.setStyleSheet("font-size: 13px;")
-
-        bar = QProgressBar()
-        bar.setRange(0, 0)
-
-        self.log_view = QTextEdit()
-        self.log_view.setReadOnly(True)
-
-        self.btn_skip = QPushButton(t("launcher.bootstrap_skip"))
-        self.btn_skip.clicked.connect(self._on_skip)
-        btn_row = QHBoxLayout()
-        btn_row.addStretch()
-        btn_row.addWidget(self.btn_skip)
-
-        layout.addWidget(self.label)
-        layout.addWidget(bar)
-        layout.addWidget(self.log_view)
-        layout.addLayout(btn_row)
-
-        self.thread = _BootstrapThread(prefix_path, profiles, env, log_path)
-        self.thread.done.connect(self._on_done)
-        self.thread.start()
-
-        self.log_timer = QTimer()
-        self.log_timer.timeout.connect(self._tail_log)
-        self.log_timer.start(400)
-
-    def _tail_log(self):
-        if self._log_file is None:
-            try:
-                self._log_file = open(self.log_path, "r", encoding="utf-8", errors="ignore")
-            except OSError:
-                return
-        chunk = self._log_file.read()
-        if chunk:
-            self.log_view.insertPlainText(chunk)
-            self.log_view.verticalScrollBar().setValue(self.log_view.verticalScrollBar().maximum())
-
-    def _on_skip(self):
-        self.label.setText(t("launcher.bootstrap_cancelling"))
-        self.btn_skip.setEnabled(False)
-        self.thread.cancel()
-
-    def _on_done(self):
-        self.log_timer.stop()
-        if self._log_file:
-            self._log_file.close()
-        self.accept()
-
 
 class SplashWindow(QDialog):
     def __init__(self, exe_name, log_path, cmd, env, cwd, debug=False):
@@ -462,17 +341,6 @@ def main():
     if settings.get("dxvk_hud"): env["DXVK_HUD"] = "compiler,frametimes,fps"
     if settings.get("fsr"): env["WINE_FULLSCREEN_FSR"] = "1"
     apply_game_env(env, settings)
-
-    from app_profiles import BASE_PROFILE, detect_profile, apply_profile_env, needs_bootstrap
-    profiles_to_run = [("base", BASE_PROFILE)]
-    profile_id, profile = detect_profile(exe_path)
-    if profile:
-        profiles_to_run.append((profile_id, profile))
-        apply_profile_env(env, profile)
-
-    if any(needs_bootstrap(prefix_path, pid, p, env) for pid, p in profiles_to_run):
-        bootstrap_log = os.path.join(APPS_DATA_DIR, f"{app_id}-bootstrap.log")
-        BootstrapWindow(prefix_path, profiles_to_run, env, bootstrap_log).exec()
 
     debug = settings.get("debug_log", False)
     if debug:
