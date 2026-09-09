@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(pacman -Q)",
+      "Bash(pacman:*)",
+      "Bash(systemctl list-unit-files:*)",
+      "Bash(systemctl --user list-unit-files)",
+      "Read(//mnt/NewBaseD/FromSystem/Git Projects/equestria-iso/**)",
+      "Bash(git -C \"/home/lucial/Git Projects/equestria-iso/\" log --oneline -15)",
+      "Bash(git -C \"/home/lucial/Git Projects/equestria-iso/\" show a9236b2 --stat)",
+      "Bash(git -C \"/home/lucial/Git Projects/equestria-iso/\" diff HEAD~2 HEAD -- packages.x86_64 airootfs/)",
+      "Bash(git:*)",
+      "Bash(curl -s \"https://Lucia7Lunadottir.github.io/equestria-os-packages/x86_64/\")",
+      "Bash(curl -sI \"https://Lucia7Lunadottir.github.io/equestria-os-packages/x86_64/equestria-os-settings-1.1.0-1-x86_64.pkg.tar.zst\")",
+      "Bash(curl -s \"https://Lucia7Lunadottir.github.io/equestria-os-packages/x86_64/equestria-os.db\" -o /tmp/eq-db.tar.gz)",
+      "Bash(tar -tzf /tmp/eq-db.tar.gz)",
+      "Bash(tar -tzf \"/mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/docs/x86_64/equestria-os.db.tar.gz\")",
+      "Read(//mnt/NewBaseD/FromSystem/Git Projects/Equestria-Repo-Admin/**)",
+      "Read(//home/lucial/Git Projects/Equestria-Repo-Admin/**)",
+      "Bash(rm -f equestria-os.db equestria-os.db.tar.gz equestria-os.files equestria-os.files.tar.gz)",
+      "Bash(repo-add equestria-os.db.tar.gz *.pkg.tar.zst)",
+      "Bash(grep -E \"\\\\.\\(conf|rc\\)$\")",
+      "Bash(xargs cat:*)",
+      "Bash(makepkg -f --nodeps --nocheck --noprogressbar --skippgpcheck)",
+      "Bash(xargs ls:*)",
+      "Bash(curl -s \"https://archlinux.org/packages/search/json/?q=nvidia-dkms\")",
+      "Bash(chmod +x:*)",
+      "Bash(rm -rf src/ pkg/ ./*.pkg.tar.zst)",
+      "Bash(makepkg -sf --noconfirm)",
+      "Bash(tar -tf \"/mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-nvidia-dkms/equestria-nvidia-dkms-1.0-1-x86_64.pkg.tar.zst\")",
+      "Bash(rm -f '/mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/docs/x86_64/equestria-nvidia-dkms-*.pkg.tar.zst')",
+      "Bash(cp '/mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/equestria-nvidia-dkms/equestria-nvidia-dkms-1.0-1-x86_64.pkg.tar.zst' '/mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/docs/x86_64/')"
+    ]
+  }
+}

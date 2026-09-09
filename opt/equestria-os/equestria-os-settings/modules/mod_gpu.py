@@ -140,6 +140,25 @@ def _detect_vulkan() -> str:
         return ""
 
 
+def _format_compositor_type(comp_type: str) -> str:
+    # Old KWin/X11 returns a numeric enum; KWin on Wayland (Plasma 6+)
+    # returns a lowercase string like "gl2"/"gl3"/"qpainter" instead —
+    # compositing type is queried at the same call site either way, so
+    # we translate both forms and fall back to the raw value otherwise.
+    numeric_map = {"1": "OpenGL", "2": "XRender", "0": "Disabled"}
+    if comp_type in numeric_map:
+        return numeric_map[comp_type]
+    low = comp_type.lower()
+    if low.startswith("gl"):
+        ver = low[2:]
+        return f"OpenGL {ver}" if ver else "OpenGL"
+    if low == "qpainter":
+        return "QPainter (software)"
+    if low == "xrender":
+        return "XRender"
+    return comp_type
+
+
 def _detect_kwin_compositor() -> str:
     """Return KWin compositor backend and status."""
     try:
@@ -148,9 +167,7 @@ def _detect_kwin_compositor() -> str:
             capture_output=True, text=True, timeout=5
         )
         comp_type = out.stdout.strip()
-        # 1=OpenGL, 2=XRender, 0=NoCompositing
-        type_map = {"1": "OpenGL", "2": "XRender", "0": "Disabled"}
-        comp_name = type_map.get(comp_type, comp_type)
+        comp_name = _format_compositor_type(comp_type) if comp_type else "?"
     except Exception:
         comp_name = "?"
 

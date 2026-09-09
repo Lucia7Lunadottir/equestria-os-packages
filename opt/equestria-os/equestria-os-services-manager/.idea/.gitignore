@@ -1,0 +1,15 @@
+# Игнорируемые файлы по умолчанию
+/shelf/
+/workspace.xml
+# HTTP-клиент на основе редактора
+/httpRequests/
+# Игнорируемые файлы Rider
+/modules.xml
+/contentModel.xml
+/projectSettingsUpdater.xml
+/.idea.equestria-os-services-manager.iml
+# Ignored default folder with query files
+/queries/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml

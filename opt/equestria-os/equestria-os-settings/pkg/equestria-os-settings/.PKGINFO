@@ -3,12 +3,12 @@
 pkgname = equestria-os-settings
 pkgbase = equestria-os-settings
 xdata = pkgtype=pkg
-pkgver = 1.6.0-5
+pkgver = 1.7.0-2
 pkgdesc = Unified settings panel for Equestria OS — all system tools in one place
 url = https://github.com/Lucia7Lunadottir
-builddate = 1784085049
+builddate = 1788994586
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 861718
+size = 993004
 arch = any
 license = GPL
 depend = python-pyqt6
@@ -28,3 +28,9 @@ optdepend = plasma-workspace: Open KDE System Settings button
 optdepend = networkmanager: internet module — DNS and connection management
 optdepend = iw: internet module — WiFi power-save detection
 optdepend = speedtest-cli: internet module — speed test
+optdepend = ddcutil: brightness module — real hardware control for external monitors via DDC/CI
+optdepend = brightnessctl: brightness module — real hardware control for laptop/internal panels
+optdepend = pciutils: gpu module — GPU detection via lspci
+optdepend = mesa-utils: gpu module — OpenGL renderer detection (glxinfo)
+optdepend = vulkan-tools: gpu module — Vulkan status detection (vulkaninfo)
+optdepend = qt6-tools: gpu module — KWin compositor status (qdbus6)

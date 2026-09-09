@@ -177,6 +177,27 @@ QFrame#InlineCard {
     border-radius: 10px;
 }
 
+QSlider::groove:horizontal {
+    height: 6px;
+    background: rgb(50, 47, 72);
+    border-radius: 3px;
+}
+QSlider::sub-page:horizontal {
+    height: 6px;
+    background: rgb(150, 110, 220);
+    border-radius: 3px;
+}
+QSlider::handle:horizontal {
+    width: 16px;
+    height: 16px;
+    margin: -6px 0;
+    background: rgb(203, 166, 247);
+    border-radius: 8px;
+}
+QSlider::handle:horizontal:hover {
+    background: rgb(220, 190, 255);
+}
+
 QCheckBox {
     color: rgb(210, 205, 230);
     font-size: 13px;
@@ -246,6 +267,20 @@ QLineEdit {
     selection-color: rgb(240, 235, 255);
 }
 QLineEdit:focus {
+    border: 1px solid rgb(160, 120, 220);
+}
+
+QPlainTextEdit {
+    background-color: rgb(40, 35, 60);
+    color: rgb(220, 210, 240);
+    border: 1px solid rgb(100, 80, 150);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    selection-background-color: rgb(80, 60, 130);
+    selection-color: rgb(240, 235, 255);
+}
+QPlainTextEdit:focus {
     border: 1px solid rgb(160, 120, 220);
 }
 

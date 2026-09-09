@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-settings
-pkgver=1.6.0
-pkgrel=8
+pkgver=1.7.0
+pkgrel=2
 pkgdesc="Unified settings panel for Equestria OS — all system tools in one place"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -28,6 +28,10 @@ optdepends=(
     'speedtest-cli: internet module — speed test'
     'ddcutil: brightness module — real hardware control for external monitors via DDC/CI'
     'brightnessctl: brightness module — real hardware control for laptop/internal panels'
+    'pciutils: gpu module — GPU detection via lspci'
+    'mesa-utils: gpu module — OpenGL renderer detection (glxinfo)'
+    'vulkan-tools: gpu module — Vulkan status detection (vulkaninfo)'
+    'qt6-tools: gpu module — KWin compositor status (qdbus6)'
 )
 
 package() {
