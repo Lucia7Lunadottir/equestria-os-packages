@@ -2,12 +2,13 @@
 
 pkgname=equestria-os-settings
 pkgver=1.6.0
-pkgrel=5
+pkgrel=8
 pkgdesc="Unified settings panel for Equestria OS — all system tools in one place"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
 depends=('python-pyqt6')
+install=equestria-os-settings.install
 optdepends=(
     'equestria-os-disk-manager: disk management module'
     'equestria-os-package-manager: package removal module'
@@ -25,6 +26,8 @@ optdepends=(
     'networkmanager: internet module — DNS and connection management'
     'iw: internet module — WiFi power-save detection'
     'speedtest-cli: internet module — speed test'
+    'ddcutil: brightness module — real hardware control for external monitors via DDC/CI'
+    'brightnessctl: brightness module — real hardware control for laptop/internal panels'
 )
 
 package() {
@@ -72,4 +75,9 @@ WRAPPER
     install -Dm644 "$startdir/$pkgname.png" \
         "$pkgdir/usr/share/pixmaps/$pkgname.png"
 
+    # udev rule — grants the active local user write access to sysfs
+    # backlight devices so brightness control (this app and KDE Powerdevil)
+    # doesn't need a password prompt on every change.
+    install -Dm644 "$startdir/90-equestria-backlight.rules" \
+        "$pkgdir/usr/lib/udev/rules.d/90-equestria-backlight.rules"
 }
