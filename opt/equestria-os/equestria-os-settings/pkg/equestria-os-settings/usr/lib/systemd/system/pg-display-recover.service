@@ -1,0 +1,13 @@
+[Unit]
+Description=Equestria OS — Display Recovery Watchdog (NVIDIA/KWin black screen after resume)
+Documentation=https://psyche-games.com
+After=display-manager.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pg-display-recover
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

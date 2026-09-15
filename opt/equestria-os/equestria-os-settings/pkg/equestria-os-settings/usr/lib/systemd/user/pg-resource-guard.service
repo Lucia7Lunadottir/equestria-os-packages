@@ -1,0 +1,12 @@
+[Unit]
+Description=Equestria OS — Resource Pressure Notifier (RAM/VRAM, notification only, never kills anything)
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pg-resource-guard
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

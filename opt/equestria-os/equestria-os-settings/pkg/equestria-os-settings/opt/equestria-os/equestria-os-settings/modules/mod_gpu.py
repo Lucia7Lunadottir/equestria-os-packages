@@ -2,12 +2,13 @@
 
 import os
 import shutil
+import signal
 import subprocess
 import threading
 
-from PyQt6.QtCore import Qt, QObject, pyqtSignal
+from PyQt6.QtCore import Qt, QObject, QTimer, pyqtSignal
 from PyQt6.QtWidgets import (
-    QFrame, QHBoxLayout, QLabel, QMessageBox, QPushButton,
+    QCheckBox, QFrame, QHBoxLayout, QLabel, QMessageBox, QPushButton,
     QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
 )
 
@@ -41,6 +42,25 @@ _WARN_STYLE = "QLabel{color:rgb(220,185,80);font-size:12px;background:transparen
 
 _BLACKLIST_NOUVEAU_FILE = "/etc/modprobe.d/blacklist-nouveau.conf"
 _DRIVER_CACHE_DIR = "/usr/share/pg-gpu-sync/drivers"
+
+# Direct Scanout fix — drop-in for the user's KWin systemd unit. Some NVIDIA
+# driver / KWin Wayland combinations fail to negotiate a DRM output layer
+# after enough failed GEM memory allocations (frequently triggered by
+# suspend/resume), leaving a black screen with the compositor still alive.
+# KWIN_DRM_NO_DIRECT_SCANOUT=1 avoids the direct-scanout path that trips this.
+_KWIN_DROPIN_DIR = os.path.expanduser(
+    "~/.config/systemd/user/plasma-kwin_wayland.service.d"
+)
+_KWIN_DROPIN_FILE = os.path.join(_KWIN_DROPIN_DIR, "99-equestria-no-direct-scanout.conf")
+_KWIN_DROPIN_CONTENT = "[Service]\nEnvironment=KWIN_DRM_NO_DIRECT_SCANOUT=1\n"
+
+_WATCHDOG_SERVICE = "pg-display-recover.service"
+
+# Resource guard — a user-level service (no root needed) that only sends a
+# desktop notification when RAM or VRAM run low. It never closes or kills
+# anything, unlike systemd-oomd — some users deliberately don't want automatic
+# process kills and just want a heads-up to close something themselves.
+_RESOURCE_GUARD_SERVICE = "pg-resource-guard.service"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -289,6 +309,90 @@ def _has_nvidia_settings() -> bool:
     return shutil.which("nvidia-settings") is not None
 
 
+def _scanout_fix_enabled() -> bool:
+    return os.path.isfile(_KWIN_DROPIN_FILE)
+
+
+def _watchdog_enabled() -> bool:
+    try:
+        out = subprocess.run(
+            ["systemctl", "is-enabled", _WATCHDOG_SERVICE],
+            capture_output=True, text=True, timeout=5
+        )
+        return out.stdout.strip() == "enabled"
+    except Exception:
+        return False
+
+
+def _watchdog_last_recovery() -> str:
+    """Timestamp of the last automatic recovery, or '' if none happened yet."""
+    try:
+        out = subprocess.run(
+            ["journalctl", "-u", _WATCHDOG_SERVICE, "-g", "restarting display-manager",
+             "-o", "short-iso", "-n", "1", "--no-pager"],
+            capture_output=True, text=True, timeout=5
+        )
+        return out.stdout.strip()
+    except Exception:
+        return ""
+
+
+def _resource_guard_enabled() -> bool:
+    try:
+        out = subprocess.run(
+            ["systemctl", "--user", "is-enabled", _RESOURCE_GUARD_SERVICE],
+            capture_output=True, text=True, timeout=5
+        )
+        return out.stdout.strip() == "enabled"
+    except Exception:
+        return False
+
+
+def _get_vram_usage() -> tuple[int, int] | tuple[None, None]:
+    try:
+        out = subprocess.run(
+            ["nvidia-smi", "--query-gpu=memory.used,memory.total",
+             "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=5
+        )
+        line = out.stdout.strip().splitlines()[0] if out.stdout.strip() else ""
+        used_s, total_s = [p.strip() for p in line.split(",")]
+        return int(used_s), int(total_s)
+    except Exception:
+        return None, None
+
+
+def _get_vram_processes() -> list[tuple[int, str, int]]:
+    """Return (pid, short_name, mib) for processes currently holding GPU memory."""
+    try:
+        out = subprocess.run(
+            ["nvidia-smi", "--query-compute-apps=pid,used_memory,process_name",
+             "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=8
+        )
+        if out.returncode != 0:
+            return []
+        result = []
+        for line in out.stdout.strip().splitlines():
+            parts = [p.strip() for p in line.split(",", 2)]
+            if len(parts) < 3:
+                continue
+            try:
+                pid = int(parts[0])
+                mib = int(parts[1])
+            except ValueError:
+                continue
+            # process_name sometimes comes back as a full cmdline — keep only
+            # the executable path, then just its basename.
+            raw_name = parts[2].split()[0] if parts[2] else parts[2]
+            name = os.path.basename(raw_name) or raw_name
+            result.append((pid, name, mib))
+        result.sort(key=lambda t: -t[2])
+        return result
+    except Exception:
+        return []
+
+
 # ── Worker ────────────────────────────────────────────────────────────────────
 
 class _GpuInfoWorker(QObject):
@@ -319,6 +423,16 @@ class _GpuInfoWorker(QObject):
 
         info["cached_drivers"] = _get_cached_drivers()
         info["has_nvidia_settings"] = _has_nvidia_settings()
+
+        info["scanout_fix_enabled"] = _scanout_fix_enabled()
+        info["watchdog_enabled"] = _watchdog_enabled()
+        info["watchdog_last_recovery"] = _watchdog_last_recovery()
+
+        info["resource_guard_enabled"] = _resource_guard_enabled()
+        vram_used, vram_total = _get_vram_usage()
+        info["vram_used_mib"] = vram_used
+        info["vram_total_mib"] = vram_total
+        info["vram_processes"] = _get_vram_processes()
 
         self.done.emit(info)
 
@@ -383,6 +497,8 @@ class GpuModule(BaseModule):
 
         self._build_gpu_info_card(layout)
         self._build_graphics_status_card(layout)
+        self._build_stability_card(layout)
+        self._build_resource_guard_card(layout)
         self._build_driver_status_card(layout)
         self._build_driver_actions_card(layout)
         self._build_driver_cache_card(layout)
@@ -455,6 +571,119 @@ class GpuModule(BaseModule):
         self._nvsettings_btn.clicked.connect(self._open_nvidia_settings)
         self._nvsettings_btn.hide()
         btn_row.addWidget(self._nvsettings_btn)
+        btn_row.addStretch()
+        layout.addLayout(btn_row)
+
+        parent_layout.addWidget(card)
+
+    # ── Stability card (black screen after resume) ───────────────────────────
+
+    def _build_stability_card(self, parent_layout):
+        card = QFrame()
+        card.setObjectName("InlineCard")
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(20, 16, 20, 16)
+        layout.setSpacing(10)
+
+        self._stability_title_lbl = QLabel(self.t("gpu.stability_title"))
+        self._stability_title_lbl.setObjectName("SectionTitle")
+        layout.addWidget(self._stability_title_lbl)
+
+        self._stability_desc_lbl = QLabel(self.t("gpu.stability_desc"))
+        self._stability_desc_lbl.setObjectName("FieldHint")
+        self._stability_desc_lbl.setWordWrap(True)
+        layout.addWidget(self._stability_desc_lbl)
+
+        # Direct Scanout toggle
+        scanout_row = QHBoxLayout()
+        self._scanout_cb = QCheckBox(self.t("gpu.scanout_toggle"))
+        self._scanout_cb.stateChanged.connect(self._on_scanout_toggled)
+        scanout_row.addWidget(self._scanout_cb)
+        scanout_row.addStretch()
+        layout.addLayout(scanout_row)
+
+        self._scanout_hint_lbl = QLabel(self.t("gpu.scanout_hint"))
+        self._scanout_hint_lbl.setObjectName("FieldHint")
+        self._scanout_hint_lbl.setWordWrap(True)
+        layout.addWidget(self._scanout_hint_lbl)
+
+        scanout_btn_row = QHBoxLayout()
+        self._scanout_apply_btn = QPushButton(self.t("gpu.scanout_apply_now"))
+        self._scanout_apply_btn.setStyleSheet(_BTN_ACTION)
+        self._scanout_apply_btn.clicked.connect(self._apply_scanout_now)
+        scanout_btn_row.addWidget(self._scanout_apply_btn)
+        scanout_btn_row.addStretch()
+        layout.addLayout(scanout_btn_row)
+
+        layout.addSpacing(4)
+
+        # Watchdog toggle
+        wd_row = QHBoxLayout()
+        self._watchdog_cb = QCheckBox(self.t("gpu.watchdog_toggle"))
+        self._watchdog_cb.stateChanged.connect(self._on_watchdog_toggled)
+        wd_row.addWidget(self._watchdog_cb)
+        wd_row.addStretch()
+        layout.addLayout(wd_row)
+
+        self._watchdog_hint_lbl = QLabel(self.t("gpu.watchdog_hint"))
+        self._watchdog_hint_lbl.setObjectName("FieldHint")
+        self._watchdog_hint_lbl.setWordWrap(True)
+        layout.addWidget(self._watchdog_hint_lbl)
+
+        self._watchdog_status_lbl = QLabel("")
+        self._watchdog_status_lbl.setStyleSheet(_STATUS_MONO)
+        self._watchdog_status_lbl.setWordWrap(True)
+        self._watchdog_status_lbl.hide()
+        layout.addWidget(self._watchdog_status_lbl)
+
+        parent_layout.addWidget(card)
+
+    # ── Resource guard card (RAM/VRAM pressure, never kills anything itself) ──
+
+    def _build_resource_guard_card(self, parent_layout):
+        card = QFrame()
+        card.setObjectName("InlineCard")
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(20, 16, 20, 16)
+        layout.setSpacing(10)
+
+        self._resguard_title_lbl = QLabel(self.t("gpu.resguard_title"))
+        self._resguard_title_lbl.setObjectName("SectionTitle")
+        layout.addWidget(self._resguard_title_lbl)
+
+        self._resguard_desc_lbl = QLabel(self.t("gpu.resguard_desc"))
+        self._resguard_desc_lbl.setObjectName("FieldHint")
+        self._resguard_desc_lbl.setWordWrap(True)
+        layout.addWidget(self._resguard_desc_lbl)
+
+        self._resguard_cb = QCheckBox(self.t("gpu.resguard_toggle"))
+        self._resguard_cb.stateChanged.connect(self._on_resguard_toggled)
+        layout.addWidget(self._resguard_cb)
+
+        self._resguard_hint_lbl = QLabel(self.t("gpu.resguard_hint"))
+        self._resguard_hint_lbl.setObjectName("FieldHint")
+        self._resguard_hint_lbl.setWordWrap(True)
+        layout.addWidget(self._resguard_hint_lbl)
+
+        self._vram_summary_lbl = QLabel(self.t("gpu.loading"))
+        self._vram_summary_lbl.setStyleSheet(_STATUS_MONO)
+        self._vram_summary_lbl.setWordWrap(True)
+        layout.addWidget(self._vram_summary_lbl)
+
+        self._vram_list_container = QVBoxLayout()
+        self._vram_list_container.setSpacing(6)
+        layout.addLayout(self._vram_list_container)
+
+        self._vram_empty_lbl = QLabel(self.t("gpu.vram_none"))
+        self._vram_empty_lbl.setObjectName("FieldHint")
+        self._vram_empty_lbl.hide()
+        layout.addWidget(self._vram_empty_lbl)
+
+        btn_row = QHBoxLayout()
+        self._vram_refresh_btn = QPushButton(self.t("gpu.refresh"))
+        self._vram_refresh_btn.setStyleSheet(_BTN_ACTION)
+        self._vram_refresh_btn.clicked.connect(self._refresh_all)
+        btn_row.addWidget(self._vram_refresh_btn)
         btn_row.addStretch()
         layout.addLayout(btn_row)
 
@@ -591,6 +820,19 @@ class GpuModule(BaseModule):
         self._refresh_btn.setText(self.t("gpu.refresh"))
         self._gfx_title_lbl.setText(self.t("gpu.gfx_title"))
         self._nvsettings_btn.setText(self.t("gpu.btn_nvidia_settings"))
+        self._stability_title_lbl.setText(self.t("gpu.stability_title"))
+        self._stability_desc_lbl.setText(self.t("gpu.stability_desc"))
+        self._scanout_cb.setText(self.t("gpu.scanout_toggle"))
+        self._scanout_hint_lbl.setText(self.t("gpu.scanout_hint"))
+        self._scanout_apply_btn.setText(self.t("gpu.scanout_apply_now"))
+        self._watchdog_cb.setText(self.t("gpu.watchdog_toggle"))
+        self._watchdog_hint_lbl.setText(self.t("gpu.watchdog_hint"))
+        self._resguard_title_lbl.setText(self.t("gpu.resguard_title"))
+        self._resguard_desc_lbl.setText(self.t("gpu.resguard_desc"))
+        self._resguard_cb.setText(self.t("gpu.resguard_toggle"))
+        self._resguard_hint_lbl.setText(self.t("gpu.resguard_hint"))
+        self._vram_empty_lbl.setText(self.t("gpu.vram_none"))
+        self._vram_refresh_btn.setText(self.t("gpu.refresh"))
         self._status_title_lbl.setText(self.t("gpu.status_title"))
         self._actions_title_lbl.setText(self.t("gpu.actions_title"))
         self._reconfigure_btn.setText(self.t("gpu.btn_reconfigure"))
@@ -618,6 +860,8 @@ class GpuModule(BaseModule):
         self._refresh_btn.setEnabled(True)
         self._populate_gpu_info(info)
         self._populate_graphics_status(info)
+        self._populate_stability(info)
+        self._populate_resource_guard(info)
         self._populate_driver_status(info)
         self._populate_driver_cache(info)
 
@@ -703,6 +947,68 @@ class GpuModule(BaseModule):
             lines.append(f"nvidia-smi : {self.t('gpu.smi_not_found')}")
 
         self._gfx_status_lbl.setText("\n".join(lines))
+
+    # ── Populate stability card ───────────────────────────────────────────────
+
+    def _populate_stability(self, info: dict):
+        self._scanout_cb.blockSignals(True)
+        self._scanout_cb.setChecked(info.get("scanout_fix_enabled", False))
+        self._scanout_cb.blockSignals(False)
+
+        self._watchdog_cb.blockSignals(True)
+        self._watchdog_cb.setChecked(info.get("watchdog_enabled", False))
+        self._watchdog_cb.blockSignals(False)
+
+        last_recovery = info.get("watchdog_last_recovery", "")
+        if last_recovery:
+            self._watchdog_status_lbl.setText(
+                f"{self.t('gpu.watchdog_last_recovery')}: {last_recovery}"
+            )
+            self._watchdog_status_lbl.show()
+        else:
+            self._watchdog_status_lbl.hide()
+
+    # ── Populate resource guard card ──────────────────────────────────────────
+
+    def _populate_resource_guard(self, info: dict):
+        self._resguard_cb.blockSignals(True)
+        self._resguard_cb.setChecked(info.get("resource_guard_enabled", False))
+        self._resguard_cb.blockSignals(False)
+
+        used = info.get("vram_used_mib")
+        total = info.get("vram_total_mib")
+        if used is not None and total:
+            pct = round(used * 100 / total)
+            self._vram_summary_lbl.setText(
+                self.t("gpu.vram_summary").format(used=used, total=total, pct=pct)
+            )
+        else:
+            self._vram_summary_lbl.setText(self.t("gpu.vram_unavailable"))
+
+        # Clear old process rows (each row is a QHBoxLayout added via addLayout).
+        while self._vram_list_container.count():
+            item = self._vram_list_container.takeAt(0)
+            lay = item.layout()
+            if lay:
+                while lay.count():
+                    sub = lay.takeAt(0)
+                    if sub.widget():
+                        sub.widget().deleteLater()
+            elif item.widget():
+                item.widget().deleteLater()
+
+        procs = info.get("vram_processes", [])
+        self._vram_empty_lbl.setVisible(not procs)
+        for pid, name, mib in procs[:10]:
+            row = QHBoxLayout()
+            lbl = QLabel(f"{name}  (PID {pid})  —  {mib} MB")
+            lbl.setStyleSheet(_STATUS_MONO)
+            row.addWidget(lbl, stretch=1)
+            end_btn = QPushButton(self.t("gpu.btn_end_process"))
+            end_btn.setStyleSheet(_BTN_DANGER)
+            end_btn.clicked.connect(lambda _, p=pid, n=name: self._end_vram_process(p, n))
+            row.addWidget(end_btn)
+            self._vram_list_container.addLayout(row)
 
     # ── Populate driver status card ───────────────────────────────────────────
 
@@ -845,3 +1151,112 @@ class GpuModule(BaseModule):
         worker.done.connect(lambda ok, out: self._on_action_done(ok, out, refresh=False))
         self._test_worker = worker
         threading.Thread(target=worker.run, daemon=True).start()
+
+    # ── Direct Scanout fix (black screen after resume) ───────────────────────
+
+    def _on_scanout_toggled(self, state):
+        try:
+            if state:
+                os.makedirs(_KWIN_DROPIN_DIR, exist_ok=True)
+                with open(_KWIN_DROPIN_FILE, "w") as f:
+                    f.write(_KWIN_DROPIN_CONTENT)
+            else:
+                if os.path.isfile(_KWIN_DROPIN_FILE):
+                    os.remove(_KWIN_DROPIN_FILE)
+            subprocess.run(["systemctl", "--user", "daemon-reload"], timeout=10)
+        except Exception as e:
+            print(f"[gpu] failed to update scanout drop-in: {e}")
+
+    def _apply_scanout_now(self):
+        if not self._confirm(
+            self.t("gpu.confirm_title"),
+            self.t("gpu.confirm_scanout_apply")
+        ):
+            return
+
+        self._scanout_apply_btn.setEnabled(False)
+        worker = _CmdWorker(
+            ["bash", "-c",
+             "systemctl --user daemon-reload && "
+             "systemctl --user restart plasma-kwin_wayland.service"],
+            timeout=30
+        )
+        worker.done.connect(self._on_scanout_apply_done)
+        self._scanout_apply_worker = worker
+        threading.Thread(target=worker.run, daemon=True).start()
+
+    def _on_scanout_apply_done(self, ok: bool, output: str):
+        self._scanout_apply_btn.setEnabled(True)
+        if not ok:
+            QMessageBox.warning(
+                self._widget,
+                self.t("gpu.confirm_title"),
+                f"{self.t('gpu.scanout_apply_error')}\n\n{output}".strip()
+            )
+
+    # ── Recovery watchdog ──────────────────────────────────────────────────────
+
+    def _on_watchdog_toggled(self, state):
+        self._watchdog_cb.setEnabled(False)
+        action = "enable" if state else "disable"
+        worker = _CmdWorker(
+            ["pkexec", "systemctl", action, "--now", _WATCHDOG_SERVICE],
+            timeout=30
+        )
+        worker.done.connect(self._on_watchdog_toggle_done)
+        self._watchdog_worker = worker
+        threading.Thread(target=worker.run, daemon=True).start()
+
+    def _on_watchdog_toggle_done(self, ok: bool, output: str):
+        self._watchdog_cb.setEnabled(True)
+        if not ok:
+            # revert the checkbox to actual state — the pkexec prompt may
+            # have been cancelled or the action failed
+            if output:
+                QMessageBox.warning(
+                    self._widget,
+                    self.t("gpu.confirm_title"),
+                    f"{self.t('gpu.watchdog_error')}\n\n{output}"
+                )
+            self._refresh_all()
+
+    # ── Resource guard (notification-only, never kills anything itself) ──────
+
+    def _on_resguard_toggled(self, state):
+        self._resguard_cb.setEnabled(False)
+        action = "enable" if state else "disable"
+        # User-level service — no pkexec needed, it only reads /proc and
+        # nvidia-smi and sends a desktop notification.
+        worker = _CmdWorker(
+            ["systemctl", "--user", action, "--now", _RESOURCE_GUARD_SERVICE],
+            timeout=15
+        )
+        worker.done.connect(self._on_resguard_toggle_done)
+        self._resguard_worker = worker
+        threading.Thread(target=worker.run, daemon=True).start()
+
+    def _on_resguard_toggle_done(self, ok: bool, output: str):
+        self._resguard_cb.setEnabled(True)
+        if not ok and output:
+            QMessageBox.warning(
+                self._widget,
+                self.t("gpu.confirm_title"),
+                f"{self.t('gpu.resguard_error')}\n\n{output}"
+            )
+        self._refresh_all()
+
+    # ── VRAM process list (manual, user-initiated only) ───────────────────────
+
+    def _end_vram_process(self, pid: int, name: str):
+        if not self._confirm(
+            self.t("gpu.confirm_title"),
+            self.t("gpu.confirm_end_process").format(name=name, pid=pid)
+        ):
+            return
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        except Exception as e:
+            QMessageBox.warning(self._widget, self.t("gpu.confirm_title"), str(e))
+        QTimer.singleShot(800, self._refresh_all)

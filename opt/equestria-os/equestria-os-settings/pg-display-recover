@@ -1,0 +1,45 @@
+#!/bin/bash
+# pg-display-recover — Equestria OS display watchdog.
+#
+# Some NVIDIA driver / KWin Wayland combinations leak GPU memory
+# (nv_drm_gem_alloc_nvkms_memory_ioctl "Failed to allocate NVKMS memory")
+# until KWin can no longer negotiate a working DRM output layer, at which
+# point the screen goes black while the compositor process stays alive
+# (audio keeps playing, the hardware cursor sometimes still shows). Without
+# this watchdog the only way back is a hard power-cycle. This script watches
+# the journal for that exact failure signature and, once it repeats, restarts
+# the display manager to bring the screen back automatically.
+
+set -u
+
+PATTERN='Failed to find a working output layer configuration'
+THRESHOLD=5     # this many matching log lines...
+WINDOW=15       # ...within this many seconds trigger a recovery
+COOLDOWN=90     # minimum seconds between two consecutive recoveries
+
+count=0
+window_start=0
+last_recovery=0
+
+log() { logger -t pg-display-recover "$1"; }
+
+log "watchdog started, watching for: $PATTERN"
+
+while read -r _; do
+    now=$(date +%s)
+
+    if (( now - window_start > WINDOW )); then
+        window_start=$now
+        count=0
+    fi
+    count=$((count + 1))
+
+    if (( count >= THRESHOLD )) && (( now - last_recovery > COOLDOWN )); then
+        log "detected $count output-layer failures within ${WINDOW}s — restarting display-manager.service"
+        systemctl restart display-manager.service
+        last_recovery=$now
+        count=0
+    fi
+done < <(journalctl -f -n0 --output=cat -g "$PATTERN")
+
+log "watchdog exited (journalctl stream ended)"

@@ -1,0 +1,73 @@
+#!/bin/bash
+# pg-resource-guard — Equestria OS resource pressure notifier.
+#
+# Purely informational: warns via a desktop notification when system RAM or
+# GPU VRAM is close to running out, so you can close something yourself
+# before it turns into lag, swap thrashing, or a crash (e.g. NVIDIA
+# NV_ERR_NO_MEMORY in Unity/OBS/games). This script NEVER closes, kills, or
+# restarts anything — it only reads /proc/pressure and nvidia-smi and sends
+# a notification. No root required.
+
+set -u
+
+MEM_PRESSURE_THRESHOLD=10   # "full avg10" percent from /proc/pressure/memory
+VRAM_PERCENT_THRESHOLD=90
+CHECK_INTERVAL=5
+COOLDOWN=120                # minimum seconds between two notifications of the same kind
+
+last_mem_notify=0
+last_vram_notify=0
+
+top_consumer() {
+    ps -eo comm,rss --sort=-rss --no-headers | awk 'NR==1{printf "%s (%.1f ГБ)", $1, $2/1024/1024}'
+}
+
+check_memory() {
+    local line pressure now
+    line=$(grep '^full' /proc/pressure/memory 2>/dev/null)
+    [ -z "$line" ] && return
+    pressure=$(echo "$line" | grep -oP 'avg10=\K[0-9.]+')
+    [ -z "$pressure" ] && return
+
+    if ! awk -v p="$pressure" -v t="$MEM_PRESSURE_THRESHOLD" 'BEGIN{exit !(p>t)}'; then
+        return
+    fi
+
+    now=$(date +%s)
+    if (( now - last_mem_notify > COOLDOWN )); then
+        notify-send -u critical -a "Equestria OS" \
+            "Не хватает оперативной памяти" \
+            "Система тормозит из-за нехватки ОЗУ. Больше всего занимает: $(top_consumer)" 2>/dev/null
+        last_mem_notify=$now
+    fi
+}
+
+check_vram() {
+    command -v nvidia-smi >/dev/null || return
+    local out used total now
+    out=$(nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader,nounits 2>/dev/null | head -1)
+    [ -z "$out" ] && return
+    used=$(echo "$out" | cut -d, -f1 | tr -d ' ')
+    total=$(echo "$out" | cut -d, -f2 | tr -d ' ')
+    if [ -z "$used" ] || [ -z "$total" ] || [ "$total" -eq 0 ]; then
+        return
+    fi
+
+    if (( used * 100 / total <= VRAM_PERCENT_THRESHOLD )); then
+        return
+    fi
+
+    now=$(date +%s)
+    if (( now - last_vram_notify > COOLDOWN )); then
+        notify-send -u critical -a "Equestria OS" \
+            "Видеопамять почти закончилась" \
+            "Занято ${used} / ${total} МБ. Возможны сбои в играх, Unity или OBS." 2>/dev/null
+        last_vram_notify=$now
+    fi
+}
+
+while true; do
+    check_memory
+    check_vram
+    sleep "$CHECK_INTERVAL"
+done

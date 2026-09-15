@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-settings
 pkgver=1.7.0
-pkgrel=2
+pkgrel=5
 pkgdesc="Unified settings panel for Equestria OS — all system tools in one place"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -32,6 +32,8 @@ optdepends=(
     'mesa-utils: gpu module — OpenGL renderer detection (glxinfo)'
     'vulkan-tools: gpu module — Vulkan status detection (vulkaninfo)'
     'qt6-tools: gpu module — KWin compositor status (qdbus6)'
+    'alsa-utils: microphone module — mic boost/gain control (amixer, alsactl)'
+    'pipewire: microphone module — test recording (pw-record, pw-play)'
 )
 
 package() {
@@ -84,4 +86,19 @@ WRAPPER
     # doesn't need a password prompt on every change.
     install -Dm644 "$startdir/90-equestria-backlight.rules" \
         "$pkgdir/usr/lib/udev/rules.d/90-equestria-backlight.rules"
+
+    # Display watchdog — opt-in via the GPU module, restarts the display
+    # manager if the NVIDIA/KWin black-screen-after-resume bug is detected.
+    install -Dm755 "$startdir/pg-display-recover" \
+        "$pkgdir/usr/bin/pg-display-recover"
+    install -Dm644 "$startdir/pg-display-recover.service" \
+        "$pkgdir/usr/lib/systemd/system/pg-display-recover.service"
+
+    # Resource guard — opt-in via the GPU module, sends a desktop notification
+    # when RAM or VRAM run low. Notification only: never closes or kills
+    # anything. Runs as a user service, no root required.
+    install -Dm755 "$startdir/pg-resource-guard" \
+        "$pkgdir/usr/bin/pg-resource-guard"
+    install -Dm644 "$startdir/pg-resource-guard.service" \
+        "$pkgdir/usr/lib/systemd/user/pg-resource-guard.service"
 }
