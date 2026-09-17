@@ -16,8 +16,9 @@ from PyQt6.QtCore import (Qt, QThread, QTimer, QFileSystemWatcher, QProcess, QEv
 
 from models import EssentialData, StoreData
 from utils import (FLATPAK_APPSTREAM, cleanup_screenshot_cache, parse_appstream_uri,
-                   normalize_key, merge_packages, _GENERIC_PACMAN_DESC, guess_cat)
-from workers import (AppStoreLoader, FlatpakLoader,
+                   parse_flatpakref_uri, FLATPAKREF_SCHEMES, normalize_key, merge_packages,
+                   _GENERIC_PACMAN_DESC, guess_cat)
+from workers import (AppStoreLoader, FlatpakLoader, FlatpakRefResolveThread,
                      AURSearchThread, AURPopularLoader, AURUpgradableLoader,
                      ScreenshotDownloadThread, LocalAppStreamLoader,
                      PacmanInfoLoader)
@@ -33,17 +34,23 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     db_refresh_done = pyqtSignal(bool)
     essentials_classified = pyqtSignal(list, list)  # (official_names, aur_names)
 
-    def __init__(self, pending_appstream_id=None):
+    def __init__(self, pending_appstream_id=None, pending_flatpakref_uri=None):
         super().__init__()
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.setupUi(self)
         self.setWindowTitle("Equestria Software Center")
 
-        # Set when launched via an "appstream://<id>" link (the URI some
-        # sites, e.g. Flathub's "Open in App Center" links, use instead of a
-        # .flatpakref download) — consumed once the Flatpak catalog finishes
-        # loading, see _open_pending_appstream_id().
+        # Set when launched via an "appstream://<id>" link or a
+        # "flatpak+https://.../foo.flatpakref" link (both are used across
+        # sites, e.g. Flathub's "Install"/"Open in App Center" buttons) —
+        # consumed once the Flatpak catalog finishes loading, see
+        # _open_pending_appstream_id().
         self._pending_appstream_id = pending_appstream_id
+        # Raw "flatpak+https://.../foo.flatpakref" arg, still unresolved —
+        # resolved to an app id on a background thread, see start_loaders()
+        # and _on_flatpakref_resolved().
+        self._pending_flatpakref_uri = pending_flatpakref_uri
+        self._flatpak_catalog_ready = False
 
         self.langs = []
         self.localizations = {}
@@ -212,15 +219,23 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.loader.finished.connect(self.on_store_loaded)
         self.loader.start()
 
-        if ((self._settings.get("enable_flatpak", True) or self._pending_appstream_id)
+        if ((self._settings.get("enable_flatpak", True) or self._pending_appstream_id
+                or self._pending_flatpakref_uri)
                 and shutil.which("flatpak") and os.path.exists(FLATPAK_APPSTREAM)):
             self.flatpak_loader = FlatpakLoader()
             self.flatpak_loader.finished.connect(self.on_flatpak_loaded)
             self.flatpak_loader.start()
-        elif self._pending_appstream_id:
+        else:
             # No Flatpak support available at all — resolve immediately so
             # the user gets a message instead of a silently ignored request.
-            QTimer.singleShot(0, self._open_pending_appstream_id)
+            self._flatpak_catalog_ready = True
+            if self._pending_appstream_id:
+                QTimer.singleShot(0, self._open_pending_appstream_id)
+
+        if self._pending_flatpakref_uri:
+            self._flatpakref_resolve_thread = FlatpakRefResolveThread(self._pending_flatpakref_uri)
+            self._flatpakref_resolve_thread.resolved.connect(self._on_flatpakref_resolved)
+            self._flatpakref_resolve_thread.start()
 
         if self._settings.get("enable_aur", True):
             self._aur_popular_thread = AURPopularLoader()
@@ -660,11 +675,23 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self._rebuild_merged()
         if self._current_source in ("flatpak", "all"):
             self.filter_store()
-        self._open_pending_appstream_id()
+        self._flatpak_catalog_ready = True
+        if not self._pending_flatpakref_uri:
+            self._open_pending_appstream_id()
+
+    def _on_flatpakref_resolved(self, app_id):
+        """Callback for FlatpakRefResolveThread — see start_loaders()."""
+        self._pending_flatpakref_uri = None
+        if not app_id:
+            return
+        self._pending_appstream_id = app_id
+        if self._flatpak_catalog_ready:
+            self._open_pending_appstream_id()
 
     def _open_pending_appstream_id(self):
-        """Jump straight to the detail page for an "appstream://<id>" link
-        the app was launched with (see __main__ and utils.parse_appstream_uri)."""
+        """Jump straight to the detail page for an "appstream://<id>" or
+        "flatpak+https://.../foo.flatpakref" link the app was launched with
+        (see __main__, utils.parse_appstream_uri and utils.parse_flatpakref_uri)."""
         app_id = self._pending_appstream_id
         if not app_id:
             return
@@ -1462,12 +1489,26 @@ if __name__ == "__main__":
     app.setDesktopFileName("equestria-os-software-center")
 
     pending_appstream_id = None
+    pending_flatpakref_uri = None
     for arg in sys.argv[1:]:
         app_id = parse_appstream_uri(arg)
         if app_id:
             pending_appstream_id = app_id
             break
+        if arg.startswith(FLATPAKREF_SCHEMES):
+            # Resolved on a background thread once the window is up (see
+            # main_app.start_loaders) — a network fetch here would delay the
+            # window appearing at all.
+            pending_flatpakref_uri = arg
+            break
+        if arg.lower().endswith(".flatpakref") and os.path.isfile(arg):
+            # Local file, no network needed — resolve inline.
+            app_id = parse_flatpakref_uri(arg)
+            if app_id:
+                pending_appstream_id = app_id
+            break
 
-    win = main_app(pending_appstream_id=pending_appstream_id)
+    win = main_app(pending_appstream_id=pending_appstream_id,
+                    pending_flatpakref_uri=pending_flatpakref_uri)
     win.show()
     sys.exit(app.exec())

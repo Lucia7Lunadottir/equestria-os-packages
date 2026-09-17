@@ -7,4 +7,4 @@ Terminal=false
 Type=Application
 Categories=X-EquestriaOS;System;Settings;
 StartupWMClass=equestria-os-software-center
-MimeType=x-scheme-handler/appstream;
+MimeType=x-scheme-handler/appstream;x-scheme-handler/flatpak+https;application/vnd.flatpak.ref;

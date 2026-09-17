@@ -1,6 +1,8 @@
 import os
 import datetime
+import configparser
 import xml.etree.ElementTree as ET
+from urllib.request import urlopen, Request
 
 FLATPAK_APPSTREAM = "/var/lib/flatpak/appstream/flathub/x86_64/active/appstream.xml.gz"
 FLATPAK_ICONS_DIR = "/var/lib/flatpak/appstream/flathub/x86_64/active/icons/128x128"
@@ -52,6 +54,39 @@ def parse_appstream_uri(uri):
         return None
     app_id = uri[len("appstream:"):].lstrip("/")
     return app_id or None
+
+
+FLATPAKREF_SCHEMES = ("flatpak+https://", "flatpak+http://")
+
+
+def parse_flatpakref_uri(uri):
+    """Extract the Flatpak app id from a "flatpak+https://.../Foo.flatpakref"
+    link — the format Flathub's "Install" button generates — or from a local
+    .flatpakref file path. Returns None if `uri` isn't one of these, or if the
+    ref can't be fetched/parsed."""
+    if uri.startswith(FLATPAKREF_SCHEMES):
+        url = uri[len("flatpak+"):]
+        try:
+            req = Request(url, headers={'User-Agent': 'equestria-os-software-center/1.0'})
+            with urlopen(req, timeout=8) as resp:
+                content = resp.read().decode("utf-8", errors="replace")
+        except Exception:
+            return None
+    elif uri.lower().endswith(".flatpakref") and os.path.isfile(uri):
+        try:
+            with open(uri, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
+        except Exception:
+            return None
+    else:
+        return None
+
+    parser = configparser.ConfigParser()
+    try:
+        parser.read_string(content)
+        return parser.get("Flatpak Ref", "Name", fallback=None)
+    except configparser.Error:
+        return None
 
 
 def normalize_key(s):

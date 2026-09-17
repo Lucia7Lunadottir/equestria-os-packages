@@ -13,7 +13,7 @@ from PyQt6.QtCore import QThread, pyqtSignal
 from models import StoreData
 from utils import (
     FLATPAK_APPSTREAM, FLATPAK_ICONS_DIR, SCREENSHOT_CACHE_DIR,
-    extract_appstream_text, guess_cat,
+    extract_appstream_text, guess_cat, parse_flatpakref_uri,
     _GENERIC_PACMAN_DESC, _GENERIC_FLATPAK_DESC,
 )
 
@@ -285,6 +285,19 @@ class ScreenshotDownloadThread(QThread):
             self.done.emit(self.url, local_path)
         except Exception:
             self.done.emit(self.url, "")
+
+
+class FlatpakRefResolveThread(QThread):
+    """Downloads a "flatpak+https://.../foo.flatpakref" link and extracts its
+    app id, without blocking the UI thread on the network fetch."""
+    resolved = pyqtSignal(object)  # app id (str) or None on failure
+
+    def __init__(self, uri):
+        super().__init__()
+        self.uri = uri
+
+    def run(self):
+        self.resolved.emit(parse_flatpakref_uri(self.uri))
 
 
 class LocalAppStreamLoader(QThread):
