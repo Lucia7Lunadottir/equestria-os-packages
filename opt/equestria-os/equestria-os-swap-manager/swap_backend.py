@@ -8,11 +8,13 @@ Supports multiple commands in a single invocation:
 """
 import sys
 import os
+import shutil
 import subprocess
 
 FSTAB_PATH  = "/etc/fstab"
 SYSCTL_DIR  = "/etc/sysctl.d"
 ZRAM_SERVICE = "/etc/systemd/system/equestria-zram.service"
+BTRFS_SWAP_SUBVOL = "/swap"
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -47,15 +49,63 @@ def remove_from_fstab(path):
             f.write(line)
 
 
+def _subvolume_id(path):
+    """Btrfs subvolume ID of `path`, or None if `path` isn't on Btrfs."""
+    r = subprocess.run(["btrfs", "subvolume", "show", path],
+                        capture_output=True, text=True)
+    if r.returncode != 0:
+        return None
+    for line in r.stdout.splitlines():
+        line = line.strip()
+        if line.startswith("Subvolume ID:"):
+            return line.split(":", 1)[1].strip()
+    return None
+
+
+def _resolve_swap_path(path, create_subvol=False):
+    """
+    Map a user-chosen swapfile path to where it should actually live.
+
+    Btrfs refuses to snapshot a subvolume that contains an active
+    swapfile — so a swapfile placed directly inside the '/' subvolume
+    would silently block every future snapshot of the root filesystem
+    (timeshift, snapper, equestria-os-save-point, ...). If that's where
+    `path` would land, relocate it (keeping only its filename) into a
+    dedicated subvolume so '/' stays snapshot-able.
+
+    On every other filesystem — or when the file is already outside the
+    '/' subvolume — this is a no-op and returns `path` unchanged.
+    """
+    if not shutil.which("btrfs"):
+        return path
+
+    parent = os.path.dirname(os.path.abspath(path)) or "/"
+    ancestor = parent
+    while not os.path.exists(ancestor):
+        ancestor = os.path.dirname(ancestor) or "/"
+        if ancestor == "/":
+            break
+
+    root_id = _subvolume_id("/")
+    if root_id is None or _subvolume_id(ancestor) != root_id:
+        return path  # not Btrfs, or already outside the '/' subvolume
+
+    if create_subvol and not os.path.exists(BTRFS_SWAP_SUBVOL):
+        subprocess.run(["btrfs", "subvolume", "create", BTRFS_SWAP_SUBVOL], check=True)
+    return os.path.join(BTRFS_SWAP_SUBVOL, os.path.basename(path))
+
+
 # ── swap file commands ────────────────────────────────────────────────────────
 
 def disable_swap(path):
+    path = _resolve_swap_path(path)
     subprocess.run(["swapoff", path], check=False)
     remove_from_fstab(path)
     sys.stdout.write(f"OK: Disabled swap at {path}\n")
 
 
 def create_swap(path, size_gb, add_to_fstab):
+    path = _resolve_swap_path(path, create_subvol=True)
     subprocess.run(["swapoff", path], check=False)
     subprocess.run(["touch", path], check=True)
     subprocess.run(["chattr", "+C", path], check=False)
@@ -73,6 +123,7 @@ def create_swap(path, size_gb, add_to_fstab):
 
 
 def delete_swap(path):
+    path = _resolve_swap_path(path)
     disable_swap(path)
     if os.path.exists(path):
         os.remove(path)
