@@ -8,4 +8,4 @@ Icon=system-software-install
 Terminal=false
 Type=Application
 Categories=System;Settings;
-MimeType=application/x-equestria-pkg;
+MimeType=application/x-equestria-pkg;application/vnd.debian.binary-package;application/x-deb;application/x-rpm;

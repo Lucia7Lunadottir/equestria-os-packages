@@ -45,6 +45,9 @@ class Ui_SettingsWindow:
 
         self.chk_debug = QCheckBox()
         glayout.addWidget(self.chk_debug)
+
+        self.chk_compat_profile = QCheckBox()
+        glayout.addWidget(self.chk_compat_profile)
         layout.addWidget(self.group_graphics)
 
         # Группа: Движок Proton

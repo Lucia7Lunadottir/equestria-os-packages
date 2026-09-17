@@ -37,7 +37,7 @@ class WelcomePage(QWizardPage):
 
 
         layout = QVBoxLayout()
-        self.info_label = QLabel(self.tr("Welcome to the installer!\n\nPlease select a .pkg.tar.zst file."))
+        self.info_label = QLabel(self.tr("Welcome to the installer!\n\nPlease select a package file (.pkg.tar.zst, .deb, .rpm)."))
         self.info_label.setWordWrap(True)
         layout.addWidget(self.info_label)
 
@@ -58,7 +58,9 @@ class WelcomePage(QWizardPage):
             self.completeChanged.emit()
 
     def browse_file(self):
-        file, _ = QFileDialog.getOpenFileName(self, self.tr("Select Arch Linux Package"), "", "Arch Packages (*.pkg.tar.zst *.pkg.tar.xz)")
+        file, _ = QFileDialog.getOpenFileName(
+            self, self.tr("Select Package"), "",
+            "Supported Packages (*.pkg.tar.zst *.pkg.tar.xz *.deb *.rpm)")
         if file:
             self.wizard().package_path = file
             self.path_label.setText(self.tr("Selected file: ") + file)
@@ -90,8 +92,15 @@ class InstallPage(QWizardPage):
         self.start_installation()
 
     def start_installation(self):
+        package_path = self.wizard().package_path
         command = "pkexec"
-        args = ["pacman", "-U", "--noconfirm", self.wizard().package_path]
+        if package_path.endswith(('.pkg.tar.zst', '.pkg.tar.xz')):
+            args = ["pacman", "-U", "--noconfirm", package_path]
+        else:
+            bridge = os.path.join(os.path.dirname(os.path.abspath(__file__)), "foreign_bridge.py")
+            if not os.path.isfile(bridge):
+                bridge = "/usr/lib/equestria-installer/foreign_bridge.py"
+            args = [sys.executable, bridge, "install", package_path]
 
         self.process = QProcess()
         self.process.readyReadStandardOutput.connect(self.handle_stdout)
@@ -144,7 +153,7 @@ class EquestriaInstaller(QWizard):
             if arg.startswith("file://"):
                 arg = urllib.parse.unquote(arg[7:])
 
-            if arg.endswith('.pkg.tar.zst') or arg.endswith('.pkg.tar.xz'):
+            if arg.endswith(('.pkg.tar.zst', '.pkg.tar.xz', '.deb', '.rpm')):
                 self.package_path = arg
                 break
 

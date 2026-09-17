@@ -1,8 +1,13 @@
-import sys, os, re, time, subprocess, threading, shutil, shlex
+import sys, os, re, time, subprocess, threading, shutil, shlex, json
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QComboBox
 from PyQt6.QtGui import QIcon, QFontDatabase, QFont
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from ui_pkg import Ui_PackageManager, PackageRow
+
+# .deb/.rpm поставленные через equestria-installer (foreign_bridge.py) — не
+# трогают базу pacman, свой манифест с полным списком файлов на пакет
+FOREIGN_MANIFEST_DIR = "/var/lib/equestria-installer/foreign"
+FOREIGN_BRIDGE = "/usr/lib/equestria-installer/foreign_bridge.py"
 
 # Программы, ставящиеся через `curl ... | sh/bash`, не оставляют записи ни в
 # pacman, ни в pip — единственный след — их собственная папка в $HOME.
@@ -168,6 +173,7 @@ class main_app(QMainWindow, Ui_PackageManager):
             "cat.aur": {"en": "AUR", "ru": "AUR", "de": "AUR", "fr": "AUR", "es": "AUR", "pt": "AUR", "pl": "AUR", "uk": "AUR", "zh": "AUR", "ja": "AUR"},
             "cat.pip": {"en": "Pip", "ru": "Pip", "de": "Pip", "fr": "Pip", "es": "Pip", "pt": "Pip", "pl": "Pip", "uk": "Pip", "zh": "Pip", "ja": "Pip"},
             "cat.curl": {"en": "Curl", "ru": "Curl", "de": "Curl", "fr": "Curl", "es": "Curl", "pt": "Curl", "pl": "Curl", "uk": "Curl", "zh": "Curl", "ja": "Curl"},
+            "cat.foreign": {"en": "DEB/RPM", "ru": "DEB/RPM", "de": "DEB/RPM", "fr": "DEB/RPM", "es": "DEB/RPM", "pt": "DEB/RPM", "pl": "DEB/RPM", "uk": "DEB/RPM", "zh": "DEB/RPM", "ja": "DEB/RPM"},
             "modal.title": {"en": "✨ Confirmation", "ru": "✨ Подтверждение", "de": "✨ Bestätigung", "fr": "✨ Confirmation", "es": "✨ Confirmación", "pt": "✨ Confirmação", "pl": "✨ Potwierdzenie", "uk": "✨ Підтвердження", "zh": "✨ 确认", "ja": "✨ 確認"},
             "modal.confirm": {
                 "en": "Are you sure you want to delete {0}?",
@@ -459,7 +465,8 @@ class main_app(QMainWindow, Ui_PackageManager):
 
         self.category_dropdown.addItems([
             self.t("cat.all"), self.t("cat.software"), self.t("cat.drivers"),
-            self.t("cat.aur"), "Flatpak", "Snap", self.t("cat.pip"), self.t("cat.curl")
+            self.t("cat.aur"), "Flatpak", "Snap", self.t("cat.pip"), self.t("cat.curl"),
+            self.t("cat.foreign")
         ])
         self.category_dropdown.blockSignals(False)
 
@@ -528,6 +535,20 @@ class main_app(QMainWindow, Ui_PackageManager):
                     pkgs.append(PackageData(entry["name"], "curl", app_id=entry["id"],
                                              description=entry.get("desc", ""),
                                              icon_name=entry.get("icon")))
+
+            if os.path.isdir(FOREIGN_MANIFEST_DIR):
+                for fname in os.listdir(FOREIGN_MANIFEST_DIR):
+                    if not fname.endswith(".json"):
+                        continue
+                    try:
+                        with open(os.path.join(FOREIGN_MANIFEST_DIR, fname)) as fh:
+                            manifest = json.load(fh)
+                        pkgs.append(PackageData(
+                            manifest["name"], manifest.get("format", "deb"),
+                            description=f"v{manifest.get('version', '?')} • "
+                                        f"{len(manifest.get('files', []))} files"))
+                    except (OSError, json.JSONDecodeError, KeyError):
+                        pass
 
             # --- Описания и иконки (pkgdesc от pacman/AUR — то же, что даёт PKGBUILD,
             # но взятое из уже установленного пакета, а не из исходников) ---
@@ -634,7 +655,8 @@ class main_app(QMainWindow, Ui_PackageManager):
                              (cat == "Flatpak" and pkg.source == "flatpak") or
                              (cat == "Snap" and pkg.source == "snap") or
                              (cat == self.t("cat.pip") and pkg.source == "pip") or
-                             (cat == self.t("cat.curl") and pkg.source == "curl"))
+                             (cat == self.t("cat.curl") and pkg.source == "curl") or
+                             (cat == self.t("cat.foreign") and pkg.source in ("deb", "rpm")))
 
                 widget.setVisible(text_match and cat_match)
 
@@ -739,6 +761,8 @@ class main_app(QMainWindow, Ui_PackageManager):
             else:
                 cmd = "true"
             leftovers = []
+        elif self.pkg_to_delete.source in ("deb", "rpm"):
+            cmd = f"pkexec python3 {shlex.quote(FOREIGN_BRIDGE)} uninstall {shlex.quote(pkg_name)}"
         else:
             cmd = f"pkexec pacman -Rns --noconfirm {shlex.quote(pkg_name)}"
 

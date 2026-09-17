@@ -24,12 +24,31 @@ SHARED_BASE = os.path.join(APPS_DATA_DIR, "_shared")
 SHARED_WINDOWS = os.path.join(SHARED_BASE, "windows")
 SHARED_MARKER = os.path.join(SHARED_BASE, ".proton-shared")
 
+# Отдельный shared-пул для "обычных" (не игровых) программ. Не переиспользует
+# SHARED_WINDOWS игр: winetricks-компоненты ниже могут перезаписывать DLL,
+# которые сам GE-Proton уже поставляет, а SHARED_WINDOWS расшарен на все игры —
+# порча его задним числом сломала бы их все разом. Изолируем полностью.
+SHARED_WINDOWS_DESKTOP = os.path.join(SHARED_BASE, "windows-desktop")
+SHARED_MARKER_DESKTOP = os.path.join(SHARED_BASE, ".proton-shared-desktop")
+
+# Базовый набор компонентов совместимости для обычного Windows-софта (не игр).
+# Список подтверждён рабочими community-рецептами (напр. Lutris-инсталлятор
+# Photoshop CS6): шрифты, GDI+/XML-парсер, пара поколений MSVC-рантайма
+# (винтажные приложения часто требуют конкретное старое поколение, а не только
+# самое новое) и компилятор шейдеров Direct3D, которого часто не хватает
+# обычным (не игровым) программам с интерфейсом на D3D.
+DESKTOP_WINETRICKS_VERBS = [
+    "corefonts", "gdiplus", "msxml6",
+    "vcrun2013", "vcrun2022",
+    "d3dcompiler_47",
+]
+
 
 def _prefix_windows_path(prefix_path):
     return os.path.join(prefix_path, "pfx", "drive_c", "windows")
 
 
-def _migrate_windows_to_shared(prefix_path):
+def _migrate_windows_to_shared(prefix_path, shared_windows=SHARED_WINDOWS, shared_marker=SHARED_MARKER):
     """
     Move pfx/drive_c/windows/ from prefix to _shared/ and replace with a symlink.
     Uses os.rename (atomic, instant on same filesystem — no data is copied).
@@ -47,28 +66,69 @@ def _migrate_windows_to_shared(prefix_path):
 
     try:
         os.makedirs(SHARED_BASE, exist_ok=True)
-        if not os.path.exists(SHARED_WINDOWS):
-            shutil.move(windows_path, SHARED_WINDOWS)
-            open(SHARED_MARKER, "w").close()
+        if not os.path.exists(shared_windows):
+            shutil.move(windows_path, shared_windows)
+            open(shared_marker, "w").close()
         else:
             shutil.rmtree(windows_path)
-        os.symlink(SHARED_WINDOWS, windows_path)
+        os.symlink(shared_windows, windows_path)
     except Exception:
         pass
 
 
-def _preseed_shared_windows(prefix_path):
+def _preseed_shared_windows(prefix_path, shared_windows=SHARED_WINDOWS, shared_marker=SHARED_MARKER):
     """
     For a brand-new prefix: pre-create windows/ as a symlink to _shared/ so that
     umu-run skips repopulating the DLLs and only sets up the registry (much faster).
     """
-    if not os.path.exists(SHARED_MARKER):
+    if not os.path.exists(shared_marker):
         return
     windows_path = _prefix_windows_path(prefix_path)
     drive_c = os.path.dirname(windows_path)
     os.makedirs(drive_c, exist_ok=True)
     if not os.path.exists(windows_path):
-        os.symlink(SHARED_WINDOWS, windows_path)
+        os.symlink(shared_windows, windows_path)
+
+
+def _install_desktop_compat(prefix_path, env, log_path):
+    """
+    One-time (per shared pool, not per app) winetricks bootstrap for the
+    "desktop app compatibility" profile. Runs through umu-run so it resolves
+    the same Proton build as the real launch (same PROTONPATH in env).
+    Returns True only on real success — callers must not mark the shared pool
+    as done on failure, so the next desktop app retries instead of everyone
+    silently missing the components forever.
+    """
+    cmd = ["umu-run", "winetricks", "-q"] + DESKTOP_WINETRICKS_VERBS
+    try:
+        with open(log_path, "a", encoding="utf-8") as log:
+            log.write(f"\n--- {' '.join(cmd)} ---\n")
+            result = subprocess.run(cmd, env=env, cwd=prefix_path,
+                                     stdout=log, stderr=subprocess.STDOUT)
+        return result.returncode == 0
+    except Exception:
+        return False
+
+def _find_owning_app_id(exe_path):
+    """
+    If exe_path lives inside an existing prefix's drive_c (e.g. it was just
+    installed there by a setup.exe run through this same tool), return that
+    prefix's app_id so the installed program reuses the installer's prefix
+    instead of getting a fresh, empty one keyed off its own path.
+    """
+    exe_real = os.path.realpath(exe_path)
+    apps_real = os.path.realpath(APPS_DATA_DIR)
+    try:
+        rel = os.path.relpath(exe_real, apps_real)
+    except ValueError:
+        return None
+    if rel.startswith(".."):
+        return None
+    parts = rel.split(os.sep)
+    if len(parts) < 3 or parts[0] == "_shared" or parts[1] != "pfx":
+        return None
+    return parts[0]
+
 
 def apply_game_env(env, settings):
     """
@@ -318,8 +378,10 @@ def main():
         sys.exit(1)
 
     exe_name = os.path.basename(exe_path)
-    path_hash = hashlib.md5(exe_path.encode('utf-8')).hexdigest()[:8]
-    app_id = f"{exe_name}_{path_hash}"
+    app_id = _find_owning_app_id(exe_path)
+    if not app_id:
+        path_hash = hashlib.md5(exe_path.encode('utf-8')).hexdigest()[:8]
+        app_id = f"{exe_name}_{path_hash}"
     prefix_path = os.path.join(APPS_DATA_DIR, app_id)
     config_file = os.path.join(CONFIG_DIR, f"{app_id}.json")
 
@@ -328,11 +390,28 @@ def main():
         with open(config_file, "r", encoding="utf-8") as f:
             settings = json.load(f)
 
-    _migrate_windows_to_shared(prefix_path)
+    desktop_profile = settings.get("desktop_profile", False)
+    shared_windows, shared_marker = (
+        (SHARED_WINDOWS_DESKTOP, SHARED_MARKER_DESKTOP) if desktop_profile
+        else (SHARED_WINDOWS, SHARED_MARKER)
+    )
 
-    if not os.path.exists(prefix_path):
-        os.makedirs(prefix_path, exist_ok=True)
-        _preseed_shared_windows(prefix_path)
+    os.makedirs(prefix_path, exist_ok=True)
+
+    # windows/ carries no user data — installed programs live under Program Files
+    # and settings live in system.reg/user.reg, both outside it — so it's always
+    # safe to unhook it and repoint at whichever pool desktop_profile calls for
+    # right now, even for a prefix that ran before under the other setting.
+    windows_path = _prefix_windows_path(prefix_path)
+    if os.path.islink(windows_path) and os.path.realpath(windows_path) != os.path.realpath(shared_windows):
+        os.remove(windows_path)
+
+    needs_windows_bootstrap = not os.path.exists(windows_path)
+
+    _migrate_windows_to_shared(prefix_path, shared_windows, shared_marker)
+
+    if needs_windows_bootstrap:
+        _preseed_shared_windows(prefix_path, shared_windows, shared_marker)
 
     env = os.environ.copy()
     env["WINEPREFIX"] = prefix_path
@@ -365,10 +444,24 @@ def main():
     splash = SplashWindow(exe_name, log_path, cmd, env, game_dir, debug=debug)
     splash.exec()
 
-    # Post-launch migration: handles the case where umu-run just initialised a brand-new
-    # prefix (windows/ didn't exist before launch, so pre-launch migration did nothing).
-    # os.rename is atomic on Linux — safe even while the game process is still running.
-    _migrate_windows_to_shared(prefix_path)
+    # Pioneering desktop app for this shared pool: windows/ just bootstrapped for
+    # real (needs_windows_bootstrap — either a genuinely new prefix, or one that
+    # just got repointed after a desktop_profile toggle) and nobody has installed
+    # the compat components into SHARED_WINDOWS_DESKTOP yet. Install them into
+    # this prefix now, then fold it into the shared pool below — every future
+    # desktop-profile app just gets it via _preseed_shared_windows for free.
+    need_bootstrap = desktop_profile and needs_windows_bootstrap and not os.path.exists(shared_marker)
+    if need_bootstrap:
+        if _install_desktop_compat(prefix_path, env, log_path):
+            _migrate_windows_to_shared(prefix_path, shared_windows, shared_marker)
+        # On failure: leave this prefix's windows/ un-migrated (it still works
+        # standalone) and shared_marker unset, so the next desktop app retries.
+    else:
+        # Post-launch migration: handles the case where umu-run just initialised a
+        # brand-new prefix (windows/ didn't exist before launch, so pre-launch
+        # migration did nothing). os.rename is atomic on Linux — safe even while
+        # the game process is still running.
+        _migrate_windows_to_shared(prefix_path, shared_windows, shared_marker)
 
 if __name__ == "__main__":
     main()

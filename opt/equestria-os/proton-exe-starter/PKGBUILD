@@ -11,6 +11,7 @@ license=('GPL')
 depends=(
     'python-pyqt6'
     'umu-launcher'
+    'winetricks'
     'lib32-glibc'
     'lib32-gcc-libs'
     'xdg-utils'

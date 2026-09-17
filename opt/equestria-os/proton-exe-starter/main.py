@@ -23,6 +23,27 @@ PROTON_COMPAT_DIRS = (
 )
 
 
+def _find_owning_app_id(exe_path):
+    """
+    If exe_path lives inside an existing prefix's drive_c (e.g. it was just
+    installed there by a setup.exe run through this same tool), return that
+    prefix's app_id — keeps this Settings dialog in sync with the app_id
+    proton_runner.py will actually use to launch it (see proton_runner.py).
+    """
+    exe_real = os.path.realpath(exe_path)
+    apps_real = os.path.realpath(APPS_DATA_DIR)
+    try:
+        rel = os.path.relpath(exe_real, apps_real)
+    except ValueError:
+        return None
+    if rel.startswith(".."):
+        return None
+    parts = rel.split(os.sep)
+    if len(parts) < 3 or parts[0] == "_shared" or parts[1] != "pfx":
+        return None
+    return parts[0]
+
+
 def _proton_sort_key(name):
     # Натуральная сортировка версий, как в самом umu (GE-Proton9-4 < GE-Proton10-1)
     return [int(p) if p.isdigit() else p.lower() for p in re.split(r"(\d+)", name)]
@@ -181,8 +202,10 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         if len(sys.argv) > 1:
             self.exe_path = sys.argv[1]
             self.exe_name = os.path.basename(self.exe_path)
-            path_hash = hashlib.md5(self.exe_path.encode('utf-8')).hexdigest()[:8]
-            self.app_id = f"{self.exe_name}_{path_hash}"
+            self.app_id = _find_owning_app_id(self.exe_path)
+            if not self.app_id:
+                path_hash = hashlib.md5(self.exe_path.encode('utf-8')).hexdigest()[:8]
+                self.app_id = f"{self.exe_name}_{path_hash}"
             self.prefix_path = os.path.join(APPS_DATA_DIR, self.app_id)
             self.config_file = os.path.join(CONFIG_DIR, f"{self.app_id}.json")
 
@@ -247,6 +270,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         self.chk_fsr.setText(self.t_str("proton.chk_fsr"))
         self.chk_xbox_pad.setText(self.t_str("proton.chk_xbox_pad"))
         self.chk_debug.setText(self.t_str("proton.chk_debug"))
+        self.chk_compat_profile.setText(self.t_str("proton.chk_compat_profile"))
         self.group_proton.setTitle(self.t_str("proton.group_proton"))
         self.combo_proton.setItemText(0, self.t_str("proton.ver_auto"))
         self.combo_proton.setItemText(1, self.t_str("proton.ver_ge"))
@@ -308,6 +332,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
                     self.chk_fsr.setChecked(settings.get("fsr", False))
                     self.chk_xbox_pad.setChecked(settings.get("xbox_pad", False))
                     self.chk_debug.setChecked(settings.get("debug_log", False))
+                    self.chk_compat_profile.setChecked(settings.get("desktop_profile", False))
                     self.txt_args.setText(settings.get("launch_args", ""))
                     idx = self.combo_proton.findData(settings.get("proton_version", ""))
                     self.combo_proton.setCurrentIndex(idx if idx != -1 else 0)
@@ -326,6 +351,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
             "fsr": self.chk_fsr.isChecked(),
             "xbox_pad": self.chk_xbox_pad.isChecked(),
             "debug_log": self.chk_debug.isChecked(),
+            "desktop_profile": self.chk_compat_profile.isChecked(),
             "launch_args": self.txt_args.text().strip(),
             "proton_version": self.combo_proton.currentData() or ""
         }

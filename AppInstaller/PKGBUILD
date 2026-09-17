@@ -1,18 +1,19 @@
 pkgname=equestria-installer
-pkgver=1.0.3
+pkgver=1.1.0
 pkgrel=1
 pkgdesc="Graphical local package installer for Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL3')
-depends=('python' 'python-pyqt6' 'polkit')
+depends=('python' 'python-pyqt6' 'polkit' 'tar' 'libarchive' 'pacman')
 makedepends=('qt6-tools')
 
 source=('installer.py'
+        'foreign_bridge.py'
         'equestria-installer.desktop'
         'Installer.svg')
 
-sha256sums=('SKIP' 'SKIP' 'SKIP')
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP')
 
 _languages=('ru_RU' 'uk_UA' 'de_DE' 'en_US' 'es_ES' 'fr_FR' 'pl_PL' 'it_IT' 'kk_KZ' 'zh_CN' 'ja_JP')
 
@@ -31,6 +32,7 @@ package() {
     cd "${srcdir}"
 
     install -Dm755 installer.py "${pkgdir}/usr/bin/equestria-installer"
+    install -Dm755 foreign_bridge.py "${pkgdir}/usr/lib/equestria-installer/foreign_bridge.py"
 
     # 2. Desktop-файл
     install -Dm644 equestria-installer.desktop "${pkgdir}/usr/share/applications/equestria-installer.desktop"

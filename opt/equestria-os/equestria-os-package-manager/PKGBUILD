@@ -1,13 +1,14 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-package-manager
-pkgver=2.7.0
+pkgver=2.8.0
 pkgrel=1
 pkgdesc="Official Equestria OS Package Manager (Uninstall, Manage, Clean App Data)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
 depends=('polkit' 'python-pyqt6')
+optdepends=('equestria-installer: remove packages installed from .deb/.rpm files')
 
 package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
