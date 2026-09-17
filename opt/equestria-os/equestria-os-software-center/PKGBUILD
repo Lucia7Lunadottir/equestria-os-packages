@@ -2,12 +2,13 @@
 
 pkgname=equestria-os-software-center
 pkgver=1.8.0
-pkgrel=1
+pkgrel=5
 pkgdesc="Software Center for Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
 depends=('pacman' 'pacman-contrib' 'yay' 'polkit' 'python-pyqt6')
+install=equestria-os-software-center.install
 
 package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
@@ -26,7 +27,7 @@ exec python3 main.py "$@"
 EOF
 
     install -d "$pkgdir/usr/share/applications"
-    sed "s|^Exec=.*|Exec=equestria-os-software-center|" \
+    sed "s|^Exec=.*|Exec=equestria-os-software-center %u|" \
         "$startdir/equestria-os-software-center.desktop" \
         > "$pkgdir/usr/share/applications/equestria-os-software-center.desktop"
     chmod 644 "$pkgdir/usr/share/applications/equestria-os-software-center.desktop"

@@ -1,9 +1,10 @@
 [Desktop Entry]
 Name=Equestria Software Center
 Comment=Installing programs and updating Equestria OS
-Exec=equestria-os-software-center
+Exec=equestria-os-software-center %u
 Icon=equestria-os-software-center
 Terminal=false
 Type=Application
 Categories=X-EquestriaOS;System;Settings;
 StartupWMClass=equestria-os-software-center
+MimeType=x-scheme-handler/appstream;

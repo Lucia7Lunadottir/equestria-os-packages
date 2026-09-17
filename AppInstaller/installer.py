@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import shutil
 import sys
 import urllib.parse
 from PyQt6.QtWidgets import (QApplication, QWizard, QWizardPage, QLabel,
@@ -37,7 +38,7 @@ class WelcomePage(QWizardPage):
 
 
         layout = QVBoxLayout()
-        self.info_label = QLabel(self.tr("Welcome to the installer!\n\nPlease select a package file (.pkg.tar.zst, .deb, .rpm)."))
+        self.info_label = QLabel(self.tr("Welcome to the installer!\n\nPlease select a package file (.pkg.tar.zst, .deb, .rpm, .flatpakref)."))
         self.info_label.setWordWrap(True)
         layout.addWidget(self.info_label)
 
@@ -60,7 +61,7 @@ class WelcomePage(QWizardPage):
     def browse_file(self):
         file, _ = QFileDialog.getOpenFileName(
             self, self.tr("Select Package"), "",
-            "Supported Packages (*.pkg.tar.zst *.pkg.tar.xz *.deb *.rpm)")
+            "Supported Packages (*.pkg.tar.zst *.pkg.tar.xz *.deb *.rpm *.flatpakref)")
         if file:
             self.wizard().package_path = file
             self.path_label.setText(self.tr("Selected file: ") + file)
@@ -93,10 +94,24 @@ class InstallPage(QWizardPage):
 
     def start_installation(self):
         package_path = self.wizard().package_path
-        command = "pkexec"
+
         if package_path.endswith(('.pkg.tar.zst', '.pkg.tar.xz')):
+            command = "pkexec"
             args = ["pacman", "-U", "--noconfirm", package_path]
+        elif package_path.endswith('.flatpakref'):
+            if not shutil.which("flatpak"):
+                self.log_output.append(
+                    "<span style='color: #FF5252;'>" +
+                    self.tr("Flatpak is not installed on this system.") + "</span>")
+                self.process_finished(1, QProcess.ExitStatus.NormalExit)
+                return
+            # No pkexec: flatpak escalates itself via polkit for system-wide
+            # installs. Running it as root here would install into root's
+            # own Flatpak data instead of the actual desktop user's.
+            command = "flatpak"
+            args = ["install", "--noninteractive", "-y", package_path]
         else:
+            command = "pkexec"
             bridge = os.path.join(os.path.dirname(os.path.abspath(__file__)), "foreign_bridge.py")
             if not os.path.isfile(bridge):
                 bridge = "/usr/lib/equestria-installer/foreign_bridge.py"
@@ -153,7 +168,7 @@ class EquestriaInstaller(QWizard):
             if arg.startswith("file://"):
                 arg = urllib.parse.unquote(arg[7:])
 
-            if arg.endswith(('.pkg.tar.zst', '.pkg.tar.xz', '.deb', '.rpm')):
+            if arg.endswith(('.pkg.tar.zst', '.pkg.tar.xz', '.deb', '.rpm', '.flatpakref')):
                 self.package_path = arg
                 break
 

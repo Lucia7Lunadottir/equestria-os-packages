@@ -106,6 +106,8 @@
   "ui.flatpak_not_installed_title": "Flatpak не установлен",
   "ui.flatpak_not_installed_desc": "Установите Flatpak, чтобы получить доступ к тысячам приложений Flathub.",
   "ui.flatpak_install_btn": "Установить Flatpak",
+  "ui.flatpak_ref_not_found_title": "Приложение не найдено",
+  "ui.flatpak_ref_not_found_body": "«{name}» пока нет в локальном каталоге Flatpak. Убедитесь, что поддержка Flatpak включена и каталог обновлён, затем откройте ссылку ещё раз.",
   "ui.source_updates": "Обновления",
   "ui.integrity_check": "Проверка системных файлов",
   "ui.cache_clean": "Очистка кэша пакетов",

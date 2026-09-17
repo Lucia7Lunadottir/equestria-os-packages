@@ -1,12 +1,14 @@
 pkgname=equestria-installer
 pkgver=1.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Graphical local package installer for Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL3')
 depends=('python' 'python-pyqt6' 'polkit' 'tar' 'libarchive' 'pacman')
+optdepends=('flatpak: install .flatpakref packages')
 makedepends=('qt6-tools')
+install=equestria-installer.install
 
 source=('installer.py'
         'foreign_bridge.py'

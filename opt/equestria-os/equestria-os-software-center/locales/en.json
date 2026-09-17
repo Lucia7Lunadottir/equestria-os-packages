@@ -106,6 +106,8 @@
   "ui.flatpak_not_installed_title": "Flatpak is not installed",
   "ui.flatpak_not_installed_desc": "Install Flatpak to access thousands of Flathub applications.",
   "ui.flatpak_install_btn": "Install Flatpak",
+  "ui.flatpak_ref_not_found_title": "Application not found",
+  "ui.flatpak_ref_not_found_body": "“{name}” isn’t in the local Flatpak catalog yet. Make sure Flatpak support is enabled and the catalog is up to date, then try the link again.",
   "ui.source_updates": "Updates",
   "ui.integrity_check": "Check System Files",
   "ui.cache_clean": "Clean Package Cache",

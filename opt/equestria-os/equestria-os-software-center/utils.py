@@ -43,6 +43,17 @@ def extract_appstream_text(el):
     return " ".join(parts)
 
 
+def parse_appstream_uri(uri):
+    """Extract the app id from an "appstream:" link, e.g. the "Open in App
+    Center" links some sites (Flathub included) offer as an alternative to
+    downloading a .flatpakref — either "appstream://org.videolan.VLC" or
+    "appstream:org.videolan.VLC". Returns None if `uri` isn't one."""
+    if not uri.startswith("appstream:"):
+        return None
+    app_id = uri[len("appstream:"):].lstrip("/")
+    return app_id or None
+
+
 def normalize_key(s):
     """Lowercase + strip non-alphanumeric — used for cross-source dedup matching."""
     return ''.join(c for c in s.lower() if c.isalnum())

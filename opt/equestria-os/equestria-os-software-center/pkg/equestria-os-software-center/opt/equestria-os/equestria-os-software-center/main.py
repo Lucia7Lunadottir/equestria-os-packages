@@ -15,7 +15,7 @@ from PyQt6.QtCore import (Qt, QThread, QTimer, QFileSystemWatcher, QProcess, QEv
                           pyqtSignal)
 
 from models import EssentialData, StoreData
-from utils import (FLATPAK_APPSTREAM, cleanup_screenshot_cache,
+from utils import (FLATPAK_APPSTREAM, cleanup_screenshot_cache, parse_appstream_uri,
                    normalize_key, merge_packages, _GENERIC_PACMAN_DESC, guess_cat)
 from workers import (AppStoreLoader, FlatpakLoader,
                      AURSearchThread, AURPopularLoader, AURUpgradableLoader,
@@ -33,11 +33,17 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     db_refresh_done = pyqtSignal(bool)
     essentials_classified = pyqtSignal(list, list)  # (official_names, aur_names)
 
-    def __init__(self):
+    def __init__(self, pending_appstream_id=None):
         super().__init__()
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.setupUi(self)
         self.setWindowTitle("Equestria Software Center")
+
+        # Set when launched via an "appstream://<id>" link (the URI some
+        # sites, e.g. Flathub's "Open in App Center" links, use instead of a
+        # .flatpakref download) — consumed once the Flatpak catalog finishes
+        # loading, see _open_pending_appstream_id().
+        self._pending_appstream_id = pending_appstream_id
 
         self.langs = []
         self.localizations = {}
@@ -206,11 +212,15 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.loader.finished.connect(self.on_store_loaded)
         self.loader.start()
 
-        if (self._settings.get("enable_flatpak", True)
+        if ((self._settings.get("enable_flatpak", True) or self._pending_appstream_id)
                 and shutil.which("flatpak") and os.path.exists(FLATPAK_APPSTREAM)):
             self.flatpak_loader = FlatpakLoader()
             self.flatpak_loader.finished.connect(self.on_flatpak_loaded)
             self.flatpak_loader.start()
+        elif self._pending_appstream_id:
+            # No Flatpak support available at all — resolve immediately so
+            # the user gets a message instead of a silently ignored request.
+            QTimer.singleShot(0, self._open_pending_appstream_id)
 
         if self._settings.get("enable_aur", True):
             self._aur_popular_thread = AURPopularLoader()
@@ -650,6 +660,29 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self._rebuild_merged()
         if self._current_source in ("flatpak", "all"):
             self.filter_store()
+        self._open_pending_appstream_id()
+
+    def _open_pending_appstream_id(self):
+        """Jump straight to the detail page for an "appstream://<id>" link
+        the app was launched with (see __main__ and utils.parse_appstream_uri)."""
+        app_id = self._pending_appstream_id
+        if not app_id:
+            return
+        self._pending_appstream_id = None
+
+        pkg = next((p for p in self.flatpak_packages if p.app_id == app_id), None)
+        if pkg is None:
+            target_key = normalize_key(app_id.split('.')[-1])
+            pkg = next((p for p in self.flatpak_packages
+                        if p.app_id and normalize_key(p.app_id.split('.')[-1]) == target_key),
+                       None)
+
+        if pkg is not None:
+            self.open_app_detail(pkg)
+        else:
+            QMessageBox.warning(
+                self, self.t("ui.flatpak_ref_not_found_title"),
+                self.t("ui.flatpak_ref_not_found_body").format(name=app_id))
 
     def _on_flatpak_dir_changed(self, _path):
         if os.path.exists(FLATPAK_APPSTREAM):
@@ -1427,6 +1460,14 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setDesktopFileName("equestria-os-software-center")
-    win = main_app()
+
+    pending_appstream_id = None
+    for arg in sys.argv[1:]:
+        app_id = parse_appstream_uri(arg)
+        if app_id:
+            pending_appstream_id = app_id
+            break
+
+    win = main_app(pending_appstream_id=pending_appstream_id)
     win.show()
     sys.exit(app.exec())

@@ -3,12 +3,12 @@
 pkgname = equestria-installer
 pkgbase = equestria-installer
 xdata = pkgtype=pkg
-pkgver = 1.1.0-1
+pkgver = 1.1.0-2
 pkgdesc = Graphical local package installer for Equestria OS
 url = https://github.com/Lucia7Lunadottir
-builddate = 1789588146
+builddate = 1789676670
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 41765
+size = 42578
 arch = any
 license = GPL3
 depend = python
@@ -17,4 +17,5 @@ depend = polkit
 depend = tar
 depend = libarchive
 depend = pacman
+optdepend = flatpak: install .flatpakref packages
 makedepend = qt6-tools

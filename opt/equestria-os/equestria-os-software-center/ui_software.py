@@ -1,27 +1,164 @@
 import os
-import subprocess
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QScrollArea, QFrame, QListWidget,
                              QStackedWidget, QLineEdit, QComboBox, QProgressBar,
                              QGridLayout, QSizePolicy)
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QEvent
 from PyQt6.QtGui import QIcon, QPixmap
 
 
 class ClickableImageLabel(QLabel):
-    """Screenshot label that opens the image with xdg-open on click."""
-    def __init__(self):
+    """Screenshot label that opens the in-app screenshot viewer on click."""
+    def __init__(self, on_click=None):
         super().__init__()
         self._local_path = ""
+        self._on_click = on_click
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def set_local_path(self, path):
         self._local_path = path
 
     def mousePressEvent(self, event):
-        if self._local_path and os.path.exists(self._local_path):
-            subprocess.Popen(["xdg-open", self._local_path])
+        if self._local_path and os.path.exists(self._local_path) and self._on_click:
+            self._on_click(self)
         super().mousePressEvent(event)
+
+
+class ScreenshotOverlay(QWidget):
+    """Full-size screenshot gallery painted inside the app's own window
+    (not a separate top-level window) — same feel as a real app store's
+    lightbox. Covers `parent` entirely and deletes itself when dismissed."""
+
+    def __init__(self, paths, index, parent):
+        super().__init__(parent)
+        self._paths = paths
+        self._index = index
+
+        self.setObjectName("ScreenshotOverlay")
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.setStyleSheet("QWidget#ScreenshotOverlay { background-color: rgba(17,17,27,235); }")
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+        nav_css = (
+            "QPushButton { background: rgba(49,50,68,0.85); color: rgb(205,214,244); "
+            "border: none; border-radius: 20px; font-size: 18px; font-weight: bold; }"
+            "QPushButton:hover { background: rgba(69,71,90,0.95); }"
+            "QPushButton:disabled { color: rgb(69,71,90); }"
+        )
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(8)
+
+        top_bar = QHBoxLayout()
+        self.lbl_counter = QLabel()
+        self.lbl_counter.setStyleSheet("color: rgb(166,173,200); font-size: 12px; background: transparent;")
+        top_bar.addWidget(self.lbl_counter)
+        top_bar.addStretch()
+        self.btn_close = QPushButton("✕")
+        self.btn_close.setFixedSize(30, 30)
+        self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_close.setStyleSheet(nav_css)
+        self.btn_close.clicked.connect(self.dismiss)
+        top_bar.addWidget(self.btn_close)
+        layout.addLayout(top_bar)
+
+        body = QHBoxLayout()
+        body.setSpacing(8)
+
+        self.btn_prev = QPushButton("‹")
+        self.btn_prev.setFixedSize(40, 80)
+        self.btn_prev.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_prev.setStyleSheet(nav_css)
+        self.btn_prev.clicked.connect(self._show_prev)
+        body.addWidget(self.btn_prev)
+
+        self.lbl_image = QLabel()
+        self.lbl_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_image.setMinimumSize(1, 1)
+        # Expanding + Ignored sizeHint: without this the label shrinks back
+        # to its current pixmap's size on every layout pass instead of
+        # claiming the stretch space the row was given.
+        self.lbl_image.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.lbl_image.setStyleSheet("background: transparent;")
+        body.addWidget(self.lbl_image, 1)
+
+        self.btn_next = QPushButton("›")
+        self.btn_next.setFixedSize(40, 80)
+        self.btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_next.setStyleSheet(nav_css)
+        self.btn_next.clicked.connect(self._show_next)
+        body.addWidget(self.btn_next)
+
+        layout.addLayout(body, 1)
+
+        self._render_current()
+
+        parent.installEventFilter(self)
+        self._reposition()
+        self.show()
+        self.raise_()
+        self.setFocus()
+
+    def _reposition(self):
+        parent = self.parentWidget()
+        if parent is not None:
+            self.setGeometry(parent.rect())
+
+    def eventFilter(self, obj, event):
+        if obj is self.parentWidget() and event.type() == QEvent.Type.Resize:
+            self._reposition()
+        return super().eventFilter(obj, event)
+
+    def dismiss(self):
+        parent = self.parentWidget()
+        if parent is not None:
+            parent.removeEventFilter(self)
+        self.deleteLater()
+
+    def _render_current(self):
+        self.lbl_counter.setText(f"{self._index + 1} / {len(self._paths)}")
+        multiple = len(self._paths) > 1
+        self.btn_prev.setEnabled(multiple)
+        self.btn_next.setEnabled(multiple)
+        self._update_pixmap()
+
+    def _update_pixmap(self):
+        pix = QPixmap(self._paths[self._index])
+        if pix.isNull():
+            self.lbl_image.setText("...")
+            return
+        scaled = pix.scaled(self.lbl_image.size(), Qt.AspectRatioMode.KeepAspectRatio,
+                            Qt.TransformationMode.SmoothTransformation)
+        self.lbl_image.setPixmap(scaled)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._update_pixmap()
+
+    def _show_prev(self):
+        self._index = (self._index - 1) % len(self._paths)
+        self._render_current()
+
+    def _show_next(self):
+        self._index = (self._index + 1) % len(self._paths)
+        self._render_current()
+
+    def mousePressEvent(self, event):
+        # Click on the dimmed background (not on the image/buttons) dismisses.
+        if self.childAt(event.pos()) is None:
+            self.dismiss()
+        super().mousePressEvent(event)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Left:
+            self._show_prev()
+        elif event.key() == Qt.Key.Key_Right:
+            self._show_next()
+        elif event.key() == Qt.Key.Key_Escape:
+            self.dismiss()
+        else:
+            super().keyPressEvent(event)
 
 
 class EssentialAppRow(QFrame):
@@ -114,6 +251,7 @@ class AppDetailWidget(QWidget):
     def __init__(self, on_back):
         super().__init__()
         self._on_back = on_back
+        self._screenshot_labels = []
         self._setup_ui()
 
     # Screenshot dimensions
@@ -412,9 +550,18 @@ class AppDetailWidget(QWidget):
             if item.widget():
                 item.widget().deleteLater()
         self.screenshots_container.setMinimumWidth(0)
+        self._screenshot_labels = []
+
+    def _on_screenshot_clicked(self, lbl):
+        loaded = [l for l in self._screenshot_labels if l._local_path]
+        if lbl not in loaded:
+            return
+        paths = [l._local_path for l in loaded]
+        ScreenshotOverlay(paths, loaded.index(lbl), self.window())
 
     def add_screenshot_placeholder(self):
-        lbl = ClickableImageLabel()
+        lbl = ClickableImageLabel(on_click=self._on_screenshot_clicked)
+        self._screenshot_labels.append(lbl)
         lbl.setFixedSize(self._SS_W, self._SS_H)
         lbl.setStyleSheet(
             "background: rgba(49,50,68,0.5); border-radius: 8px; "
