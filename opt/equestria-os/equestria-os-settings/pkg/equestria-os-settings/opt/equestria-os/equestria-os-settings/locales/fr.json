@@ -264,7 +264,7 @@
   "gpu.scanout_apply_now": "Appliquer maintenant (redémarrer le compositeur)",
   "gpu.confirm_scanout_apply": "Redémarrer KWin maintenant ?\n\nL'écran clignotera brièvement et certaines fenêtres devront peut-être se redessiner. Le réglage est déjà enregistré et s'appliquera de toute façon à la prochaine connexion — en cas de doute, reconnectez-vous simplement plus tard.",
   "gpu.watchdog_toggle": "Récupérer automatiquement l'écran en cas de panne",
-  "gpu.watchdog_hint": "Un service en arrière-plan surveille le journal système ; si l'écran noir se reproduit, il redémarre la session graphique de lui-même — sans redémarrage manuel du portable. Nécessite le mot de passe administrateur pour l'activer/le désactiver.",
+  "gpu.watchdog_hint": "Un service en arrière-plan surveille le journal système ; si l'écran noir se reproduit, il force la fermeture de la session graphique bloquée et la redémarre de lui-même — sans redémarrage manuel du portable, mais tous les programmes ouverts seront fermés (comme le ferait le plantage lui-même). Nécessite le mot de passe administrateur pour l'activer/le désactiver.",
   "gpu.watchdog_last_recovery": "Dernière récupération automatique",
   "gpu.watchdog_error": "Échec du changement d'état du service de récupération.",
   "gpu.scanout_apply_error": "Échec du redémarrage du compositeur.",

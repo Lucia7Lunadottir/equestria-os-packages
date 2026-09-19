@@ -264,7 +264,7 @@
   "gpu.scanout_apply_now": "Jetzt anwenden (Compositor neu starten)",
   "gpu.confirm_scanout_apply": "KWin jetzt neu starten?\n\nDer Bildschirm flackert kurz, und einige Fenster müssen sich möglicherweise neu zeichnen. Die Einstellung ist bereits gespeichert und wird ohnehin bei der nächsten Anmeldung angewendet — im Zweifel einfach später neu anmelden.",
   "gpu.watchdog_toggle": "Bildschirm bei Fehlern automatisch wiederherstellen",
-  "gpu.watchdog_hint": "Ein Hintergrunddienst überwacht das Systemprotokoll; tritt der schwarze Bildschirm dennoch auf, startet er die grafische Sitzung selbstständig neu — kein manueller Neustart des Laptops nötig. Zum Aktivieren/Deaktivieren ist das Administratorpasswort erforderlich.",
+  "gpu.watchdog_hint": "Ein Hintergrunddienst überwacht das Systemprotokoll; tritt der schwarze Bildschirm dennoch auf, beendet er die hängende grafische Sitzung zwangsweise und startet sie neu — kein manueller Neustart des Laptops nötig, aber alle offenen Programme werden dabei geschlossen (wie beim Absturz selbst). Zum Aktivieren/Deaktivieren ist das Administratorpasswort erforderlich.",
   "gpu.watchdog_last_recovery": "Letzte automatische Wiederherstellung",
   "gpu.watchdog_error": "Der Status des Wiederherstellungsdienstes konnte nicht geändert werden.",
   "gpu.scanout_apply_error": "Der Compositor konnte nicht neu gestartet werden.",

@@ -288,7 +288,7 @@
   "gpu.scanout_apply_now": "Apply now (restart compositor)",
   "gpu.confirm_scanout_apply": "Restart KWin right now?\n\nThe screen will flicker briefly and some windows may need to redraw. The setting is already saved and will apply on your next login anyway — if unsure, just log back in later instead.",
   "gpu.watchdog_toggle": "Automatically recover the screen on failure",
-  "gpu.watchdog_hint": "A background service watches the system journal; if the black screen still happens, it restarts the graphical session on its own — no manual laptop restart needed. Requires an admin password to enable/disable.",
+  "gpu.watchdog_hint": "A background service watches the system journal; if the black screen still happens, it force-closes the stuck graphical session and restarts it on its own — no manual laptop restart needed, but all open apps get closed (same as the crash itself would have caused). Requires an admin password to enable/disable.",
   "gpu.watchdog_last_recovery": "Last automatic recovery",
   "gpu.watchdog_error": "Failed to change the recovery service state.",
   "gpu.scanout_apply_error": "Failed to restart the compositor.",

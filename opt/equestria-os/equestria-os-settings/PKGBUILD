@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-settings
 pkgver=1.7.0
-pkgrel=5
+pkgrel=7
 pkgdesc="Unified settings panel for Equestria OS — all system tools in one place"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -93,6 +93,12 @@ WRAPPER
         "$pkgdir/usr/bin/pg-display-recover"
     install -Dm644 "$startdir/pg-display-recover.service" \
         "$pkgdir/usr/lib/systemd/system/pg-display-recover.service"
+
+    # Manual black-screen recovery — same fix the watchdog above runs
+    # automatically, but invokable by hand (e.g. from a TTY) when you don't
+    # want to wait for the watchdog to notice.
+    install -Dm755 "$startdir/pg-fix-display" \
+        "$pkgdir/usr/bin/pg-fix-display"
 
     # Resource guard — opt-in via the GPU module, sends a desktop notification
     # when RAM or VRAM run low. Notification only: never closes or kills

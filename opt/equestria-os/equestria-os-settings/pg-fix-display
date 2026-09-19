@@ -1,0 +1,39 @@
+#!/bin/bash
+# pg-fix-display — manual one-shot recovery for the KWin/DRM black-screen
+# wedge (see pg-display-recover for the automatic background watchdog that
+# calls this same script once it spots the failure signature in the journal).
+#
+# Use this when the screen is ALREADY black right now and you don't want to
+# wait for the watchdog. Switch to a TTY first (Ctrl+Alt+F3, log in), then
+# run this with sudo. It force-terminates the stuck seat0 session — which is
+# what actually releases the DRM master the wedged kwin_wayland is holding,
+# something a plain `systemctl restart display-manager.service` can't do on
+# its own — then restarts the display manager so a fresh login screen comes
+# up. Everything running in that session gets closed; there's no way to save
+# it, the compositor is already wedged.
+
+set -eu
+
+log() { echo "$1"; logger -t pg-fix-display "$1"; }
+
+if [[ $EUID -ne 0 ]]; then
+    echo "Нужен root — запусти через sudo (loginctl terminate-session и systemctl restart требуют прав)." >&2
+    exit 1
+fi
+
+found=0
+while read -r sid; do
+    [[ -z "$sid" ]] && continue
+    found=1
+    log "terminating session $sid on seat0"
+    loginctl terminate-session "$sid"
+done < <(loginctl list-sessions --no-legend 2>/dev/null | awk '$3 == "seat0" {print $1}')
+
+if [[ "$found" -eq 0 ]]; then
+    log "no active seat0 sessions found — nothing to terminate"
+fi
+
+log "restarting display-manager.service"
+sleep 2
+systemctl restart display-manager.service
+log "done — a fresh login screen should appear"

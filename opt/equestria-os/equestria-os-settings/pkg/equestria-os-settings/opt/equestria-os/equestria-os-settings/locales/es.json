@@ -264,7 +264,7 @@
   "gpu.scanout_apply_now": "Aplicar ahora (reiniciar el compositor)",
   "gpu.confirm_scanout_apply": "¿Reiniciar KWin ahora mismo?\n\nLa pantalla parpadeará brevemente y algunas ventanas pueden necesitar redibujarse. El ajuste ya está guardado y se aplicará en tu próximo inicio de sesión de todos modos — si no estás seguro, simplemente vuelve a iniciar sesión más tarde.",
   "gpu.watchdog_toggle": "Recuperar la pantalla automáticamente ante un fallo",
-  "gpu.watchdog_hint": "Un servicio en segundo plano vigila el registro del sistema; si la pantalla negra vuelve a ocurrir, reinicia la sesión gráfica por sí solo — sin necesidad de reiniciar el portátil manualmente. Requiere la contraseña de administrador para activarlo o desactivarlo.",
+  "gpu.watchdog_hint": "Un servicio en segundo plano vigila el registro del sistema; si la pantalla negra vuelve a ocurrir, cierra forzosamente la sesión gráfica bloqueada y la reinicia por sí solo — sin necesidad de reiniciar el portátil manualmente, pero se cerrarán todos los programas abiertos (igual que provocaría el propio fallo). Requiere la contraseña de administrador para activarlo o desactivarlo.",
   "gpu.watchdog_last_recovery": "Última recuperación automática",
   "gpu.watchdog_error": "No se pudo cambiar el estado del servicio de recuperación.",
   "gpu.scanout_apply_error": "No se pudo reiniciar el compositor.",

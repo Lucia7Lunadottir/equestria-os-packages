@@ -264,7 +264,7 @@
   "gpu.scanout_apply_now": "Aplicar agora (reiniciar o compositor)",
   "gpu.confirm_scanout_apply": "Reiniciar o KWin agora?\n\nA tela vai piscar brevemente e algumas janelas podem precisar ser redesenhadas. A configuração já está salva e será aplicada no próximo login de qualquer forma — em caso de dúvida, apenas faça login novamente mais tarde.",
   "gpu.watchdog_toggle": "Recuperar a tela automaticamente em caso de falha",
-  "gpu.watchdog_hint": "Um serviço em segundo plano monitora o log do sistema; se a tela preta acontecer novamente, ele reinicia a sessão gráfica sozinho — sem necessidade de reiniciar o notebook manualmente. Requer a senha de administrador para ativar/desativar.",
+  "gpu.watchdog_hint": "Um serviço em segundo plano monitora o log do sistema; se a tela preta acontecer novamente, ele força o encerramento da sessão gráfica travada e a reinicia sozinho — sem necessidade de reiniciar o notebook manualmente, mas todos os programas abertos serão fechados (assim como a própria falha faria). Requer a senha de administrador para ativar/desativar.",
   "gpu.watchdog_last_recovery": "Última recuperação automática",
   "gpu.watchdog_error": "Falha ao alterar o estado do serviço de recuperação.",
   "gpu.scanout_apply_error": "Falha ao reiniciar o compositor.",

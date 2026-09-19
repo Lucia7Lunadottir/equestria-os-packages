@@ -264,7 +264,7 @@
   "gpu.scanout_apply_now": "立即应用（重启合成器）",
   "gpu.confirm_scanout_apply": "立即重启 KWin？\n\n屏幕会短暂闪烁，部分窗口可能需要重绘。该设置已经保存，无论如何都会在下次登录时生效 — 如果不确定，稍后重新登录即可。",
   "gpu.watchdog_toggle": "出现故障时自动恢复屏幕",
-  "gpu.watchdog_hint": "后台服务会监视系统日志；如果黑屏再次发生，它会自行重启图形会话 — 无需手动重启笔记本电脑。启用/禁用需要管理员密码。",
+  "gpu.watchdog_hint": "后台服务会监视系统日志；如果黑屏再次发生，它会强制结束卡死的图形会话并重启它 — 无需手动重启笔记本电脑，但所有打开的程序都会被关闭（就像崩溃本身会造成的那样）。启用/禁用需要管理员密码。",
   "gpu.watchdog_last_recovery": "上次自动恢复",
   "gpu.watchdog_error": "更改恢复服务状态失败。",
   "gpu.scanout_apply_error": "重启合成器失败。",

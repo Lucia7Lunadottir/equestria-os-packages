@@ -264,7 +264,7 @@
   "gpu.scanout_apply_now": "Zastosuj teraz (zrestartuj kompozytor)",
   "gpu.confirm_scanout_apply": "Zrestartować KWin od razu?\n\nEkran na chwilę mignie, a część okien może wymagać ponownego wyrenderowania. Ustawienie jest już zapisane i tak zostanie zastosowane przy następnym logowaniu — w razie wątpliwości po prostu zaloguj się ponownie później.",
   "gpu.watchdog_toggle": "Automatycznie przywracaj ekran po awarii",
-  "gpu.watchdog_hint": "Usługa działająca w tle obserwuje dziennik systemowy; jeśli czarny ekran wystąpi ponownie, samodzielnie restartuje sesję graficzną — bez ręcznego restartu laptopa. Włączenie/wyłączenie wymaga hasła administratora.",
+  "gpu.watchdog_hint": "Usługa działająca w tle obserwuje dziennik systemowy; jeśli czarny ekran wystąpi ponownie, wymusza zamknięcie zawieszonej sesji graficznej i uruchamia ją ponownie — bez ręcznego restartu laptopa, ale wszystkie otwarte programy zostaną zamknięte (tak jak zrobiłaby to sama awaria). Włączenie/wyłączenie wymaga hasła administratora.",
   "gpu.watchdog_last_recovery": "Ostatnie automatyczne przywrócenie",
   "gpu.watchdog_error": "Nie udało się zmienić stanu usługi przywracania.",
   "gpu.scanout_apply_error": "Nie udało się zrestartować kompozytora.",

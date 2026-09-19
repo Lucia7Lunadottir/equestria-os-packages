@@ -6,19 +6,31 @@
 # until KWin can no longer negotiate a working DRM output layer, at which
 # point the screen goes black while the compositor process stays alive
 # (audio keeps playing, the hardware cursor sometimes still shows). Without
-# this watchdog the only way back is a hard power-cycle. This script watches
-# the journal for that exact failure signature and, once it repeats, restarts
-# the display manager to bring the screen back automatically.
+# this watchdog the only way back is a hard power-cycle.
+#
+# 2026-09-19 incident (see journal, boot 1d24440086764061bd3b6b0c6aa35071,
+# 18:01–18:12): the failure logged exactly ONE matching line and then went
+# silent for 6+ minutes with the screen black — it never repeated 5x/15s, so
+# the old threshold-based trigger never fired. Manually spawning a new
+# kwin_wayland afterwards failed with "Failed to authenticate the drm magic
+# token ... Отказано в доступе" because plasma-kwin_wayland.service (the
+# wedged one) was still alive and holding the DRM master the whole time —
+# `systemctl restart display-manager.service` alone would not have freed it
+# either, since the logind session is an independent unit from sddm.service.
+# Killing the VRAM-heavy process (Unity) did not help, confirming this is a
+# KWin/DRM output-layer negotiation wedge, not VRAM pressure.
+#
+# So: trigger on the first matching line (no window/threshold), and recover
+# by running pg-fix-display, which force-terminates the stuck seat0 session
+# via loginctl (that's what actually releases the DRM master) before
+# restarting the display manager. Same script also exists standalone for
+# manual use from a TTY when you don't want to wait for this watchdog.
 
 set -u
 
-PATTERN='Failed to find a working output layer configuration'
-THRESHOLD=5     # this many matching log lines...
-WINDOW=15       # ...within this many seconds trigger a recovery
+PATTERN='Failed to find a working output layer configuration|Failed to authenticate the drm magic token|atomic commit failed'
 COOLDOWN=90     # minimum seconds between two consecutive recoveries
 
-count=0
-window_start=0
 last_recovery=0
 
 log() { logger -t pg-display-recover "$1"; }
@@ -27,18 +39,12 @@ log "watchdog started, watching for: $PATTERN"
 
 while read -r _; do
     now=$(date +%s)
-
-    if (( now - window_start > WINDOW )); then
-        window_start=$now
-        count=0
-    fi
-    count=$((count + 1))
-
-    if (( count >= THRESHOLD )) && (( now - last_recovery > COOLDOWN )); then
-        log "detected $count output-layer failures within ${WINDOW}s — restarting display-manager.service"
-        systemctl restart display-manager.service
+    if (( now - last_recovery > COOLDOWN )); then
+        log "display failure detected — running pg-fix-display"
+        /usr/bin/pg-fix-display 2>&1 | logger -t pg-display-recover
         last_recovery=$now
-        count=0
+    else
+        log "failure signature seen again within cooldown (${COOLDOWN}s) — skipping, already recovering/recovered"
     fi
 done < <(journalctl -f -n0 --output=cat -g "$PATTERN")
 
