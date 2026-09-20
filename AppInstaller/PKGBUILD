@@ -1,6 +1,6 @@
 pkgname=equestria-installer
-pkgver=1.1.0
-pkgrel=2
+pkgver=1.2.0
+pkgrel=1
 pkgdesc="Graphical local package installer for Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"

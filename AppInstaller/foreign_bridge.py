@@ -282,6 +282,10 @@ def write_manifest(name, version, fmt, files):
     manifest_path = os.path.join(MANIFEST_DIR, f"{name}.json")
     with open(manifest_path, "w") as f:
         json.dump(manifest, f, indent=2)
+    update_app_database()
+
+def update_app_database():
+    subprocess.run(["kbuildsycoca6", "--noincremental"], capture_output=True, check=False)
 
 
 def uninstall(name: str):
