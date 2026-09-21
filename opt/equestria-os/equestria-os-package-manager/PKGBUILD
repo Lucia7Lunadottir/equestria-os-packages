@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-package-manager
 pkgver=2.8.0
-pkgrel=1
+pkgrel=5
 pkgdesc="Official Equestria OS Package Manager (Uninstall, Manage, Clean App Data)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"

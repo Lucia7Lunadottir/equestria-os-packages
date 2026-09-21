@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
+import json
 import os
 import shutil
 import sys
 import urllib.parse
 from PyQt6.QtWidgets import (QApplication, QWizard, QWizardPage, QLabel,
-                             QVBoxLayout, QPushButton, QFileDialog, QTextEdit)
+                             QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QTextEdit,
+                             QDialog, QCheckBox, QDialogButtonBox, QScrollArea, QWidget)
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QProcess, Qt, QTranslator, QLocale
 
@@ -70,6 +72,112 @@ class WelcomePage(QWizardPage):
     def isComplete(self):
         return hasattr(self.wizard(), 'package_path') and bool(self.wizard().package_path)
 
+class DependencyConfirmDialog(QDialog):
+    """Shows exactly which packages foreign_bridge.py's "plan" step wants to
+    download to satisfy missing shared libraries, with a checkbox per
+    candidate, before anything is actually downloaded or installed.
+
+    Exists because a missing-library-name match against pacman's file
+    database can be ambiguous or point at an unexpectedly large package —
+    the user gets to see and veto that before it happens, rather than the
+    installer silently pulling in whatever it guessed."""
+
+    def __init__(self, plan, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(self.tr("Missing dependencies"))
+        self.setMinimumWidth(440)
+        self._checkboxes = []
+
+        layout = QVBoxLayout(self)
+
+        intro = QLabel(self.tr(
+            "This package needs libraries that aren't installed yet. "
+            "Review what will be downloaded before continuing:"))
+        intro.setWordWrap(True)
+        layout.addWidget(intro)
+
+        list_container = QWidget()
+        list_layout = QVBoxLayout(list_container)
+        list_layout.setContentsMargins(0, 0, 0, 0)
+
+        for lib, candidates in plan.get("missing", {}).items():
+            for i, candidate in enumerate(candidates):
+                size = candidate.get("size")
+                size_text = self._format_size(size) if size else self.tr("unknown size")
+
+                row = QWidget()
+                row_layout = QHBoxLayout(row)
+                row_layout.setContentsMargins(0, 0, 0, 0)
+
+                cb = QCheckBox()
+                # Only the first candidate per missing library is ticked by
+                # default — if several packages claim to provide the same
+                # library, installing all of them isn't the right default.
+                cb.setChecked(i == 0)
+                cb.pkg_name = candidate["pkg"]
+                cb.pkg_size = size or 0
+                cb.toggled.connect(self._update_total)
+                row_layout.addWidget(cb)
+
+                # A separate, selectable label — QCheckBox's own text can't
+                # be selected/copied with the mouse, and package/library
+                # names are exactly what someone would want to copy out.
+                lbl = QLabel(f"{candidate['pkg']} ({candidate['repo']}) — {lib} — {size_text}")
+                lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+                lbl.setCursor(Qt.CursorShape.IBeamCursor)
+                row_layout.addWidget(lbl, 1)
+
+                list_layout.addWidget(row)
+                self._checkboxes.append(cb)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(list_container)
+        scroll.setMaximumHeight(220)
+        layout.addWidget(scroll)
+
+        unresolved = plan.get("unresolved", [])
+        if unresolved:
+            warn = QLabel(self.tr("No package found for: ") + ", ".join(unresolved) +
+                          self.tr(" — the app may not start correctly."))
+            warn.setWordWrap(True)
+            warn.setStyleSheet("color: #FF8A80;")
+            warn.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            layout.addWidget(warn)
+
+        self.lbl_total = QLabel()
+        layout.addWidget(self.lbl_total)
+        self._update_total()
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setText(self.tr("Install"))
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    @staticmethod
+    def _format_size(n):
+        value = float(n)
+        for unit in ("B", "KiB", "MiB", "GiB"):
+            if value < 1024 or unit == "GiB":
+                return f"{value:.0f} {unit}" if unit == "B" else f"{value:.1f} {unit}"
+            value /= 1024
+
+    def _update_total(self):
+        total = sum(cb.pkg_size for cb in self._checkboxes if cb.isChecked())
+        self.lbl_total.setText(self.tr("Total download: ") + self._format_size(total))
+
+    def approved_packages(self):
+        seen = set()
+        approved = []
+        for cb in self._checkboxes:
+            if cb.isChecked() and cb.pkg_name not in seen:
+                seen.add(cb.pkg_name)
+                approved.append(cb.pkg_name)
+        return approved
+
+
 class InstallPage(QWizardPage):
     def __init__(self):
         super().__init__()
@@ -90,9 +198,76 @@ class InstallPage(QWizardPage):
 
         self.log_output.clear()
         self.log_output.append(self.tr("Preparing to install: ") + self.wizard().package_path + "\n")
+
+        # .deb/.rpm go through foreign_bridge.py, which can't natively
+        # resolve dependencies the way pacman/flatpak do — a missing library
+        # name has to be matched against pacman's file database, which can
+        # be ambiguous. Plan first (unprivileged, nothing downloaded yet)
+        # and let the user see/approve the candidates before any pkexec step.
+        if self.wizard().package_path.endswith(('.deb', '.rpm')):
+            self.run_dependency_plan()
+        else:
+            self.start_installation()
+
+    def _bridge_path(self):
+        bridge = os.path.join(os.path.dirname(os.path.abspath(__file__)), "foreign_bridge.py")
+        if not os.path.isfile(bridge):
+            bridge = "/usr/lib/equestria-installer/foreign_bridge.py"
+        return bridge
+
+    def run_dependency_plan(self, retried_after_sync=False):
+        self._plan_output = ""
+        self._plan_process = QProcess()
+        self._plan_process.readyReadStandardOutput.connect(self._on_plan_stdout)
+        self._plan_process.readyReadStandardError.connect(self.handle_stderr)
+        self._plan_process.finished.connect(
+            lambda code, status, retried=retried_after_sync: self._on_plan_finished(retried))
+        self._plan_process.start(sys.executable, [self._bridge_path(), "plan", self.wizard().package_path])
+
+    def _on_plan_stdout(self):
+        data = self._plan_process.readAllStandardOutput().data().decode()
+        self._plan_output += data
+        for line in data.splitlines():
+            if not line.startswith("PLAN_JSON:"):
+                self.log_output.append(line.strip())
+
+    def _on_plan_finished(self, retried_after_sync):
+        plan = None
+        for line in self._plan_output.splitlines():
+            if line.startswith("PLAN_JSON:"):
+                try:
+                    plan = json.loads(line[len("PLAN_JSON:"):])
+                except ValueError:
+                    plan = None
+                break
+
+        if plan is None:
+            self.log_output.append(
+                "<span style='color: #FF5252;'>" +
+                self.tr("Could not check dependencies — installing without them.") + "</span>")
+            self.start_installation()
+            return
+
+        if plan.get("file_db_stale") and not retried_after_sync:
+            self.log_output.append(self.tr("Syncing dependency database (needs admin password)..."))
+            self._sync_process = QProcess()
+            self._sync_process.finished.connect(lambda *_: self.run_dependency_plan(retried_after_sync=True))
+            self._sync_process.start("pkexec", [sys.executable, self._bridge_path(), "sync-file-db"])
+            return
+
+        if plan.get("missing") or plan.get("unresolved"):
+            dialog = DependencyConfirmDialog(plan, self.wizard())
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                self.start_installation(dialog.approved_packages())
+            else:
+                self.log_output.append(
+                    "<span style='color: #FF5252;'>" + self.tr("Installation cancelled.") + "</span>")
+                self.process_finished(1, QProcess.ExitStatus.NormalExit)
+            return
+
         self.start_installation()
 
-    def start_installation(self):
+    def start_installation(self, approved_deps=None):
         package_path = self.wizard().package_path
 
         if package_path.endswith(('.pkg.tar.zst', '.pkg.tar.xz')):
@@ -112,10 +287,9 @@ class InstallPage(QWizardPage):
             args = ["install", "--noninteractive", "-y", package_path]
         else:
             command = "pkexec"
-            bridge = os.path.join(os.path.dirname(os.path.abspath(__file__)), "foreign_bridge.py")
-            if not os.path.isfile(bridge):
-                bridge = "/usr/lib/equestria-installer/foreign_bridge.py"
-            args = [sys.executable, bridge, "install", package_path]
+            args = [sys.executable, self._bridge_path(), "install", package_path]
+            if approved_deps:
+                args.append(",".join(approved_deps))
 
         self.process = QProcess()
         self.process.readyReadStandardOutput.connect(self.handle_stdout)

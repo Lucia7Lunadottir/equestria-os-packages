@@ -49,6 +49,19 @@ QPushButton#ModalDeleteBtn:hover {
     background-color: rgb(140, 70, 190); border: 1px solid rgb(140, 70, 190);
 }
 
+/* Пагинация под списком пакетов */
+QPushButton#PaginationBtn {
+    background-color: rgb(60, 50, 90); color: white;
+    border-radius: 6px; padding: 6px 15px; font-weight: bold;
+    border: 1px solid rgb(100, 50, 140);
+}
+QPushButton#PaginationBtn:hover {
+    background-color: rgb(80, 65, 115);
+}
+QPushButton#PaginationBtn:disabled {
+    background-color: rgb(45, 40, 65); color: rgb(120, 115, 140); border: 1px solid rgb(60, 55, 80);
+}
+
 /* Кнопка отмены внутри модального окна */
 QPushButton#ModalCancelBtn {
     background-color: rgb(80, 75, 100); color: white;

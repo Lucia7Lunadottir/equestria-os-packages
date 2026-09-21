@@ -13,5 +13,13 @@
   { "pkg": "equestria-os-tutorial",          "icon": "📖", "name_key": "pkg.tutorial.name",        "desc_key": "pkg.tutorial.desc" },
   { "pkg": "equestria-os-proton-starter",    "icon": "🎮", "name_key": "pkg.proton_exe.name",      "desc_key": "pkg.proton_exe.desc" },
   { "pkg": "equestria-os-settings",         "icon": "⚙",  "name_key": "pkg.settings.name",        "desc_key": "pkg.settings.desc" },
-  { "pkg": "imagefinish",         "icon": "🖌",  "name_key": "pkg.imagefinish.name",        "desc_key": "pkg.imagefinish.desc" }
+  { "pkg": "imagefinish",         "icon": "🖌",  "name_key": "pkg.imagefinish.name",        "desc_key": "pkg.imagefinish.desc" },
+  { "pkg": "equestria-installer",           "icon": "🗃", "name_key": "pkg.installer.name",       "desc_key": "pkg.installer.desc" },
+  { "pkg": "equestria-os-welcome-hub",      "icon": "👋", "name_key": "pkg.welcome_hub.name",     "desc_key": "pkg.welcome_hub.desc" },
+  { "pkg": "desktop-editor-ui",             "icon": "📝", "name_key": "pkg.desktop_editor.name",  "desc_key": "pkg.desktop_editor.desc" },
+  { "pkg": "equestria-os-relocator",        "icon": "📂", "name_key": "pkg.relocator.name",       "desc_key": "pkg.relocator.desc" },
+  { "pkg": "equestria-os-rename-helper",    "icon": "🏷", "name_key": "pkg.rename_helper.name",   "desc_key": "pkg.rename_helper.desc" },
+  { "pkg": "equestria-os-git-askpass",      "icon": "🔑", "name_key": "pkg.git_askpass.name",     "desc_key": "pkg.git_askpass.desc" },
+  { "pkg": "equestria-os-task-panel-changer","icon": "🪟", "name_key": "pkg.task_panel.name",      "desc_key": "pkg.task_panel.desc" },
+  { "pkg": "pg-reboot-notify",              "icon": "🔔", "name_key": "pkg.reboot_notify.name",   "desc_key": "pkg.reboot_notify.desc" }
 ]

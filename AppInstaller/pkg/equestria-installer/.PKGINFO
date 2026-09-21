@@ -3,12 +3,12 @@
 pkgname = equestria-installer
 pkgbase = equestria-installer
 xdata = pkgtype=pkg
-pkgver = 1.2.0-1
+pkgver = 1.2.0-4
 pkgdesc = Graphical local package installer for Equestria OS
 url = https://github.com/Lucia7Lunadottir
-builddate = 1789907323
+builddate = 1789983439
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 42723
+size = 55164
 arch = any
 license = GPL3
 depend = python

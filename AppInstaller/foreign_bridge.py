@@ -17,6 +17,16 @@ from datetime import datetime, timezone
 MANIFEST_DIR = "/var/lib/equestria-installer/foreign"
 PACMAN_SYNC_DIR = "/var/lib/pacman/sync"
 
+# Real system library directories — a candidate package is only trusted to
+# fix a missing .so if it ships the file directly here. Without this, a
+# package that happens to bundle its own private copy of a common library
+# somewhere under its own install prefix (e.g. "usr/lib/somenapp/libxml2.so.2")
+# could be mistaken for the actual system dependency and pulled in instead —
+# possibly a huge, unrelated download for a one-line library name match.
+_SYSTEM_LIB_DIRS = ("usr/lib/", "usr/lib32/", "usr/lib64/")
+
+_SIZE_UNITS = {"B": 1, "KIB": 1024, "MIB": 1024 ** 2, "GIB": 1024 ** 3, "TIB": 1024 ** 4}
+
 PROTECTED_PREFIXES = (
     "/boot",
     "/etc/passwd", "/etc/shadow", "/etc/gshadow", "/etc/sudoers", "/etc/sudoers.d",
@@ -154,58 +164,124 @@ def cached_library_names() -> set:
     return set(re.findall(r"^\s*(\S+)\s*\(", output, re.MULTILINE))
 
 
-def owning_package(filename: str):
-    """Which Arch package ships a file with this exact name, per pacman's file database."""
+def file_db_ready() -> bool:
+    return os.path.isdir(PACMAN_SYNC_DIR) and any(
+        f.endswith(".files") for f in os.listdir(PACMAN_SYNC_DIR))
+
+
+def owning_packages(filename: str):
+    """Arch packages that ship `filename` directly inside a real system
+    library directory (see _SYSTEM_LIB_DIRS) — one entry per candidate
+    package, so an ambiguous match can be shown to the user instead of
+    silently picking whichever one pacman happened to list first."""
     try:
-        result = subprocess.run(["pacman", "-F", filename], capture_output=True, text=True)
+        result = subprocess.run(["pacman", "-F", "--machinereadable", filename],
+                                 capture_output=True, text=True)
+    except OSError:
+        return []
+    if result.returncode != 0:
+        return []
+
+    seen = set()
+    candidates = []
+    for line in result.stdout.splitlines():
+        fields = line.split("\x00")
+        if len(fields) != 4:
+            continue
+        repo, pkg, version, filepath = fields
+        if filepath not in (d + filename for d in _SYSTEM_LIB_DIRS):
+            continue
+        if pkg in seen:
+            continue
+        seen.add(pkg)
+        candidates.append({"repo": repo, "pkg": pkg, "version": version})
+    return candidates
+
+
+def _parse_size(text: str):
+    parts = text.split()
+    if len(parts) != 2:
+        return None
+    try:
+        value = float(parts[0])
+    except ValueError:
+        return None
+    multiplier = _SIZE_UNITS.get(parts[1].upper())
+    return int(value * multiplier) if multiplier else None
+
+
+def package_download_size(pkg: str):
+    """Download size in bytes for `pkg`, straight from `pacman -Si`.
+
+    Forces LC_ALL=C so the "Download Size" label is parseable regardless
+    of the system's configured locale (pacman's own output is translated).
+    """
+    try:
+        result = subprocess.run(["pacman", "-Si", pkg], capture_output=True,
+                                 text=True, env={**os.environ, "LC_ALL": "C"})
     except OSError:
         return None
     if result.returncode != 0:
         return None
     for line in result.stdout.splitlines():
-        if line and not line[0].isspace() and "/" in line:
-            return line.split("/", 1)[1].split()[0]
+        if line.startswith("Download Size"):
+            return _parse_size(line.split(":", 1)[1].strip())
     return None
 
 
-def resolve_dependencies(targets):
-    """Best-effort: find missing .so files needed by newly installed ELF binaries
-    and auto-install whichever Arch package provides each one. Never fatal —
-    file extraction already succeeded regardless of what happens here."""
-    try:
-        needed = set()
-        for path in targets:
-            if os.path.isfile(path) and not os.path.islink(path):
-                needed |= elf_needed_libs(path)
-        if not needed:
-            return
+def build_dependency_plan(targets, extracted_root):
+    """Inspect newly-extracted ELF binaries for missing shared libraries and
+    look up which package(s) could supply each one — without installing
+    anything. The caller (the installer GUI) shows this to the user for
+    approval before a single package is downloaded; see apply_dependency_selection().
+    """
+    needed = set()
+    for member_path in targets:
+        local = os.path.join(extracted_root, member_path.lstrip("/"))
+        if os.path.isfile(local) and not os.path.islink(local):
+            needed |= elf_needed_libs(local)
 
-        missing = needed - cached_library_names()
-        if not missing:
-            log("All runtime dependencies already present.")
-            return
+    missing = sorted(needed - cached_library_names())
+    plan = {"missing": {}, "unresolved": [], "file_db_stale": False}
+    if not missing:
+        return plan
 
-        if not os.path.isdir(PACMAN_SYNC_DIR) or not any(
-                f.endswith(".files") for f in os.listdir(PACMAN_SYNC_DIR)):
-            log("Syncing pacman file database (one-time, may take a while)...")
-            subprocess.run(["pacman", "-Fy"], capture_output=True)
+    if not file_db_ready():
+        plan["file_db_stale"] = True
+        plan["unresolved"] = missing
+        return plan
 
-        to_install, unresolved = set(), []
-        for lib in sorted(missing):
-            pkg = owning_package(lib)
-            (to_install.add(pkg) if pkg else unresolved.append(lib))
-
-        if to_install:
-            log(f"Installing missing dependencies: {', '.join(sorted(to_install))}")
-            subprocess.run(["pacman", "-S", "--needed", "--noconfirm", *sorted(to_install)])
-
-        if unresolved:
-            log(f"WARNING: no Arch package found for: {', '.join(unresolved)} — the app may not start.")
-    except Exception as e:
-        log(f"WARNING: dependency check failed ({e}), continuing anyway.")
+    for lib in missing:
+        candidates = owning_packages(lib)
+        if not candidates:
+            plan["unresolved"].append(lib)
+            continue
+        for c in candidates:
+            c["size"] = package_download_size(c["pkg"])
+        plan["missing"][lib] = candidates
+    return plan
 
 
-def install_deb(path: str):
+def apply_dependency_selection(approved_deps):
+    """Install exactly the dependency packages the user reviewed and ticked
+    in the GUI's confirmation panel. Never queries or resolves anything
+    itself — that already happened in build_dependency_plan(), shown to the
+    user, and approved. Extraction has already succeeded regardless of what
+    happens here."""
+    if not approved_deps:
+        return
+    log(f"Installing approved dependencies: {', '.join(approved_deps)}")
+    result = subprocess.run(["pacman", "-S", "--needed", "--noconfirm", *approved_deps],
+                             capture_output=True, text=True)
+    if result.returncode != 0:
+        log(f"WARNING: failed to install some dependencies: {result.stderr.strip()}")
+
+
+def _extract_deb(path: str, dest_dir: str):
+    """Parse a .deb's control info and extract its data archive into
+    dest_dir. Shared by the real install (dest_dir="/") and by planning
+    (dest_dir=a throwaway temp dir, so nothing touches the real filesystem
+    before the user has approved any dependency downloads)."""
     with open(path, "rb") as f:
         members = parse_ar(f.read())
 
@@ -239,35 +315,67 @@ def install_deb(path: str):
             if m:
                 pkg_version = m.group(1)
 
-        log(f"Package: {pkg_name} {pkg_version}")
-
         member_list = run(["tar", "-taf", data_archive]).splitlines()
         targets = [normalize_member(m) for m in member_list if m.strip() and not m.strip().endswith("/")]
 
-        log(f"Extracting {len(targets)} files...")
-        run(["tar", "-xaf", data_archive, "-C", "/"])
+        run(["tar", "-xaf", data_archive, "-C", dest_dir])
 
-    resolve_dependencies(targets)
-    write_manifest(pkg_name, pkg_version, "deb", targets)
-    log(f"Installed {pkg_name} {pkg_version} ({len(targets)} files)")
+    return pkg_name, pkg_version, targets
 
 
-def install_rpm(path: str):
+def _extract_rpm(path: str, dest_dir: str, preserve_perms: bool = True):
     filename = os.path.basename(path)
     m = re.match(r"^(.+)-([^-]+)-([^-]+)\.[^.]+\.rpm$", filename)
     pkg_name, pkg_version = (m.group(1), m.group(2)) if m else (filename, "0")
 
-    log(f"Package: {pkg_name} {pkg_version}")
-
     member_list = run(["bsdtar", "-tf", path]).splitlines()
     targets = [normalize_member(m) for m in member_list if m.strip() and not m.strip().endswith("/")]
 
-    log(f"Extracting {len(targets)} files...")
-    run(["bsdtar", "-xpf", path, "-C", "/"])
+    flags = "-xpf" if preserve_perms else "-xf"
+    run(["bsdtar", flags, path, "-C", dest_dir])
 
-    resolve_dependencies(targets)
+    return pkg_name, pkg_version, targets
+
+
+def install_deb(path: str, approved_deps=None):
+    pkg_name, pkg_version, targets = _extract_deb(path, "/")
+    log(f"Package: {pkg_name} {pkg_version}")
+    log(f"Extracted {len(targets)} files.")
+    apply_dependency_selection(approved_deps)
+    write_manifest(pkg_name, pkg_version, "deb", targets)
+    log(f"Installed {pkg_name} {pkg_version} ({len(targets)} files)")
+
+
+def install_rpm(path: str, approved_deps=None):
+    pkg_name, pkg_version, targets = _extract_rpm(path, "/")
+    log(f"Package: {pkg_name} {pkg_version}")
+    log(f"Extracted {len(targets)} files.")
+    apply_dependency_selection(approved_deps)
     write_manifest(pkg_name, pkg_version, "rpm", targets)
     log(f"Installed {pkg_name} {pkg_version} ({len(targets)} files)")
+
+
+def plan_package(path: str):
+    """Extract `path` into a scratch directory (never touching the real
+    filesystem) and report its files plus any missing runtime dependencies
+    and their candidate packages, as a single JSON line on stdout prefixed
+    with "PLAN_JSON:". Called unprivileged, before any pkexec install step —
+    nothing is downloaded or installed here."""
+    with tempfile.TemporaryDirectory(prefix="equestria-plan-") as tmp:
+        if path.endswith(".deb"):
+            pkg_name, pkg_version, targets = _extract_deb(path, tmp)
+        elif path.endswith(".rpm"):
+            pkg_name, pkg_version, targets = _extract_rpm(path, tmp, preserve_perms=False)
+        else:
+            raise BridgeError(f"unsupported package type: {path}")
+
+        log(f"Package: {pkg_name} {pkg_version} ({len(targets)} files)")
+        plan = build_dependency_plan(targets, tmp)
+
+    plan["name"] = pkg_name
+    plan["version"] = pkg_version
+    plan["file_count"] = len(targets)
+    print("PLAN_JSON:" + json.dumps(plan), flush=True)
 
 
 def write_manifest(name, version, fmt, files):
@@ -325,27 +433,37 @@ def list_installed():
         log(f"{manifest['name']}\t{manifest['version']}\t{manifest['format']}\t{len(manifest['files'])} files")
 
 
+USAGE = ("usage: equestria-foreign-bridge install <file> [approved,deps,...] "
+         "| plan <file> | sync-file-db | uninstall <name> | list")
+
+
 def main():
     if len(sys.argv) < 2:
-        print("usage: equestria-foreign-bridge install <file> | uninstall <name> | list", file=sys.stderr)
+        print(USAGE, file=sys.stderr)
         return 1
 
     command = sys.argv[1]
     try:
-        if command == "install" and len(sys.argv) == 3:
+        if command == "install" and len(sys.argv) in (3, 4):
             path = sys.argv[2]
+            approved_deps = [d for d in sys.argv[3].split(",") if d] if len(sys.argv) == 4 else []
             if path.endswith(".deb"):
-                install_deb(path)
+                install_deb(path, approved_deps)
             elif path.endswith(".rpm"):
-                install_rpm(path)
+                install_rpm(path, approved_deps)
             else:
                 raise BridgeError(f"unsupported package type: {path}")
+        elif command == "plan" and len(sys.argv) == 3:
+            plan_package(sys.argv[2])
+        elif command == "sync-file-db":
+            subprocess.run(["pacman", "-Fy"], capture_output=True)
+            log("File database synced.")
         elif command == "uninstall" and len(sys.argv) == 3:
             uninstall(sys.argv[2])
         elif command == "list":
             list_installed()
         else:
-            print("usage: equestria-foreign-bridge install <file> | uninstall <name> | list", file=sys.stderr)
+            print(USAGE, file=sys.stderr)
             return 1
     except BridgeError as e:
         print(f"error: {e}", file=sys.stderr)

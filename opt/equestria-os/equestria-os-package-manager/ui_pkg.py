@@ -1,3 +1,4 @@
+import os
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QLineEdit, QComboBox, QScrollArea, QFrame,
                              QAbstractButton)
@@ -121,7 +122,15 @@ class PackageRow(QFrame):
         self.lbl_icon = QLabel()
         self.lbl_icon.setFixedSize(40, 40)
         self.lbl_icon.setScaledContents(True)
-        icon = QIcon.fromTheme(pkg_data.icon_name) if pkg_data.icon_name else QIcon()
+        icon = QIcon()
+        if pkg_data.icon_name:
+            # Third-party .deb/.rpm apps sometimes point Icon= at an actual
+            # path (e.g. "/opt/someapp/icon.png") instead of a theme name —
+            # fromTheme() alone would never find those.
+            if os.path.isabs(pkg_data.icon_name) and os.path.isfile(pkg_data.icon_name):
+                icon = QIcon(pkg_data.icon_name)
+            else:
+                icon = QIcon.fromTheme(pkg_data.icon_name)
         if icon.isNull():
             icon = QIcon.fromTheme("package-x-generic")
         if not icon.isNull():
@@ -131,7 +140,10 @@ class PackageRow(QFrame):
         self.lbl_name = QLabel(pkg_data.name)
         self.lbl_name.setStyleSheet("color: white; font-weight: bold; font-size: 15px; background: transparent;")
 
-        self.lbl_info = QLabel(f"{pkg_data.category} ({pkg_data.source})")
+        info_text = f"{pkg_data.category} ({pkg_data.source})"
+        if getattr(pkg_data, "size_text", ""):
+            info_text += f" • {pkg_data.size_text}"
+        self.lbl_info = QLabel(info_text)
         self.lbl_info.setStyleSheet("color: rgb(180, 170, 200); font-size: 12px; background: transparent;")
 
         desc = pkg_data.description
@@ -192,6 +204,14 @@ class Ui_PackageManager:
         filter_box.addWidget(self.category_dropdown)
         self.main_layout.addLayout(filter_box)
 
+        # Fetching pacman/AUR/flatpak/pip/etc all takes a few seconds — without
+        # this, the window just shows an empty list while that happens, which
+        # reads as "broken" rather than "loading".
+        self.loading_lbl = QLabel("Loading...")
+        self.loading_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.loading_lbl.setStyleSheet("color: rgb(180, 170, 200); font-size: 14px; padding: 30px;")
+        self.main_layout.addWidget(self.loading_lbl)
+
         self.scroll_area = QScrollArea()
         self.scroll_area.setObjectName("PackageList")
         self.scroll_area.setWidgetResizable(True)
@@ -202,6 +222,34 @@ class Ui_PackageManager:
         self.list_layout.setSpacing(2)
         self.scroll_area.setWidget(self.scroll_content)
         self.main_layout.addWidget(self.scroll_area)
+        self.scroll_area.hide()  # shown once the first fetch completes
+
+        # Пагинация: список установленных пакетов (pacman + AUR + flatpak +
+        # pip + ...) на живой системе легко переваливает за тысячу — рендерить
+        # их все разом как виджеты одновременно то же самое, что вешать
+        # приложение на пару секунд при каждом обновлении/поиске.
+        pagination_box = QHBoxLayout()
+        self.btn_prev_page = QPushButton("⬅ Previous")
+        self.btn_prev_page.setObjectName("PaginationBtn")
+        self.btn_prev_page.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_prev_page.setFixedWidth(120)
+
+        self.lbl_page_info = QLabel("Page 1 / 1")
+        self.lbl_page_info.setStyleSheet("color: rgb(180, 170, 200); font-weight: bold;")
+        self.lbl_page_info.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.btn_next_page = QPushButton("Next ➡")
+        self.btn_next_page.setObjectName("PaginationBtn")
+        self.btn_next_page.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_next_page.setFixedWidth(120)
+
+        pagination_box.addWidget(self.btn_prev_page)
+        pagination_box.addWidget(self.lbl_page_info, 1)
+        pagination_box.addWidget(self.btn_next_page)
+        self.pagination_widget = QWidget()
+        self.pagination_widget.setLayout(pagination_box)
+        self.main_layout.addWidget(self.pagination_widget)
+        self.pagination_widget.hide()  # shown once the first fetch completes
 
         # ФИКС: QFrame позволяет задать фон (черное перекрытие) через QSS!
         self.modal_overlay = QFrame(self.root)

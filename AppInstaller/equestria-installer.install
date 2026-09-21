@@ -1,5 +1,53 @@
+_MIMETYPES="application/x-equestria-pkg application/vnd.debian.binary-package application/x-deb application/x-rpm application/vnd.flatpak.ref"
+_DESKTOP_ID="equestria-installer.desktop"
+_MIMEAPPS="/usr/share/applications/mimeapps.list"
+
+_register_mime_defaults() {
+    command -v python3 >/dev/null 2>&1 || return 0
+    python3 - "$_MIMEAPPS" "$_DESKTOP_ID" $_MIMETYPES <<'PYEOF'
+import configparser, os, sys
+
+path, desktop_id, *mimetypes = sys.argv[1:]
+cfg = configparser.ConfigParser()
+cfg.optionxform = str
+if os.path.exists(path):
+    cfg.read(path)
+if not cfg.has_section("Default Applications"):
+    cfg.add_section("Default Applications")
+for mimetype in mimetypes:
+    # Never override a default some other package (or the user, via a
+    # personal ~/.config/mimeapps.list which always wins anyway) already
+    # set for one of these types.
+    if not cfg.has_option("Default Applications", mimetype):
+        cfg.set("Default Applications", mimetype, desktop_id)
+os.makedirs(os.path.dirname(path), exist_ok=True)
+with open(path, "w") as f:
+    cfg.write(f, space_around_delimiters=False)
+PYEOF
+}
+
+_unregister_mime_defaults() {
+    command -v python3 >/dev/null 2>&1 || return 0
+    [ -f "$_MIMEAPPS" ] || return 0
+    python3 - "$_MIMEAPPS" "$_DESKTOP_ID" <<'PYEOF'
+import configparser, sys
+
+path, desktop_id = sys.argv[1:]
+cfg = configparser.ConfigParser()
+cfg.optionxform = str
+cfg.read(path)
+if cfg.has_section("Default Applications"):
+    for mimetype, value in list(cfg.items("Default Applications")):
+        if value == desktop_id:
+            cfg.remove_option("Default Applications", mimetype)
+with open(path, "w") as f:
+    cfg.write(f, space_around_delimiters=False)
+PYEOF
+}
+
 post_install() {
     command -v kbuildsycoca6 >/dev/null 2>&1 && kbuildsycoca6 --noincremental >/dev/null 2>&1
+    _register_mime_defaults
     return 0
 }
 
@@ -8,5 +56,7 @@ post_upgrade() {
 }
 
 post_remove() {
-    post_install
+    _unregister_mime_defaults
+    command -v kbuildsycoca6 >/dev/null 2>&1 && kbuildsycoca6 --noincremental >/dev/null 2>&1
+    return 0
 }
