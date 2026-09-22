@@ -2,7 +2,12 @@
 Description=Equestria OS — Check for updates every hour
 
 [Timer]
-OnBootSec=5min
+# OnActiveSec (не OnBootSec!) — отсчитывается от момента активации
+# самого таймера, а не от загрузки системы. Значит галочка "включить"
+# и смена интервала в настройках (оба делают systemctl start/restart
+# на этом юните) всегда гарантированно ставят первый прогон, а не
+# только один раз за сессию после старта ОС.
+OnActiveSec=5min
 OnUnitActiveSec=1h
 Unit=pg-update.service
 

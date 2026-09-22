@@ -77,11 +77,40 @@ SendNotification() {
         "$body"
 }
 
+SendUpToDate() {
+    notify-send \
+        --app-name="$DISTRO" \
+        --icon="$ICON" \
+        --urgency=low \
+        --expire-time=5000 \
+        "Обновлений нет" \
+        "Система полностью обновлена."
+}
+
+SendNoNetwork() {
+    notify-send \
+        --app-name="$DISTRO" \
+        --icon="$ICON" \
+        --urgency=low \
+        --expire-time=5000 \
+        "Не удалось проверить обновления" \
+        "Нет соединения с интернетом."
+}
+
 # ── Main ─────────────────────────────────────────────────────
 
 Main() {
+    # --force — ручная проверка (кнопка "Проверить сейчас" в настройках):
+    # в отличие от фонового таймера, всегда показывает результат, даже
+    # если число обновлений не изменилось с прошлого раза.
+    local force=0
+    [ "${1:-}" = "--force" ] && force=1
+
     # Нужно интернет-соединение
-    ping -c 1 -W 3 archlinux.org &>/dev/null || exit 0
+    if ! ping -c 1 -W 3 archlinux.org &>/dev/null; then
+        [ "$force" -eq 1 ] && SendNoNetwork
+        exit 0
+    fi
 
     local count_pacman=$(CountPacmanUpdates)
     local count_aur=$(CountAurUpdates)
@@ -93,13 +122,17 @@ Main() {
     # Если обновлений нет, сбрасываем кэш и выходим
     if [ "$total" -eq 0 ]; then
         echo 0 > "$CACHE_FILE"
+        [ "$force" -eq 1 ] && SendUpToDate
         exit 0
     fi
 
-    # Не уведомлять повторно если общее количество не изменилось
+    # Не уведомлять повторно если общее количество не изменилось —
+    # но только для фонового таймера, ручная проверка обязана ответить всегда
     local last_count=0
     [ -f "$CACHE_FILE" ] && last_count=$(cat "$CACHE_FILE")
-    [ "$total" -eq "$last_count" ] && exit 0
+    if [ "$total" -eq "$last_count" ] && [ "$force" -eq 0 ]; then
+        exit 0
+    fi
 
     # Сохранить текущее количество
     echo "$total" > "$CACHE_FILE"

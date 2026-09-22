@@ -2,7 +2,7 @@
 
 pkgname=pg-reboot-notify
 pkgver=1.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Equestria OS — KDE notification when a reboot is needed after updates'
 arch=('any')
 license=('GPL3')

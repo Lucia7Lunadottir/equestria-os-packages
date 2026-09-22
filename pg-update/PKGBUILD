@@ -2,7 +2,7 @@
 
 pkgname=pg-update
 pkgver=1.1.0
-pkgrel=1
+pkgrel=3
 pkgdesc='Equestria OS — KDE notification when system updates are available'
 arch=('any')
 license=('GPL3')

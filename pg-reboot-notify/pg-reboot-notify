@@ -43,17 +43,42 @@ RebootNeededFlag() {
 
 # ── Уведомление ──────────────────────────────────────────────
 
+# Хук запускается pacman-ом от root (без DISPLAY/DBUS), поэтому
+# notify-send нужно направить в сессию активного графического
+# пользователя явно — иначе он тихо падает на "cannot autolaunch
+# D-Bus without X11 $DISPLAY".
+FindGraphicalUser() {
+    local sess_line su si st
+    while IFS= read -r sess_line; do
+        su=$(awk '{print $3}' <<< "$sess_line")
+        [ -z "$su" ] || [ "$su" = "root" ] && continue
+        si=$(awk '{print $1}' <<< "$sess_line")
+        st=$(loginctl show-session "$si" -p Type 2>/dev/null | cut -d= -f2)
+        if [ "$st" = "x11" ] || [ "$st" = "wayland" ] || [ "$st" = "mir" ]; then
+            echo "$su"
+            return 0
+        fi
+    done < <(loginctl list-sessions --no-legend 2>/dev/null)
+    return 1
+}
+
 SendNotification() {
     local reason="$1"
+    local user uid
 
-    # notify-send — стандартный инструмент KDE/freedesktop
-    notify-send \
-        --app-name="$DISTRO" \
-        --icon="$ICON" \
-        --urgency=normal \
-        --expire-time=10000 \
-        "Рекомендуется перезагрузка" \
-        "$reason"
+    user=$(FindGraphicalUser) || { echo "pg-reboot-notify: no graphical session, skipping" >&2; return 0; }
+    uid=$(id -u "$user" 2>/dev/null) || return 0
+
+    runuser -u "$user" -- env \
+        XDG_RUNTIME_DIR="/run/user/$uid" \
+        DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$uid/bus" \
+        notify-send \
+            --app-name="$DISTRO" \
+            --icon="$ICON" \
+            --urgency=normal \
+            --expire-time=10000 \
+            "Рекомендуется перезагрузка" \
+            "$reason"
 }
 
 # ── Main ─────────────────────────────────────────────────────

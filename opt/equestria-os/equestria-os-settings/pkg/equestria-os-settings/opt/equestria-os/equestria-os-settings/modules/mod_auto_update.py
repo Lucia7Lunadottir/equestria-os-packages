@@ -79,7 +79,7 @@ class _CheckWorker(QObject):
 
     def run(self):
         try:
-            subprocess.run(["/usr/bin/pg-update"], capture_output=True, timeout=60)
+            subprocess.run(["/usr/bin/pg-update", "--force"], capture_output=True, timeout=60)
         except Exception:
             pass
         self.done.emit()
@@ -371,7 +371,11 @@ class AutoUpdateModule(BaseModule):
         try:
             os.makedirs(_OVERRIDE_DIR, exist_ok=True)
             with open(_OVERRIDE_FILE, "w") as f:
-                f.write("[Timer]\nOnBootSec=\n" + value + "\n")
+                # Не трогаем OnBootSec из базового юнита — он даёт таймеру
+                # точку отсчёта сразу после загрузки. Без него OnUnitActiveSec
+                # никогда не сработает первый раз (не от чего отсчитывать),
+                # и проверка обновлений намертво замолкает.
+                f.write("[Timer]\n" + value + "\n")
             subprocess.Popen(
                 ["bash", "-c",
                  "systemctl --user daemon-reload && "
