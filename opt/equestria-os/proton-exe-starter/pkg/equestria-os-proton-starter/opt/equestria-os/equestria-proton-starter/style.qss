@@ -109,3 +109,13 @@ QComboBox QAbstractItemView {
     border: 1px solid rgb(69, 71, 90);
     outline: none;
 }
+
+QMenu {
+    background-color: rgb(30, 26, 46);
+    color: rgb(220, 200, 255);
+    border: 1px solid rgb(69, 71, 90);
+    border-radius: 4px;
+}
+QMenu::item { padding: 6px 20px; }
+QMenu::item:selected { background-color: rgb(100, 60, 160); }
+QMenu::item:disabled { color: rgb(110, 100, 130); }

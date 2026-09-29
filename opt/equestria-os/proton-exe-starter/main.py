@@ -271,6 +271,8 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         self.chk_xbox_pad.setText(self.t_str("proton.chk_xbox_pad"))
         self.chk_debug.setText(self.t_str("proton.chk_debug"))
         self.chk_compat_profile.setText(self.t_str("proton.chk_compat_profile"))
+        self.chk_gamemode.setText(self.t_str("proton.chk_gamemode"))
+        self.chk_upscaler.setText(self.t_str("proton.chk_upscaler"))
         self.group_proton.setTitle(self.t_str("proton.group_proton"))
         self.combo_proton.setItemText(0, self.t_str("proton.ver_auto"))
         self.combo_proton.setItemText(1, self.t_str("proton.ver_ge"))
@@ -333,6 +335,8 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
                     self.chk_xbox_pad.setChecked(settings.get("xbox_pad", False))
                     self.chk_debug.setChecked(settings.get("debug_log", False))
                     self.chk_compat_profile.setChecked(settings.get("desktop_profile", False))
+                    self.chk_gamemode.setChecked(settings.get("gamemode", False))
+                    self.chk_upscaler.setChecked(settings.get("upscaler_upgrade", False))
                     self.txt_args.setText(settings.get("launch_args", ""))
                     idx = self.combo_proton.findData(settings.get("proton_version", ""))
                     self.combo_proton.setCurrentIndex(idx if idx != -1 else 0)
@@ -352,6 +356,8 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
             "xbox_pad": self.chk_xbox_pad.isChecked(),
             "debug_log": self.chk_debug.isChecked(),
             "desktop_profile": self.chk_compat_profile.isChecked(),
+            "gamemode": self.chk_gamemode.isChecked(),
+            "upscaler_upgrade": self.chk_upscaler.isChecked(),
             "launch_args": self.txt_args.text().strip(),
             "proton_version": self.combo_proton.currentData() or ""
         }

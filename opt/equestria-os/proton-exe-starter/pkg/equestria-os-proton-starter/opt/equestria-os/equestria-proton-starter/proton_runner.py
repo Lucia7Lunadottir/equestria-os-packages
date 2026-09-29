@@ -68,6 +68,27 @@ def _preseed_shared_windows(prefix_path):
     if not os.path.exists(windows_path):
         os.symlink(SHARED_WINDOWS, windows_path)
 
+
+def _find_owning_app_id(exe_path):
+    """
+    If exe_path lives inside an existing prefix's drive_c (e.g. it was just
+    installed there by a setup.exe run through this same tool), return that
+    prefix's app_id so the installed program reuses the installer's prefix
+    instead of getting a fresh, empty one keyed off its own path.
+    """
+    exe_real = os.path.realpath(exe_path)
+    apps_real = os.path.realpath(APPS_DATA_DIR)
+    try:
+        rel = os.path.relpath(exe_real, apps_real)
+    except ValueError:
+        return None
+    if rel.startswith(".."):
+        return None
+    parts = rel.split(os.sep)
+    if len(parts) < 3 or parts[0] == "_shared" or parts[1] != "pfx":
+        return None
+    return parts[0]
+
 def show_error(title, text):
     app = QApplication.instance() or QApplication(sys.argv)
     msg = QMessageBox()
@@ -89,8 +110,10 @@ def main():
         show_error("Error", f"File not found:\n{exe_path}")
 
     exe_name = os.path.basename(exe_path)
-    path_hash = hashlib.md5(exe_path.encode("utf-8")).hexdigest()[:8]
-    app_id = f"{exe_name}_{path_hash}"
+    app_id = _find_owning_app_id(exe_path)
+    if not app_id:
+        path_hash = hashlib.md5(exe_path.encode("utf-8")).hexdigest()[:8]
+        app_id = f"{exe_name}_{path_hash}"
     prefix_path = os.path.join(APPS_DATA_DIR, app_id)
     config_file = os.path.join(CONFIG_DIR, f"{app_id}.json")
 

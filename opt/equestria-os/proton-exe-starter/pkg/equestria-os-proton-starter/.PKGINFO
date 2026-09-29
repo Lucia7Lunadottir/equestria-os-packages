@@ -3,16 +3,17 @@
 pkgname = equestria-os-proton-starter
 pkgbase = equestria-os-proton-starter
 xdata = pkgtype=pkg
-pkgver = 1.7.0-2
-pkgdesc = Native Windows .exe launcher for Equestria OS (double-click support via Proton, engine manager, Xbox 360 gamepad mode)
+pkgver = 1.8.0-1
+pkgdesc = Native Windows .exe/.msi launcher for Equestria OS (double-click support via Proton, engine manager, Xbox 360 gamepad mode, GameMode, upscaler DLL upgrades)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1783955340
+builddate = 1790643475
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 447855
+size = 465947
 arch = any
 license = GPL
 depend = python-pyqt6
 depend = umu-launcher
+depend = winetricks
 depend = lib32-glibc
 depend = lib32-gcc-libs
 depend = xdg-utils
@@ -24,3 +25,4 @@ optdepend = lib32-mesa: 32-bit OpenGL support for AMD/Intel/Nouveau
 optdepend = lib32-vulkan-radeon: 32-bit Vulkan support for AMD GPUs
 optdepend = lib32-vulkan-intel: 32-bit Vulkan support for Intel GPUs
 optdepend = lib32-nvidia-utils: 32-bit OpenGL/Vulkan support for NVIDIA GPUs
+optdepend = gamemode: CPU/GPU priority boost during launch (GameMode checkbox)

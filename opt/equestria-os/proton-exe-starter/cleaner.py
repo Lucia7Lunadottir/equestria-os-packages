@@ -7,11 +7,12 @@ import sys
 import os
 import csv
 import shutil
+import subprocess
 
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QScrollArea, QGroupBox, QMessageBox,
-    QSizePolicy)
+    QSizePolicy, QMenu)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 
@@ -103,6 +104,62 @@ def find_shader_files(prefix_path: str) -> list:
     return found
 
 
+# Части имени файла, встречающиеся у одноразовых установщиков/распространяемых
+# рантаймов, а не у самой программы — их незачем предлагать для запуска.
+_SKIP_EXE_PATTERNS = (
+    "vcredist", "vc_redist", "dotnetfx", "dxsetup", "directx",
+    "vcruntime", "oalinst", "dxwebsetup",
+)
+# Деинсталляторы (Inno Setup/NSIS: unins000.exe и т.п.) — не мусор, но и не то,
+# что обычно хочется запускать по умолчанию, поэтому помечаем отдельным видом
+# вместо того чтобы прятать: иногда единственный способ снести программу.
+_UNINSTALL_EXE_PATTERNS = ("unins", "uninstall")
+
+
+def find_candidate_exes(prefix_path: str) -> list:
+    """
+    Найти .exe внутри Program Files/Program Files (x86) префикса — те же папки,
+    куда после запуска через Proton/umu кладёт себя обычный Windows-инсталлятор.
+    Возвращает [(относительный_путь, полный_путь, вид)], вид: "app" | "uninstall".
+    Заменяет собой поиск .lnk-ярлыков в Меню Пуск (двоичный формат, разбирать
+    который здесь не оправдано) — застройщик .exe почти всегда лежит рядом.
+    """
+    drive_c = os.path.join(prefix_path, "pfx", "drive_c")
+    program_dirs = [
+        os.path.join(drive_c, "Program Files"),
+        os.path.join(drive_c, "Program Files (x86)"),
+    ]
+
+    found = []
+    seen = set()
+    for base in program_dirs:
+        if not os.path.isdir(base):
+            continue
+        for root, dirs, files in os.walk(base):
+            if "common files" in root.lower():
+                dirs[:] = []  # общие библиотеки поставщиков — никогда не сама программа
+                continue
+            for f in files:
+                if not f.lower().endswith(".exe"):
+                    continue
+                low = f.lower()
+                if any(p in low for p in _SKIP_EXE_PATTERNS):
+                    continue
+                full = os.path.join(root, f)
+                if full in seen:
+                    continue
+                seen.add(full)
+                kind = "uninstall" if any(p in low for p in _UNINSTALL_EXE_PATTERNS) else "app"
+                rel = os.path.relpath(full, base)
+                found.append((rel, full, kind))
+
+    # Сначала обычные программы, среди них — сначала более "верхнеуровневые"
+    # (меньше вложенных папок: у самой программы обычно короче путь, чем у
+    # спрятанных внутри неё вспомогательных утилит).
+    found.sort(key=lambda r: (r[2] == "uninstall", r[0].count(os.sep), r[0].lower()))
+    return found[:40]
+
+
 class AppCard(QWidget):
     def __init__(self, app_id: str, prefix_path: str, on_removed):
         super().__init__()
@@ -133,6 +190,14 @@ class AppCard(QWidget):
         layout.addLayout(info)
         layout.addStretch()
 
+        self.btn_launch = QPushButton(t("cleaner.btn_launch"))
+        self.btn_launch.setMinimumWidth(110)
+        self.btn_launch.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        self.launch_menu = QMenu(self.btn_launch)
+        self.launch_menu.aboutToShow.connect(self._populate_launch_menu)
+        self.btn_launch.setMenu(self.launch_menu)
+        layout.addWidget(self.btn_launch)
+
         self.btn_shaders = QPushButton(t("cleaner.btn_clear_shaders"))
         self.btn_shaders.setMinimumWidth(130)
         self.btn_shaders.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
@@ -148,6 +213,30 @@ class AppCard(QWidget):
         layout.addWidget(self.btn_prefix)
 
 
+
+    def _populate_launch_menu(self):
+        # Пересобираем при каждом открытии, а не один раз при создании карточки —
+        # список программ внутри префикса может пополниться новыми установками,
+        # пока окно очистки уже открыто.
+        self.launch_menu.clear()
+        candidates = find_candidate_exes(self.prefix_path)
+        if not candidates:
+            action = self.launch_menu.addAction(t("cleaner.menu_no_programs"))
+            action.setEnabled(False)
+            return
+        for rel_path, full_path, kind in candidates:
+            label = f"{t('cleaner.label_uninstall')}: {rel_path}" if kind == "uninstall" else rel_path
+            action = self.launch_menu.addAction(label)
+            action.triggered.connect(lambda checked=False, p=full_path: self._launch(p))
+
+    def _launch(self, exe_path):
+        # equestria-proton-run уже на PATH (тот же бинарь, что вызывает file-manager
+        # при двойном клике по .exe) — переиспользуем его вместо дублирования логики
+        # запуска здесь: те же настройки, тот же splash, тот же app_id.
+        try:
+            subprocess.Popen(["equestria-proton-run", exe_path])
+        except Exception as e:
+            QMessageBox.critical(self, t("cleaner.msg_error_title"), str(e))
 
     def _refresh_size(self):
         size = get_dir_size(self.prefix_path) if os.path.isdir(self.prefix_path) else 0

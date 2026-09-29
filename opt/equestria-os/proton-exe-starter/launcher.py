@@ -33,12 +33,14 @@ SHARED_MARKER_DESKTOP = os.path.join(SHARED_BASE, ".proton-shared-desktop")
 
 # Базовый набор компонентов совместимости для обычного Windows-софта (не игр).
 # Список подтверждён рабочими community-рецептами (напр. Lutris-инсталлятор
-# Photoshop CS6): шрифты, GDI+/XML-парсер, пара поколений MSVC-рантайма
-# (винтажные приложения часто требуют конкретное старое поколение, а не только
-# самое новое) и компилятор шейдеров Direct3D, которого часто не хватает
-# обычным (не игровым) программам с интерфейсом на D3D.
+# Photoshop CS6, и отчёты Bottles 2026 о MS Office/365): шрифты, GDI+/XML-парсер,
+# пара поколений MSVC-рантайма (винтажные приложения часто требуют конкретное
+# старое поколение, а не только самое новое), компилятор шейдеров Direct3D,
+# которого часто не хватает обычным (не игровым) программам с интерфейсом на D3D,
+# и riched20 — контрол форматированного текста, без которого не открывается
+# интерфейс Word/Excel/PowerPoint и многих других "тяжёлых" офисных программ.
 DESKTOP_WINETRICKS_VERBS = [
-    "corefonts", "gdiplus", "msxml6",
+    "corefonts", "gdiplus", "msxml6", "riched20",
     "vcrun2013", "vcrun2022",
     "d3dcompiler_47",
 ]
@@ -149,6 +151,24 @@ def apply_game_env(env, settings):
         env["PROTON_PREFER_SDL"] = "1"
         env["PROTON_DISABLE_HIDRAW"] = "1"
         env["PROTON_NO_STEAMINPUT"] = "1"
+
+    # Однокнопочный тумблер вместо трёх отдельных переменных (см. CachyOS/GE-Proton
+    # 2026: PROTON_FSR4_UPGRADE/PROTON_DLSS_UPGRADE/PROTON_XESS_UPGRADE) — Proton сам
+    # подменяет DLL апскейлера на новую версию из FidelityFX/Streamline/XeSS.
+    # Билды Proton, которые этого не умеют, просто игнорируют неизвестные переменные.
+    if settings.get("upscaler_upgrade"):
+        env["PROTON_FSR4_UPGRADE"] = "1"
+        env["PROTON_DLSS_UPGRADE"] = "1"
+        env["PROTON_XESS_UPGRADE"] = "1"
+
+    # Многие старые "тяжёлые" 32-битные программы (классический Photoshop, Excel
+    # с большими файлами) собраны без флага LARGE_ADDRESS_AWARE и поэтому сами
+    # ограничивают себя 2 ГиБ адресного пространства, даже на 64-битной системе
+    # с кучей свободной RAM — типичная причина падений на больших файлах.
+    # WINE_LARGE_ADDRESS_AWARE патчит этот флаг в заголовке PE на лету; на
+    # программы, где он не нужен (или на 64-битные), эффекта не оказывает.
+    if settings.get("desktop_profile"):
+        env["WINE_LARGE_ADDRESS_AWARE"] = "1"
 
     choice = settings.get("proton_version", "")
     if choice == "GE-Proton":
@@ -431,12 +451,28 @@ def main():
     extra_args = shlex.split(settings.get("launch_args", "").strip())
     game_dir = os.path.dirname(exe_path)
 
+    # .msi — не самостоятельный исполняемый файл, а пакет для штатной службы
+    # Windows Installer: в самой Windows двойной клик по .msi тоже не запускает
+    # его напрямую, а вызывает msiexec /i <файл>. Часто встречается у
+    # корпоративных/старых инсталляторов офисных пакетов и апдейтов.
+    if exe_path.lower().endswith(".msi"):
+        target = ["msiexec", "/i", exe_path]
+    else:
+        target = [exe_path]
+
     if settings.get("virtual_desktop"):
         screen = app.primaryScreen().size()
         res = f"{screen.width()}x{screen.height()}"
-        cmd = ["umu-run", "explorer.exe", f"/desktop=EquestriaOS,{res}", exe_path] + extra_args
+        cmd = ["umu-run", "explorer.exe", f"/desktop=EquestriaOS,{res}"] + target + extra_args
     else:
-        cmd = ["umu-run", exe_path] + extra_args
+        cmd = ["umu-run"] + target + extra_args
+
+    # gamemoderun переключает CPU-губернатор/приоритет процесса на время игры
+    # (Feral GameMode). Оборачиваем вокруг umu-run, а не передаём как переменную
+    # окружения — это отдельный бинарь-обёртка. Если его нет в системе (не входит
+    # в depends, это осознанно опциональный инструмент) — тихо запускаем без него.
+    if settings.get("gamemode") and shutil.which("gamemoderun"):
+        cmd = ["gamemoderun"] + cmd
 
     log_path = os.path.join(APPS_DATA_DIR, f"{app_id}.log")
 

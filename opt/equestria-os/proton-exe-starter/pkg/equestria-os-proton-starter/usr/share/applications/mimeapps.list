@@ -2,3 +2,4 @@
 application/x-ms-dos-executable=equestria-os-proton-run.desktop
 application/x-msdownload=equestria-os-proton-run.desktop
 application/vnd.microsoft.portable-executable=equestria-os-proton-run.desktop
+application/x-msi=equestria-os-proton-run.desktop

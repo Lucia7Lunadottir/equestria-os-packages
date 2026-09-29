@@ -74,3 +74,8 @@ cleaner.prefix_cleared,Prefix successfully deleted.,Префикс успешн�
 cleaner.mesa_not_found,No Mesa cache directories found.,Директории кэша Mesa не найдены.,Keine Mesa-Cache-Verzeichnisse gefunden.,Aucun répertoire de cache Mesa trouvé.,No se encontraron directorios de caché Mesa.,Nenhum diretório de cache Mesa encontrado.,Nie znaleziono katalogów cache Mesa.,Директорії кешу Mesa не знайдено.,未找到 Mesa 缓存目录。,Mesa キャッシュディレクトリが見つかりません。
 cleaner.mesa_cleared,Mesa shader cache successfully cleared.,Кэш шейдеров Mesa успешно очищен.,Mesa-Shader-Cache erfolgreich geleert.,Cache de shaders Mesa vidé avec succès.,Caché de shaders Mesa limpiada correctamente.,Cache de shaders Mesa limpo com sucesso.,Cache shaderów Mesa wyczyszczony pomyślnie.,Кеш шейдерів Mesa успішно очищено.,Mesa 着色器缓存已成功清除。,Mesa シェーダーキャッシュが正常にクリアされました。
 cleaner.msg_confirm_mesa,Clear all Mesa/Radeon shader caches?,Очистить все кэши шейдеров Mesa/Radeon?,Alle Mesa/Radeon-Shader-Caches leeren?,Vider tous les caches de shaders Mesa/Radeon ?,¿Limpiar todos los cachés de shaders Mesa/Radeon?,Limpar todos os caches de shaders Mesa/Radeon?,Wyczyścić wszystkie cache shaderów Mesa/Radeon?,Очистити всі кеші шейдерів Mesa/Radeon?,清除所有 Mesa/Radeon 着色器缓存？,すべての Mesa/Radeon シェーダーキャッシュをクリアしますか？
+proton.chk_gamemode,"Use GameMode (CPU/GPU priority boost, if installed)","Использовать GameMode (приоритет CPU/GPU, если установлен)",,,,,,,,
+proton.chk_upscaler,Enable upscaler DLL upgrades (FSR4 / DLSS / XeSS),Обновлять DLL апскейлеров (FSR4 / DLSS / XeSS),,,,,,,,
+cleaner.btn_launch,▶ Launch,▶ Запустить,,,,,,,,
+cleaner.menu_no_programs,No programs found,Программы не найдены,,,,,,,,
+cleaner.label_uninstall,Uninstall,Удаление,,,,,,,,

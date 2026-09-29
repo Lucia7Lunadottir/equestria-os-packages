@@ -48,6 +48,12 @@ class Ui_SettingsWindow:
 
         self.chk_compat_profile = QCheckBox()
         glayout.addWidget(self.chk_compat_profile)
+
+        self.chk_gamemode = QCheckBox()
+        glayout.addWidget(self.chk_gamemode)
+
+        self.chk_upscaler = QCheckBox()
+        glayout.addWidget(self.chk_upscaler)
         layout.addWidget(self.group_graphics)
 
         # Группа: Движок Proton
