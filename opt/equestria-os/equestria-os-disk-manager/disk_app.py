@@ -441,6 +441,9 @@ STRINGS = {
     "warn_no_label":    {"en": "Enter a label!",                               "ru": "Введите метку!",                     "de": "Bezeichnung eingeben!",                  "fr": "Entrez une étiquette !",                 "es": "¡Introduzca una etiqueta!",              "pt": "Digite um rótulo!",                      "pl": "Podaj etykietę!",                        "uk": "Введіть мітку!",                         "zh": "请输入标签！",                           "ja": "ラベルを入力してください！"},
     "save_fstab":   {"en": "Save fstab",                                  "ru": "Сохранить fstab",                    "de": "fstab speichern",                        "fr": "Enregistrer fstab",                      "es": "Guardar fstab",                          "pt": "Salvar fstab",                           "pl": "Zapisz fstab",                           "uk": "Зберегти fstab",                         "zh": "保存 fstab",                             "ja": "fstab を保存"},
     "tt_save_fstab":{"en": "Update mount point and options in /etc/fstab", "ru": "Обновить точку монтирования и опции в /etc/fstab"},
+    "open_fstab":   {"en": "Open fstab",                                  "ru": "Открыть fstab",                      "de": "fstab öffnen",                           "fr": "Ouvrir fstab",                           "es": "Abrir fstab",                            "pt": "Abrir fstab",                            "pl": "Otwórz fstab",                           "uk": "Відкрити fstab",                         "zh": "打开 fstab",                             "ja": "fstab を開く"},
+    "tt_open_fstab":{"en": "Open /etc/fstab in a text editor to inspect or hand-edit it directly", "ru": "Открыть /etc/fstab в текстовом редакторе для просмотра или ручного редактирования", "de": "/etc/fstab in einem Texteditor zur Ansicht oder manuellen Bearbeitung öffnen", "fr": "Ouvrir /etc/fstab dans un éditeur de texte pour l'inspecter ou le modifier manuellement", "es": "Abrir /etc/fstab en un editor de texto para inspeccionarlo o editarlo manualmente", "pt": "Abrir /etc/fstab em um editor de texto para inspecionar ou editar manualmente", "pl": "Otwórz /etc/fstab w edytorze tekstu, aby go sprawdzić lub edytować ręcznie", "uk": "Відкрити /etc/fstab у текстовому редакторі для перегляду або ручного редагування", "zh": "在文本编辑器中打开 /etc/fstab 以查看或手动编辑", "ja": "テキストエディタで /etc/fstab を開いて確認・手動編集する"},
+    "no_editor_found": {"en": "No text editor or terminal emulator found to open fstab", "ru": "Не найден текстовый редактор или терминал для открытия fstab", "de": "Kein Texteditor oder Terminal-Emulator zum Öffnen von fstab gefunden", "fr": "Aucun éditeur de texte ou émulateur de terminal trouvé pour ouvrir fstab", "es": "No se encontró ningún editor de texto ni emulador de terminal para abrir fstab", "pt": "Nenhum editor de texto ou emulador de terminal encontrado para abrir o fstab", "pl": "Nie znaleziono edytora tekstu ani emulatora terminala do otwarcia fstab", "uk": "Не знайдено текстовий редактор або емулятор термінала для відкриття fstab", "zh": "未找到可用于打开 fstab 的文本编辑器或终端模拟器", "ja": "fstab を開くためのテキストエディタやターミナルエミュレータが見つかりません"},
     "cancel":       {"en": "Cancel",                                       "ru": "Отмена",                             "de": "Abbrechen",                              "fr": "Annuler",                                "es": "Cancelar",                               "pt": "Cancelar",                               "pl": "Anuluj",                                 "uk": "Скасувати",                              "zh": "取消",                                   "ja": "キャンセル"},
     "confirm_type_hint": {
         "en": "Type the partition name ({dev}) to confirm:",
@@ -851,6 +854,8 @@ class DiskManagerApp(QMainWindow):
         self.set_label_btn.setToolTip(self.t("tt_set_label"))
         self.save_fstab_btn.setText(self.t("save_fstab"))
         self.save_fstab_btn.setToolTip(self.t("tt_save_fstab"))
+        self.open_fstab_btn.setText(self.t("open_fstab"))
+        self.open_fstab_btn.setToolTip(self.t("tt_open_fstab"))
         self.keep_uuid_cb.setLabelText(self.t("keep_uuid"))
         self.keep_uuid_cb.setToolTip(self.t("tt_keep_uuid"))
         self._update_fold_text()
@@ -1033,6 +1038,13 @@ class DiskManagerApp(QMainWindow):
         self.save_fstab_btn.clicked.connect(self._save_fstab)
         self.save_fstab_btn.setVisible(False)
         main_layout.addWidget(self.save_fstab_btn)
+
+        self.open_fstab_btn = QPushButton(self.t("open_fstab"))
+        self.open_fstab_btn.setObjectName("BrowseBtn")
+        self.open_fstab_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.open_fstab_btn.setToolTip(self.t("tt_open_fstab"))
+        self.open_fstab_btn.clicked.connect(self._open_fstab)
+        main_layout.addWidget(self.open_fstab_btn)
         main_layout.addWidget(self._make_divider())
 
         # --- Permissions ---
@@ -1627,6 +1639,32 @@ class DiskManagerApp(QMainWindow):
             return
         self._run_backend(["--add-fstab", uuid, mount, fstype, options],
                           f"Saving fstab entry for {uuid[:8]}...")
+
+    def _open_fstab(self):
+        """Open /etc/fstab in a GUI text editor for manual inspection/editing —
+        e.g. to spot and remove a duplicate UUID entry the app's own
+        add/remove flow wouldn't normally produce but hand-editing might."""
+        editors = ["kate", "gnome-text-editor", "gedit", "featherpad", "xed", "kwrite", "mousepad"]
+        editor = next((e for e in editors if shutil.which(e)), None)
+        try:
+            if editor:
+                env_pass = [f"{k}={os.environ[k]}" for k in
+                            ("DISPLAY", "XAUTHORITY", "WAYLAND_DISPLAY") if os.environ.get(k)]
+                subprocess.Popen(
+                    ["pkexec", "env", *env_pass, editor, "/etc/fstab"],
+                    start_new_session=True,
+                )
+                return
+            for term in (["konsole", "-e"], ["xterm", "-e"], ["gnome-terminal", "--"]):
+                if shutil.which(term[0]):
+                    subprocess.Popen(
+                        ["pkexec"] + term + ["nano", "/etc/fstab"],
+                        start_new_session=True,
+                    )
+                    return
+            QMessageBox.warning(self, self.t("dlg_warning"), self.t("no_editor_found"))
+        except Exception as e:
+            QMessageBox.critical(self, self.t("dlg_error"), str(e))
 
     def _toggle_automount(self):
         dev_name = self.disk_combo.currentData()

@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem,
                               QPushButton, QLabel, QVBoxLayout, QWidget, QComboBox,
                               QMessageBox)
 from PyQt6.QtGui import QIcon, QFontDatabase, QFont
-from PyQt6.QtCore import (Qt, QThread, QTimer, QFileSystemWatcher, QProcess, QEvent,
+from PyQt6.QtCore import (Qt, QThread, QTimer, QFileSystemWatcher, QEvent,
                           pyqtSignal)
 
 from models import EssentialData, StoreData
@@ -25,6 +25,8 @@ from workers import (AppStoreLoader, FlatpakLoader, FlatpakRefResolveThread,
 from ui_software import Ui_SoftwareCenter, EssentialAppRow, StoreAppRow, AppDetailWidget
 from settings import load_settings, save_settings, resolve_language
 from settings_dialog import SettingsDialog
+from install_panel import InstallProgressDialog, cleanup_old_logs
+from pacman_repo import FileRepositoryStore, RepositoryError
 
 # All code comments inside the script are written in English as requested
 
@@ -91,9 +93,11 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self._last_status_refresh = 0.0
         self._cache_size = None  # None = ещё не посчитан, кнопка без размера
         self._db_refresh_running = False
+        self._active_installs = []  # keeps InstallProgressDialog refs alive while running
 
         self.init_resources()
         cleanup_screenshot_cache()
+        cleanup_old_logs()
         self.discover_langs()
         
         # Resolve language: saved preference → system locale → "en"
@@ -103,6 +107,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.load_essentials_csv()
         self.setup_logic()
         self.update_ui_texts()
+        self._refresh_source_combo_repos()
 
         self.cache_size_ready.connect(self.on_cache_size_ready)
         self.refresh_cache_size()
@@ -154,13 +159,12 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         """Ручное обновление баз pacman (кнопка/баннер) — без полного
         'Update System': только синхронизация, установленные пакеты не трогает.
 
-        Запускается в Konsole тем же способом, что и 'Update System' и
-        'Clean Package Cache' в этом приложении — subprocess.Popen без
-        отслеживания через QProcess. Это НЕ случайность: дочерний процесс
-        на Linux переживает закрытие родителя (проверено эмпирически),
-        так что закрытие Software Center или переход на другую страницу
-        Настроек не прерывает синхронизацию — она просто закончится в уже
-        открытом окне Konsole."""
+        Раньше запускалось в отдельном окне Konsole именно затем, чтобы
+        закрытие Software Center (или переход на другую страницу Настроек)
+        не прерывало синхронизацию. Панель (install_panel.py) даёт то же самое
+        другим способом: сам pacman идёт через обычный detached subprocess.Popen,
+        а не QProcess, так что переживает закрытие диалога/приложения точно так
+        же — просто мы перестаём видеть его прогресс."""
         if self._db_refresh_running:
             return
         self._db_refresh_running = True
@@ -171,17 +175,10 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.db_refresh_progress.show()
         self.db_stale_banner.show()
 
-        cmd = (
-            "echo '=== Refreshing package database (pacman -Sy) ==='; echo; "
-            "pkexec pacman -Sy --noconfirm; "
-            "echo; read -rp 'Done. Press Enter to close...'"
+        self._run_in_panel(
+            self.t("ui.refresh_db_running"), "pkexec", ["pacman", "-Sy", "--noconfirm"],
+            elevated=True, uses_pacman_db=True, on_done=self._on_refresh_db_finished,
         )
-        proc = subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
-
-        def _wait():
-            ok = proc.wait() == 0
-            self.db_refresh_done.emit(ok)
-        threading.Thread(target=_wait, daemon=True).start()
 
     def _on_refresh_db_finished(self, ok: bool):
         self._db_refresh_running = False
@@ -197,19 +194,15 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             self.db_stale_lbl.setText(self.t("ui.refresh_db_error"))
 
     def run_pacman_init(self):
-        """Запускает обновление баз в konsole и ждет завершения."""
-        self.store_loading_lbl.setText("Initialising database... Please wait for Konsole.")
+        """Первый запуск: баз pacman ещё нет вообще, без них магазин пуст."""
+        self.store_loading_lbl.setText(self.t("ui.loading"))
         self.store_loading_lbl.show()
 
-        cmd = (
-            "echo 'First start loading: initializing pacman database...'; "
-            "pkexec pacman -Sy --noconfirm; "
-            "echo; read -rp 'Database has been updated! Press Enter to close...'"
+        self._run_in_panel(
+            self.t("install.title_init_db"), "pkexec", ["pacman", "-Sy", "--noconfirm"],
+            elevated=True, uses_pacman_db=True,
+            on_done=lambda _ok: self.start_loaders(),
         )
-
-        self._init_process = QProcess(self)
-        self._init_process.finished.connect(self.start_loaders)
-        self._init_process.start("konsole", ["-e", "bash", "-c", cmd])
 
     def start_loaders(self):
         """Запускает все рабочие потоки для получения данных."""
@@ -331,8 +324,10 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             pass
 
     def event(self, e):
-        # After installs/updates run in a detached konsole, statuses go stale;
-        # re-read system state whenever the window regains focus.
+        # Fallback for anything the panel's on_done callback didn't catch --
+        # e.g. an install that finished while the window was closed (its
+        # process survives that, see install_panel.py) -- re-read system
+        # state whenever the window regains focus.
         if e.type() == QEvent.Type.WindowActivate:
             self._refresh_status_throttled()
         return super().event(e)
@@ -552,6 +547,10 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             on_save=self._apply_settings,
         )
         dlg.exec()
+        # Repository add/edit/remove writes to pacman.conf immediately (see
+        # RepositoryManagerDialog / FileRepositoryStore), independent of this
+        # dialog's own Save/Cancel -- so refresh regardless of dlg's result.
+        self._refresh_source_combo_repos()
 
     def _apply_settings(self, new_settings: dict):
         old_enable_aur = self._settings.get("enable_aur", True)
@@ -721,9 +720,47 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     # Filtering / search
     # -------------------------------------------------------------------------
 
+    # Fixed entries created in ui_software.py: All, Pacman, AUR, Flatpak, Updates.
+    # Custom repositories (see pacman_repo.py) are appended after these, one
+    # item per [section] the user added in Settings -> Manage Repositories.
+    _FIXED_SOURCE_COUNT = 5
+
+    def _refresh_source_combo_repos(self):
+        try:
+            repo_names = [r.name for r in FileRepositoryStore().list_repositories()]
+        except RepositoryError:
+            repo_names = []
+
+        combo = self.combo_source
+        current_index = combo.currentIndex()
+        current_data = combo.itemData(current_index)  # None for the 5 fixed entries
+        combo.blockSignals(True)
+        while combo.count() > self._FIXED_SOURCE_COUNT:
+            combo.removeItem(combo.count() - 1)
+        for name in repo_names:
+            combo.addItem(name, f"repo:{name}")
+
+        if current_data:
+            # Was on a custom-repo entry: keep it selected, unless that repo
+            # was just removed, in which case fall back to "All".
+            idx = combo.findData(current_data)
+            combo.setCurrentIndex(idx if idx != -1 else 0)
+            combo.blockSignals(False)
+            if idx == -1:
+                self._current_source = "all"
+                self.filter_store()
+            return
+        # Was on one of the 5 fixed entries -- those keep their original
+        # indices regardless of how many repo entries follow them.
+        combo.setCurrentIndex(current_index)
+        combo.blockSignals(False)
+
     def _on_source_changed(self, index):
         source_map = {0: "all", 1: "pacman", 2: "aur", 3: "flatpak", 4: "updates"}
-        self._current_source = source_map.get(index, "all")
+        if index in source_map:
+            self._current_source = source_map[index]
+        else:
+            self._current_source = self.combo_source.itemData(index) or "all"
         self.filter_store()
 
     def _on_search_changed(self, text):
@@ -779,8 +816,12 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             query = self.search_store.text().strip()
             if query and query in self._aur_query_cache:
                 self._append_aur_to_all(self._aur_query_cache[query])
-        else:
-            self._filter_packages(self.store_packages, source)
+            return
+        if source.startswith("repo:"):
+            repo_name = source[len("repo:"):]
+            self._filter_packages([p for p in self.store_packages if p.source == repo_name], source)
+            return
+        self._filter_packages(self.store_packages, source)
 
     @staticmethod
     def _norm(s):
@@ -991,16 +1032,22 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.btn_next_page.setEnabled(False)
 
     def _run_flatpak_install(self):
-        cmd = "pkexec pacman -S --noconfirm flatpak; echo; read -rp 'Done. Press Enter to close...'"
-        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
+        self._run_in_panel(
+            self.t("ui.flatpak_init_btn"), "pkexec", ["pacman", "-S", "--noconfirm", "flatpak"],
+            elevated=True, uses_pacman_db=True,
+            on_done=lambda ok: self.filter_store() if ok else None,
+        )
 
     def _run_flatpak_bootstrap(self):
         cmd = (
             "pkexec flatpak remote-add --if-not-exists flathub "
-            "https://dl.flathub.org/repo/flathub.flatpakrepo && "
-            "flatpak update; echo; read -rp 'Done. Press Enter to close...'"
+            "https://dl.flathub.org/repo/flathub.flatpakrepo && flatpak update -y"
         )
-        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
+        self._run_in_panel(
+            self.t("ui.flatpak_init_btn"), "bash", ["-c", cmd],
+            elevated=False, uses_pacman_db=False,
+            on_done=lambda ok: self.filter_store() if ok else None,
+        )
 
     def render_store_page(self):
         while self.layout_store.count() > 0:
@@ -1192,26 +1239,66 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     # -------------------------------------------------------------------------
 
     def install_package(self, pkg):
-        if pkg.source_type == "flatpak":
+        if pkg.source_type == "aur":
+            # By default yay shells out to plain 'sudo' for its privileged step,
+            # which needs a real interactive terminal for the password prompt.
+            # --sudo pkexec swaps that for the same graphical polkit prompt the
+            # pacman branch below already uses, so this can run in the panel too.
+            program, args, elevated = "yay", ["-S", "--noconfirm", "--sudo", "pkexec", pkg.name], False
+        elif pkg.source_type == "flatpak":
             if getattr(pkg, 'status', '') == "upgradable":
-                cmd = f"flatpak update -y {pkg.app_id}; echo; read -rp 'Done. Press Enter to close...'"
+                program, args, elevated = "flatpak", ["update", "-y", pkg.app_id], False
             else:
-                cmd = f"flatpak install -y flathub {pkg.app_id}; echo; read -rp 'Done. Press Enter to close...'"
-        elif pkg.source_type == "aur":
-            cmd = f"yay -S --noconfirm {pkg.name}; echo; read -rp 'Done. Press Enter to close...'"
+                program, args, elevated = "flatpak", ["install", "-y", "flathub", pkg.app_id], False
         else:
             if getattr(pkg, 'status', '') == "upgradable":
-                cmd = f"pkexec pacman -Syu --noconfirm {pkg.name}; echo; read -rp 'Done. Press Enter to close...'"
+                program, args, elevated = "pkexec", ["pacman", "-Syu", "--noconfirm", pkg.name], True
             else:
-                cmd = f"pkexec pacman -S --noconfirm {pkg.name}; echo; read -rp 'Done. Press Enter to close...'"
-        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
+                program, args, elevated = "pkexec", ["pacman", "-S", "--noconfirm", pkg.name], True
+
+        title = self.t("install.title_installing").replace("{0}", pkg.name)
+        self._run_in_panel(title, program, args, elevated,
+                            uses_pacman_db=pkg.source_type != "flatpak",
+                            on_done=lambda ok: self._on_package_action_done(pkg, ok))
 
     def remove_package(self, pkg):
         if pkg.source_type == "flatpak":
-            cmd = f"flatpak uninstall -y {pkg.app_id}; echo; read -rp 'Done. Press Enter to close...'"
+            program, args, elevated = "flatpak", ["uninstall", "-y", pkg.app_id], False
         else:
-            cmd = f"pkexec pacman -Rs --noconfirm {pkg.name}; echo; read -rp 'Done. Press Enter to close...'"
-        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
+            program, args, elevated = "pkexec", ["pacman", "-Rs", "--noconfirm", pkg.name], True
+
+        title = self.t("install.title_removing").replace("{0}", pkg.name)
+        self._run_in_panel(title, program, args, elevated,
+                            uses_pacman_db=pkg.source_type != "flatpak",
+                            on_done=lambda ok: self._on_package_action_done(pkg, ok))
+
+    def _run_in_panel(self, title, program, args, elevated, uses_pacman_db=False, on_done=None):
+        """Opens the progress panel and runs program+args in it. Returns the
+        dialog so callers than need it (e.g. to disable a button while the
+        panel is open) can hold onto it -- most callers can ignore it."""
+        dlg = InstallProgressDialog(self, self.t, title, program, args, elevated, uses_pacman_db)
+        self._active_installs.append(dlg)
+
+        def _cleanup(_result):
+            if dlg in self._active_installs:
+                self._active_installs.remove(dlg)
+
+        dlg.finished.connect(_cleanup)
+        if on_done is not None:
+            dlg.install_done.connect(on_done)
+        dlg.show()
+        return dlg
+
+    def _on_package_action_done(self, pkg, success):
+        if not success:
+            return
+        self.refresh_system_status()
+        self._compute_status(pkg)
+        self.load_essentials_csv()
+        if self.stacked_widget.currentIndex() == 2:
+            self.open_app_detail(pkg)
+        else:
+            self.filter_store()
 
     def install_selected_essentials(self):
         if not self.selected_essentials or self._essentials_installing:
@@ -1241,7 +1328,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         # Обычные пакеты и AUR ставятся РАЗНЫМИ менеджерами: pacman не знает
         # об AUR-именах и обрывает ВСЮ транзакцию, если среди целей есть хоть
         # одно неизвестное (проверено: 'pacman -S unityhub krita' не поставит
-        # даже krita). Поэтому — два отдельных шага в одном окне Konsole.
+        # даже krita). Поэтому — два отдельных шага в одном запуске панели.
         steps = []
         if official:
             steps.append(
@@ -1251,16 +1338,25 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         if aur:
             steps.append(
                 "echo '==> Installing from AUR...'; echo; "
-                f"yay -S --noconfirm {' '.join(aur)}; echo; "
+                f"yay -S --noconfirm --sudo pkexec {' '.join(aur)}; echo; "
             )
         if not steps:
             return
-        cmd = "".join(steps) + "read -rp 'Done. Press Enter to close...'"
-        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
+        cmd = "".join(steps)
+
+        def _on_essentials_done(ok):
+            self.refresh_system_status()
+            self.load_essentials_csv()
+            self.render_essentials()
+
+        self._run_in_panel(
+            self.t("ui.install_btn_sel").replace("{0}", str(len(official) + len(aur))),
+            "bash", ["-c", cmd], elevated=False, uses_pacman_db=True,
+            on_done=_on_essentials_done,
+        )
 
     def execute_integrity_check(self):
         cmd = (
-            "echo '=== System File Integrity Check ==='; echo; "
             "echo '[1/2] Pacman + AUR packages (pacman -Qkk)...'; echo; "
             "result=$(pacman -Qkk 2>&1 | grep -v ': 0 missing files, 0 altered files'); "
             "if [ -z \"$result\" ]; then "
@@ -1274,10 +1370,12 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "  flatpak repair --user; "
             "else "
             "  echo '[2/2] Flatpak not installed, skipping.'; "
-            "fi; "
-            "echo; read -rp 'Done. Press Enter to close...'"
+            "fi"
         )
-        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
+        self._run_in_panel(
+            self.t("ui.integrity_check"), "bash", ["-c", cmd],
+            elevated=False, uses_pacman_db=False,
+        )
 
     def fmt_size(self, n):
         units = {"ru": ["Б", "КБ", "МБ", "ГБ"],
@@ -1380,7 +1478,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "echo; "
             "if command -v yay >/dev/null 2>&1; then "
             "  echo '[2/3] AUR build cache (yay)...'; "
-            "  yay -Sc --noconfirm; "
+            "  yay -Sc --noconfirm --sudo pkexec; "
             "  echo 'Removing yay build directory (~/.cache/yay)...'; "
             "  rm -rf ~/.cache/yay/; echo 'Done.'; echo; "
             "else "
@@ -1392,15 +1490,13 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             "else "
             "  echo '[3/3] Flatpak not installed, skipping.'; echo; "
             "fi; "
-            "echo 'All done!'; echo; read -rp 'Press Enter to close...'"
+            "echo 'All done!'"
         )
-        proc = subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
-
-        # Когда konsole закрыта — пересчитать размер на кнопке
-        def _wait_and_rescan():
-            proc.wait()
-            self.refresh_cache_size()
-        threading.Thread(target=_wait_and_rescan, daemon=True).start()
+        self._run_in_panel(
+            self.t("ui.cache_clean"), "bash", ["-c", cmd],
+            elevated=False, uses_pacman_db=False,
+            on_done=lambda _ok: self.refresh_cache_size(),
+        )
 
     def execute_system_update(self):
         do_pacman = self._settings.get("update_pacman", True)
@@ -1448,7 +1544,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
                 "  if [ -n \"$AUR_PKGS\" ]; then "
                 "    for pkg in $AUR_PKGS; do "
                 "      echo \"-- $pkg\"; "
-                "      yay -S --noconfirm \"$pkg\" "
+                "      yay -S --noconfirm --sudo pkexec \"$pkg\" "
                 "        || echo \"==> Warning: $pkg skipped (build/dependency error)\"; "
                 "      echo; "
                 "    done; "
@@ -1472,16 +1568,15 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             )
 
         if not steps:
-            cmd = "echo 'No update sources are enabled. Enable at least one in Settings.'; echo; read -rp 'Press Enter to close...'"
-        else:
-            total = step_n
-            cmd = (
-                f"echo '=== Equestria OS System Update ({total} step(s)) ==='; echo; "
-                + "".join(steps)
-                + "echo 'All done!'; echo; read -rp 'Done. Press Enter to close...'"
-            )
+            QMessageBox.information(self, self.t("ui.update_all"),
+                                     self.t("ui.update_no_sources"))
+            return
 
-        subprocess.Popen(["konsole", "-e", "bash", "-c", cmd])
+        cmd = "".join(steps) + "echo 'All done!'"
+        self._run_in_panel(
+            self.t("ui.update_all"), "bash", ["-c", cmd],
+            elevated=False, uses_pacman_db=True,
+        )
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import threading
@@ -119,6 +120,7 @@ _SYSCTL_GROUPS = [
 _SYSCTL_FILE = "/etc/sysctl.d/99-equestria-network.conf"
 _WIFI_POWERSAVE_FILE = "/etc/NetworkManager/conf.d/99-equestria-wifi-powersave.conf"
 _WIFI_DRIVER_FILE = "/etc/modprobe.d/99-equestria-wifi.conf"
+_USB_AUTOSUSPEND_FILE = "/etc/udev/rules.d/99-equestria-usb-wifi-autosuspend.rules"
 
 # ── WiFi driver parameter presets ─────────────────────────────────────────────
 # Each driver has known parameters that fix speed drops / disconnects on Linux.
@@ -262,6 +264,50 @@ def _get_driver_current_params(driver: str) -> dict[str, str]:
     return params
 
 
+def _find_usb_device_for_iface(iface: str) -> str | None:
+    """Walk up from the net device's sysfs path to find the owning USB
+    device node (the one with idVendor/idProduct), or None if the adapter
+    isn't USB-attached at all. Bus-level, works for any USB WiFi chipset —
+    no per-driver knowledge needed."""
+    try:
+        path = os.path.realpath(f"/sys/class/net/{iface}/device")
+    except Exception:
+        return None
+    if "/usb" not in path:
+        return None
+    cur = path
+    for _ in range(6):
+        if os.path.isfile(os.path.join(cur, "idVendor")):
+            return cur
+        parent = os.path.dirname(cur)
+        if parent == cur:
+            break
+        cur = parent
+    return None
+
+
+def _read_usb_wifi_info(iface: str) -> dict | None:
+    """Read USB autosuspend state for a WiFi interface's underlying USB
+    device — a common, chipset-independent cause of slow/flaky USB WiFi
+    that's separate from the radio's own power_save setting."""
+    usb_dev = _find_usb_device_for_iface(iface)
+    if not usb_dev:
+        return None
+    info = {"path": usb_dev}
+    for name in ("idVendor", "idProduct"):
+        try:
+            with open(os.path.join(usb_dev, name)) as f:
+                info[name] = f.read().strip()
+        except Exception:
+            info[name] = ""
+    try:
+        with open(os.path.join(usb_dev, "power", "control")) as f:
+            info["control"] = f.read().strip()
+    except Exception:
+        info["control"] = "?"
+    return info
+
+
 def _get_current_dns_ips() -> list[str]:
     """Get current DNS IPs from nmcli or resolvectl."""
     ips = []
@@ -326,6 +372,15 @@ class _NetInfoWorker(QObject):
             if ps is not None:
                 info["wifi_powersave"] = ps
         info["wifi_conf_exists"] = os.path.exists(_WIFI_POWERSAVE_FILE)
+
+        # USB autosuspend on the adapter's own USB device (bus-level,
+        # independent of chipset/driver — applies to any USB WiFi dongle)
+        usb_wifi = {}
+        for iface in wifi_ifaces:
+            u = _read_usb_wifi_info(iface)
+            if u:
+                usb_wifi[iface] = u
+        info["usb_wifi"] = usb_wifi
 
         # WiFi driver info
         wifi_drivers = {}
@@ -694,6 +749,14 @@ class NetworkModule(BaseModule):
         self._drv_info_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         layout.addWidget(self._drv_info_lbl)
 
+        # USB autosuspend — separate from the radio's own power_save, applies
+        # to any USB WiFi adapter regardless of chipset (bus-level, not driver-level)
+        self._drv_usb_lbl = QLabel("")
+        self._drv_usb_lbl.setStyleSheet(_STATUS_MONO)
+        self._drv_usb_lbl.setWordWrap(True)
+        self._drv_usb_lbl.hide()
+        layout.addWidget(self._drv_usb_lbl)
+
         # Checkboxes for driver params — built dynamically
         self._drv_params_frame = QFrame()
         self._drv_params_layout = QVBoxLayout(self._drv_params_frame)
@@ -735,6 +798,13 @@ class NetworkModule(BaseModule):
         self._drv_reconnect_btn.clicked.connect(self._reconnect_wifi)
         btn_row.addWidget(self._drv_reconnect_btn)
 
+        self._drv_usb_fix_btn = QPushButton(self.t("network.drv_usb_fix"))
+        self._drv_usb_fix_btn.setObjectName("ActionBtn")
+        self._drv_usb_fix_btn.setStyleSheet(_BTN_ACTION)
+        self._drv_usb_fix_btn.clicked.connect(self._fix_usb_autosuspend)
+        self._drv_usb_fix_btn.hide()
+        btn_row.addWidget(self._drv_usb_fix_btn)
+
         btn_row.addStretch()
         layout.addLayout(btn_row)
 
@@ -766,6 +836,8 @@ class NetworkModule(BaseModule):
             self._drv_reload_btn.setEnabled(False)
             self._drv_reconnect_btn.setEnabled(False)
             self._drv_reboot_lbl.hide()
+            self._drv_usb_lbl.hide()
+            self._drv_usb_fix_btn.hide()
             # Clear checkboxes
             while self._drv_params_layout.count():
                 item = self._drv_params_layout.takeAt(0)
@@ -782,6 +854,7 @@ class NetworkModule(BaseModule):
         # Build info text — show current params vs recommended
         info_lines = []
         all_optimal = True
+        known_param_drivers = set()
         for iface, drv in wifi_drivers.items():
             preset = _WIFI_DRIVER_PARAMS.get(drv, {})
             label = preset.get("label", drv) if preset else drv
@@ -789,6 +862,8 @@ class NetworkModule(BaseModule):
 
             current = driver_params.get(drv, {})
             preset_params = preset.get("params", {}) if preset else {}
+            if preset_params:
+                known_param_drivers.add(drv)
             for pname, (pval, pdesc_key) in preset_params.items():
                 cur = current.get(pname, "?")
                 if str(cur) == str(pval):
@@ -800,6 +875,8 @@ class NetworkModule(BaseModule):
             # iwlmvm companion
             if drv == "iwlwifi" and "iwlmvm" in driver_params:
                 mvm_preset = _WIFI_DRIVER_PARAMS.get("iwlmvm", {}).get("params", {})
+                if mvm_preset:
+                    known_param_drivers.add("iwlmvm")
                 mvm_current = driver_params.get("iwlmvm", {})
                 for pname, (pval, pdesc_key) in mvm_preset.items():
                     cur = mvm_current.get(pname, "?")
@@ -809,11 +886,42 @@ class NetworkModule(BaseModule):
                         info_lines.append(f"  {pname} = {cur}  →  {pval}  (iwlmvm)")
                         all_optimal = False
 
-        if all_optimal:
+        if not known_param_drivers:
+            # Common for USB dongles running generic mac80211 drivers
+            # (rtl8xxxu, mt7601u, ath9k_htc, ...) — they have no vendor
+            # modprobe.d knobs at all. Rather than leaving an empty card
+            # with a live "Apply" button that does nothing, say so plainly:
+            # the universal power-save toggle above already covers them.
+            info_lines.append("")
+            info_lines.append(self.t("network.drv_no_known_params"))
+            self._drv_apply_btn.setEnabled(False)
+            self._drv_reboot_lbl.hide()
+        elif all_optimal:
             info_lines.append("")
             info_lines.append(f"✓ {self.t('network.drv_all_optimal')}")
 
         self._drv_info_lbl.setText("\n".join(info_lines))
+
+        # USB autosuspend — separate axis from the radio's own power_save,
+        # relevant regardless of whether the driver has known params above.
+        usb_wifi = info.get("usb_wifi", {})
+        if usb_wifi:
+            usb_lines = []
+            needs_fix = False
+            for iface, u in usb_wifi.items():
+                state = u.get("control", "?")
+                if state == "on":
+                    usb_lines.append(f"{iface}: USB autosuspend = {state}  ✓")
+                else:
+                    usb_lines.append(f"{iface}: USB autosuspend = {state}  →  on")
+                    needs_fix = True
+            self._drv_usb_lbl.setText("\n".join(usb_lines))
+            self._drv_usb_lbl.show()
+            self._drv_usb_fix_btn.setEnabled(True)
+            self._drv_usb_fix_btn.setVisible(needs_fix)
+        else:
+            self._drv_usb_lbl.hide()
+            self._drv_usb_fix_btn.hide()
 
         # File path
         if conf_exists:
@@ -867,6 +975,17 @@ class NetworkModule(BaseModule):
 
                     self._drv_checkboxes.append((cb, d, pname, pval))
 
+    def _pkexec_fail_message(self, proc) -> str:
+        """Turn a failed pkexec run into a message that explains WHY, not just
+        a raw (often empty) stderr — pkexec swallows most of it into the auth
+        agent's own dialog instead of the child's stderr."""
+        err = (proc.stderr or "").strip()
+        if proc.returncode == 127:
+            return self.t("network.perm_cancelled")
+        if proc.returncode == 126:
+            return self.t("network.perm_denied") + (f"\n{err}" if err else "")
+        return err or self.t("network.perm_denied")
+
     def _apply_driver_params(self):
         """Write selected driver params to /etc/modprobe.d/."""
         # Collect checked params grouped by driver
@@ -902,7 +1021,7 @@ class NetworkModule(BaseModule):
                     input=content, capture_output=True, text=True, timeout=30
                 )
                 if proc.returncode != 0:
-                    return False, proc.stderr.strip()
+                    return False, self._pkexec_fail_message(proc)
                 return True, self.t("network.drv_applied")
             except Exception as e:
                 return False, str(e)
@@ -928,7 +1047,7 @@ class NetworkModule(BaseModule):
                     capture_output=True, text=True, timeout=15
                 )
                 if proc.returncode != 0:
-                    return False, proc.stderr.strip()
+                    return False, self._pkexec_fail_message(proc)
                 return True, self.t("network.drv_removed")
             except Exception as e:
                 return False, str(e)
@@ -1027,7 +1146,7 @@ class NetworkModule(BaseModule):
                         capture_output=True, text=True, timeout=30
                     )
                     if proc.returncode != 0:
-                        return False, proc.stderr.strip() or self.t("network.drv_reload_fail")
+                        return False, self._pkexec_fail_message(proc) or self.t("network.drv_reload_fail")
 
                 return True, self.t("network.drv_reloaded")
             except Exception as e:
@@ -1041,6 +1160,69 @@ class NetworkModule(BaseModule):
             if ok:
                 import time
                 time.sleep(4)
+                self._refresh_status()
+
+        threading.Thread(target=run_and_emit, daemon=True).start()
+
+    def _fix_usb_autosuspend(self):
+        """Disable USB autosuspend for the WiFi adapter's USB device.
+        Independent of the radio's own power_save setting — this fixes the
+        USB bus letting the whole device sleep, a very common cause of slow
+        or flaky USB WiFi dongles regardless of chipset."""
+        usb_wifi = getattr(self, "_last_info", {}).get("usb_wifi", {})
+        targets = {iface: u for iface, u in usb_wifi.items() if u.get("control") != "on"}
+        if not targets:
+            return
+
+        rules = []
+        live_paths = []
+        for u in targets.values():
+            vid, pid = u.get("idVendor"), u.get("idProduct")
+            if vid and pid:
+                rules.append(
+                    f'ACTION=="add", SUBSYSTEM=="usb", ATTR{{idVendor}}=="{vid}", '
+                    f'ATTR{{idProduct}}=="{pid}", ATTR{{power/control}}="on"'
+                )
+            live_paths.append(u["path"])
+
+        content = (
+            "# Equestria OS — disable USB autosuspend for WiFi adapter(s)\n"
+            "# Managed by equestria-os-settings.\n\n"
+            + "\n".join(rules) + "\n"
+        )
+
+        self._drv_usb_fix_btn.setEnabled(False)
+        self._drv_result_lbl.setText(self.t("network.applying"))
+        self._drv_result_lbl.setStyleSheet("")
+
+        def do_apply():
+            try:
+                # Persistent udev rule (survives replug/reboot) + flip the
+                # live sysfs value now, since udev only re-applies on the
+                # next (re)plug event, not retroactively.
+                live_cmds = " && ".join(
+                    f"echo on > {shlex.quote(p)}/power/control" for p in live_paths
+                )
+                script = (
+                    f"tee {shlex.quote(_USB_AUTOSUSPEND_FILE)} >/dev/null && "
+                    f"udevadm control --reload-rules && ({live_cmds})"
+                )
+                proc = subprocess.run(
+                    ["pkexec", "bash", "-c", script],
+                    input=content, capture_output=True, text=True, timeout=30
+                )
+                if proc.returncode != 0:
+                    return False, self._pkexec_fail_message(proc)
+                return True, self.t("network.drv_usb_fixed")
+            except Exception as e:
+                return False, str(e)
+
+        def run_and_emit():
+            ok, msg = do_apply()
+            self._drv_usb_fix_btn.setEnabled(True)
+            self._drv_result_lbl.setText(msg)
+            self._drv_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            if ok:
                 self._refresh_status()
 
         threading.Thread(target=run_and_emit, daemon=True).start()
@@ -1129,7 +1311,7 @@ class NetworkModule(BaseModule):
             for key, proposed in group["params"].items():
                 current = sysctl_current.get(key, "?")
                 if current == proposed:
-                    lines.append(f"  {key} = {current}")
+                    lines.append(f"  {key} = {current}  ✓")
                 else:
                     lines.append(f"  {key} = {current}  →  {proposed}")
                     group_match = False
@@ -1366,6 +1548,7 @@ class NetworkModule(BaseModule):
         self._drv_remove_btn.setText(self.t("network.drv_remove"))
         self._drv_reload_btn.setText(self.t("network.drv_reload"))
         self._drv_reconnect_btn.setText(self.t("network.drv_reconnect"))
+        self._drv_usb_fix_btn.setText(self.t("network.drv_usb_fix"))
         self._drv_reboot_lbl.setText(self.t("network.drv_reboot_hint"))
         # Re-fetch and rebuild all dynamic content (status, driver checkboxes, etc.)
         self._refresh_status()
@@ -1382,6 +1565,7 @@ class NetworkModule(BaseModule):
 
     def _on_status_ready(self, info: dict):
         self._refresh_btn.setEnabled(True)
+        self._last_info = info
 
         lines = []
 
@@ -1531,29 +1715,25 @@ class NetworkModule(BaseModule):
                     return False, self.t("network.dns_no_connections")
 
                 all_dns = " ".join(dns4 + dns6)
+                errors = []
                 for conn in connections:
-                    subprocess.run(
+                    cmds = [
                         ["nmcli", "con", "mod", conn, "ipv4.dns", " ".join(dns4)],
-                        capture_output=True, timeout=10
-                    )
-                    subprocess.run(
                         ["nmcli", "con", "mod", conn, "ipv4.ignore-auto-dns", "yes"],
-                        capture_output=True, timeout=10
-                    )
+                    ]
                     if dns6:
-                        subprocess.run(
-                            ["nmcli", "con", "mod", conn, "ipv6.dns", " ".join(dns6)],
-                            capture_output=True, timeout=10
-                        )
-                        subprocess.run(
-                            ["nmcli", "con", "mod", conn, "ipv6.ignore-auto-dns", "yes"],
-                            capture_output=True, timeout=10
-                        )
-                    subprocess.run(
-                        ["nmcli", "con", "up", conn],
-                        capture_output=True, timeout=15
-                    )
+                        cmds.append(["nmcli", "con", "mod", conn, "ipv6.dns", " ".join(dns6)])
+                        cmds.append(["nmcli", "con", "mod", conn, "ipv6.ignore-auto-dns", "yes"])
+                    cmds.append(["nmcli", "con", "up", conn])
+                    for cmd in cmds:
+                        p = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+                        if p.returncode != 0:
+                            errors.append(f"{conn}: {(p.stderr or p.stdout).strip()}")
 
+                # nmcli silently no-ops on permission errors instead of prompting —
+                # a "success" message here used to be shown even when nothing changed.
+                if errors:
+                    return False, self.t("network.dns_failed") + "\n" + "\n".join(errors)
                 return True, f"DNS → {all_dns}"
             except Exception as e:
                 return False, str(e)
@@ -1581,34 +1761,31 @@ class NetworkModule(BaseModule):
                     ["nmcli", "-t", "-f", "NAME,DEVICE", "con", "show", "--active"],
                     capture_output=True, text=True, timeout=5
                 )
+                errors = []
                 for line in r.stdout.strip().splitlines():
                     parts = line.split(":")
                     if len(parts) >= 2 and parts[1] and parts[1] != "lo":
                         conn = parts[0]
-                        subprocess.run(
+                        cmds = [
                             ["nmcli", "con", "mod", conn, "ipv4.dns", ""],
-                            capture_output=True, timeout=10
-                        )
-                        subprocess.run(
                             ["nmcli", "con", "mod", conn, "ipv4.ignore-auto-dns", "no"],
-                            capture_output=True, timeout=10
-                        )
-                        subprocess.run(
                             ["nmcli", "con", "mod", conn, "ipv6.dns", ""],
-                            capture_output=True, timeout=10
-                        )
-                        subprocess.run(
                             ["nmcli", "con", "mod", conn, "ipv6.ignore-auto-dns", "no"],
-                            capture_output=True, timeout=10
-                        )
-                        subprocess.run(
                             ["nmcli", "con", "up", conn],
-                            capture_output=True, timeout=15
-                        )
+                        ]
+                        for cmd in cmds:
+                            p = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+                            if p.returncode != 0:
+                                errors.append(f"{conn}: {(p.stderr or p.stdout).strip()}")
+
                 self._dns_apply_btn.setEnabled(True)
-                self._dns_status_lbl.setText(self.t("network.dns_reverted"))
-                self._dns_status_lbl.setStyleSheet(_RESULT_OK)
-                self._refresh_status()
+                if errors:
+                    self._dns_status_lbl.setText(self.t("network.dns_failed") + "\n" + "\n".join(errors))
+                    self._dns_status_lbl.setStyleSheet(_RESULT_ERR)
+                else:
+                    self._dns_status_lbl.setText(self.t("network.dns_reverted"))
+                    self._dns_status_lbl.setStyleSheet(_RESULT_OK)
+                    self._refresh_status()
             except Exception as e:
                 self._dns_apply_btn.setEnabled(True)
                 self._dns_status_lbl.setText(str(e))
@@ -1646,16 +1823,16 @@ class NetworkModule(BaseModule):
 
         def do_apply():
             try:
+                # Single pkexec call (one auth prompt) — write + apply atomically,
+                # so a failed second step can't silently leave "applied" shown
+                # while sysctl was never actually reloaded.
+                script = f"tee {shlex.quote(_SYSCTL_FILE)} >/dev/null && sysctl --system"
                 proc = subprocess.run(
-                    ["pkexec", "tee", _SYSCTL_FILE],
+                    ["pkexec", "bash", "-c", script],
                     input=content, capture_output=True, text=True, timeout=30
                 )
                 if proc.returncode != 0:
-                    return False, proc.stderr.strip()
-                proc = subprocess.run(
-                    ["pkexec", "sysctl", "--system"],
-                    capture_output=True, text=True, timeout=15
-                )
+                    return False, self._pkexec_fail_message(proc)
                 return True, self.t("network.tcp_applied")
             except Exception as e:
                 return False, str(e)
@@ -1676,16 +1853,13 @@ class NetworkModule(BaseModule):
 
         def do_remove():
             try:
+                script = f"rm -f {shlex.quote(_SYSCTL_FILE)} && sysctl --system"
                 proc = subprocess.run(
-                    ["pkexec", "rm", "-f", _SYSCTL_FILE],
-                    capture_output=True, text=True, timeout=15
+                    ["pkexec", "bash", "-c", script],
+                    capture_output=True, text=True, timeout=30
                 )
                 if proc.returncode != 0:
-                    return False, proc.stderr.strip()
-                subprocess.run(
-                    ["pkexec", "sysctl", "--system"],
-                    capture_output=True, text=True, timeout=15
-                )
+                    return False, self._pkexec_fail_message(proc)
                 return True, self.t("network.tcp_removed")
             except Exception as e:
                 return False, str(e)
@@ -1710,16 +1884,13 @@ class NetworkModule(BaseModule):
 
         def do_apply():
             try:
+                script = f"tee {shlex.quote(_WIFI_POWERSAVE_FILE)} >/dev/null && systemctl restart NetworkManager"
                 proc = subprocess.run(
-                    ["pkexec", "tee", _WIFI_POWERSAVE_FILE],
-                    input=content, capture_output=True, text=True, timeout=15
+                    ["pkexec", "bash", "-c", script],
+                    input=content, capture_output=True, text=True, timeout=30
                 )
                 if proc.returncode != 0:
-                    return False, proc.stderr.strip()
-                subprocess.run(
-                    ["pkexec", "systemctl", "restart", "NetworkManager"],
-                    capture_output=True, timeout=15
-                )
+                    return False, self._pkexec_fail_message(proc)
                 return True, self.t("network.wifi_powersave_disabled")
             except Exception as e:
                 return False, str(e)
@@ -1742,16 +1913,13 @@ class NetworkModule(BaseModule):
 
         def do_apply():
             try:
+                script = f"rm -f {shlex.quote(_WIFI_POWERSAVE_FILE)} && systemctl restart NetworkManager"
                 proc = subprocess.run(
-                    ["pkexec", "rm", "-f", _WIFI_POWERSAVE_FILE],
-                    capture_output=True, text=True, timeout=15
+                    ["pkexec", "bash", "-c", script],
+                    capture_output=True, text=True, timeout=30
                 )
                 if proc.returncode != 0:
-                    return False, proc.stderr.strip()
-                subprocess.run(
-                    ["pkexec", "systemctl", "restart", "NetworkManager"],
-                    capture_output=True, timeout=15
-                )
+                    return False, self._pkexec_fail_message(proc)
                 return True, self.t("network.wifi_powersave_enabled")
             except Exception as e:
                 return False, str(e)
@@ -1785,16 +1953,13 @@ class NetworkModule(BaseModule):
 
         def do_apply():
             try:
+                script = f"tee {shlex.quote(sysctl_file)} >/dev/null && sysctl --system"
                 proc = subprocess.run(
-                    ["pkexec", "tee", sysctl_file],
-                    input=content, capture_output=True, text=True, timeout=15
+                    ["pkexec", "bash", "-c", script],
+                    input=content, capture_output=True, text=True, timeout=30
                 )
                 if proc.returncode != 0:
-                    return False, proc.stderr.strip()
-                subprocess.run(
-                    ["pkexec", "sysctl", "--system"],
-                    capture_output=True, text=True, timeout=15
-                )
+                    return False, self._pkexec_fail_message(proc)
                 return True, self.t("network.ipv6_disabled_ok")
             except Exception as e:
                 return False, str(e)
@@ -1817,16 +1982,13 @@ class NetworkModule(BaseModule):
 
         def do_apply():
             try:
+                script = f"rm -f {shlex.quote(sysctl_file)} && sysctl --system"
                 proc = subprocess.run(
-                    ["pkexec", "rm", "-f", sysctl_file],
-                    capture_output=True, text=True, timeout=15
+                    ["pkexec", "bash", "-c", script],
+                    capture_output=True, text=True, timeout=30
                 )
                 if proc.returncode != 0:
-                    return False, proc.stderr.strip()
-                subprocess.run(
-                    ["pkexec", "sysctl", "--system"],
-                    capture_output=True, text=True, timeout=15
-                )
+                    return False, self._pkexec_fail_message(proc)
                 return True, self.t("network.ipv6_enabled_ok")
             except Exception as e:
                 return False, str(e)
@@ -1871,7 +2033,46 @@ class NetworkModule(BaseModule):
     # ── Helpers ───────────────────────────────────────────────────────────────
 
     def _install_pkg(self, pkg: str):
-        for term in [["konsole", "-e"], ["xterm", "-e"], ["gnome-terminal", "--"]]:
-            if shutil.which(term[0]):
-                subprocess.Popen(term + ["yay", "-S", pkg], start_new_session=True)
-                return
+        term = None
+        for candidate in [["konsole", "-e"], ["xterm", "-e"], ["gnome-terminal", "--"]]:
+            if shutil.which(candidate[0]):
+                term = candidate
+                break
+
+        if term is None:
+            self._speed_result_lbl.setStyleSheet(_RESULT_ERR)
+            self._speed_result_lbl.setText(self.t("network.no_terminal_found"))
+            self._speed_result_lbl.show()
+            return
+
+        try:
+            proc = subprocess.Popen(term + ["yay", "-S", pkg], start_new_session=True)
+        except Exception as e:
+            self._speed_result_lbl.setStyleSheet(_RESULT_ERR)
+            self._speed_result_lbl.setText(str(e))
+            self._speed_result_lbl.show()
+            return
+
+        # yay runs in a detached terminal window (makepkg refuses to run as
+        # root, so this can't go through pkexec) — wait for it in the
+        # background and reflect the real outcome instead of going silent.
+        self._speed_install_btn.setEnabled(False)
+        self._speed_install_btn.setText(self.t("network.speed_installing"))
+        self._speed_result_lbl.setStyleSheet(_STATUS_MONO)
+        self._speed_result_lbl.setText(self.t("network.speed_installing"))
+        self._speed_result_lbl.show()
+
+        def wait_and_check():
+            proc.wait()
+            installed = bool(shutil.which("speedtest-cli") or shutil.which("speedtest"))
+            self._speed_install_btn.setEnabled(True)
+            self._speed_install_btn.setText(self.t("network.speed_install"))
+            if installed:
+                self._speed_install_btn.hide()
+                self._speed_result_lbl.setStyleSheet(_RESULT_OK)
+                self._speed_result_lbl.setText(self.t("network.speed_install_done"))
+            else:
+                self._speed_result_lbl.setStyleSheet(_RESULT_ERR)
+                self._speed_result_lbl.setText(self.t("network.speed_install_failed"))
+
+        threading.Thread(target=wait_and_check, daemon=True).start()

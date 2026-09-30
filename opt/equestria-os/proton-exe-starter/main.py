@@ -273,6 +273,12 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         self.chk_compat_profile.setText(self.t_str("proton.chk_compat_profile"))
         self.chk_gamemode.setText(self.t_str("proton.chk_gamemode"))
         self.chk_upscaler.setText(self.t_str("proton.chk_upscaler"))
+        self.group_directx.setTitle(self.t_str("proton.group_directx"))
+        self.combo_directx.setItemText(0, self.t_str("proton.directx_auto"))
+        self.combo_directx.setItemText(1, self.t_str("proton.directx_wined3d"))
+        self.combo_directx.setItemText(2, self.t_str("proton.directx_d3d9_only"))
+        self.combo_directx.setItemText(3, self.t_str("proton.directx_no_d3d11"))
+        self.txt_vkd3d_config.setPlaceholderText(self.t_str("proton.txt_vkd3d_config"))
         self.group_proton.setTitle(self.t_str("proton.group_proton"))
         self.combo_proton.setItemText(0, self.t_str("proton.ver_auto"))
         self.combo_proton.setItemText(1, self.t_str("proton.ver_ge"))
@@ -337,6 +343,9 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
                     self.chk_compat_profile.setChecked(settings.get("desktop_profile", False))
                     self.chk_gamemode.setChecked(settings.get("gamemode", False))
                     self.chk_upscaler.setChecked(settings.get("upscaler_upgrade", False))
+                    idx = self.combo_directx.findData(settings.get("directx_mode", "auto"))
+                    self.combo_directx.setCurrentIndex(idx if idx != -1 else 0)
+                    self.txt_vkd3d_config.setText(settings.get("vkd3d_config", ""))
                     self.txt_args.setText(settings.get("launch_args", ""))
                     idx = self.combo_proton.findData(settings.get("proton_version", ""))
                     self.combo_proton.setCurrentIndex(idx if idx != -1 else 0)
@@ -358,6 +367,8 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
             "desktop_profile": self.chk_compat_profile.isChecked(),
             "gamemode": self.chk_gamemode.isChecked(),
             "upscaler_upgrade": self.chk_upscaler.isChecked(),
+            "directx_mode": self.combo_directx.currentData() or "auto",
+            "vkd3d_config": self.txt_vkd3d_config.text().strip(),
             "launch_args": self.txt_args.text().strip(),
             "proton_version": self.combo_proton.currentData() or ""
         }

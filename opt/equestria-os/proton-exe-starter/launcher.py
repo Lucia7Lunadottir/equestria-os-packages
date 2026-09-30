@@ -170,6 +170,26 @@ def apply_game_env(env, settings):
     if settings.get("desktop_profile"):
         env["WINE_LARGE_ADDRESS_AWARE"] = "1"
 
+    # DirectX 9/10/11 ходят через DXVK (Vulkan) по умолчанию; тут — ручные
+    # отступления для игр, которым это не подходит. d3d9_only/no_d3d11 всё ещё
+    # используют DXVK, просто урезают набор поддерживаемых версий — сама игра
+    # откатывается на более старую, если умеет.
+    directx_mode = settings.get("directx_mode", "auto")
+    if directx_mode == "wined3d":
+        env["PROTON_USE_WINED3D"] = "1"
+    elif directx_mode == "d3d9_only":
+        env["PROTON_NO_D3D10"] = "1"
+        env["PROTON_NO_D3D11"] = "1"
+    elif directx_mode == "no_d3d11":
+        env["PROTON_NO_D3D11"] = "1"
+
+    # D3D12 идёт через VKD3D-Proton отдельно от DXVK — свободная строка с его
+    # флагами (см. VKD3D_CONFIG в документации vkd3d-proton), а не чекбоксы:
+    # набор флагов меняется от релиза к релизу быстрее, чем этот диалог.
+    vkd3d_config = settings.get("vkd3d_config", "").strip()
+    if vkd3d_config:
+        env["VKD3D_CONFIG"] = vkd3d_config
+
     choice = settings.get("proton_version", "")
     if choice == "GE-Proton":
         env["PROTONPATH"] = "GE-Proton"

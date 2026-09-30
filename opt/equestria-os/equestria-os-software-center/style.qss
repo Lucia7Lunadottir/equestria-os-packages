@@ -493,3 +493,56 @@ QPushButton#SettingsCancelBtn {
 QPushButton#SettingsCancelBtn:hover {
     background-color: rgb(69, 71, 90);
 }
+
+/* Install/Remove progress panel (see install_panel.py) */
+QDialog#InstallProgressDialog {
+    background-color: rgb(26, 24, 41);
+}
+
+QLabel#InstallTitleLabel {
+    font-size: 16px;
+    font-weight: bold;
+    color: rgb(205, 214, 244);
+}
+
+QLabel#InstallStatusLabel, QLabel#InstallStatusOk,
+QLabel#InstallStatusWarn, QLabel#InstallStatusError {
+    font-size: 12px;
+    color: rgb(186, 194, 222);
+}
+
+QLabel#InstallStatusOk {
+    color: rgb(166, 227, 161);
+    font-weight: bold;
+}
+
+QLabel#InstallStatusWarn {
+    color: rgb(250, 179, 135);
+    font-weight: bold;
+}
+
+QLabel#InstallStatusError {
+    color: rgb(243, 139, 168);
+    font-weight: bold;
+}
+
+QPlainTextEdit#InstallLogView {
+    background-color: rgb(17, 17, 27);
+    color: rgb(166, 227, 161);
+    font-family: "Noto Sans Mono", monospace;
+    font-size: 12px;
+    border: 1px solid rgb(49, 50, 68);
+    border-radius: 8px;
+    padding: 8px;
+}
+
+QProgressBar#InstallProgressBar {
+    background-color: rgba(137, 180, 250, 0.2);
+    border: none;
+    border-radius: 3px;
+    max-height: 6px;
+}
+QProgressBar#InstallProgressBar::chunk {
+    background-color: rgb(137, 180, 250);
+    border-radius: 3px;
+}

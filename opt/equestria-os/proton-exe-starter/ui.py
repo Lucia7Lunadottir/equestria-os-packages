@@ -73,6 +73,21 @@ class Ui_SettingsWindow:
         playout.addLayout(ver_layout)
         layout.addWidget(self.group_proton)
 
+        # Группа: DirectX
+        self.group_directx = QGroupBox()
+        dxlayout = QVBoxLayout(self.group_directx)
+
+        self.combo_directx = QComboBox()
+        self.combo_directx.addItem("", "auto")
+        self.combo_directx.addItem("", "wined3d")
+        self.combo_directx.addItem("", "d3d9_only")
+        self.combo_directx.addItem("", "no_d3d11")
+        dxlayout.addWidget(self.combo_directx)
+
+        self.txt_vkd3d_config = QLineEdit()
+        dxlayout.addWidget(self.txt_vkd3d_config)
+        layout.addWidget(self.group_directx)
+
         # Группа: Параметры запуска
         self.group_args = QGroupBox()
         alayout = QVBoxLayout(self.group_args)

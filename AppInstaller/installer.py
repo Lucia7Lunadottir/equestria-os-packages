@@ -308,9 +308,23 @@ class InstallPage(QWizardPage):
     def process_finished(self, exitCode, exitStatus):
         if exitCode == 0:
             self.log_output.append("\n<span style='color: #69F0AE;'>" + self.tr("Installation successfully completed!") + "</span>")
+            if self.wizard().package_path.endswith(('.deb', '.rpm')):
+                self._refresh_app_menu()
         else:
             self.log_output.append("\n<span style='color: #FF5252;'>" + self.tr("Installation error. Code: ") + str(exitCode) + "</span>")
         self.wizard().button(QWizard.WizardButton.NextButton).setEnabled(True)
+
+    def _refresh_app_menu(self):
+        """.deb/.rpm installs run foreign_bridge.py under pkexec (see
+        start_installation) -- a cache rebuild there executes as root, which
+        writes to root's own $HOME instead of the actual desktop user's, so
+        the real application menu never sees it (this is exactly the bug
+        reported: the menu doesn't refresh after installing a .deb).
+        kbuildsycoca6 has to run unprivileged, here, in the real user's
+        session, same reasoning as flatpak install not going through pkexec
+        above."""
+        if shutil.which("kbuildsycoca6"):
+            QProcess.startDetached("kbuildsycoca6", ["--noincremental"])
 
 class SummaryPage(QWizardPage):
     def __init__(self):

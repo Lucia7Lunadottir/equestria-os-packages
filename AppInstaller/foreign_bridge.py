@@ -8,6 +8,7 @@ import json
 import os
 import posixpath
 import re
+import shutil
 import struct
 import subprocess
 import sys
@@ -393,7 +394,25 @@ def write_manifest(name, version, fmt, files):
     update_app_database()
 
 def update_app_database():
-    subprocess.run(["kbuildsycoca6", "--noincremental"], capture_output=True, check=False)
+    """Refresh every system-wide (root-writable) cache a new .desktop file,
+    MIME association or icon could be missing from.
+
+    kbuildsycoca6 is deliberately NOT run here: this function executes as
+    root (foreign_bridge.py is invoked via pkexec, see installer.py), and
+    KDE's application-menu cache lives per-user under $HOME/.cache --
+    rebuilding it as root only refreshes root's own irrelevant cache, never
+    the real desktop user's, which is exactly why the menu didn't reset
+    after a .deb install. The actual kbuildsycoca6 call happens unprivileged
+    in installer.py's InstallPage._refresh_app_menu() once this process
+    (and pkexec) returns.
+    """
+    for cmd in (
+        ["update-desktop-database", "-q", "/usr/share/applications"],
+        ["update-mime-database", "/usr/share/mime"],
+        ["gtk-update-icon-cache", "-q", "-t", "/usr/share/icons/hicolor"],
+    ):
+        if shutil.which(cmd[0]):
+            subprocess.run(cmd, capture_output=True, check=False)
 
 
 def uninstall(name: str):
@@ -421,6 +440,7 @@ def uninstall(name: str):
             pass
 
     os.remove(manifest_path)
+    update_app_database()
     log(f"Removed {name} ({removed} files)")
 
 

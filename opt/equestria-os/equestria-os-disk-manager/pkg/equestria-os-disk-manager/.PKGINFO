@@ -3,12 +3,12 @@
 pkgname = equestria-os-disk-manager
 pkgbase = equestria-os-disk-manager
 xdata = pkgtype=pkg
-pkgver = 1.2.0-5
+pkgver = 1.3.0-1
 pkgdesc = GUI tool for managing disks: mount, fstab, permissions, labels, format, partitioning
 url = https://github.com/Lucia7Lunadottir
-builddate = 1783909861
+builddate = 1790756818
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 3613537
+size = 3617836
 arch = any
 license = GPL
 depend = polkit

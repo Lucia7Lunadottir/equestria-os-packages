@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-proton-starter
 pkgver=1.8.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Native Windows .exe/.msi launcher for Equestria OS (double-click support via Proton, engine manager, Xbox 360 gamepad mode, GameMode, upscaler DLL upgrades)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
