@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QScrollArea, QSlider, QStackedWidget,
                              QLineEdit, QFrame)
 from PyQt6.QtCore import Qt
-from widgets import SafeCheckBox
+from widgets import SafeCheckBox, HelpButton
 
 class Ui_MainWindow:
     def setupUi(self, MainWindow):
@@ -115,7 +115,7 @@ class Ui_MainWindow:
         ed_form.setContentsMargins(0, 0, 0, 0)
         ed_form.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        def add_row(label_text, widget):
+        def add_row(label_text, widget, has_help=False):
             row = QWidget()
             lo = QHBoxLayout(row)
             lo.setContentsMargins(0, 0, 0, 0)
@@ -125,27 +125,31 @@ class Ui_MainWindow:
             lbl.setWordWrap(True)
             lo.addWidget(lbl)
             lo.addWidget(widget)
+            help_btn = None
+            if has_help:
+                help_btn = HelpButton()
+                lo.addWidget(help_btn)
             lo.addStretch()
             ed_form.addWidget(row)
-            return row, lbl
+            return row, lbl, help_btn
 
         self.fld_ed_id = QLineEdit()
         self.fld_ed_id.setObjectName("EditorField")
         self.fld_ed_id.setStyleSheet("QLineEdit { background-color: rgb(15, 12, 25); border: 2px solid rgb(90, 80, 130); border-radius: 6px; color: rgb(220, 200, 255); padding: 4px 7px; font-size: 13px; } QLineEdit:focus { border: 2px solid rgb(140, 90, 200); } QLineEdit[readOnly=\"true\"] { color: rgb(120, 110, 150); border: 2px solid rgb(60, 55, 90); }")
         self.fld_ed_id.setFixedWidth(220)
-        self.row_ed_id, self.lbl_ed_id_row = add_row("Preset ID:", self.fld_ed_id)
+        self.row_ed_id, self.lbl_ed_id_row, _ = add_row("Preset ID:", self.fld_ed_id)
 
         self.fld_ed_name = QLineEdit()
         self.fld_ed_name.setObjectName("EditorField")
         self.fld_ed_name.setStyleSheet(self.fld_ed_id.styleSheet())
         self.fld_ed_name.setFixedWidth(220)
-        _, self.lbl_ed_name_row = add_row("Display Name:", self.fld_ed_name)
+        _, self.lbl_ed_name_row, _ = add_row("Display Name:", self.fld_ed_name)
 
         self.fld_ed_desc = QLineEdit()
         self.fld_ed_desc.setObjectName("EditorField")
         self.fld_ed_desc.setStyleSheet(self.fld_ed_id.styleSheet())
         self.fld_ed_desc.setFixedWidth(320)
-        _, self.lbl_ed_desc_row = add_row("Description:", self.fld_ed_desc)
+        _, self.lbl_ed_desc_row, _ = add_row("Description:", self.fld_ed_desc)
 
         icon_w = QWidget()
         icon_lo = QHBoxLayout(icon_w)
@@ -160,7 +164,7 @@ class Ui_MainWindow:
         self.btn_ed_icon.setFixedSize(28, 24)
         icon_lo.addWidget(self.fld_ed_icon)
         icon_lo.addWidget(self.btn_ed_icon)
-        _, self.lbl_ed_icon_row = add_row("Icon:", icon_w)
+        _, self.lbl_ed_icon_row, _ = add_row("Icon:", icon_w)
 
         color_w = QWidget()
         color_lo = QHBoxLayout(color_w)
@@ -178,7 +182,7 @@ class Ui_MainWindow:
         color_lo.addWidget(self.btn_ed_color_dark)
         color_lo.addWidget(self.lbl_ed_color_light_icon)
         color_lo.addWidget(self.btn_ed_color_light)
-        _, self.lbl_ed_color_row = add_row("Panel Colors:", color_w)
+        _, self.lbl_ed_color_row, self.help_ed_color = add_row("Panel Colors:", color_w, has_help=True)
 
         opacity_w = QWidget()
         opacity_lo = QHBoxLayout(opacity_w)
@@ -192,10 +196,10 @@ class Ui_MainWindow:
         self.lbl_ed_opacity_val.setMinimumWidth(40)
         opacity_lo.addWidget(self.sld_ed_opacity)
         opacity_lo.addWidget(self.lbl_ed_opacity_val)
-        _, self.lbl_ed_opacity_row = add_row("Opacity:", opacity_w)
+        _, self.lbl_ed_opacity_row, _ = add_row("Opacity:", opacity_w)
 
         self.chk_ed_hide_icons = SafeCheckBox()
-        _, self.lbl_ed_hide_icons_row = add_row("Desktop Icons:", self.chk_ed_hide_icons)
+        _, self.lbl_ed_hide_icons_row, self.help_ed_hide_icons = add_row("Desktop Icons:", self.chk_ed_hide_icons, has_help=True)
 
         theme_w = QWidget()
         theme_lo = QHBoxLayout(theme_w)
@@ -209,7 +213,7 @@ class Ui_MainWindow:
         self.btn_ed_theme_light.setProperty("active", "false")
         theme_lo.addWidget(self.btn_ed_theme_dark)
         theme_lo.addWidget(self.btn_ed_theme_light)
-        _, self.lbl_ed_theme_row = add_row("Panel Theme:", theme_w)
+        _, self.lbl_ed_theme_row, self.help_ed_theme = add_row("Panel Theme:", theme_w, has_help=True)
 
         self.btn_ed_open_kde = QPushButton("🛠 Enter KDE Panel Edit Mode")
         self.btn_ed_open_kde.setProperty("cssClass", "action-btn")
@@ -217,7 +221,7 @@ class Ui_MainWindow:
             QPushButton { background-color: rgb(50, 40, 85); border: 1px solid rgb(110, 80, 180); padding: 6px 16px; font-weight: bold; }
             QPushButton:hover { background-color: rgb(70, 55, 115); border-color: rgb(140, 100, 220); }
         """)
-        self.row_ed_kde, self.lbl_ed_kde_row = add_row("KDE Plasma Shell:", self.btn_ed_open_kde)
+        self.row_ed_kde, self.lbl_ed_kde_row, self.help_ed_kde = add_row("KDE Plasma Shell:", self.btn_ed_open_kde, has_help=True)
 
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
@@ -230,13 +234,17 @@ class Ui_MainWindow:
         layout_lo.setSpacing(10)
         self.btn_ed_capture = QPushButton("📸 Capture current panels")
         self.btn_ed_capture.setProperty("cssClass", "action-btn")
+        self.btn_ed_capture.setStyleSheet("""
+            QPushButton { background-color: rgb(100, 60, 160); border: 1px solid rgb(140, 90, 200); border-radius: 8px; color: white; padding: 6px 16px; font-size: 12px; }
+            QPushButton:hover { background-color: rgb(120, 80, 180); }
+        """)
         self.lbl_ed_capture_status = QLabel("Not captured")
         self.lbl_ed_capture_status.setProperty("cssClass", "capture-status")
         self.lbl_ed_capture_status.setWordWrap(True)
         layout_lo.addWidget(self.btn_ed_capture)
         layout_lo.addWidget(self.lbl_ed_capture_status)
         layout_lo.addStretch()
-        _, self.lbl_ed_layout_row = add_row("Panel Layout:", layout_w)
+        _, self.lbl_ed_layout_row, self.help_ed_layout = add_row("Panel Layout:", layout_w, has_help=True)
 
         ed_scroll.setWidget(ed_container)
         ed_layout.addWidget(ed_scroll, 1)

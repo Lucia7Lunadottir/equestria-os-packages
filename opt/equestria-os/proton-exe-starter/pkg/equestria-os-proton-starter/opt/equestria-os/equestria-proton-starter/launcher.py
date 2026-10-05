@@ -13,6 +13,8 @@ import re
 import shlex
 import shutil
 
+from steam_integration import apply_steam_env
+
 from PyQt6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QLabel,
                              QProgressBar, QPushButton, QTextEdit, QHBoxLayout)
 from PyQt6.QtCore import Qt, QTimer
@@ -170,18 +172,25 @@ def apply_game_env(env, settings):
     if settings.get("desktop_profile"):
         env["WINE_LARGE_ADDRESS_AWARE"] = "1"
 
-    # DirectX 9/10/11 ходят через DXVK (Vulkan) по умолчанию; тут — ручные
-    # отступления для игр, которым это не подходит. d3d9_only/no_d3d11 всё ещё
-    # используют DXVK, просто урезают набор поддерживаемых версий — сама игра
-    # откатывается на более старую, если умеет.
+    # DirectX 8/9/10/11 ходят через DXVK (Vulkan), 12 — через VKD3D-Proton.
+    # Proton не умеет «принудительно включить» версию, только отключать новее:
+    # игра, у которой есть выбор API (DMC5, RE Engine и т.п.), откатывается на
+    # самую новую из оставшихся. Поэтому "DirectX 11" = отключить 12 и т.д.
+    # PROTON_NO_D3D12/10/11 — штатные переменные Proton; d3d8 отдельно не
+    # отключается (его тянет DXVK d3d8), так что "dx8" ограничивается как dx9.
     directx_mode = settings.get("directx_mode", "auto")
+    if directx_mode == "d3d9_only":  # старое имя режима
+        directx_mode = "dx9"
     if directx_mode == "wined3d":
         env["PROTON_USE_WINED3D"] = "1"
-    elif directx_mode == "d3d9_only":
-        env["PROTON_NO_D3D10"] = "1"
-        env["PROTON_NO_D3D11"] = "1"
     elif directx_mode == "no_d3d11":
         env["PROTON_NO_D3D11"] = "1"
+    elif directx_mode in ("dx11", "dx10", "dx9", "dx8"):
+        env["PROTON_NO_D3D12"] = "1"
+        if directx_mode in ("dx10", "dx9", "dx8"):
+            env["PROTON_NO_D3D11"] = "1"
+        if directx_mode in ("dx9", "dx8"):
+            env["PROTON_NO_D3D10"] = "1"
 
     # D3D12 идёт через VKD3D-Proton отдельно от DXVK — свободная строка с его
     # флагами (см. VKD3D_CONFIG в документации vkd3d-proton), а не чекбоксы:
@@ -195,6 +204,28 @@ def apply_game_env(env, settings):
         env["PROTONPATH"] = "GE-Proton"
     elif choice and os.path.isdir(choice):
         env["PROTONPATH"] = choice
+
+    # SteamDeck=1 makes Proton take the SteamOS/Deck-specific code paths —
+    # several PS-port titles (PlayStation SDK overlay quirks) and games that
+    # branch on detected hardware behave better under it on desktop Linux too.
+    if settings.get("steamdeck_mode"):
+        env["SteamDeck"] = "1"
+
+    # Free-form escape hatch: compatibility tricks are per-game and new ones
+    # surface with every patch (see e.g. PROTON_USE_WOW64, WINEDLLOVERRIDES),
+    # so a fixed checkbox list would always be one patch behind. Applied last
+    # so a deliberate override here always wins over the computed defaults
+    # above. Format: "VAR1=val1;VAR2=val2".
+    extra_env = settings.get("extra_env", "").strip()
+    for pair in extra_env.split(";"):
+        pair = pair.strip()
+        if not pair or "=" not in pair:
+            continue
+        key, _, value = pair.partition("=")
+        key = key.strip()
+        if key:
+            env[key] = value.strip()
+
     return env
 
 _locales: dict = {}
@@ -456,6 +487,8 @@ def main():
     env = os.environ.copy()
     env["WINEPREFIX"] = prefix_path
     env["GAMEID"] = app_id
+    # Игра из Steam: даём Proton её AppID и путь к клиенту (см. steam_integration.py)
+    apply_steam_env(env, exe_path)
 
     if settings.get("dxvk_hud"): env["DXVK_HUD"] = "compiler,frametimes,fps"
     if settings.get("fsr"): env["WINE_FULLSCREEN_FSR"] = "1"

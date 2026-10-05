@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-proton-starter
 pkgver=1.8.0
-pkgrel=2
+pkgrel=4
 pkgdesc="Native Windows .exe/.msi launcher for Equestria OS (double-click support via Proton, engine manager, Xbox 360 gamepad mode, GameMode, upscaler DLL upgrades)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -33,7 +33,7 @@ package() {
     local _lib="$pkgdir/opt/equestria-os/equestria-proton-starter"
     install -dm755 "$_lib"
 
-    for f in dispatch.py main.py launcher.py cleaner.py proton_runner.py ui.py style.qss localization.csv EquestriaOS-Logo.png; do
+    for f in dispatch.py main.py launcher.py steam_integration.py cleaner.py proton_runner.py ui.py style.qss localization.csv EquestriaOS-Logo.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
 

@@ -275,10 +275,16 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         self.chk_upscaler.setText(self.t_str("proton.chk_upscaler"))
         self.group_directx.setTitle(self.t_str("proton.group_directx"))
         self.combo_directx.setItemText(0, self.t_str("proton.directx_auto"))
-        self.combo_directx.setItemText(1, self.t_str("proton.directx_wined3d"))
-        self.combo_directx.setItemText(2, self.t_str("proton.directx_d3d9_only"))
-        self.combo_directx.setItemText(3, self.t_str("proton.directx_no_d3d11"))
+        # Тексты подставляем по data-ключу, а не по индексу — порядок пунктов
+        # в ui.py можно менять, не трогая локализацию.
+        for key in ("dx12", "dx11", "dx10", "dx9", "dx8", "wined3d", "no_d3d11"):
+            idx = self.combo_directx.findData(key)
+            if idx != -1:
+                self.combo_directx.setItemText(idx, self.t_str("proton.directx_" + key))
         self.txt_vkd3d_config.setPlaceholderText(self.t_str("proton.txt_vkd3d_config"))
+        self.group_compat.setTitle(self.t_str("proton.group_compat"))
+        self.chk_steamdeck.setText(self.t_str("proton.chk_steamdeck"))
+        self.txt_extra_env.setPlaceholderText(self.t_str("proton.txt_extra_env"))
         self.group_proton.setTitle(self.t_str("proton.group_proton"))
         self.combo_proton.setItemText(0, self.t_str("proton.ver_auto"))
         self.combo_proton.setItemText(1, self.t_str("proton.ver_ge"))
@@ -343,9 +349,14 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
                     self.chk_compat_profile.setChecked(settings.get("desktop_profile", False))
                     self.chk_gamemode.setChecked(settings.get("gamemode", False))
                     self.chk_upscaler.setChecked(settings.get("upscaler_upgrade", False))
-                    idx = self.combo_directx.findData(settings.get("directx_mode", "auto"))
+                    mode = settings.get("directx_mode", "auto")
+                    if mode == "d3d9_only":  # старое имя режима → теперь dx9
+                        mode = "dx9"
+                    idx = self.combo_directx.findData(mode)
                     self.combo_directx.setCurrentIndex(idx if idx != -1 else 0)
                     self.txt_vkd3d_config.setText(settings.get("vkd3d_config", ""))
+                    self.chk_steamdeck.setChecked(settings.get("steamdeck_mode", False))
+                    self.txt_extra_env.setText(settings.get("extra_env", ""))
                     self.txt_args.setText(settings.get("launch_args", ""))
                     idx = self.combo_proton.findData(settings.get("proton_version", ""))
                     self.combo_proton.setCurrentIndex(idx if idx != -1 else 0)
@@ -369,6 +380,8 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
             "upscaler_upgrade": self.chk_upscaler.isChecked(),
             "directx_mode": self.combo_directx.currentData() or "auto",
             "vkd3d_config": self.txt_vkd3d_config.text().strip(),
+            "steamdeck_mode": self.chk_steamdeck.isChecked(),
+            "extra_env": self.txt_extra_env.text().strip(),
             "launch_args": self.txt_args.text().strip(),
             "proton_version": self.combo_proton.currentData() or ""
         }

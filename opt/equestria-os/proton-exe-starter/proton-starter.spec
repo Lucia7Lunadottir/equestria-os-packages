@@ -68,6 +68,7 @@ a = Analysis(
         # All three app modules must be importable at runtime
         "main",
         "launcher",
+        "steam_integration",
         "cleaner",
         "ui",
         "proton_runner",

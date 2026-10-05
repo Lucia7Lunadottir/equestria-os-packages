@@ -63,7 +63,6 @@ class TaskPanelApp(QMainWindow):
         self._build_dynamic_ui()
         self._bind_events()
         self._update_ui_state()
-        self._apply_panel_appearance()
 
     def _detect_plasma_theme_dark(self) -> bool:
         """Интеллектуально определяет глобальный режим оформления KDE (Темный/Светлый)."""
@@ -326,6 +325,12 @@ class TaskPanelApp(QMainWindow):
         self.ui.lbl_ed_theme_row.setText(self._t("ui.ed_theme_label"))
         self.ui.btn_ed_theme_dark.setText(self._t("ui.dark_panel"))
         self.ui.btn_ed_theme_light.setText(self._t("ui.light_panel"))
+
+        self.ui.help_ed_color.set_help_text(self._t("help.ed_color"))
+        self.ui.help_ed_theme.set_help_text(self._t("help.ed_theme"))
+        self.ui.help_ed_hide_icons.set_help_text(self._t("help.ed_hide_icons"))
+        self.ui.help_ed_kde.set_help_text(self._t("help.ed_kde"))
+        self.ui.help_ed_layout.set_help_text(self._t("help.ed_layout"))
 
         kde_label = self._t("ui.ed_kde_label")
         if kde_label == "ui.ed_kde_label":

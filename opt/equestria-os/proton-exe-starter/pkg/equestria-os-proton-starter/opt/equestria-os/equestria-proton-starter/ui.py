@@ -79,14 +79,31 @@ class Ui_SettingsWindow:
 
         self.combo_directx = QComboBox()
         self.combo_directx.addItem("", "auto")
+        self.combo_directx.addItem("", "dx12")
+        self.combo_directx.addItem("", "dx11")
+        self.combo_directx.addItem("", "dx10")
+        self.combo_directx.addItem("", "dx9")
+        self.combo_directx.addItem("", "dx8")
         self.combo_directx.addItem("", "wined3d")
-        self.combo_directx.addItem("", "d3d9_only")
         self.combo_directx.addItem("", "no_d3d11")
         dxlayout.addWidget(self.combo_directx)
 
         self.txt_vkd3d_config = QLineEdit()
         dxlayout.addWidget(self.txt_vkd3d_config)
         layout.addWidget(self.group_directx)
+
+        # Группа: Совместимость (трюки под конкретные капризные игры —
+        # SteamDeck=1 и свободные переменные окружения вместо захардкоженного
+        # списка, который неизбежно устареет при следующем патче игры)
+        self.group_compat = QGroupBox()
+        complayout = QVBoxLayout(self.group_compat)
+
+        self.chk_steamdeck = QCheckBox()
+        complayout.addWidget(self.chk_steamdeck)
+
+        self.txt_extra_env = QLineEdit()
+        complayout.addWidget(self.txt_extra_env)
+        layout.addWidget(self.group_compat)
 
         # Группа: Параметры запуска
         self.group_args = QGroupBox()

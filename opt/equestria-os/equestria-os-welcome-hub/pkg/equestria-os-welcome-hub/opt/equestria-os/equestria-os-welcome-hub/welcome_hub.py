@@ -224,32 +224,42 @@ class main_app(QMainWindow, Ui_WelcomeHub):
             is_enabled = True
             try:
                 with open(path, "r", encoding="utf-8") as f:
-                    if "Hidden=true" in f.read():
-                        is_enabled = False
+                    content = f.read()
+                has_hidden_true = "Hidden=true" in content
+                has_gnome_false = "X-GNOME-Autostart-enabled=false" in content
+                is_enabled = not (has_hidden_true or has_gnome_false)
+                if has_hidden_true != has_gnome_false:
+                    # Старый файл от версии с багом: ключи противоречат друг другу
+                    # (например Hidden=true, но X-GNOME-Autostart-enabled=true).
+                    # Приводим файл к согласованному виду, сохраняя намерение пользователя.
+                    self._write_autostart_entry(path, is_enabled)
             except Exception:
                 pass
 
         self.autostart_checkbox.setChecked(is_enabled)
         self.autostart_checkbox.toggled.connect(self.toggle_autostart)
 
-    def toggle_autostart(self, enable):
-        path = os.path.expanduser("~/.config/autostart/equestria-welcomehub.desktop")
+    def _write_autostart_entry(self, path, enable):
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        
+
         # Используем системный бинарник вместо python3 /путь/к/файлу
-        exec_cmd = "equestria-os-welcome" 
-        
+        exec_cmd = "equestria-os-welcome"
+
+        gnome_flag = "true" if enable else "false"
+        hidden_flag = "false" if enable else "true"
+
         with open(path, "w", encoding="utf-8") as f:
             f.write("[Desktop Entry]\n"
                     "Type=Application\n"
                     "Name=Equestria OS Welcome Hub\n"
                     f"Exec={exec_cmd}\n"
                     "Icon=equestria-os-logo\n"
-                    "X-GNOME-Autostart-enabled=true\n")
-            if enable:
-                f.write("Hidden=false\n")
-            else:
-                f.write("Hidden=true\n")
+                    f"X-GNOME-Autostart-enabled={gnome_flag}\n"
+                    f"Hidden={hidden_flag}\n")
+
+    def toggle_autostart(self, enable):
+        path = os.path.expanduser("~/.config/autostart/equestria-welcomehub.desktop")
+        self._write_autostart_entry(path, enable)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

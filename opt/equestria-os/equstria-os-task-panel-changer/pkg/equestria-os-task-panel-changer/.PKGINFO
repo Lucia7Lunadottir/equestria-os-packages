@@ -3,12 +3,12 @@
 pkgname = equestria-os-task-panel-changer
 pkgbase = equestria-os-task-panel-changer
 xdata = pkgtype=pkg
-pkgver = 1.3.3-5
+pkgver = 1.3.3-6
 pkgdesc = Task panel style manager for Equestria OS (KDE Plasma 6)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1783810105
+builddate = 1791169741
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 1979009
+size = 1991425
 arch = any
 license = GPL
 depend = python-pyqt6

@@ -1,7 +1,115 @@
 import os
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
 from PyQt6.QtGui import QPainter, QColor, QPixmap, QPainterPath
-from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, pyqtProperty, QRectF, QSize
+from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, pyqtProperty, QRectF, QSize, QPoint
+
+
+class HelpPopup(QLabel):
+    """Собственное всплывающее окно с текстом подсказки.
+
+    Нативный QToolTip под Wayland иногда определяет не тот экран/геометрию
+    (известный баг KDE/Qt: bugs.kde.org #432860, #494338) и растягивается
+    почти на весь монитор вместо того чтобы обернуться по тексту. Рисуем
+    подсказку сами — фиксированная максимальная ширина с переносом строк,
+    позиционирование через mapToGlobal самой кнопки, без угадывания экрана."""
+
+    _MAX_WIDTH = 320
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowFlags(Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.setWordWrap(True)
+        self.setMaximumWidth(self._MAX_WIDTH)
+        self.setStyleSheet(
+            "QLabel {"
+            "background-color: rgb(25, 20, 40);"
+            "color: rgb(210, 200, 235);"
+            "border: 1px solid rgb(110, 90, 160);"
+            "border-radius: 6px;"
+            "padding: 6px 10px;"
+            "}"
+        )
+
+    def show_near(self, anchor: QWidget):
+        self.adjustSize()
+        pos = anchor.mapToGlobal(QPoint(0, anchor.height() + 4))
+        screen = anchor.screen()
+        if screen:
+            avail = screen.availableGeometry()
+            max_x = avail.right() - self.width() - 4
+            if pos.x() > max_x:
+                pos.setX(max(max_x, avail.left() + 4))
+            max_y = avail.bottom() - self.height() - 4
+            if pos.y() > max_y:
+                pos.setY(anchor.mapToGlobal(QPoint(0, 0)).y() - self.height() - 4)
+        self.move(pos)
+        self.show()
+
+
+class HelpButton(QWidget):
+    """Маленькая круглая кнопка-подсказка ('?'), рисуется вручную через
+    QPainter — border-radius у QPushButton на части систем/стилей KDE
+    игнорируется или перекрывается нативным оформлением кнопки, из-за чего
+    рамка и фон не были видны. Текст показывается сразу (без задержки
+    нативного QToolTip) и по ховеру, и по клику (для тача/клавиатуры, где
+    ховера не бывает)."""
+
+    _SIZE = 18
+    _BG = QColor(45, 40, 70)
+    _BG_HOVER = QColor(90, 65, 140)
+    _BORDER = QColor(100, 85, 150)
+    _BORDER_HOVER = QColor(160, 120, 220)
+    _TEXT = QColor(190, 170, 230)
+    _TEXT_HOVER = QColor(230, 220, 255)
+
+    def __init__(self, help_text="", parent=None):
+        super().__init__(parent)
+        self.setFixedSize(self._SIZE, self._SIZE)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._help_text = help_text
+        self._hover = False
+        self._popup = HelpPopup()
+
+    def set_help_text(self, text):
+        self._help_text = text
+
+    def enterEvent(self, event):
+        self._hover = True
+        self.update()
+        self._popup.setText(self._help_text)
+        self._popup.show_near(self)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self._hover = False
+        self.update()
+        self._popup.hide()
+        super().leaveEvent(event)
+
+    def mousePressEvent(self, event):
+        self._popup.setText(self._help_text)
+        self._popup.show_near(self)
+        super().mousePressEvent(event)
+
+    def hideEvent(self, event):
+        self._popup.hide()
+        super().hideEvent(event)
+
+    def paintEvent(self, event):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        rect = QRectF(1, 1, self._SIZE - 2, self._SIZE - 2)
+        p.setBrush(self._BG_HOVER if self._hover else self._BG)
+        p.setPen(self._BORDER_HOVER if self._hover else self._BORDER)
+        p.drawEllipse(rect)
+        font = p.font()
+        font.setBold(True)
+        font.setPointSize(9)
+        p.setFont(font)
+        p.setPen(self._TEXT_HOVER if self._hover else self._TEXT)
+        p.drawText(rect, Qt.AlignmentFlag.AlignCenter, "?")
+        p.end()
 
 PANEL_LAYOUTS = {
     "sunset":    [{"pos": "bottom", "w": 0.62, "h": 0.28, "float": True}],
