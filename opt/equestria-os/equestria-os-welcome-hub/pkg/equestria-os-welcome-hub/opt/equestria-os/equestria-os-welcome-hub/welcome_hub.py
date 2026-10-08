@@ -214,8 +214,29 @@ class main_app(QMainWindow, Ui_WelcomeHub):
             subprocess.Popen([target])
 
     # --- ИСПРАВЛЕННАЯ ЛОГИКА АВТОЗАПУСКА (БЕЗ УДАЛЕНИЯ КОНФИГА) ---
+    # Имя файла ОБЯЗАНО совпадать с системным /etc/xdg/autostart/equestria-os-welcome.desktop:
+    # XDG переопределяет автозапуск только по одинаковому имени файла.
+    AUTOSTART_PATH = os.path.expanduser("~/.config/autostart/equestria-os-welcome.desktop")
+    LEGACY_AUTOSTART_PATH = os.path.expanduser("~/.config/autostart/equestria-welcomehub.desktop")
+
+    def _migrate_legacy_autostart(self):
+        """Старый файл (equestria-welcomehub.desktop) ничего не переопределял — переносим выбор в правильный."""
+        legacy = self.LEGACY_AUTOSTART_PATH
+        if not os.path.exists(legacy):
+            return
+        try:
+            with open(legacy, "r", encoding="utf-8") as f:
+                content = f.read()
+            disabled = "Hidden=true" in content or "X-GNOME-Autostart-enabled=false" in content
+            if disabled and not os.path.exists(self.AUTOSTART_PATH):
+                self._write_autostart_entry(self.AUTOSTART_PATH, False)
+            os.remove(legacy)
+        except Exception:
+            pass
+
     def setup_autostart_logic(self):
-        path = os.path.expanduser("~/.config/autostart/equestria-welcomehub.desktop")
+        self._migrate_legacy_autostart()
+        path = self.AUTOSTART_PATH
 
         if not os.path.exists(path):
             # Пользователь ничего не менял — глобальный /etc/xdg/autostart активен
@@ -258,8 +279,7 @@ class main_app(QMainWindow, Ui_WelcomeHub):
                     f"Hidden={hidden_flag}\n")
 
     def toggle_autostart(self, enable):
-        path = os.path.expanduser("~/.config/autostart/equestria-welcomehub.desktop")
-        self._write_autostart_entry(path, enable)
+        self._write_autostart_entry(self.AUTOSTART_PATH, enable)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

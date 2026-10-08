@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-software-center
 pkgver=1.8.0
-pkgrel=7
+pkgrel=8
 pkgdesc="Software Center for Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"

@@ -16,7 +16,7 @@
 ## Переключатель «Запускать при входе в систему» (`setup_autostart_logic()`/`toggle_autostart()`, `welcome_hub.py:217-252`)
 
 Идентичная логика `equestria-os-tutorial` (тот же стандарт XDG autostart, см. подробное объяснение механизма в `equestria-os-tutorial/COMMANDS.md`):
-* Путь: `~/.config/autostart/equestria-welcomehub.desktop` (переопределяет глобальный `/etc/xdg/autostart` для этого пользователя).
+* Путь: `~/.config/autostart/equestria-os-welcome.desktop` (переопределяет глобальный `/etc/xdg/autostart` для этого пользователя).
 * Файла нет → считается включённым по умолчанию (наследуется от глобального автозапуска).
 * Переключение пишет `.desktop`-файл целиком с `Exec=equestria-os-welcome` и `Hidden=true`/`Hidden=false`.
 

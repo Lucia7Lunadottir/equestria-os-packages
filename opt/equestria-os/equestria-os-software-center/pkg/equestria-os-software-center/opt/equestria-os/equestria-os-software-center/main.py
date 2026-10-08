@@ -18,7 +18,7 @@ from models import EssentialData, StoreData
 from utils import (FLATPAK_APPSTREAM, cleanup_screenshot_cache, parse_appstream_uri,
                    parse_flatpakref_uri, FLATPAKREF_SCHEMES, normalize_key, merge_packages,
                    _GENERIC_PACMAN_DESC, guess_cat)
-from workers import (AppStoreLoader, FlatpakLoader, FlatpakRefResolveThread,
+from workers import (stop_all_threads, AppStoreLoader, FlatpakLoader, FlatpakRefResolveThread,
                      AURSearchThread, AURPopularLoader, AURUpgradableLoader,
                      ScreenshotDownloadThread, LocalAppStreamLoader,
                      PacmanInfoLoader)
@@ -263,6 +263,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             if t is not None and t.isRunning():
                 t.quit()
                 t.wait(500)
+        stop_all_threads()
         event.accept()
 
     def init_resources(self):
@@ -1579,7 +1580,36 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         )
 
 
+def _install_crash_guards():
+    """PyQt6 calls abort() on any unhandled exception inside a slot/callback,
+    which kills the window silently while a running install (a detached
+    process) carries on. Log the exception instead and keep the app alive."""
+    import faulthandler
+    import traceback
+    log_dir = os.path.expanduser("~/.cache/equestria-os-software-center")
+    log_path = os.path.join(log_dir, "crash.log")
+    try:
+        os.makedirs(log_dir, exist_ok=True)
+        fh = open(log_path, "a", buffering=1)
+        faulthandler.enable(file=fh)
+    except OSError:
+        fh = None
+
+    def _hook(exc_type, exc, tb):
+        text = "".join(traceback.format_exception(exc_type, exc, tb))
+        sys.stderr.write(text)
+        if fh:
+            try:
+                fh.write(time.strftime("%F %T ") + text)
+            except OSError:
+                pass
+
+    sys.excepthook = _hook
+    threading.excepthook = lambda a: _hook(a.exc_type, a.exc_value, a.exc_traceback)
+
+
 if __name__ == "__main__":
+    _install_crash_guards()
     app = QApplication(sys.argv)
     app.setDesktopFileName("equestria-os-software-center")
 

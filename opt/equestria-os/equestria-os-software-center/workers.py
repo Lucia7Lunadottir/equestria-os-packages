@@ -17,6 +17,35 @@ from utils import (
     _GENERIC_PACMAN_DESC, _GENERIC_FLATPAK_DESC,
 )
 
+
+# Running QThreads that nobody references any more. If Python drops the last
+# reference to a QThread that is still running (e.g. a new loader is assigned
+# to the same attribute while the old one waits on the network), Qt prints
+# "QThread: Destroyed while thread is still running" and abort()s the whole
+# app -- a silent crash. SafeThread keeps every started thread alive until it
+# actually finishes.
+_RUNNING_THREADS = set()
+
+
+class SafeThread(QThread):
+    def start(self, *args, **kwargs):
+        for t in [t for t in _RUNNING_THREADS if not t.isRunning()]:
+            _RUNNING_THREADS.discard(t)
+        _RUNNING_THREADS.add(self)
+        super().start(*args, **kwargs)
+
+
+def stop_all_threads(grace_ms=2000):
+    """Called on exit: give threads a moment, then terminate stragglers so the
+    interpreter never tears down a running QThread (which aborts)."""
+    for t in list(_RUNNING_THREADS):
+        if t.isRunning():
+            t.quit()
+            if not t.wait(grace_ms):
+                t.terminate()
+                t.wait(500)
+
+
 _AUR_POPULAR = [
     "yay", "paru", "google-chrome", "visual-studio-code-bin",
     "spotify", "zoom", "slack-desktop", "brave-bin",
@@ -27,7 +56,7 @@ _AUR_POPULAR = [
 ]
 
 
-class AppStoreLoader(QThread):
+class AppStoreLoader(SafeThread):
     """Loads all available Pacman packages with descriptions.
 
     Tries expac first (fast, includes real descriptions), then falls back to pacman -Sl.
@@ -76,7 +105,7 @@ class AppStoreLoader(QThread):
         return pkgs
 
 
-class FlatpakLoader(QThread):
+class FlatpakLoader(SafeThread):
     """Parses the Flathub appstream.xml.gz cache into StoreData objects."""
     finished = pyqtSignal(list)
 
@@ -200,7 +229,7 @@ class FlatpakLoader(QThread):
         return result
 
 
-class AURSearchThread(QThread):
+class AURSearchThread(SafeThread):
     """Searches AUR RPC v5 for a given query."""
     finished = pyqtSignal(list)
 
@@ -233,7 +262,7 @@ class AURSearchThread(QThread):
         self.finished.emit(pkgs)
 
 
-class AURPopularLoader(QThread):
+class AURPopularLoader(SafeThread):
     """Fetches metadata for a curated list of popular AUR packages."""
     finished = pyqtSignal(list)
 
@@ -262,7 +291,7 @@ class AURPopularLoader(QThread):
         self.finished.emit(pkgs)
 
 
-class ScreenshotDownloadThread(QThread):
+class ScreenshotDownloadThread(SafeThread):
     """Downloads a single screenshot URL to the local cache."""
     done = pyqtSignal(str, str)  # (url, local_path)
 
@@ -287,7 +316,7 @@ class ScreenshotDownloadThread(QThread):
             self.done.emit(self.url, "")
 
 
-class FlatpakRefResolveThread(QThread):
+class FlatpakRefResolveThread(SafeThread):
     """Downloads a "flatpak+https://.../foo.flatpakref" link and extracts its
     app id, without blocking the UI thread on the network fetch."""
     resolved = pyqtSignal(object)  # app id (str) or None on failure
@@ -300,7 +329,7 @@ class FlatpakRefResolveThread(QThread):
         self.resolved.emit(parse_flatpakref_uri(self.uri))
 
 
-class LocalAppStreamLoader(QThread):
+class LocalAppStreamLoader(SafeThread):
     """Searches /usr/share/metainfo for screenshot URLs of a Pacman package."""
     finished = pyqtSignal(list)
 
@@ -338,7 +367,7 @@ class LocalAppStreamLoader(QThread):
         return urls
 
 
-class AURUpgradableLoader(QThread):
+class AURUpgradableLoader(SafeThread):
     """Fetches upgradable AUR package names via `yay -Qu --aur`.
 
     Runs in background after startup to avoid slowing down the UI.
@@ -364,7 +393,7 @@ class AURUpgradableLoader(QThread):
         self.finished.emit(pkgs)
 
 
-class PacmanInfoLoader(QThread):
+class PacmanInfoLoader(SafeThread):
     """Fetches a single package description via `pacman -Si`.
 
     Used to enrich generic 'Arch Repository' descriptions on-demand when
