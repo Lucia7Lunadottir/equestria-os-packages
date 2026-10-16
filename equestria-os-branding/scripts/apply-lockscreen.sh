@@ -8,7 +8,9 @@
 
 UI="/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen/LockScreenUi.qml"
 [ -f "$UI" ] || exit 0
-grep -q 'Equestria OS: белый текст' "$UI" && exit 0
+# Уже есть textColor на верхнем уровне (наша пометка или старая копия) — не дублируем:
+# повтор свойства в QML ломает загрузку экрана блокировки целиком.
+grep -qE '^    Kirigami\.Theme\.textColor:' "$UI" && exit 0
 
 sed -i '0,/^    Kirigami\.Theme\.colorSet: Kirigami\.Theme\.Complementary$/s//&\n    Kirigami.Theme.textColor: "#ffffff" \/\/ Equestria OS: белый текст/' "$UI"
 exit 0

@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-branding
 pkgver=1.4.5
-pkgrel=3
+pkgrel=4
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
