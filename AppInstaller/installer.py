@@ -40,7 +40,7 @@ class WelcomePage(QWizardPage):
 
 
         layout = QVBoxLayout()
-        self.info_label = QLabel(self.tr("Welcome to the installer!\n\nPlease select a package file (.pkg.tar.zst, .deb, .rpm, .flatpakref)."))
+        self.info_label = QLabel(self.tr("Welcome to the installer!\n\nPlease select a package file (.pkg.tar.zst, .deb, .rpm, .flatpak, .flatpakref)."))
         self.info_label.setWordWrap(True)
         layout.addWidget(self.info_label)
 
@@ -63,7 +63,7 @@ class WelcomePage(QWizardPage):
     def browse_file(self):
         file, _ = QFileDialog.getOpenFileName(
             self, self.tr("Select Package"), "",
-            "Supported Packages (*.pkg.tar.zst *.pkg.tar.xz *.deb *.rpm *.flatpakref)")
+            "Supported Packages (*.pkg.tar.zst *.pkg.tar.xz *.deb *.rpm *.flatpak *.flatpakref)")
         if file:
             self.wizard().package_path = file
             self.path_label.setText(self.tr("Selected file: ") + file)
@@ -273,7 +273,7 @@ class InstallPage(QWizardPage):
         if package_path.endswith(('.pkg.tar.zst', '.pkg.tar.xz')):
             command = "pkexec"
             args = ["pacman", "-U", "--noconfirm", package_path]
-        elif package_path.endswith('.flatpakref'):
+        elif package_path.endswith(('.flatpak', '.flatpakref')):
             if not shutil.which("flatpak"):
                 self.log_output.append(
                     "<span style='color: #FF5252;'>" +
@@ -284,7 +284,12 @@ class InstallPage(QWizardPage):
             # installs. Running it as root here would install into root's
             # own Flatpak data instead of the actual desktop user's.
             command = "flatpak"
-            args = ["install", "--noninteractive", "-y", package_path]
+            # .flatpak is a self-contained bundle (needs --bundle); the
+            # runtime it depends on is pulled from the configured remotes.
+            args = ["install", "--noninteractive", "-y"]
+            if package_path.endswith('.flatpak'):
+                args.append("--bundle")
+            args.append(package_path)
         else:
             command = "pkexec"
             args = [sys.executable, self._bridge_path(), "install", package_path]
@@ -356,7 +361,7 @@ class EquestriaInstaller(QWizard):
             if arg.startswith("file://"):
                 arg = urllib.parse.unquote(arg[7:])
 
-            if arg.endswith(('.pkg.tar.zst', '.pkg.tar.xz', '.deb', '.rpm', '.flatpakref')):
+            if arg.endswith(('.pkg.tar.zst', '.pkg.tar.xz', '.deb', '.rpm', '.flatpak', '.flatpakref')):
                 self.package_path = arg
                 break
 

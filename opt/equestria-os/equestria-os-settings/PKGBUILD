@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-settings
-pkgver=1.7.1
+pkgver=1.7.2
 pkgrel=1
 pkgdesc="Unified settings panel for Equestria OS — all system tools in one place"
 arch=('any')
@@ -107,4 +107,14 @@ WRAPPER
         "$pkgdir/usr/bin/pg-resource-guard"
     install -Dm644 "$startdir/pg-resource-guard.service" \
         "$pkgdir/usr/lib/systemd/user/pg-resource-guard.service"
+
+    # Plasmashell watchdog — user service enabled for everyone on install/
+    # upgrade (see .install). Restarts plasmashell when it hangs or dies;
+    # fix-plasmashell is the same restart, invokable by hand.
+    install -Dm755 "$startdir/fix-plasmashell" \
+        "$pkgdir/usr/bin/fix-plasmashell"
+    install -Dm755 "$startdir/pg-plasmashell-watchdog" \
+        "$pkgdir/usr/bin/pg-plasmashell-watchdog"
+    install -Dm644 "$startdir/pg-plasmashell-watchdog.service" \
+        "$pkgdir/usr/lib/systemd/user/pg-plasmashell-watchdog.service"
 }

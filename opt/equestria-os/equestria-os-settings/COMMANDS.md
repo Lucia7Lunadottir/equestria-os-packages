@@ -88,3 +88,9 @@
 ## Прочее
 
 * Ни один модуль настроек не хранит собственное отдельное состояние в `/etc` без разметки `equestria-` в имени файла — все системные файлы, созданные модулями (`99-equestria-*.conf`, `.grub-backup-*`), легко найти и вручную откатить при необходимости.
+
+## Plasmashell watchdog и `fix-plasmashell` (без GUI)
+
+* **`fix-plasmashell`** — ручная команда (без sudo): SIGTERM → через 3 с SIGKILL зависшему `plasmashell`, затем `systemctl --user restart plasma-plasmashell.service` (если unit нет — `setsid -f plasmashell`). Окна программ не закрываются.
+* **`pg-plasmashell-watchdog`** (user-сервис `pg-plasmashell-watchdog.service`) — каждые 10 с шлёт `org.freedesktop.DBus.Peer.Ping` на `org.kde.plasmashell`; Ping обрабатывается главным потоком Qt, поэтому у зависшего процесса ответа нет. После 3 неудач подряд вызывает `fix-plasmashell`. Работает только в сессии KDE, пауза 60 с после старта и 120 с между перезапусками.
+* Включается автоматически: `post_install`/`post_upgrade` делают `systemctl --global enable` и перезапускают сервис у залогиненных пользователей. Отключить лично: `systemctl --user disable --now pg-plasmashell-watchdog`.

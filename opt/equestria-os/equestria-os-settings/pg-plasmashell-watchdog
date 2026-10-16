@@ -1,0 +1,55 @@
+#!/bin/bash
+# pg-plasmashell-watchdog — следит за plasmashell и перезапускает его, если он
+# завис (процесс жив, но рабочий стол не реагирует) или умер.
+#
+# Как определяется «завис»: каждые CHECK_INTERVAL секунд посылаем plasmashell
+# D-Bus-вызов org.freedesktop.DBus.Peer.Ping. Его обрабатывает главный поток
+# Qt, поэтому у зависшего plasmashell ответа нет. Только после FAIL_LIMIT
+# неудач подряд вызывается fix-plasmashell — одиночный долгий ответ под
+# нагрузкой не считается зависанием. Работает как пользовательский сервис,
+# root не нужен. Вне сессии KDE Plasma ничего не делает.
+
+set -u
+
+CHECK_INTERVAL=10
+PING_TIMEOUT=8
+FAIL_LIMIT=3
+STARTUP_GRACE=60     # даём сессии подняться, прежде чем судить о plasmashell
+COOLDOWN=120         # минимум секунд между двумя перезапусками
+
+fails=0
+last_fix=0
+
+is_plasma_session() {
+    [[ "${XDG_CURRENT_DESKTOP:-}" == *KDE* ]] && return 0
+    [[ "$(systemctl --user show-environment 2>/dev/null)" == *XDG_CURRENT_DESKTOP=*KDE* ]]
+}
+
+plasmashell_responds() {
+    busctl --user --timeout="$PING_TIMEOUT" call org.kde.plasmashell /MainApplication \
+        org.freedesktop.DBus.Peer Ping >/dev/null 2>&1
+}
+
+sleep "$STARTUP_GRACE"
+
+while true; do
+    sleep "$CHECK_INTERVAL"
+
+    is_plasma_session || { fails=0; continue; }
+
+    if plasmashell_responds; then
+        fails=0
+        continue
+    fi
+
+    fails=$((fails + 1))
+    (( fails < FAIL_LIMIT )) && continue
+
+    now=$(date +%s)
+    if (( now - last_fix > COOLDOWN )); then
+        logger -t pg-plasmashell-watchdog "plasmashell не отвечает ${fails} проверок подряд — перезапуск"
+        /usr/bin/fix-plasmashell
+        last_fix=$(date +%s)
+    fi
+    fails=0
+done
