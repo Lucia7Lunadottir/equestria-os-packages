@@ -15,6 +15,7 @@ from PyQt6.QtCore import (Qt, QThread, QTimer, QFileSystemWatcher, QEvent,
                           pyqtSignal)
 
 from models import EssentialData, StoreData
+from github_installer import GithubAppRegistry
 from utils import (FLATPAK_APPSTREAM, cleanup_screenshot_cache, parse_appstream_uri,
                    parse_flatpakref_uri, FLATPAKREF_SCHEMES, normalize_key, merge_packages,
                    _GENERIC_PACMAN_DESC, guess_cat)
@@ -34,7 +35,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     # object, а не int: размер кэша в байтах не влезает в C-int сигнала (16 ГБ > 2^31)
     cache_size_ready = pyqtSignal(object)
     db_refresh_done = pyqtSignal(bool)
-    essentials_classified = pyqtSignal(list, list)  # (official_names, aur_names)
+    essentials_classified = pyqtSignal(list, list, list)  # (official, aur, github)
 
     def __init__(self, pending_appstream_id=None, pending_flatpakref_uri=None):
         super().__init__()
@@ -71,6 +72,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.upgradable_packages = set()
         self.aur_installed = {}
         self.selected_essentials = set()
+        self.github_apps = GithubAppRegistry()
 
         self.filtered_store_packages = []
         self.current_page = 1
@@ -427,7 +429,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             for row in csv.DictReader(f, delimiter=';'):
                 app = EssentialData(row['PackageName'], row['DisplayName'],
                                     row['CategoryKey'], row['DescKey'])
-                app.is_installed = app.package_name in self.installed_packages
+                app.is_installed = (self.github_apps.is_installed(app.package_name, self.installed_packages)
+                                    if self.github_apps.owns(app.package_name)
+                                    else app.package_name in self.installed_packages)
                 self.essentials_data.append(app)
                 cats.add(app.category_key)
 
@@ -1314,15 +1318,18 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             names.extend(entry.split())
 
         def _classify():
-            official, aur = [], []
+            official, aur, github = [], [], []
             for name in names:
+                if self.github_apps.owns(name):
+                    github.append(self.github_apps.key_of(name))
+                    continue
                 r = subprocess.run(["pacman", "-Si", name], capture_output=True)
                 (official if r.returncode == 0 else aur).append(name)
-            self.essentials_classified.emit(official, aur)
+            self.essentials_classified.emit(official, aur, github)
 
         threading.Thread(target=_classify, daemon=True).start()
 
-    def _on_essentials_classified(self, official: list, aur: list):
+    def _on_essentials_classified(self, official: list, aur: list, github: list):
         self._essentials_installing = False
         self.update_install_button_text()
 
@@ -1341,6 +1348,13 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
                 "echo '==> Installing from AUR...'; echo; "
                 f"yay -S --noconfirm --sudo pkexec {' '.join(aur)}; echo; "
             )
+        if github:
+            # Из GitHub Releases в ~/.local — без root, поэтому не pkexec.
+            installer = os.path.join(self.base_path, "github_installer.py")
+            steps.append(
+                "echo '==> Installing from GitHub Releases...'; echo; "
+                f"python3 -I '{installer}' install {' '.join(github)}; echo; "
+            )
         if not steps:
             return
         cmd = "".join(steps)
@@ -1351,7 +1365,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             self.render_essentials()
 
         self._run_in_panel(
-            self.t("ui.install_btn_sel").replace("{0}", str(len(official) + len(aur))),
+            self.t("ui.install_btn_sel").replace("{0}", str(len(official) + len(aur) + len(github))),
             "bash", ["-c", cmd], elevated=False, uses_pacman_db=True,
             on_done=_on_essentials_done,
         )

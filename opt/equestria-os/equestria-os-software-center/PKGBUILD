@@ -2,19 +2,19 @@
 
 pkgname=equestria-os-software-center
 pkgver=1.8.0
-pkgrel=8
+pkgrel=9
 pkgdesc="Software Center for Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('pacman' 'pacman-contrib' 'yay' 'polkit' 'python-pyqt6')
+depends=('pacman' 'pacman-contrib' 'yay' 'polkit' 'python-pyqt6' 'fakeroot')
 install=equestria-os-software-center.install
 
 package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
     install -dm755 "$_lib"
 
-    for f in main.py models.py utils.py workers.py ui_software.py settings.py settings_dialog.py pacman_repo.py repository_dialog.py install_panel.py style.qss chevron_down.svg equestria_cyrillic.ttf EquestriaApps.csv equestria-os-software-center.png; do
+    for f in main.py models.py utils.py workers.py ui_software.py settings.py settings_dialog.py pacman_repo.py repository_dialog.py install_panel.py github_installer.py style.qss chevron_down.svg equestria_cyrillic.ttf EquestriaApps.csv equestria-os-software-center.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
 
