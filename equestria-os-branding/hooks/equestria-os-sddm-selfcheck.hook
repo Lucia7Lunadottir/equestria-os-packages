@@ -1,0 +1,13 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = sddm
+Target = plasma-desktop
+Target = breeze
+Target = equestria-os-branding
+
+[Action]
+Description = Checking Equestria OS SDDM theme (fallback to Breeze on failure)...
+When = PostTransaction
+Exec = /usr/lib/equestria-os/sddm-selfcheck.sh

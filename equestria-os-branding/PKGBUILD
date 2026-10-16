@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-branding
 pkgver=1.4.5
-pkgrel=2
+pkgrel=3
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -45,6 +45,12 @@ package() {
     # 4b. Pacman хук для lockscreen
     install -Dm644 "$startdir/hooks/equestria-os-lockscreen.hook" \
         "$pkgdir/usr/share/libalpm/hooks/equestria-os-lockscreen.hook"
+
+    # 4c. Самопроверка SDDM-темы с откатом на Breeze при поломке
+    install -Dm755 "$startdir/scripts/sddm-selfcheck.sh" \
+        "$pkgdir/usr/lib/equestria-os/sddm-selfcheck.sh"
+    install -Dm644 "$startdir/hooks/equestria-os-sddm-selfcheck.hook" \
+        "$pkgdir/usr/share/libalpm/hooks/equestria-os-sddm-selfcheck.hook"
 
     # 5. Cutiemarks
     install -d "$pkgdir/usr/share/equestria-os/cutiemarks"
