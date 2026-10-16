@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-branding
 pkgver=1.4.5
-pkgrel=1
+pkgrel=2
 pkgdesc="Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -34,13 +34,11 @@ package() {
         cp -r "$startdir/look-and-feel/Equestria-OS" "$pkgdir/usr/share/equestria-os/look-and-feel/"
     fi
 
-    # 4. Plasma Lockscreen
-    if [ -d "$startdir/plasma-lockscreen" ]; then
-        install -d "$pkgdir/usr/share/equestria-os/plasma-lockscreen"
-        cp -r "$startdir/plasma-lockscreen/"* "$pkgdir/usr/share/equestria-os/plasma-lockscreen/"
-    fi
+    # 3a. Системный дефолт заставки: если в ~/.config/ksplashrc нет ключа
+    # Theme (например, после сброса), Plasma берёт Equestria-OS, а не Breeze
+    install -Dm644 "$startdir/ksplashrc" "$pkgdir/etc/xdg/ksplashrc"
 
-    # 4a. Скрипт применения lockscreen
+    # 4a. Скрипт подстройки lockscreen (патчит родной файл, не заменяет)
     install -Dm755 "$startdir/scripts/apply-lockscreen.sh" \
         "$pkgdir/usr/lib/equestria-os/apply-lockscreen.sh"
 

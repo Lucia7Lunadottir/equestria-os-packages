@@ -1,12 +1,12 @@
 import org.kde.breeze.components
 
-import QtQuick 2.15
-import QtQuick.Layouts 1.15
-import QtQuick.Controls 2.15 as QQC2
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls as QQC2
 
-import org.kde.plasma.components 3.0 as PlasmaComponents3
-import org.kde.plasma.extras 2.0 as PlasmaExtras
-import org.kde.kirigami 2.20 as Kirigami
+import org.kde.plasma.components as PlasmaComponents3
+import org.kde.plasma.extras as PlasmaExtras
+import org.kde.kirigami as Kirigami
 
 SessionManagementScreen {
     id: root
@@ -35,6 +35,7 @@ SessionManagementScreen {
         // Don't startLogin() here, because the signal is connected to the
         // Escape key as well, for which it wouldn't make sense to trigger
         // login.
+        passwordBox.clear()
         focusFirstVisibleFormControl();
     }
 
@@ -63,7 +64,7 @@ SessionManagementScreen {
 
         footer.enabled = false
         mainStack.enabled = false
-        userListComponent.userList.opacity = 0.5
+        userListComponent.userList.opacity = 0.75
 
         // This is partly because it looks nicer, but more importantly it
         // works round a Qt bug that can trigger if the app is closed with a
@@ -82,7 +83,7 @@ SessionManagementScreen {
         text: lastUserName
         visible: showUsernamePrompt
         focus: showUsernamePrompt && !lastUserName //if there's a username prompt it gets focus first, otherwise password does
-        placeholderText: i18nd("plasma-desktop-sddm-theme", "Username")
+        placeholderText: i18ndc("plasma-desktop-sddm-theme", "@info:placeholder in textfield", "Username")
 
         onAccepted: {
             if (root.loginScreenUiVisible) {
@@ -99,7 +100,7 @@ SessionManagementScreen {
             font.pointSize: fontSize + 1
             Layout.fillWidth: true
 
-            placeholderText: i18nd("plasma-desktop-sddm-theme", "Password")
+            placeholderText: i18ndc("plasma-desktop-sddm-theme",  "@info:placeholder in textfield", "Password")
             focus: !showUsernamePrompt || lastUserName
 
             // Disable reveal password action because SDDM does not have the breeze icon set loaded
@@ -141,13 +142,13 @@ SessionManagementScreen {
 
         PlasmaComponents3.Button {
             id: loginButton
-            Accessible.name: i18nd("plasma-desktop-sddm-theme", "Log In")
+            Accessible.name: i18ndc("plasma-desktop-sddm-theme", "@action:button Accessible name", "Log in")
             Layout.preferredHeight: passwordBox.implicitHeight
             Layout.preferredWidth: text.length === 0 ? loginButton.Layout.preferredHeight : -1
 
             icon.name: text.length === 0 ? (root.LayoutMirroring.enabled ? "go-previous" : "go-next") : ""
 
-            text: root.showUsernamePrompt || userList.currentItem.needsPassword ? "" : i18n("Log In")
+            text: root.showUsernamePrompt || userList.currentItem.needsPassword ? "" : i18nc("@action:button", "Log In")
             onClicked: startLogin()
             Keys.onEnterPressed: clicked()
             Keys.onReturnPressed: clicked()

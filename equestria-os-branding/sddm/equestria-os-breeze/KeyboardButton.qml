@@ -5,10 +5,10 @@
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
 
-import QtQuick 2.15
+import QtQuick
 
-import org.kde.plasma.components 3.0 as PlasmaComponents
-import org.kde.kirigami 2.20 as Kirigami
+import org.kde.plasma.components as PlasmaComponents
+import org.kde.kirigami as Kirigami
 
 PlasmaComponents.ToolButton {
     id: root
@@ -16,7 +16,7 @@ PlasmaComponents.ToolButton {
     property int currentIndex: keyboard.currentLayout
     onCurrentIndexChanged: keyboard.currentLayout = currentIndex
 
-    text: i18nd("plasma-desktop-sddm-theme", "Keyboard Layout: %1", keyboard.layouts[currentIndex]?.longName ?? "")
+    text: i18ndc("plasma-desktop-sddm-theme", "@action:button opens layout chooser %1 is current", "Keyboard Layout: %1", keyboard.layouts[currentIndex]?.longName ?? "")
     visible: keyboard.layouts.length > 1
 
     checkable: true

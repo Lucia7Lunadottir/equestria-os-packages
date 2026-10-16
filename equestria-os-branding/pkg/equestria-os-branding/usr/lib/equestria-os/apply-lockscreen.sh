@@ -1,11 +1,14 @@
 #!/bin/bash
-# Equestria OS: применяет кастомный lockscreen поверх plasma-desktop.
-# Запускается автоматически pacman-хуком после установки/обновления
-# plasma-desktop или equestria-os-branding.
+# Equestria OS: тонкая подстройка lockscreen поверх plasma-desktop.
+# Раньше сюда копировались целые QML-файлы старой версии, и после апдейта
+# Plasma они затирали новые (экран блокировки ломался). Теперь файлы
+# plasma-desktop остаются родными, а мы только дописываем одну строку —
+# белый цвет текста. Скрипт идемпотентен и безопасен: если структура
+# файла изменилась, он ничего не делает.
 
-SOURCE="/usr/share/equestria-os/plasma-lockscreen"
-TARGET="/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen"
+UI="/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen/LockScreenUi.qml"
+[ -f "$UI" ] || exit 0
+grep -q 'Equestria OS: белый текст' "$UI" && exit 0
 
-if [ -d "$SOURCE" ] && [ -d "$TARGET" ]; then
-    cp -r "$SOURCE/"* "$TARGET/"
-fi
+sed -i '0,/^    Kirigami\.Theme\.colorSet: Kirigami\.Theme\.Complementary$/s//&\n    Kirigami.Theme.textColor: "#ffffff" \/\/ Equestria OS: белый текст/' "$UI"
+exit 0

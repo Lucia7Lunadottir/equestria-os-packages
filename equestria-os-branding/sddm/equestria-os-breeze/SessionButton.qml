@@ -5,17 +5,17 @@
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
 
-import QtQuick 2.15
+import QtQuick
 
-import org.kde.plasma.components 3.0 as PlasmaComponents
-import org.kde.kirigami 2.20 as Kirigami
+import org.kde.plasma.components as PlasmaComponents
+import org.kde.kirigami as Kirigami
 
 PlasmaComponents.ToolButton {
     id: root
 
     property int currentIndex: -1
 
-    text: i18nd("plasma-desktop-sddm-theme", "Desktop Session: %1", instantiator.objectAt(currentIndex).text || "")
+    text: i18ndc("plasma-desktop-sddm-theme", "@action:button opens sessions menu %1 is current", "Desktop Session: %1", instantiator.objectAt(currentIndex).text || "")
     visible: menu.count > 1
 
     Component.onCompleted: {
