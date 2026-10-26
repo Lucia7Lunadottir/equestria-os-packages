@@ -24,9 +24,14 @@ ui.delete_msg,Are you sure you want to delete '{0}'?,Вы уверены что 
 ui.btn_yes_delete,Yes Delete,Да удалить,Ja löschen,Oui supprimer,Sí eliminar,Sim excluir,Tak usuń,Так видалити,确认删除,はい削除します
 ui.btn_open_folder,Open Folder,Открыть папку,Ordner öffnen,Ouvrir le dossier,Abrir carpeta,Abrir pasta,Otwórz folder,Відкрити папку,打开文件夹,フォルダーを開く
 ui.btn_restore,Restore Defaults,Восстановить по умолчанию,Standard wiederherstellen,Restaurer par défaut,Restaurar predeterminados,Restaurar padrões,Przywróć domyślne,Відновити за замовчуванням,恢复默认,デフォルトに戻す
-ui.btn_light_mode,☀️ Light Theme,☀️ Светлая тема,☀️ Helles Design,☀️ Thème Clair,☀️ Tema Claro,☀️ Tema Claro,☀️ Jasny Motyw,☀️ Світла тема,☀️ 浅色主题,☀️ ライトテーマ
-ui.btn_dark_mode,🌙 Dark Theme,🌙 Тёмная тема,🌙 Dunkles Design,🌙 Thème Sombre,🌙 Tema Oscuro,🌙 Tema Escuro,🌙 Ciemny Motyw,🌙 Темна тема,🌙 深色主题,🌙 ダークテーマ
 ui.btn_import,Import Theme,Импорт темы,Thema importieren,Importer un thème,Importar tema,Importar tema,Importuj motyw,Імпорт теми,导入主题,テーマをインポート
 ui.btn_export,Export,Экспорт,Exportieren,Exporter,Exportar,Exportar,Eksportuj,Експорт,导出,エクスポート
 ui.import_done,Theme «{0}» imported,Тема «{0}» импортирована,Thema „{0}“ importiert,Thème « {0} » importé,Tema «{0}» importado,Tema «{0}» importado,Motyw „{0}” zaimportowany,Тему «{0}» імпортовано,主题“{0}”已导入,テーマ「{0}」をインポートしました
 ui.import_error,Failed to import theme,Не удалось импортировать тему,Thema konnte nicht importiert werden,Échec de l'importation du thème,No se pudo importar el tema,Falha ao importar o tema,Nie udało się zaimportować motywu,Не вдалося імпортувати тему,无法导入主题,テーマをインポートできませんでした
+ui.mode_label,Mode:,Режим:,Modus:,Mode :,Modo:,Modo:,Tryb:,Режим:,模式：,モード:
+ui.mode_auto,◐ Auto,◐ Авто,◐ Auto,◐ Auto,◐ Auto,◐ Auto,◐ Auto,◐ Авто,◐ 自动,◐ 自動
+ui.mode_light,☼ Light,☼ Светлая,☼ Hell,☼ Clair,☼ Claro,☼ Claro,☼ Jasny,☼ Світла,☼ 浅色,☼ ライト
+ui.mode_dark,☾ Dark,☾ Тёмная,☾ Dunkel,☾ Sombre,☾ Oscuro,☾ Escuro,☾ Ciemny,☾ Темна,☾ 深色,☾ ダーク
+ui.mode_auto_tip,"Light by day, dark at night — on the KDE schedule","Днём светлая, ночью тёмная — по расписанию KDE","Tagsüber hell, nachts dunkel — nach dem KDE-Zeitplan","Clair le jour, sombre la nuit — selon le planning de KDE","Claro de día, oscuro de noche — según el horario de KDE","Claro de dia, escuro à noite — conforme o horário do KDE","Jasny w dzień, ciemny w nocy — według harmonogramu KDE","Удень світла, вночі темна — за розкладом KDE",白天浅色，夜间深色——按 KDE 日程切换,昼はライト、夜はダーク — KDE のスケジュールに従います
+ui.mode_light_tip,Always light; automatic switching is turned off,"Всегда светлая, автоматическая смена выключена","Immer hell, automatischer Wechsel ist aus","Toujours clair, le changement automatique est désactivé",Siempre claro; el cambio automático se desactiva,Sempre claro; a troca automática é desativada,"Zawsze jasny, automatyczna zmiana wyłączona","Завжди світла, автоматичну зміну вимкнено",始终浅色，自动切换关闭,常にライト。自動切り替えはオフになります
+ui.mode_dark_tip,Always dark; automatic switching is turned off,"Всегда тёмная, автоматическая смена выключена","Immer dunkel, automatischer Wechsel ist aus","Toujours sombre, le changement automatique est désactivé",Siempre oscuro; el cambio automático se desactiva,Sempre escuro; a troca automática é desativada,"Zawsze ciemny, automatyczna zmiana wyłączona","Завжди темна, автоматичну зміну вимкнено",始终深色，自动切换关闭,常にダーク。自動切り替えはオフになります

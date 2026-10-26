@@ -6,11 +6,12 @@ import shutil
 import subprocess
 import threading
 import zipfile
+from pathlib import Path
 from dataclasses import dataclass, asdict, field, fields
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QFileDialog, QColorDialog, QMessageBox, QComboBox)
 from PyQt6.QtGui import QIcon, QPixmap, QColor, QFontDatabase, QFont
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QEvent
 try:
     import equestria_kit  # noqa: F401
 except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
@@ -18,8 +19,9 @@ except ImportError:  # запуск из исходников, пакет equest
 from equestria_kit import qt as kit_qt
 from equestria_kit.widgets import font_families
 
-from ui import Ui_MainWindow, APP_STYLE
+from ui import Ui_MainWindow, APP_STYLE, ModeSwitch
 from character_card import CharacterCard
+import kde_laf
 
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
 USER_PATH = os.path.expanduser("~/.local/share/EquestriaOS/Themes/")
@@ -86,7 +88,6 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.editing_character = None
         self.editing_original_id = None
         self.is_creating_new = False
-        self.accent_toggle = 0
 
         self.localized_strings = {}
         self.available_langs = []
@@ -96,8 +97,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.load_localization_csv()
         self.detect_system_language()
 
-        self.is_dark_mode = True
-        self.detect_kde_dark_mode()
+        self.day_night = kde_laf.DayNight()
 
 
         self.bind_events()
@@ -159,22 +159,25 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.current_lang = sys_code if sys_code in self.available_langs else (self.available_langs[0] if self.available_langs else "en")
 
 
-    def detect_kde_dark_mode(self):
-        # Читаем конфигурацию KDE, чтобы понять, какая тема сейчас активна
-        try:
-            res = subprocess.run(["kreadconfig6", "--file", "kdeglobals", "--group", "Colors:Window", "--key", "BackgroundNormal"], capture_output=True, text=True, timeout=3)
-            if res.stdout.strip():
-                r, g, b = map(int, res.stdout.strip().split(','))
-                # Вычисляем яркость: если фон темный, значит включена темная тема
-                self.is_dark_mode = (r*0.299 + g*0.587 + b*0.114) < 128
-        except Exception:
-            self.is_dark_mode = True # По умолчанию тёмная
+    # --- режим «Авто / Светлая / Тёмная» — общий с KDE (см. kde_laf.DayNight)
+    def refresh_mode(self):
+        """Показать режим KDE: его могли сменить в «Параметрах» или в виджете «Яркость и цвет»."""
+        if hasattr(self, "mode_switch"):
+            self.mode_switch.set_current(self.day_night.mode())
 
-    def toggle_dark_light(self):
-        self.is_dark_mode = not self.is_dark_mode
-        self.update_texts()
-        if self.active_character:
-            self.apply_kde_theme(self.active_character)
+    def set_mode(self, mode):
+        self.mode_switch.set_current(mode)
+        # plasma-apply-lookandfeel занимает секунду — в фоне, как и смена персонажа
+        threading.Thread(target=self._set_mode_bg, args=(mode,), daemon=True).start()
+
+    def _set_mode_bg(self, mode):
+        with self._apply_lock:
+            self.day_night.set_mode(mode)
+
+    def changeEvent(self, e):
+        if e.type() == QEvent.Type.ActivationChange and self.isActiveWindow():
+            self.refresh_mode()
+        super().changeEvent(e)
 
     def _state_path(self):
         return os.path.join(USER_PATH, "state.json")
@@ -355,7 +358,24 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         # activated срабатывает только при выборе пользователем — без рекурсии
         self.lang_combo.activated.connect(
             lambda i: self.set_language(self.lang_combo.itemData(i)))
+        # Режим «Авто / Светлая / Тёмная» — в том же ряду: это настройка, а не действие
+        self.lbl_mode = QLabel()
+        self.lbl_mode.setProperty("cssClass", "mode-label")
+        self.mode_switch = ModeSwitch(kde_laf.MODES)
+        self.mode_switch.changed.connect(self.set_mode)
+        self.lang_layout.addWidget(self.lbl_mode)
+        self.lang_layout.addWidget(self.mode_switch)
+        self.lang_layout.addSpacing(24)
         self.lang_layout.addWidget(self.lang_combo)
+        self.update_mode_texts()
+        self.refresh_mode()
+
+    def update_mode_texts(self):
+        if not hasattr(self, "mode_switch"):
+            return
+        self.lbl_mode.setText(self.t_str("ui.mode_label"))
+        self.mode_switch.set_texts({m: self.t_str(f"ui.mode_{m}") for m in kde_laf.MODES},
+                                   {m: self.t_str(f"ui.mode_{m}_tip") for m in kde_laf.MODES})
 
     def set_language(self, code):
         self.current_lang = code
@@ -391,12 +411,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.btn_cancel.setText(self.t_str("ui.btn_cancel"))
         self.btn_save.setText(self.t_str("ui.btn_save"))
 
-        if hasattr(self, 'btn_theme_toggle'):
-            # Если есть переводы для кнопки, используем их, иначе базовые эмодзи
-            txt = self.t_str("ui.btn_light_mode") if self.is_dark_mode else self.t_str("ui.btn_dark_mode")
-            if not txt or txt.startswith("ui."):
-                txt = "☀️ Light Theme" if self.is_dark_mode else "🌙 Dark Theme"
-            self.btn_theme_toggle.setText(txt)
+        self.update_mode_texts()
 
     def bind_events(self):
         self.btn_restore.clicked.connect(self.on_restore_defaults)
@@ -412,7 +427,6 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.btn_browse_wall.clicked.connect(self.browse_wallpaper)
         self.btn_browse_icon.clicked.connect(self.browse_icon)
 
-        self.btn_theme_toggle.clicked.connect(self.toggle_dark_light)
 
     def load_characters(self):
         self.characters.clear()
@@ -814,48 +828,26 @@ fi
 
 
     def apply_kde_theme(self, character):
-        active_name = "EG_Active_A" if self.accent_toggle % 2 == 0 else "EG_Active_B"
-        self.accent_toggle += 1
-        clean_hex = character.AccentColor.lstrip('#')
-        r, g, b = (int(clean_hex[0:2], 16), int(clean_hex[2:4], 16), int(clean_hex[4:6], 16)) if len(clean_hex) == 6 else (255, 255, 255)
+        """Глобальная тема KDE персонажа — пара «день/ночь» (см. kde_laf.py).
 
-        # Определяем базовые цвета в зависимости от режима
-        if self.is_dark_mode:
-            bg_btn = "49,54,59"; fg_btn = "239,240,241"
-            bg_view = "30,34,40"; fg_view = "239,240,241"
-            theme_suffix = "Dark"
-        else:
-            bg_btn = "239,240,241"; fg_btn = "49,54,59"
-            bg_view = "252,252,252"; fg_view = "49,54,59"
-            theme_suffix = "Light"
-
-        # Скрипт интеллектуально ищет подходящую цветовую схему и накладывает акцентный цвет персонажа
-        script = f"""
-TARGET_FILE="$HOME/.local/share/color-schemes/{active_name}.colors"
-mkdir -p "$HOME/.local/share/color-schemes/"
-
-if [ -f "$HOME/.local/share/color-schemes/{character.KdeColorScheme}{theme_suffix}.colors" ]; then
-    cp "$HOME/.local/share/color-schemes/{character.KdeColorScheme}{theme_suffix}.colors" "$TARGET_FILE"
-elif [ -f "/usr/share/color-schemes/{character.KdeColorScheme}{theme_suffix}.colors" ]; then
-    cp "/usr/share/color-schemes/{character.KdeColorScheme}{theme_suffix}.colors" "$TARGET_FILE"
-elif [ -f "/usr/share/color-schemes/Breeze{theme_suffix}.colors" ]; then
-    cp "/usr/share/color-schemes/Breeze{theme_suffix}.colors" "$TARGET_FILE"
-elif [ -f "$HOME/.local/share/color-schemes/{character.KdeColorScheme}.colors" ]; then
-    cp "$HOME/.local/share/color-schemes/{character.KdeColorScheme}.colors" "$TARGET_FILE"
-else
-    printf '[Colors:Button]\\nBackgroundNormal={bg_btn}\\nForegroundNormal={fg_btn}\\n[Colors:Selection]\\nBackgroundNormal={r},{g},{b}\\nForegroundNormal=255,255,255\\n[Colors:View]\\nBackgroundNormal={bg_view}\\nForegroundNormal={fg_view}\\n[Colors:Window]\\nBackgroundNormal={bg_btn}\\nForegroundNormal={fg_btn}\\n[KDE]\\ncontrast=4\\n' > "$TARGET_FILE"
-fi
-
-kwriteconfig6 --file "$TARGET_FILE" --group General --key AccentColor "{r},{g},{b}"
-kwriteconfig6 --file "$TARGET_FILE" --group General --key Name "{active_name}"
-kwriteconfig6 --file "$TARGET_FILE" --group General --key ColorScheme "{active_name}"
-
-kwriteconfig6 --file kdeglobals --group General --key AccentColor "{r},{g},{b}"
-kwriteconfig6 --file kdeglobals --group General --key LastUsedCustomAccentColor "{r},{g},{b}"
-
-plasma-apply-colorscheme "{active_name}"
-"""
-        self.run_shell(script)
+        Пара собирается в ~/.local/share при каждом применении: так работают и
+        свои персонажи, и изменённый в редакторе акцент встроенных. KDE получает
+        пару в DefaultLight/DarkLookAndFeel и дальше сам меняет её по времени
+        суток; --keep-auto не даёт команде выключить эту автоматику."""
+        try:
+            kde_laf.build(Path.home() / ".local" / "share", [asdict(character)], Path(USER_PATH))
+        except OSError as e:
+            print(f"Не удалось подготовить тему KDE: {e}")
+            return
+        light = kde_laf.laf_id(character.Id, "Light")
+        dark = kde_laf.laf_id(character.Id, "Dark")
+        dark_now = self.day_night.is_dark_now()  # до смены пары: была ли активна ночная половина
+        self.day_night.set_pair(light, dark)
+        # Акцент теперь внутри цветовой схемы; старый «свой акцент» перебивал бы её
+        subprocess.run(["kwriteconfig6", "--file", "kdeglobals", "--group", "General",
+                        "--key", "AccentColor", "--delete"], capture_output=True)
+        self.day_night.apply(dark if dark_now else light)
+        r, g, b = kde_laf._rgb(character.AccentColor)
         self._recolor_panel_sysmon(r, g, b)
 
     def _recolor_panel_sysmon(self, r, g, b):

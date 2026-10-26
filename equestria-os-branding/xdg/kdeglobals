@@ -1,0 +1,11 @@
+# Equestria OS: системные умолчания KDE (/etc/xdg/kdeglobals).
+# Пользовательский ~/.config/kdeglobals главнее этого файла. Если он
+# испорчен или сброшен, KDE вернётся сюда, а не к голому Breeze.
+
+[KDE]
+LookAndFeelPackage=Equestria-OS
+# День и ночь: KDE сам переключает эти две глобальные темы по времени суток
+# (расписание — как у ночной цветовой схемы, «Параметры → Глобальная тема»).
+AutomaticLookAndFeel=true
+DefaultLightLookAndFeel=Equestria-OS
+DefaultDarkLookAndFeel=Equestria-OS-Dark

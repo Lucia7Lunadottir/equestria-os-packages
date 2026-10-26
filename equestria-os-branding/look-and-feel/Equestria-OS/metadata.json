@@ -2,10 +2,12 @@
     "KPackageStructure": "Plasma/LookAndFeel",
     "KPlugin": {
         "Name": "Equestria OS",
-        "Description": "Equestria OS Edition",
+        "Name[ru]": "Equestria OS",
+        "Description": "Equestria OS — day",
+        "Description[ru]": "Equestria OS — день",
         "Icon": "preferences-desktop-theme-global",
         "Authors": [{"Name": "Lucia Lokidottir"}],
         "Id": "Equestria-OS",
-        "Version": "1.0"
+        "Version": "2.0"
     }
 }

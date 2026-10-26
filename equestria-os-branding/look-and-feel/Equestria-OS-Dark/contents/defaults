@@ -1,0 +1,12 @@
+# Equestria OS — ночная глобальная тема (пара к Equestria-OS).
+# Заставка общая — из пакета Equestria-OS.
+
+[kdeglobals][General]
+ColorScheme=BreezeDark
+
+[kcminputrc][Mouse]
+cursorTheme=Vimix-cursors
+
+[ksplashrc][KSplash]
+Engine=KSplashQML
+Theme=Equestria-OS

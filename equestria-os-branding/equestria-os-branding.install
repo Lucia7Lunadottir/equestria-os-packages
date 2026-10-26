@@ -1,0 +1,20 @@
+# Уборка после старых версий equestria-os-branding (до 1.5.0).
+
+_cleanup_old_branding() {
+    # 1.4.x дописывала строку в чужой файл plasma-desktop — возвращаем его как было.
+    local ui=/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen/LockScreenUi.qml
+    [ -f "$ui" ] && sed -i '/\/\/ Equestria OS: белый текст$/d' "$ui"
+    # Старый хук копировал тему внутрь самой себя: Equestria-OS/Equestria-OS.
+    local nested=/usr/share/plasma/look-and-feel/Equestria-OS/Equestria-OS
+    if [ -d "$nested" ] && ! pacman -Qqo "$nested" >/dev/null 2>&1; then
+        rm -rf "$nested"
+    fi
+}
+
+post_upgrade() {
+    _cleanup_old_branding
+}
+
+post_install() {
+    _cleanup_old_branding
+}

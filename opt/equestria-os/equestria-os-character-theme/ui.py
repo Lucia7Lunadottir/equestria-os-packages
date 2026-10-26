@@ -1,6 +1,39 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QButtonGroup,
                              QPushButton, QScrollArea, QStackedWidget, QLineEdit, QGridLayout)
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
+
+class ModeSwitch(QFrame):
+    """Капсула из взаимоисключающих кнопок («Авто / Светлая / Тёмная»).
+    changed(ключ) — только когда выбирает пользователь; set_current() молчит."""
+    changed = pyqtSignal(str)
+
+    def __init__(self, keys, parent=None):
+        super().__init__(parent)
+        self.setProperty("cssClass", "segmented")
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(3, 3, 3, 3)
+        lay.setSpacing(2)
+        self._group = QButtonGroup(self)
+        self.buttons = {}
+        for key in keys:
+            b = QPushButton()
+            b.setCheckable(True)
+            b.setCursor(Qt.CursorShape.PointingHandCursor)
+            b.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            self._group.addButton(b)
+            lay.addWidget(b)
+            b.clicked.connect(lambda _=False, k=key: self.changed.emit(k))
+            self.buttons[key] = b
+
+    def set_current(self, key) -> None:
+        if key in self.buttons:
+            self.buttons[key].setChecked(True)
+
+    def set_texts(self, texts: dict, tips: dict) -> None:
+        for key, b in self.buttons.items():
+            b.setText(texts.get(key, key))
+            b.setToolTip(tips.get(key, ""))
+
 
 # Вшитые стили с увеличенными размерами шрифтов (font-size)
 APP_STYLE = """
@@ -97,6 +130,34 @@ QLabel[cssClass="char-name"] {
     color: @text@;
     margin-top: 10px;
 }
+/* Переключатель режима «Авто / Светлая / Тёмная» (ModeSwitch) */
+QLabel[cssClass="mode-label"] {
+    color: @subtext@;
+    font-size: 14px;
+}
+QFrame[cssClass="segmented"] {
+    background-color: @surface0@;
+    border: 1px solid @surface1@;
+    border-radius: 9px;
+}
+QFrame[cssClass="segmented"] QPushButton {
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    padding: 4px 12px;
+    font-size: 13px;
+    color: @subtext@;
+    min-height: 20px;
+}
+QFrame[cssClass="segmented"] QPushButton:hover {
+    background-color: @surface1@;
+    color: @text@;
+}
+QFrame[cssClass="segmented"] QPushButton:checked {
+    background-color: @accent@;
+    color: @on_accent@;
+    font-weight: bold;
+}
 /* Варианты кнопок вместо цветов в коде: setProperty("variant", ...) */
 QPushButton[variant="danger"] { background-color: @red@; border-color: @red@; color: @on_red@; }
 QPushButton[variant="danger"]:hover { background-color: @red%85@; }
@@ -168,8 +229,6 @@ class Ui_MainWindow:
         self.status_layout.addWidget(self.lbl_status)
         self.status_layout.addStretch()
 
-        self.btn_theme_toggle = QPushButton("☀️ Light / 🌙 Dark")
-
         self.btn_restore = QPushButton("Restore Defaults")
         self.btn_restore.setProperty("variant", "danger")
         self.btn_open_folder = QPushButton("Open Files")
@@ -187,7 +246,7 @@ class Ui_MainWindow:
         self.btn_import.setStyleSheet("font-size: 13px; padding: 3px 0px;")
         self.btn_terminal = QPushButton("Open Terminal")
 
-        for btn in [self.btn_theme_toggle, self.btn_restore, self.btn_open_folder, self.btn_create, self.btn_import, self.btn_terminal]:
+        for btn in [self.btn_restore, self.btn_open_folder, self.btn_create, self.btn_import, self.btn_terminal]:
             btn.setProperty("cssClass", "open-terminal-btn")
             self.status_layout.addWidget(btn)
 

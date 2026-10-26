@@ -1,0 +1,7 @@
+# Equestria OS: курсор по умолчанию (/etc/xdg/kcminputrc).
+# Днём — Vimix-white-cursors, ночью глобальная тема Equestria-OS-Dark
+# включает Vimix-cursors. Пользовательский ~/.config/kcminputrc главнее.
+
+[Mouse]
+cursorTheme=Vimix-white-cursors
+cursorSize=24
