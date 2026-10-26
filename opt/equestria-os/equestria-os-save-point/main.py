@@ -10,6 +10,13 @@ from ui_pkg import Ui_SavePoint, SnapshotRow, SettingsDialog, ProgressDialog
 from screenshot import init_screenshots, take_screenshot, find_screenshot
 from hooks import check_hooks_installed, build_hook_apply_script
 from utils import launch_terminal
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
 
 SUPPORTED_LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
 CONFIG_DIR      = os.path.expanduser("~/.config/equestria-save-point")
@@ -36,8 +43,7 @@ class main_app(QMainWindow, Ui_SavePoint):
 
         f_path = os.path.join(self.base_path, "equestria_cyrillic.ttf")
         if os.path.exists(f_path):
-            fid = QFontDatabase.addApplicationFont(f_path)
-            families = QFontDatabase.applicationFontFamilies(fid)
+            families = font_families(f_path)
             if families:
                 self.title_label.setFont(QFont(families[0], 28, QFont.Weight.Bold))
                 self.modal_title.setFont(QFont(families[0], 20, QFont.Weight.Bold))
@@ -47,7 +53,7 @@ class main_app(QMainWindow, Ui_SavePoint):
             # {{BASE_PATH}} lets QSS reference bundled icon files by absolute path
             qss = open(q_path).read().replace(
                 "{{BASE_PATH}}", self.base_path.replace("\\", "/"))
-            self.setStyleSheet(qss)
+            kit_qt.style(self, qss)
 
         icon_path = os.path.join(self.base_path, "equestria-os-save-point.png")
         if os.path.exists(icon_path):
@@ -303,7 +309,7 @@ class main_app(QMainWindow, Ui_SavePoint):
             "O": ("tag.ondemand",  "#2e8c50"),
             "R": ("tag.restic",    "#1e7a8a"),
             "S": ("tag.snapshot",  "#1a6a5a"),
-            "P": ("tag.protected", "#c07800"),
+            "P": ("tag.protected", "@yellow%65@"),
         }
         key, color = mapping.get(tag_code.upper(), (None, "#505070"))
         return (self.t(key) if key else tag_code), color
@@ -507,6 +513,7 @@ class main_app(QMainWindow, Ui_SavePoint):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     win = main_app()
     win.show()
     sys.exit(app.exec())

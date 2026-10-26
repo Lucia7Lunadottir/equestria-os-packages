@@ -3,7 +3,7 @@
  * ============================================================ */
 
 QWidget#root {
-    background-color: rgb(26, 24, 41);
+    background-color: @base@;
 }
 
 /* ============================================================
@@ -11,8 +11,8 @@ QWidget#root {
  * ============================================================ */
 
 QFrame#Header {
-    background-color: rgb(30, 28, 46);
-    border-bottom: 1px solid rgb(50, 47, 72);
+    background-color: @surface0%45@;
+    border-bottom: 1px solid @surface1@;
 }
 
 QLabel#AppTitle {
@@ -21,17 +21,17 @@ QLabel#AppTitle {
 }
 
 QPushButton#KDESettingsBtn {
-    background-color: rgb(50, 47, 72);
-    color: rgb(200, 190, 220);
-    border: 1px solid rgb(80, 75, 110);
+    background-color: @surface1@;
+    color: @text@;
+    border: 1px solid @surface2@;
     border-radius: 6px;
     padding: 4px 14px;
     font-size: 13px;
 }
 QPushButton#KDESettingsBtn:hover {
-    background-color: rgb(70, 65, 100);
+    background-color: @surface2@;
     color: white;
-    border-color: rgb(120, 110, 160);
+    border-color: @surface2@;
 }
 
 /* ============================================================
@@ -50,12 +50,12 @@ QComboBox#LangCombo {
  * ============================================================ */
 
 QWidget#Sidebar {
-    background-color: rgb(30, 28, 46);
-    border-right: 1px solid rgb(50, 47, 72);
+    background-color: @surface0%45@;
+    border-right: 1px solid @surface1@;
 }
 
 QListWidget#SidebarList {
-    background-color: rgb(30, 28, 46);
+    background-color: @surface0%45@;
     border: none;
     outline: none;
     padding: 4px 0;
@@ -71,12 +71,12 @@ QListWidget#SidebarList::item:selected {
 }
 
 QScrollBar:vertical {
-    background: rgb(30, 28, 46);
+    background: @surface0%45@;
     width: 6px;
     border: none;
 }
 QScrollBar::handle:vertical {
-    background: rgb(80, 75, 110);
+    background: @surface2@;
     border-radius: 3px;
     min-height: 20px;
 }
@@ -89,7 +89,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
  * ============================================================ */
 
 QSplitter::handle {
-    background-color: rgb(50, 47, 72);
+    background-color: @surface1@;
     width: 1px;
 }
 
@@ -98,11 +98,11 @@ QSplitter::handle {
  * ============================================================ */
 
 QStackedWidget#ContentStack {
-    background-color: rgb(26, 24, 41);
+    background-color: @base@;
 }
 
 QWidget#ContentPage {
-    background-color: rgb(26, 24, 41);
+    background-color: @base@;
 }
 
 QLabel#ModTitle {
@@ -113,38 +113,38 @@ QLabel#ModTitle {
 }
 
 QLabel#ModDesc {
-    color: rgb(160, 150, 190);
+    color: @subtext@;
     font-size: 14px;
     background: transparent;
     max-width: 480px;
 }
 
 QFrame#StatusBox {
-    background-color: rgb(35, 32, 52);
-    border: 1px solid rgb(60, 55, 85);
+    background-color: @surface0@;
+    border: 1px solid @surface2@;
     border-radius: 8px;
     min-width: 280px;
     max-width: 420px;
 }
 
 QLabel#StatusText {
-    color: rgb(185, 175, 210);
+    color: @text@;
     font-size: 13px;
     background: transparent;
 }
 
 QPushButton#LaunchBtn {
-    background-color: rgb(80, 55, 130);
+    background-color: @accent%55@;
     color: white;
     border-radius: 8px;
     padding: 10px 24px;
     font-weight: bold;
     font-size: 14px;
-    border: 1px solid rgb(110, 80, 170);
+    border: 1px solid @accent%75@;
 }
 QPushButton#LaunchBtn:hover {
-    background-color: rgb(110, 75, 170);
-    border: 1px solid rgb(140, 100, 210);
+    background-color: @accent%75@;
+    border: 1px solid @accent@;
 }
 
 /* ============================================================
@@ -152,7 +152,7 @@ QPushButton#LaunchBtn:hover {
  * ============================================================ */
 
 QLabel#SectionTitle {
-    color: rgb(203, 166, 247);
+    color: @accent@;
     font-size: 15px;
     font-weight: bold;
     background: transparent;
@@ -160,46 +160,46 @@ QLabel#SectionTitle {
 }
 
 QLabel#FieldLabel {
-    color: rgb(200, 195, 220);
+    color: @text@;
     font-size: 13px;
     background: transparent;
 }
 
 QLabel#FieldHint {
-    color: rgb(120, 115, 150);
+    color: @subtext@;
     font-size: 12px;
     background: transparent;
 }
 
 QFrame#InlineCard {
-    background-color: rgb(35, 32, 52);
-    border: 1px solid rgb(60, 55, 85);
+    background-color: @surface0@;
+    border: 1px solid @surface2@;
     border-radius: 10px;
 }
 
 QSlider::groove:horizontal {
     height: 6px;
-    background: rgb(50, 47, 72);
+    background: @surface1@;
     border-radius: 3px;
 }
 QSlider::sub-page:horizontal {
     height: 6px;
-    background: rgb(150, 110, 220);
+    background: @accent@;
     border-radius: 3px;
 }
 QSlider::handle:horizontal {
     width: 16px;
     height: 16px;
     margin: -6px 0;
-    background: rgb(203, 166, 247);
+    background: @accent@;
     border-radius: 8px;
 }
 QSlider::handle:horizontal:hover {
-    background: rgb(220, 190, 255);
+    background: @accent_hover@;
 }
 
 QCheckBox {
-    color: rgb(210, 205, 230);
+    color: @text@;
     font-size: 13px;
     background: transparent;
     spacing: 8px;
@@ -207,27 +207,27 @@ QCheckBox {
 QCheckBox::indicator {
     width: 18px;
     height: 18px;
-    image: url({{BASE_PATH}}/icons/cb_unchecked.svg);
+    image: url(@icon:cb_unchecked@);
 }
 QCheckBox::indicator:hover {
-    image: url({{BASE_PATH}}/icons/cb_unchecked_hover.svg);
+    image: url(@icon:cb_unchecked_hover@);
 }
 QCheckBox::indicator:checked {
-    image: url({{BASE_PATH}}/icons/cb_checked.svg);
+    image: url(@icon:cb_checked@);
 }
 
 QComboBox {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 210, 240);
-    border: 1px solid rgb(100, 80, 150);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @accent%75@;
     border-radius: 6px;
     padding: 4px 10px;
     font-size: 13px;
     min-width: 180px;
-    selection-background-color: rgb(80, 60, 130);
+    selection-background-color: @accent%55@;
 }
 QComboBox:focus {
-    border: 1px solid rgb(160, 120, 220);
+    border: 1px solid @accent@;
 }
 QComboBox::drop-down {
     /* border, не padding: при padding у самого комбобокса
@@ -235,97 +235,97 @@ QComboBox::drop-down {
     subcontrol-origin: border;
     subcontrol-position: top right;
     width: 24px;
-    border-left: 1px solid rgb(80, 60, 110);
+    border-left: 1px solid @accent%55@;
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
-    background-color: rgb(50, 44, 72);
+    background-color: @surface1@;
 }
 QComboBox::down-arrow {
     /* CSS-трюк с треугольником из бордеров в Qt не рендерится —
        нужна настоящая картинка */
-    image: url({{BASE_PATH}}/icons/cb_arrow_down.svg);
+    image: url(@icon:arrow_down@);
     width: 12px;
     height: 8px;
 }
 QComboBox QAbstractItemView {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 210, 240);
-    border: 1px solid rgb(100, 80, 150);
-    selection-background-color: rgb(80, 60, 130);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @accent%75@;
+    selection-background-color: @accent%55@;
     outline: none;
     padding: 2px;
 }
 
 QLineEdit {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 210, 240);
-    border: 1px solid rgb(100, 80, 150);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @accent%75@;
     border-radius: 6px;
     padding: 5px 10px;
     font-size: 13px;
-    selection-background-color: rgb(80, 60, 130);
+    selection-background-color: @accent%55@;
     selection-color: rgb(240, 235, 255);
 }
 QLineEdit:focus {
-    border: 1px solid rgb(160, 120, 220);
+    border: 1px solid @accent@;
 }
 
 QPlainTextEdit {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 210, 240);
-    border: 1px solid rgb(100, 80, 150);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @accent%75@;
     border-radius: 6px;
     padding: 8px 10px;
     font-size: 13px;
-    selection-background-color: rgb(80, 60, 130);
+    selection-background-color: @accent%55@;
     selection-color: rgb(240, 235, 255);
 }
 QPlainTextEdit:focus {
-    border: 1px solid rgb(160, 120, 220);
+    border: 1px solid @accent@;
 }
 
 QPushButton#ActionBtn {
-    background-color: rgb(45, 42, 68);
-    color: rgb(200, 190, 220);
+    background-color: @surface1@;
+    color: @text@;
     border-radius: 6px;
     padding: 6px 18px;
     font-size: 13px;
-    border: 1px solid rgb(80, 75, 110);
+    border: 1px solid @surface2@;
 }
 QPushButton#ActionBtn:hover {
-    background-color: rgb(65, 60, 95);
+    background-color: @surface2@;
     color: white;
 }
 QPushButton#ActionBtn:disabled {
-    background-color: rgb(35, 33, 52);
-    color: rgb(90, 85, 110);
+    background-color: @surface0@;
+    color: @surface2@;
 }
 
 QPushButton#DeleteBtn {
-    background-color: rgb(90, 40, 40);
-    color: rgb(255, 180, 180);
+    background-color: @red%45@;
+    color: @red@;
     border-radius: 6px;
     padding: 6px 14px;
     font-size: 13px;
-    border: 1px solid rgb(140, 60, 60);
+    border: 1px solid @red%65@;
 }
 QPushButton#DeleteBtn:hover {
-    background-color: rgb(140, 50, 50);
+    background-color: @red%65@;
     color: white;
-    border-color: rgb(180, 80, 80);
+    border-color: @red@;
 }
 
 QPushButton#OpenAppBtn {
     background-color: transparent;
-    color: rgb(180, 160, 220);
-    border: 1px solid rgb(80, 70, 115);
+    color: @text@;
+    border: 1px solid @surface2@;
     border-radius: 6px;
     padding: 4px 14px;
     font-size: 12px;
 }
 QPushButton#OpenAppBtn:hover {
-    background-color: rgb(45, 42, 68);
-    color: rgb(210, 190, 245);
+    background-color: @surface1@;
+    color: @accent_hover@;
 }
 
 QScrollArea {
@@ -337,11 +337,11 @@ QScrollArea > QWidget > QWidget {
 }
 
 QLabel#MirrorText {
-    color: rgb(170, 165, 195);
+    color: @text@;
     font-size: 12px;
     font-family: monospace;
-    background-color: rgb(20, 18, 33);
-    border: 1px solid rgb(50, 47, 72);
+    background-color: @base@;
+    border: 1px solid @surface1@;
     border-radius: 6px;
     padding: 8px 12px;
 }

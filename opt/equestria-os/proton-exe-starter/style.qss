@@ -1,15 +1,15 @@
 QWidget {
-    background-color: rgb(18, 18, 28);
-    color: rgb(220, 200, 255);
+    background-color: @crust@;
+    color: @text@;
     font-size: 13px;
 }
 QGroupBox {
-    border: 1px solid rgb(69, 71, 90);
+    border: 1px solid @surface1@;
     border-radius: 6px;
     margin-top: 12px;
     padding-top: 24px;
     font-weight: bold;
-    color: rgb(180, 170, 210);
+    color: @subtext@;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
@@ -17,60 +17,60 @@ QGroupBox::title {
     padding: 0 5px;
 }
 QPushButton {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 200, 255);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @surface1@;
     border-radius: 4px;
     padding: 6px 16px;
 }
-QPushButton:hover { background-color: rgb(60, 50, 90); }
+QPushButton:hover { background-color: @surface1@; }
 QPushButton#btnDanger {
-    background-color: rgb(140, 40, 40);
-    border: 1px solid rgb(180, 50, 50);
+    background-color: @red@;
+    border: 1px solid @red%85@;
 }
-QPushButton#btnDanger:hover { background-color: rgb(180, 50, 50); }
+QPushButton#btnDanger:hover { background-color: @red%85@; }
 QPushButton#btnSave {
-    background-color: rgb(46, 139, 87);
-    border: 1px solid rgb(60, 170, 100);
+    background-color: @green@;
+    border: 1px solid @green%85@;
 }
-QPushButton#btnSave:hover { background-color: rgb(60, 170, 100); }
+QPushButton#btnSave:hover { background-color: @green%85@; }
 QLineEdit {
-    background-color: rgb(25, 22, 38);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @mantle@;
+    border: 1px solid @surface1@;
     border-radius: 4px;
     padding: 4px;
 }
 
 /* Scrollbar */
 QScrollBar:vertical {
-    background: rgb(25, 22, 38);
+    background: @mantle@;
     width: 8px;
     border-radius: 4px;
     margin: 0;
 }
 QScrollBar::handle:vertical {
-    background: rgb(80, 65, 120);
+    background: @accent%35@;
     border-radius: 4px;
     min-height: 24px;
 }
-QScrollBar::handle:vertical:hover { background: rgb(110, 90, 160); }
+QScrollBar::handle:vertical:hover { background: @accent%55@; }
 QScrollBar::add-line:vertical,
 QScrollBar::sub-line:vertical { height: 0; }
 QScrollBar::add-page:vertical,
 QScrollBar::sub-page:vertical { background: none; }
 
 QScrollBar:horizontal {
-    background: rgb(25, 22, 38);
+    background: @mantle@;
     height: 8px;
     border-radius: 4px;
     margin: 0;
 }
 QScrollBar::handle:horizontal {
-    background: rgb(80, 65, 120);
+    background: @accent%35@;
     border-radius: 4px;
     min-width: 24px;
 }
-QScrollBar::handle:horizontal:hover { background: rgb(110, 90, 160); }
+QScrollBar::handle:horizontal:hover { background: @accent%55@; }
 QScrollBar::add-line:horizontal,
 QScrollBar::sub-line:horizontal { width: 0; }
 QScrollBar::add-page:horizontal,
@@ -80,42 +80,42 @@ QScrollBar::sub-page:horizontal { background: none; }
    Важно: без правил ::drop-down/::down-arrow — иначе Qt перестаёт
    рисовать нативную стрелку. */
 QComboBox {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 200, 255);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @surface1@;
     border-radius: 4px;
     padding: 4px 8px;
     font-weight: normal;
 }
-QComboBox:hover { border: 1px solid rgb(140, 90, 200); }
+QComboBox:hover { border: 1px solid @accent@; }
 
 QComboBox#LangCombo {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 200, 255);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @surface1@;
     border-radius: 4px;
     padding: 2px 8px;
     font-size: 10px;
     min-width: 46px;
 }
 QComboBox#LangCombo:hover {
-    border: 1px solid rgb(140, 90, 200);
+    border: 1px solid @accent@;
     color: white;
 }
 QComboBox QAbstractItemView {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 200, 255);
-    selection-background-color: rgb(100, 60, 160);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    selection-background-color: @accent%70@;
+    border: 1px solid @surface1@;
     outline: none;
 }
 
 QMenu {
-    background-color: rgb(30, 26, 46);
-    color: rgb(220, 200, 255);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0%30@;
+    color: @text@;
+    border: 1px solid @surface1@;
     border-radius: 4px;
 }
 QMenu::item { padding: 6px 20px; }
-QMenu::item:selected { background-color: rgb(100, 60, 160); }
-QMenu::item:disabled { color: rgb(110, 100, 130); }
+QMenu::item:selected { background-color: @accent%70@; }
+QMenu::item:disabled { color: @subtext@; }

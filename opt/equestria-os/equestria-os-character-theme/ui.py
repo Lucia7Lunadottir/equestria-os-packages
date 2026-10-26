@@ -4,87 +4,112 @@ from PyQt6.QtCore import Qt
 
 # Вшитые стили с увеличенными размерами шрифтов (font-size)
 APP_STYLE = """
+/* Цвета — роли общей темы (equestria_kit): приложение само окрашивается
+   в цвета выбранного персонажа. */
 QWidget#root {
-    background-color: rgb(18, 18, 28);
+    background-color: @base@;
 }
 QLabel[cssClass="title"] {
     font-size: 28px;
-    color: rgb(220, 200, 255);
+    color: @accent@;
     font-weight: bold;
     margin-bottom: 8px;
 }
 QLabel[cssClass="subtitle"] {
     font-size: 16px;
-    color: rgb(140, 130, 160);
+    color: @subtext@;
     margin-bottom: 24px;
 }
 /* Language Dropdown.
    No ::drop-down/::down-arrow rules here on purpose: declaring them makes
    Qt stop drawing the native arrow. */
 QComboBox#LangCombo {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 200, 255);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @surface1@;
     border-radius: 6px;
     padding: 4px 12px;
     font-size: 14px;
     min-width: 52px;
 }
 QComboBox#LangCombo:hover {
-    border: 1px solid rgb(140, 90, 200);
+    border: 1px solid @accent@;
 }
 QComboBox QAbstractItemView {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 200, 255);
-    selection-background-color: rgb(100, 60, 160);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    selection-background-color: @accent@;
+    selection-color: @on_accent@;
+    border: 1px solid @surface1@;
     outline: none;
 }
 /* Status Bar */
 QWidget[cssClass="status-bar"] {
-    background-color: rgb(25, 22, 38);
+    background-color: @mantle@;
     border-radius: 12px;
 }
 QLabel[cssClass="status-label"] {
     font-size: 16px;
-    color: rgb(180, 170, 210);
+    color: @subtext@;
     padding-left: 10px;
 }
 QPushButton[cssClass="open-terminal-btn"] {
-    background-color: rgb(100, 60, 160);
-    border: 1px solid rgb(140, 90, 200);
+    background-color: @accent@;
+    border: 1px solid @accent@;
     border-radius: 8px;
-    color: white;
+    color: @on_accent@;
     padding: 8px 20px;
     font-size: 14px;
 }
 QPushButton[cssClass="open-terminal-btn"]:hover {
-    background-color: rgb(120, 80, 180);
+    background-color: @accent_hover@;
+}
+/* Нижняя панель выбора персонажа — компактные кнопки, чтобы подписи не обрезались */
+QWidget[cssClass="status-bar"] QPushButton[cssClass="open-terminal-btn"] {
+    padding: 5px 12px;
+    font-size: 13px;
+    border-radius: 7px;
+}
+QWidget[cssClass="status-bar"] QLabel[cssClass="status-label"] {
+    font-size: 14px;
 }
 /* Editor Fields */
 QWidget[cssClass="editor-scroll"] {
-    background-color: rgb(25, 22, 38);
+    background-color: @mantle@;
     border-radius: 12px;
 }
 QLabel[cssClass="editor-label"] {
     min-width: 150px;
     font-size: 15px;
-    color: rgb(180, 170, 210);
+    color: @subtext@;
 }
 QLineEdit[cssClass="editor-input"] {
-    background-color: rgb(15, 12, 20);
-    border: 1px solid rgb(40, 35, 60);
+    background-color: @crust@;
+    border: 1px solid @surface0@;
     border-radius: 4px;
-    color: white;
+    color: @text@;
     padding: 6px;
     font-size: 14px;
 }
 QLabel[cssClass="char-name"] {
     font-size: 15px;
     font-weight: bold;
-    color: rgb(230, 220, 255);
+    color: @text@;
     margin-top: 10px;
 }
+/* Варианты кнопок вместо цветов в коде: setProperty("variant", ...) */
+QPushButton[variant="danger"] { background-color: @red@; border-color: @red@; color: @on_red@; }
+QPushButton[variant="danger"]:hover { background-color: @red%85@; }
+QPushButton[variant="success"] { background-color: @green@; border-color: @green@; color: @on_green@; }
+QPushButton[variant="success"]:hover { background-color: @green%85@; }
+QPushButton[variant="neutral"] { background-color: @surface2@; border-color: @surface2@; color: @text@; }
+QPushButton[variant="neutral"]:hover { background-color: @surface1@; }
+/* ✎ в углу карточки персонажа */
+QPushButton#CardEditBtn {
+    background-color: @crust/180@; border: 1px solid @surface1@; border-radius: 13px;
+    color: @text@; font-size: 13px; padding: 0;
+}
+QPushButton#CardEditBtn:hover { background-color: @accent@; border-color: @accent@; color: @on_accent@; }
 """
 
 class Ui_MainWindow:
@@ -146,20 +171,20 @@ class Ui_MainWindow:
         self.btn_theme_toggle = QPushButton("☀️ Light / 🌙 Dark")
 
         self.btn_restore = QPushButton("Restore Defaults")
-        self.btn_restore.setStyleSheet("background-color: #8b0000;")
+        self.btn_restore.setProperty("variant", "danger")
         self.btn_open_folder = QPushButton("Open Files")
         # «Создать» — компактная кнопка «＋» (подпись живёт в тултипе);
         # «Изменить» переехало на карточки (✎), «Дублировать» — в редактор
         self.btn_create = QPushButton("+")
-        self.btn_create.setFixedWidth(44)
+        self.btn_create.setFixedWidth(36)
         # обычный «+» + крупный кегль: полноширинный юникод-плюс «＋»
         # в системном шрифте рисуется вертикальной палкой
-        self.btn_create.setStyleSheet("font-size: 20px; font-weight: bold; padding: 2px 0px;")
+        self.btn_create.setStyleSheet("font-size: 17px; font-weight: bold; padding: 1px 0px;")
         self.btn_import = QPushButton("📥")
-        self.btn_import.setFixedWidth(44)
+        self.btn_import.setFixedWidth(36)
         # без override паддинга общий стиль (padding 8px 20px) при ширине 44px
         # обрезает глиф до узкой полоски
-        self.btn_import.setStyleSheet("font-size: 15px; padding: 4px 0px;")
+        self.btn_import.setStyleSheet("font-size: 13px; padding: 3px 0px;")
         self.btn_terminal = QPushButton("Open Terminal")
 
         for btn in [self.btn_theme_toggle, self.btn_restore, self.btn_open_folder, self.btn_create, self.btn_import, self.btn_terminal]:
@@ -249,7 +274,7 @@ class Ui_MainWindow:
 
         self.btn_delete = QPushButton("Delete")
         self.btn_delete.setProperty("cssClass", "open-terminal-btn")
-        self.btn_delete.setStyleSheet("background-color: #8b0000;")
+        self.btn_delete.setProperty("variant", "danger")
         self.ed_status_layout.addWidget(self.btn_delete)
 
         self.btn_duplicate = QPushButton("Duplicate")
@@ -264,10 +289,10 @@ class Ui_MainWindow:
 
         self.btn_cancel = QPushButton("Cancel")
         self.btn_cancel.setProperty("cssClass", "open-terminal-btn")
-        self.btn_cancel.setStyleSheet("background-color: #555555;")
+        self.btn_cancel.setProperty("variant", "neutral")
         self.btn_save = QPushButton("Save")
         self.btn_save.setProperty("cssClass", "open-terminal-btn")
-        self.btn_save.setStyleSheet("background-color: #2e8b57;")
+        self.btn_save.setProperty("variant", "success")
 
         self.ed_status_layout.addWidget(self.btn_cancel)
         self.ed_status_layout.addWidget(self.btn_save)

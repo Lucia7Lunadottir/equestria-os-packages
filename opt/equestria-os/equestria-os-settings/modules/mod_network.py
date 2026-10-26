@@ -16,40 +16,46 @@ from PyQt6.QtWidgets import (
 )
 
 from base_module import BaseModule
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 # ── Styles ────────────────────────────────────────────────────────────────────
 
 _BTN_ACTION = (
-    "QPushButton{background:rgb(45,42,68);color:rgb(200,190,220);"
+    "QPushButton{background:@surface1@;color:@text@;"
     "border-radius:6px;padding:6px 18px;font-size:13px;"
-    "border:1px solid rgb(80,75,110);}"
-    "QPushButton:hover{background:rgb(65,60,95);color:white;}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @surface2@;}"
+    "QPushButton:hover{background:@surface2@;color:white;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
 _BTN_INSTALL = (
-    "QPushButton{background:rgb(55,40,80);color:rgb(200,170,240);"
+    "QPushButton{background:@surface1@;color:@accent_hover@;"
     "border-radius:6px;padding:4px 14px;font-size:12px;"
-    "border:1px solid rgb(90,65,130);}"
-    "QPushButton:hover{background:rgb(75,55,110);color:white;}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @accent%55@;}"
+    "QPushButton:hover{background:@accent%55@;color:white;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
 _RESULT_OK = (
-    "QLabel{color:rgb(140,220,160);font-size:12px;background:transparent;}"
+    "QLabel{color:@green@;font-size:12px;background:transparent;}"
 )
 _RESULT_ERR = (
-    "QLabel{color:rgb(255,130,130);font-size:12px;background:transparent;}"
+    "QLabel{color:@red@;font-size:12px;background:transparent;}"
 )
 _STATUS_MONO = (
-    "QLabel{color:rgb(170,165,195);font-size:12px;font-family:monospace;"
-    "background:rgb(20,18,33);border:1px solid rgb(50,47,72);"
+    "QLabel{color:@text@;font-size:12px;font-family:monospace;"
+    "background:@base@;border:1px solid @surface1@;"
     "border-radius:6px;padding:8px 12px;}"
 )
 _SYSCTL_VALUE_STYLE = (
-    "QLabel{color:rgb(150,145,180);font-size:11px;font-family:monospace;"
+    "QLabel{color:@subtext@;font-size:11px;font-family:monospace;"
     "background:transparent;}"
 )
 _SYSCTL_VALUE_CHANGED = (
-    "QLabel{color:rgb(140,220,160);font-size:11px;font-family:monospace;"
+    "QLabel{color:@green@;font-size:11px;font-family:monospace;"
     "background:transparent;}"
 )
 
@@ -579,7 +585,7 @@ class NetworkModule(BaseModule):
         layout.addWidget(self._status_title_lbl)
 
         self._net_status_lbl = QLabel("...")
-        self._net_status_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._net_status_lbl, _STATUS_MONO)
         self._net_status_lbl.setWordWrap(True)
         self._net_status_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         layout.addWidget(self._net_status_lbl)
@@ -587,7 +593,7 @@ class NetworkModule(BaseModule):
         btn_row = QHBoxLayout()
         self._refresh_btn = QPushButton(self.t("network.refresh"))
         self._refresh_btn.setObjectName("ActionBtn")
-        self._refresh_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._refresh_btn, _BTN_ACTION)
         self._refresh_btn.clicked.connect(self._refresh_status)
         btn_row.addWidget(self._refresh_btn)
         btn_row.addStretch()
@@ -615,7 +621,7 @@ class NetworkModule(BaseModule):
 
         # Current DNS display
         self._dns_current_lbl = QLabel("")
-        self._dns_current_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._dns_current_lbl, _STATUS_MONO)
         self._dns_current_lbl.setWordWrap(True)
         self._dns_current_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         layout.addWidget(self._dns_current_lbl)
@@ -669,7 +675,7 @@ class NetworkModule(BaseModule):
         btn_row = QHBoxLayout()
         self._dns_apply_btn = QPushButton(self.t("network.dns_apply"))
         self._dns_apply_btn.setObjectName("ActionBtn")
-        self._dns_apply_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._dns_apply_btn, _BTN_ACTION)
         self._dns_apply_btn.clicked.connect(self._apply_dns)
         btn_row.addWidget(self._dns_apply_btn)
 
@@ -744,7 +750,7 @@ class NetworkModule(BaseModule):
 
         # Detected driver info
         self._drv_info_lbl = QLabel("")
-        self._drv_info_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._drv_info_lbl, _STATUS_MONO)
         self._drv_info_lbl.setWordWrap(True)
         self._drv_info_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         layout.addWidget(self._drv_info_lbl)
@@ -752,7 +758,7 @@ class NetworkModule(BaseModule):
         # USB autosuspend — separate from the radio's own power_save, applies
         # to any USB WiFi adapter regardless of chipset (bus-level, not driver-level)
         self._drv_usb_lbl = QLabel("")
-        self._drv_usb_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._drv_usb_lbl, _STATUS_MONO)
         self._drv_usb_lbl.setWordWrap(True)
         self._drv_usb_lbl.hide()
         layout.addWidget(self._drv_usb_lbl)
@@ -767,8 +773,8 @@ class NetworkModule(BaseModule):
 
         # File path
         self._drv_file_lbl = QLabel("")
-        self._drv_file_lbl.setStyleSheet(
-            "QLabel{color:rgb(100,95,130);font-size:11px;font-family:monospace;background:transparent;}"
+        kit_qt.style(self._drv_file_lbl, 
+            "QLabel{color:@subtext@;font-size:11px;font-family:monospace;background:transparent;}"
         )
         layout.addWidget(self._drv_file_lbl)
 
@@ -776,31 +782,31 @@ class NetworkModule(BaseModule):
         btn_row = QHBoxLayout()
         self._drv_apply_btn = QPushButton(self.t("network.drv_apply"))
         self._drv_apply_btn.setObjectName("ActionBtn")
-        self._drv_apply_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._drv_apply_btn, _BTN_ACTION)
         self._drv_apply_btn.clicked.connect(self._apply_driver_params)
         btn_row.addWidget(self._drv_apply_btn)
 
         self._drv_remove_btn = QPushButton(self.t("network.drv_remove"))
         self._drv_remove_btn.setObjectName("ActionBtn")
-        self._drv_remove_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._drv_remove_btn, _BTN_ACTION)
         self._drv_remove_btn.clicked.connect(self._remove_driver_params)
         btn_row.addWidget(self._drv_remove_btn)
 
         self._drv_reload_btn = QPushButton(self.t("network.drv_reload"))
         self._drv_reload_btn.setObjectName("ActionBtn")
-        self._drv_reload_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._drv_reload_btn, _BTN_ACTION)
         self._drv_reload_btn.clicked.connect(self._reload_wifi_module)
         btn_row.addWidget(self._drv_reload_btn)
 
         self._drv_reconnect_btn = QPushButton(self.t("network.drv_reconnect"))
         self._drv_reconnect_btn.setObjectName("ActionBtn")
-        self._drv_reconnect_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._drv_reconnect_btn, _BTN_ACTION)
         self._drv_reconnect_btn.clicked.connect(self._reconnect_wifi)
         btn_row.addWidget(self._drv_reconnect_btn)
 
         self._drv_usb_fix_btn = QPushButton(self.t("network.drv_usb_fix"))
         self._drv_usb_fix_btn.setObjectName("ActionBtn")
-        self._drv_usb_fix_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._drv_usb_fix_btn, _BTN_ACTION)
         self._drv_usb_fix_btn.clicked.connect(self._fix_usb_autosuspend)
         self._drv_usb_fix_btn.hide()
         btn_row.addWidget(self._drv_usb_fix_btn)
@@ -816,8 +822,8 @@ class NetworkModule(BaseModule):
         self._drv_reboot_lbl = QLabel(self.t("network.drv_reboot_hint"))
         self._drv_reboot_lbl.setObjectName("FieldHint")
         self._drv_reboot_lbl.setWordWrap(True)
-        self._drv_reboot_lbl.setStyleSheet(
-            "QLabel{color:rgb(180,160,100);font-size:12px;background:transparent;}"
+        kit_qt.style(self._drv_reboot_lbl, 
+            "QLabel{color:@yellow@;font-size:12px;background:transparent;}"
         )
         layout.addWidget(self._drv_reboot_lbl)
 
@@ -970,7 +976,7 @@ class NetworkModule(BaseModule):
                     desc_lbl.setWordWrap(True)
                     desc_lbl.setContentsMargins(26, 0, 0, 4)
                     if already_set:
-                        desc_lbl.setStyleSheet(_RESULT_OK)
+                        kit_qt.style(desc_lbl, _RESULT_OK)
                     self._drv_params_layout.addWidget(desc_lbl)
 
                     self._drv_checkboxes.append((cb, d, pname, pval))
@@ -996,7 +1002,7 @@ class NetworkModule(BaseModule):
 
         if not by_driver:
             self._drv_result_lbl.setText(self.t("network.drv_nothing_selected"))
-            self._drv_result_lbl.setStyleSheet(_RESULT_ERR)
+            kit_qt.style(self._drv_result_lbl, _RESULT_ERR)
             return
 
         lines = [
@@ -1012,7 +1018,7 @@ class NetworkModule(BaseModule):
 
         self._drv_apply_btn.setEnabled(False)
         self._drv_result_lbl.setText(self.t("network.applying"))
-        self._drv_result_lbl.setStyleSheet("")
+        kit_qt.style(self._drv_result_lbl, "")
 
         def do_apply():
             try:
@@ -1030,7 +1036,7 @@ class NetworkModule(BaseModule):
             ok, msg = do_apply()
             self._drv_apply_btn.setEnabled(True)
             self._drv_result_lbl.setText(msg)
-            self._drv_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            kit_qt.style(self._drv_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
             if ok:
                 self._refresh_status()
 
@@ -1056,7 +1062,7 @@ class NetworkModule(BaseModule):
             ok, msg = do_remove()
             self._drv_remove_btn.setEnabled(True)
             self._drv_result_lbl.setText(msg)
-            self._drv_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            kit_qt.style(self._drv_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
             if ok:
                 self._refresh_status()
 
@@ -1066,7 +1072,7 @@ class NetworkModule(BaseModule):
         """Quick reconnect — deactivate and reactivate WiFi connections."""
         self._drv_reconnect_btn.setEnabled(False)
         self._drv_result_lbl.setText(self.t("network.drv_reconnecting"))
-        self._drv_result_lbl.setStyleSheet("")
+        kit_qt.style(self._drv_result_lbl, "")
 
         def do_reconnect():
             try:
@@ -1105,7 +1111,7 @@ class NetworkModule(BaseModule):
             ok, msg = do_reconnect()
             self._drv_reconnect_btn.setEnabled(True)
             self._drv_result_lbl.setText(msg)
-            self._drv_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            kit_qt.style(self._drv_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
             if ok:
                 import time
                 time.sleep(2)
@@ -1117,7 +1123,7 @@ class NetworkModule(BaseModule):
         """Reload WiFi kernel module so modprobe.d changes take effect immediately."""
         self._drv_reload_btn.setEnabled(False)
         self._drv_result_lbl.setText(self.t("network.drv_reloading"))
-        self._drv_result_lbl.setStyleSheet("")
+        kit_qt.style(self._drv_result_lbl, "")
 
         def do_reload():
             try:
@@ -1156,7 +1162,7 @@ class NetworkModule(BaseModule):
             ok, msg = do_reload()
             self._drv_reload_btn.setEnabled(True)
             self._drv_result_lbl.setText(msg)
-            self._drv_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            kit_qt.style(self._drv_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
             if ok:
                 import time
                 time.sleep(4)
@@ -1193,7 +1199,7 @@ class NetworkModule(BaseModule):
 
         self._drv_usb_fix_btn.setEnabled(False)
         self._drv_result_lbl.setText(self.t("network.applying"))
-        self._drv_result_lbl.setStyleSheet("")
+        kit_qt.style(self._drv_result_lbl, "")
 
         def do_apply():
             try:
@@ -1221,7 +1227,7 @@ class NetworkModule(BaseModule):
             ok, msg = do_apply()
             self._drv_usb_fix_btn.setEnabled(True)
             self._drv_result_lbl.setText(msg)
-            self._drv_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            kit_qt.style(self._drv_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
             if ok:
                 self._refresh_status()
 
@@ -1252,8 +1258,8 @@ class NetworkModule(BaseModule):
 
         # File path hint
         self._tcp_file_lbl = QLabel(f"{_SYSCTL_FILE}")
-        self._tcp_file_lbl.setStyleSheet(
-            "QLabel{color:rgb(100,95,130);font-size:11px;font-family:monospace;background:transparent;}"
+        kit_qt.style(self._tcp_file_lbl, 
+            "QLabel{color:@subtext@;font-size:11px;font-family:monospace;background:transparent;}"
         )
         layout.addWidget(self._tcp_file_lbl)
 
@@ -1273,7 +1279,7 @@ class NetworkModule(BaseModule):
 
             # Current/proposed values
             values_lbl = QLabel("")
-            values_lbl.setStyleSheet(_SYSCTL_VALUE_STYLE)
+            kit_qt.style(values_lbl, _SYSCTL_VALUE_STYLE)
             values_lbl.setWordWrap(True)
             values_lbl.setContentsMargins(26, 0, 0, 4)
             layout.addWidget(values_lbl)
@@ -1284,13 +1290,13 @@ class NetworkModule(BaseModule):
         btn_row = QHBoxLayout()
         self._tcp_apply_btn = QPushButton(self.t("network.tcp_apply"))
         self._tcp_apply_btn.setObjectName("ActionBtn")
-        self._tcp_apply_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._tcp_apply_btn, _BTN_ACTION)
         self._tcp_apply_btn.clicked.connect(self._apply_tcp)
         btn_row.addWidget(self._tcp_apply_btn)
 
         self._tcp_remove_btn = QPushButton(self.t("network.tcp_remove"))
         self._tcp_remove_btn.setObjectName("ActionBtn")
-        self._tcp_remove_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._tcp_remove_btn, _BTN_ACTION)
         self._tcp_remove_btn.clicked.connect(self._remove_tcp)
         btn_row.addWidget(self._tcp_remove_btn)
 
@@ -1317,10 +1323,10 @@ class NetworkModule(BaseModule):
                     group_match = False
             values_lbl.setText("\n".join(lines))
             if group_match:
-                values_lbl.setStyleSheet(_SYSCTL_VALUE_CHANGED)
+                kit_qt.style(values_lbl, _SYSCTL_VALUE_CHANGED)
                 cb.setChecked(True)
             else:
-                values_lbl.setStyleSheet(_SYSCTL_VALUE_STYLE)
+                kit_qt.style(values_lbl, _SYSCTL_VALUE_STYLE)
                 cb.setChecked(True)
                 all_match = False
         return all_match
@@ -1349,21 +1355,21 @@ class NetworkModule(BaseModule):
 
         # Config file info
         self._wifi_conf_lbl = QLabel("")
-        self._wifi_conf_lbl.setStyleSheet(
-            "QLabel{color:rgb(100,95,130);font-size:11px;font-family:monospace;background:transparent;}"
+        kit_qt.style(self._wifi_conf_lbl, 
+            "QLabel{color:@subtext@;font-size:11px;font-family:monospace;background:transparent;}"
         )
         layout.addWidget(self._wifi_conf_lbl)
 
         self._wifi_btn_row = QHBoxLayout()
         self._wifi_disable_btn = QPushButton(self.t("network.wifi_disable_powersave"))
         self._wifi_disable_btn.setObjectName("ActionBtn")
-        self._wifi_disable_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._wifi_disable_btn, _BTN_ACTION)
         self._wifi_disable_btn.clicked.connect(self._disable_wifi_powersave)
         self._wifi_btn_row.addWidget(self._wifi_disable_btn)
 
         self._wifi_enable_btn = QPushButton(self.t("network.wifi_enable_powersave"))
         self._wifi_enable_btn.setObjectName("ActionBtn")
-        self._wifi_enable_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._wifi_enable_btn, _BTN_ACTION)
         self._wifi_enable_btn.clicked.connect(self._enable_wifi_powersave)
         self._wifi_btn_row.addWidget(self._wifi_enable_btn)
 
@@ -1439,13 +1445,13 @@ class NetworkModule(BaseModule):
         btn_row = QHBoxLayout()
         self._ipv6_disable_btn = QPushButton(self.t("network.ipv6_disable"))
         self._ipv6_disable_btn.setObjectName("ActionBtn")
-        self._ipv6_disable_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._ipv6_disable_btn, _BTN_ACTION)
         self._ipv6_disable_btn.clicked.connect(self._disable_ipv6)
         btn_row.addWidget(self._ipv6_disable_btn)
 
         self._ipv6_enable_btn = QPushButton(self.t("network.ipv6_enable"))
         self._ipv6_enable_btn.setObjectName("ActionBtn")
-        self._ipv6_enable_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._ipv6_enable_btn, _BTN_ACTION)
         self._ipv6_enable_btn.clicked.connect(self._enable_ipv6)
         btn_row.addWidget(self._ipv6_enable_btn)
 
@@ -1476,7 +1482,7 @@ class NetworkModule(BaseModule):
         layout.addWidget(self._speed_hint_lbl)
 
         self._speed_result_lbl = QLabel("")
-        self._speed_result_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._speed_result_lbl, _STATUS_MONO)
         self._speed_result_lbl.setWordWrap(True)
         self._speed_result_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self._speed_result_lbl.hide()
@@ -1485,12 +1491,12 @@ class NetworkModule(BaseModule):
         btn_row = QHBoxLayout()
         self._speed_btn = QPushButton(self.t("network.speed_run"))
         self._speed_btn.setObjectName("ActionBtn")
-        self._speed_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._speed_btn, _BTN_ACTION)
         self._speed_btn.clicked.connect(self._run_speedtest)
         btn_row.addWidget(self._speed_btn)
 
         self._speed_install_btn = QPushButton(self.t("network.speed_install"))
-        self._speed_install_btn.setStyleSheet(_BTN_INSTALL)
+        kit_qt.style(self._speed_install_btn, _BTN_INSTALL)
         self._speed_install_btn.clicked.connect(
             lambda: self._install_pkg("speedtest-cli")
         )
@@ -1638,12 +1644,12 @@ class NetworkModule(BaseModule):
             self._tcp_status_lbl.setText(
                 f"{self.t('network.tcp_status_current')}: {cc} — {self.t('network.tcp_status_applied')}"
             )
-            self._tcp_status_lbl.setStyleSheet(_RESULT_OK)
+            kit_qt.style(self._tcp_status_lbl, _RESULT_OK)
         else:
             self._tcp_status_lbl.setText(
                 f"{self.t('network.tcp_status_current')}: {cc} — {self.t('network.tcp_status_not_applied')}"
             )
-            self._tcp_status_lbl.setStyleSheet("")
+            kit_qt.style(self._tcp_status_lbl, "")
 
         # WiFi
         self._update_wifi_ui(info)
@@ -1692,12 +1698,12 @@ class NetworkModule(BaseModule):
 
         if not dns4:
             self._dns_status_lbl.setText(self.t("network.dns_empty"))
-            self._dns_status_lbl.setStyleSheet(_RESULT_ERR)
+            kit_qt.style(self._dns_status_lbl, _RESULT_ERR)
             return
 
         self._dns_apply_btn.setEnabled(False)
         self._dns_status_lbl.setText(self.t("network.applying"))
-        self._dns_status_lbl.setStyleSheet("")
+        kit_qt.style(self._dns_status_lbl, "")
 
         def do_apply():
             try:
@@ -1743,11 +1749,11 @@ class NetworkModule(BaseModule):
             self._dns_apply_btn.setEnabled(True)
             if ok:
                 self._dns_status_lbl.setText(msg)
-                self._dns_status_lbl.setStyleSheet(_RESULT_OK)
+                kit_qt.style(self._dns_status_lbl, _RESULT_OK)
                 self._refresh_status()
             else:
                 self._dns_status_lbl.setText(msg)
-                self._dns_status_lbl.setStyleSheet(_RESULT_ERR)
+                kit_qt.style(self._dns_status_lbl, _RESULT_ERR)
 
         threading.Thread(target=run_and_emit, daemon=True).start()
 
@@ -1781,15 +1787,15 @@ class NetworkModule(BaseModule):
                 self._dns_apply_btn.setEnabled(True)
                 if errors:
                     self._dns_status_lbl.setText(self.t("network.dns_failed") + "\n" + "\n".join(errors))
-                    self._dns_status_lbl.setStyleSheet(_RESULT_ERR)
+                    kit_qt.style(self._dns_status_lbl, _RESULT_ERR)
                 else:
                     self._dns_status_lbl.setText(self.t("network.dns_reverted"))
-                    self._dns_status_lbl.setStyleSheet(_RESULT_OK)
+                    kit_qt.style(self._dns_status_lbl, _RESULT_OK)
                     self._refresh_status()
             except Exception as e:
                 self._dns_apply_btn.setEnabled(True)
                 self._dns_status_lbl.setText(str(e))
-                self._dns_status_lbl.setStyleSheet(_RESULT_ERR)
+                kit_qt.style(self._dns_status_lbl, _RESULT_ERR)
 
         threading.Thread(target=do_revert, daemon=True).start()
 
@@ -1804,7 +1810,7 @@ class NetworkModule(BaseModule):
 
         if not selected_params:
             self._tcp_result_lbl.setText(self.t("network.tcp_nothing_selected"))
-            self._tcp_result_lbl.setStyleSheet(_RESULT_ERR)
+            kit_qt.style(self._tcp_result_lbl, _RESULT_ERR)
             return
 
         lines = [
@@ -1819,7 +1825,7 @@ class NetworkModule(BaseModule):
 
         self._tcp_apply_btn.setEnabled(False)
         self._tcp_result_lbl.setText(self.t("network.applying"))
-        self._tcp_result_lbl.setStyleSheet("")
+        kit_qt.style(self._tcp_result_lbl, "")
 
         def do_apply():
             try:
@@ -1841,7 +1847,7 @@ class NetworkModule(BaseModule):
             ok, msg = do_apply()
             self._tcp_apply_btn.setEnabled(True)
             self._tcp_result_lbl.setText(msg)
-            self._tcp_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            kit_qt.style(self._tcp_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
             if ok:
                 self._refresh_status()
 
@@ -1868,7 +1874,7 @@ class NetworkModule(BaseModule):
             ok, msg = do_remove()
             self._tcp_remove_btn.setEnabled(True)
             self._tcp_result_lbl.setText(msg)
-            self._tcp_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            kit_qt.style(self._tcp_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
             if ok:
                 self._refresh_status()
 
@@ -1880,7 +1886,7 @@ class NetworkModule(BaseModule):
         content = "[connection]\nwifi.powersave = 2\n"
         self._wifi_disable_btn.setEnabled(False)
         self._wifi_result_lbl.setText(self.t("network.applying"))
-        self._wifi_result_lbl.setStyleSheet("")
+        kit_qt.style(self._wifi_result_lbl, "")
 
         def do_apply():
             try:
@@ -1899,7 +1905,7 @@ class NetworkModule(BaseModule):
             ok, msg = do_apply()
             self._wifi_disable_btn.setEnabled(True)
             self._wifi_result_lbl.setText(msg)
-            self._wifi_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            kit_qt.style(self._wifi_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
             if ok:
                 import time
                 time.sleep(2)
@@ -1928,7 +1934,7 @@ class NetworkModule(BaseModule):
             ok, msg = do_apply()
             self._wifi_enable_btn.setEnabled(True)
             self._wifi_result_lbl.setText(msg)
-            self._wifi_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            kit_qt.style(self._wifi_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
             if ok:
                 import time
                 time.sleep(2)
@@ -1949,7 +1955,7 @@ class NetworkModule(BaseModule):
 
         self._ipv6_disable_btn.setEnabled(False)
         self._ipv6_result_lbl.setText(self.t("network.applying"))
-        self._ipv6_result_lbl.setStyleSheet("")
+        kit_qt.style(self._ipv6_result_lbl, "")
 
         def do_apply():
             try:
@@ -1968,7 +1974,7 @@ class NetworkModule(BaseModule):
             ok, msg = do_apply()
             self._ipv6_disable_btn.setEnabled(True)
             self._ipv6_result_lbl.setText(msg)
-            self._ipv6_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            kit_qt.style(self._ipv6_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
             if ok:
                 self._refresh_status()
 
@@ -1997,7 +2003,7 @@ class NetworkModule(BaseModule):
             ok, msg = do_apply()
             self._ipv6_enable_btn.setEnabled(True)
             self._ipv6_result_lbl.setText(msg)
-            self._ipv6_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+            kit_qt.style(self._ipv6_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
             if ok:
                 self._refresh_status()
 
@@ -2023,11 +2029,11 @@ class NetworkModule(BaseModule):
         self._speed_btn.setEnabled(True)
         self._speed_btn.setText(self.t("network.speed_run"))
         if result.startswith("ERROR"):
-            self._speed_result_lbl.setStyleSheet(_RESULT_ERR)
+            kit_qt.style(self._speed_result_lbl, _RESULT_ERR)
             self._speed_result_lbl.setText(result)
             self._speed_install_btn.show()
         else:
-            self._speed_result_lbl.setStyleSheet(_STATUS_MONO)
+            kit_qt.style(self._speed_result_lbl, _STATUS_MONO)
             self._speed_result_lbl.setText(result)
 
     # ── Helpers ───────────────────────────────────────────────────────────────
@@ -2040,7 +2046,7 @@ class NetworkModule(BaseModule):
                 break
 
         if term is None:
-            self._speed_result_lbl.setStyleSheet(_RESULT_ERR)
+            kit_qt.style(self._speed_result_lbl, _RESULT_ERR)
             self._speed_result_lbl.setText(self.t("network.no_terminal_found"))
             self._speed_result_lbl.show()
             return
@@ -2048,7 +2054,7 @@ class NetworkModule(BaseModule):
         try:
             proc = subprocess.Popen(term + ["yay", "-S", pkg], start_new_session=True)
         except Exception as e:
-            self._speed_result_lbl.setStyleSheet(_RESULT_ERR)
+            kit_qt.style(self._speed_result_lbl, _RESULT_ERR)
             self._speed_result_lbl.setText(str(e))
             self._speed_result_lbl.show()
             return
@@ -2058,7 +2064,7 @@ class NetworkModule(BaseModule):
         # background and reflect the real outcome instead of going silent.
         self._speed_install_btn.setEnabled(False)
         self._speed_install_btn.setText(self.t("network.speed_installing"))
-        self._speed_result_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._speed_result_lbl, _STATUS_MONO)
         self._speed_result_lbl.setText(self.t("network.speed_installing"))
         self._speed_result_lbl.show()
 
@@ -2069,10 +2075,10 @@ class NetworkModule(BaseModule):
             self._speed_install_btn.setText(self.t("network.speed_install"))
             if installed:
                 self._speed_install_btn.hide()
-                self._speed_result_lbl.setStyleSheet(_RESULT_OK)
+                kit_qt.style(self._speed_result_lbl, _RESULT_OK)
                 self._speed_result_lbl.setText(self.t("network.speed_install_done"))
             else:
-                self._speed_result_lbl.setStyleSheet(_RESULT_ERR)
+                kit_qt.style(self._speed_result_lbl, _RESULT_ERR)
                 self._speed_result_lbl.setText(self.t("network.speed_install_failed"))
 
         threading.Thread(target=wait_and_check, daemon=True).start()

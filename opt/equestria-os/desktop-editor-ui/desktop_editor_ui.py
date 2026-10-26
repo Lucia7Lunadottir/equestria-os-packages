@@ -7,6 +7,12 @@ from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QFileDialog, QMessageBox, QFormLayout, QDialog)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QIcon
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 class LocalizationDialog(QDialog):
     def __init__(self, parent, t_func):
@@ -15,7 +21,7 @@ class LocalizationDialog(QDialog):
         self.setObjectName("ModalBox")
         self.setWindowTitle(self.t("add_loc_title"))
         self.resize(300, 200)
-        self.setStyleSheet(parent.styleSheet())
+        kit_qt.style(self, parent.styleSheet())
 
         layout = QVBoxLayout()
 
@@ -158,7 +164,7 @@ class DesktopEditorApp(QWidget):
 
         loc_layout = QHBoxLayout()
         self.loc_label = QLabel()
-        self.loc_label.setStyleSheet("color: rgb(180, 180, 200);")
+        kit_qt.style(self.loc_label, "color: @subtext@;")
         self.btn_add_loc = QPushButton()
         self.btn_add_loc.setObjectName("ModalCancelBtn")
         self.btn_add_loc.clicked.connect(self.add_localization)
@@ -193,10 +199,10 @@ class DesktopEditorApp(QWidget):
         icon_layout = QHBoxLayout()
         self.icon_preview = QLabel("❓")
         self.icon_preview.setFixedSize(40, 40)
-        self.icon_preview.setStyleSheet("""
-            border: 1px solid rgb(120, 90, 180); 
+        kit_qt.style(self.icon_preview, """
+            border: 1px solid @accent%80@; 
             border-radius: 8px; 
-            background-color: rgb(40, 35, 60); 
+            background-color: @surface0@; 
             font-size: 16px;
         """)
         self.icon_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -402,6 +408,7 @@ class DesktopEditorApp(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     
     app.setDesktopFileName("desktop-editor-ui")
     
@@ -415,7 +422,7 @@ if __name__ == '__main__':
         pass
         
     qss += "\nQLabel { color: rgb(240, 240, 240); }"
-    app.setStyleSheet(qss)
+    kit_qt.app_style(qss)
 
     window = DesktopEditorApp()
     window.show()

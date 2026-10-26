@@ -12,6 +12,13 @@ from PyQt6.QtGui import QFontDatabase
 
 # Используем твои наработки
 import privilege
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
 
 LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
 STRINGS = {
@@ -120,16 +127,15 @@ class RenamerApp(QMainWindow):
         title_font = "sans-serif"
         f_path = os.path.join(base_path, "equestria_cyrillic.ttf")
         if os.path.exists(f_path):
-            fid = QFontDatabase.addApplicationFont(f_path)
-            families = QFontDatabase.applicationFontFamilies(fid)
+            families = font_families(f_path)
             if families:
                 title_font = families[0]
 
         qss_path = os.path.join(base_path, "style.qss")
         if os.path.exists(qss_path):
             qss = open(qss_path).read().replace("{{TITLE_FONT}}", f'"{title_font}"')
-            qss += "\nQListWidget { background-color: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 5px; }"
-            self.setStyleSheet(qss)
+            qss += "\nQListWidget { background-color: @base@; border: 1px solid @surface0@; border-radius: 8px; padding: 5px; }"
+            kit_qt.style(self, qss)
 
         central = QWidget()
         central.setObjectName("CentralBg")
@@ -373,6 +379,7 @@ class RenamerApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     app.setDesktopFileName("equestria-os-rename-helper")
     win = RenamerApp()
     win.show()

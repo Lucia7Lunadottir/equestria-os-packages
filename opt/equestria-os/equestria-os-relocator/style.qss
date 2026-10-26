@@ -1,27 +1,27 @@
 /* Base container */
-QWidget#root { background-color: rgb(30, 30, 46); }
+QWidget#root { background-color: @base@; }
 
 /* Language dropdown.
    No ::drop-down/::down-arrow rules on purpose: declaring them makes Qt
    stop drawing the native arrow. */
 QComboBox#LangCombo {
-    background-color: rgb(49, 50, 68); color: rgb(205, 214, 244);
-    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 3px 8px;
+    background-color: @surface0@; color: @text@;
+    border: 1px solid @surface1@; border-radius: 4px; padding: 3px 8px;
     font-size: 11px; font-family: sans-serif; min-width: 46px;
 }
 QComboBox#LangCombo:hover {
-    border: 1px solid rgb(203, 166, 247); color: rgb(220, 220, 255);
+    border: 1px solid @accent@; color: @text@;
 }
 QComboBox#LangCombo QAbstractItemView {
-    background-color: rgb(49, 50, 68); color: rgb(205, 214, 244);
-    border: 1px solid rgb(69, 71, 90);
-    selection-background-color: rgb(108, 112, 134);
+    background-color: @surface0@; color: @text@;
+    border: 1px solid @surface1@;
+    selection-background-color: @surface2@;
     outline: none;
 }
 
 /* App title */
 QLabel#AppTitle {
-    color: rgb(245, 194, 231);
+    color: @accent@;
     font-size: 22px;
     font-weight: bold;
     font-family: sans-serif;
@@ -30,7 +30,7 @@ QLabel#AppTitle {
 
 /* Section labels */
 QLabel#SectionLabel {
-    color: rgb(137, 180, 250);
+    color: @accent2@;
     font-size: 13px;
     font-weight: bold;
     font-family: sans-serif;
@@ -38,65 +38,65 @@ QLabel#SectionLabel {
 
 /* Divider */
 QFrame#Divider {
-    background-color: rgb(69, 71, 90);
+    background-color: @surface1@;
     border: none;
 }
 
 /* Scroll area for sources */
 QScrollArea#SourceScrollArea {
     background-color: transparent;
-    border: 1px solid rgb(69, 71, 90);
+    border: 1px solid @surface1@;
     border-radius: 6px;
 }
 QWidget#SourceContainer { background-color: transparent; }
 
 /* Source and destination line edits */
 QLineEdit#SourceEdit, QLineEdit#DestEdit {
-    background-color: rgb(49, 50, 68);
-    color: rgb(205, 214, 244);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @surface1@;
     border-radius: 6px;
     padding: 6px 10px;
     font-size: 13px;
     font-family: sans-serif;
 }
 QLineEdit#SourceEdit:focus, QLineEdit#DestEdit:focus {
-    border: 1px solid rgb(245, 194, 231);
+    border: 1px solid @accent@;
 }
 
 /* Generic Browse button */
 QPushButton#BrowseBtn {
-    background-color: rgb(49, 50, 68);
-    color: rgb(205, 214, 244);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @surface1@;
     border-radius: 6px;
     padding: 6px 12px;
     font-size: 13px;
     font-family: sans-serif;
 }
 QPushButton#BrowseBtn:hover {
-    background-color: rgb(69, 71, 90);
-    border: 1px solid rgb(203, 166, 247);
+    background-color: @surface1@;
+    border: 1px solid @accent@;
 }
 
 /* Add Source button — dashed ghost border, blue text */
 QPushButton#AddSourceBtn {
     background-color: transparent;
-    color: rgb(137, 180, 250);
-    border: 1px dashed rgb(137, 180, 250);
+    color: @accent2@;
+    border: 1px dashed @accent2@;
     border-radius: 6px;
     padding: 6px 12px;
     font-size: 13px;
     font-family: sans-serif;
 }
 QPushButton#AddSourceBtn:hover {
-    background-color: rgb(49, 50, 68);
+    background-color: @surface0@;
 }
 
 /* Remove button — transparent, red text */
 QPushButton#RemoveBtn {
     background-color: transparent;
-    color: rgb(243, 139, 168);
+    color: @red@;
     border: 1px solid transparent;
     border-radius: 6px;
     padding: 4px 8px;
@@ -104,14 +104,14 @@ QPushButton#RemoveBtn {
     font-family: sans-serif;
 }
 QPushButton#RemoveBtn:hover {
-    background-color: rgb(49, 50, 68);
-    border: 1px solid rgb(243, 139, 168);
+    background-color: @surface0@;
+    border: 1px solid @red@;
 }
 
 /* Symlink toggle — identical to AutostartToggle */
 QPushButton#SymlinkToggle {
-    background-color: rgb(30, 30, 46);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @base@;
+    border: 1px solid @surface1@;
     border-radius: 4px;
     color: transparent;
     font-family: sans-serif;
@@ -120,16 +120,16 @@ QPushButton#SymlinkToggle {
     padding-bottom: 2px;
 }
 QPushButton#SymlinkToggle:checked {
-    background-color: rgb(245, 194, 231);
-    border: 1px solid rgb(245, 194, 231);
-    color: rgb(30, 30, 46);
+    background-color: @accent@;
+    border: 1px solid @accent@;
+    color: @on_accent@;
 }
 
 /* Relocate button — pink fill (same as active NavBtn) */
 QPushButton#RelocateBtn {
-    background-color: rgb(245, 194, 231);
-    color: rgb(30, 30, 46);
-    border: 1px solid rgb(245, 194, 231);
+    background-color: @accent@;
+    color: @on_accent@;
+    border: 1px solid @accent@;
     border-radius: 8px;
     padding: 10px;
     font-size: 14px;
@@ -137,20 +137,20 @@ QPushButton#RelocateBtn {
     font-family: sans-serif;
 }
 QPushButton#RelocateBtn:hover {
-    background-color: rgb(255, 210, 245);
-    border: 1px solid rgb(255, 210, 245);
+    background-color: @accent_hover@;
+    border: 1px solid @accent_hover@;
 }
 QPushButton#RelocateBtn:disabled {
-    background-color: rgb(69, 71, 90);
-    color: rgb(127, 132, 156);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface1@;
+    color: @subtext@;
+    border: 1px solid @surface1@;
 }
 
 /* NTFS warning */
 QLabel#NtfsWarning {
-    background-color: rgb(49, 50, 40);
-    color: rgb(249, 226, 175);
-    border: 1px solid rgb(249, 226, 175);
+    background-color: @yellow%10@;
+    color: @yellow@;
+    border: 1px solid @yellow@;
     border-radius: 6px;
     padding: 8px 12px;
     font-size: 13px;
@@ -159,11 +159,11 @@ QLabel#NtfsWarning {
 
 /* Status label */
 QLabel#StatusLabel {
-    color: rgb(166, 227, 161);
+    color: @green@;
     font-size: 13px;
     font-family: sans-serif;
     qproperty-alignment: 'AlignLeft';
 }
 QLabel#StatusLabel[status="error"] {
-    color: rgb(243, 139, 168);
+    color: @red@;
 }

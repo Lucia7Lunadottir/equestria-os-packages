@@ -4,13 +4,22 @@ import json
 import csv
 import shutil
 import subprocess
+import threading
 import zipfile
 from dataclasses import dataclass, asdict, field, fields
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QFileDialog, QColorDialog, QMessageBox, QComboBox)
 from PyQt6.QtGui import QIcon, QPixmap, QColor, QFontDatabase, QFont
 from PyQt6.QtCore import Qt
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
+
 from ui import Ui_MainWindow, APP_STYLE
+from character_card import CharacterCard
 
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
 USER_PATH = os.path.expanduser("~/.local/share/EquestriaOS/Themes/")
@@ -67,8 +76,11 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
                 f'\nQLabel[cssClass="title"] {{ font-family: "{title_font_family}"; }}'
                 f'\nQLabel[cssClass="char-name"] {{ font-family: "{title_font_family}"; }}'
             )
-        self.setStyleSheet(style)
+        # Само приложение тоже в цветах активного персонажа: ThemeManager
+        # перекрашивает его сразу после клика по карточке.
+        kit_qt.style(self, style)
 
+        self._apply_lock = threading.Lock()
         self.characters = []
         self.active_character = None
         self.editing_character = None
@@ -438,67 +450,59 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             if item.widget(): item.widget().deleteLater()
 
         MAX_COLS = 4
+        self.cards = {}
         for i, char in enumerate(self.characters):
-            btn = QPushButton()
-            # ЗДЕСЬ УВЕЛИЧЕНЫ КНОПКИ ПЕРСОНАЖЕЙ (с 160x120 до 190x150)
-            btn.setFixedSize(190, 150)
-
-            is_active = self.active_character and self.active_character.Id == char.Id
-            border_col = char.AccentColor if char.AccentColor else "transparent"
-            hover_col = char.HoverColor if char.HoverColor else "rgb(40, 35, 60)"
-
-            if is_active:
-                btn.setStyleSheet(f"QPushButton {{ background-color: rgb(40, 35, 60); border: 3px solid {border_col}; border-radius: 16px; }}")
-            else:
-                btn.setStyleSheet(f"QPushButton {{ background-color: rgb(30, 25, 45); border: 2px solid {border_col}; border-radius: 16px; }} QPushButton:hover {{ background-color: {hover_col}; }}")
-
-            lo = QVBoxLayout(btn)
-            lo.setContentsMargins(8, 12, 8, 12)
-            lo.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-            icon_lbl = QLabel()
-            pixmap = QPixmap(os.path.join(USER_PATH, char.IconPath))
-            if not pixmap.isNull():
-                # ЗДЕСЬ УВЕЛИЧЕНЫ КЬЮТИМАРКИ (с 64x64 до 84x84)
-                icon_lbl.setPixmap(pixmap.scaled(84, 84, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
-            icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-            name_lbl = QLabel(char.DisplayName)
-            name_lbl.setProperty("cssClass", "char-name")
-            name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-            lo.addWidget(icon_lbl)
-            lo.addWidget(name_lbl)
-
-            btn.clicked.connect(lambda checked, c=char: self.on_character_selected(c))
+            btn = CharacterCard(char.DisplayName, char.AccentColor, os.path.join(USER_PATH, char.IconPath))
+            is_active = bool(self.active_character and self.active_character.Id == char.Id)
+            btn.set_selected(is_active, animate=False)
+            btn.clicked.connect(lambda checked=False, c=char: self.on_character_selected(c))
+            self.cards[char.Id] = btn
 
             # Иконка редактирования в углу карточки: открывает редактор
             # ЭТОГО персонажа, не применяя его тему
             edit_btn = QPushButton("✎", btn)
+            edit_btn.setObjectName("CardEditBtn")
             edit_btn.setFixedSize(26, 26)
-            edit_btn.move(btn.width() - 26 - 8, 8)
+            edit_btn.move(btn.width() - 26 - 10, 10)
             edit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             edit_btn.setToolTip(self.t_str("ui.btn_edit"))
-            edit_btn.setStyleSheet(
-                "QPushButton { background-color: rgba(18, 18, 28, 180);"
-                " border: 1px solid rgb(69, 71, 90); border-radius: 13px;"
-                " color: rgb(220, 200, 255); font-size: 13px; padding: 0; }"
-                "QPushButton:hover { background-color: rgb(100, 60, 160);"
-                " border: 1px solid rgb(140, 90, 200); }")
-            edit_btn.clicked.connect(lambda checked, c=char: self.on_edit_character(c))
+            edit_btn.clicked.connect(lambda checked=False, c=char: self.on_edit_character(c))
 
             self.grid_layout.addWidget(btn, i // MAX_COLS, i % MAX_COLS)
+
+    def _refresh_selection(self):
+        """Выбор меняется анимацией на существующих карточках — без перестройки сетки."""
+        active = self.active_character.Id if self.active_character else None
+        for cid, card in getattr(self, "cards", {}).items():
+            card.set_selected(cid == active)
 
     def on_character_selected(self, character):
         self.active_character = character
         self._save_state()
         self.update_texts()
-        self.build_ui()
-        self.apply_wallpaper_slideshow(character.WallpaperPath)
-        self.apply_kde_theme(character)
-        self.apply_fastfetch(character)
-        self.apply_konsole_colors(character)
-        self.apply_konsole_profile(character)
+        self._refresh_selection()
+        # Обои, KDE, Konsole и fastfetch применяются через qdbus/kwriteconfig и
+        # занимают секунды — в фоне, иначе окно замирает вместе с анимацией выбора.
+        # Быстрые клики подряд: применяется только последний выбранный персонаж.
+        self._apply_gen = getattr(self, "_apply_gen", 0) + 1
+        gen = self._apply_gen
+        threading.Thread(target=self._apply_character_bg, args=(character, gen), daemon=True).start()
+
+    def _apply_character_bg(self, character, gen):
+        with self._apply_lock:
+            if gen != self._apply_gen:
+                return
+            for step in (lambda: self.apply_wallpaper_slideshow(character.WallpaperPath),
+                         lambda: self.apply_kde_theme(character),
+                         lambda: self.apply_fastfetch(character),
+                         lambda: self.apply_konsole_colors(character),
+                         lambda: self.apply_konsole_profile(character)):
+                if gen != self._apply_gen:
+                    return
+                try:
+                    step()
+                except Exception as e:  # noqa: BLE001 — фоновый поток не должен ронять приложение
+                    print(f"[character-theme] {e}", file=sys.stderr)
 
     def parse_color_string(self, val, is_hex):
         if is_hex: return QColor(val if str(val).startswith('#') else f"#{val}")
@@ -878,7 +882,7 @@ plasma-apply-colorscheme "{active_name}"
             pass
 
     def get_ansi_color(self, char_id):
-        return {"sunset": "214", "twilight": "135", "rainbow": "39", "rarity": "189", "pinkie": "205", "applejack": "136", "fluttershy": "228"}.get(char_id, "255")
+        return {"sunset": "220", "twilight": "135", "rainbow": "39", "rarity": "189", "pinkie": "205", "applejack": "136", "fluttershy": "228"}.get(char_id, "255")
 
     def hex_to_fastfetch(self, hex_color):
         c = QColor(hex_color)
@@ -895,6 +899,7 @@ plasma-apply-colorscheme "{active_name}"
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     app.setDesktopFileName("equestria-theme-switcher")
 
     icon_path = "/usr/share/pixmaps/equestria-os-logo.png"
@@ -906,11 +911,9 @@ if __name__ == "__main__":
     font_path = os.path.join(SYSTEM_PATH, "equestria_cyrillic.ttf")
     eq_family = None
     if os.path.exists(font_path):
-        font_id = QFontDatabase.addApplicationFont(font_path)
-        if font_id != -1:
-            families = QFontDatabase.applicationFontFamilies(font_id)
-            if families:
-                eq_family = families[0]
+        families = font_families(font_path)
+        if families:
+            eq_family = families[0]
     # Базовый шрифт — системный: шрифт Эквестрии плохо читается на кнопках
     # и в описаниях, поэтому он используется только в заголовках и именах
     app.setFont(QFont("sans-serif", 12))

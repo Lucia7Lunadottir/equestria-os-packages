@@ -1,0 +1,18 @@
+# Maintainer: Equestria OS
+pkgname=equestria-calendar
+pkgver=1.0
+pkgrel=2
+pkgdesc="Календарь с фазами луны и напоминаниями (PyQt6)"
+arch=('any')
+license=('custom')
+depends=('python-pyqt6' 'equestria-qt-kit' 'qt6-multimedia')
+source=("equestria_calendar.py" "equestria-calendar.desktop" "i18n.json")
+sha256sums=('74f2865e5bcf213aa18f410848e7c228738368c4126f938f42caa1587ec9fc19'
+            'bdea744d8c340575de06773c6525b29004c9b68d265cc8864bc12371394f4c31'
+            'cc72b914a6b4292f5dcaf56a0cd6f76893b1eec07cf0d89a70f8154332e9c527')
+
+package() {
+    install -Dm755 "$srcdir/equestria_calendar.py" "$pkgdir/usr/bin/equestria-calendar"
+    install -Dm644 "$srcdir/equestria-calendar.desktop" "$pkgdir/usr/share/applications/equestria-calendar.desktop"
+    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-calendar/i18n.json"
+}

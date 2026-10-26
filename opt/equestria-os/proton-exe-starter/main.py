@@ -11,6 +11,12 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QMessageBox, QPushButton
 from PyQt6.QtCore import Qt, QProcess, QProcessEnvironment
 from PyQt6.QtGui import QIcon
 from ui import Ui_SettingsWindow
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
@@ -412,6 +418,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     app.setDesktopFileName("equestria-os-proton-starter")
 
     icon_path = "/usr/share/pixmaps/equestria-os-proton-starter.png"
@@ -423,7 +430,7 @@ if __name__ == "__main__":
     qss_path = os.path.join(SYSTEM_PATH, "style.qss")
     if os.path.exists(qss_path):
         with open(qss_path, "r") as f:
-            app.setStyleSheet(f.read())
+            kit_qt.app_style(f.read())
 
     window = LauncherApp()
     window.show()

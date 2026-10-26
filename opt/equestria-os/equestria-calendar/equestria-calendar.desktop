@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Calendar
+Comment=Календарь с фазами луны и напоминаниями
+Exec=equestria-calendar
+Icon=x-office-calendar
+Categories=Utility;Calendar;Qt;
+Terminal=false

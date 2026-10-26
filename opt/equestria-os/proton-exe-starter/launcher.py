@@ -18,6 +18,12 @@ from steam_integration import apply_steam_env
 from PyQt6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QLabel,
                              QProgressBar, QPushButton, QTextEdit, QHBoxLayout)
 from PyQt6.QtCore import Qt, QTimer
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
@@ -270,23 +276,23 @@ class SplashWindow(QDialog):
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         self.setFixedSize(500, 180)
-        self.setStyleSheet("""
-            QDialog { background-color: rgb(24, 24, 37); border: 2px solid rgb(69, 71, 90); border-radius: 12px; }
-            QLabel { color: rgb(205, 214, 244); font-family: 'Segoe UI', sans-serif; }
-            QProgressBar { border: 1px solid rgb(69, 71, 90); border-radius: 6px; background: rgb(30, 30, 46); height: 12px; text-align: center; color: transparent; }
-            QProgressBar::chunk { background-color: rgb(137, 180, 250); border-radius: 5px; }
-            QTextEdit { background-color: rgb(17, 17, 27); color: rgb(243, 139, 168); border: 1px solid rgb(49, 50, 68); border-radius: 4px; font-family: monospace; font-size: 10px; }
-            QPushButton { background-color: rgb(49, 50, 68); color: white; border: none; border-radius: 6px; padding: 8px 16px; font-weight: bold; }
-            QPushButton:hover { background-color: rgb(69, 71, 90); }
-            QPushButton#btnRetry { background-color: rgb(166, 227, 161); color: rgb(17, 17, 27); }
-            QPushButton#btnClose { background-color: rgb(243, 139, 168); color: rgb(17, 17, 27); }
+        kit_qt.style(self, """
+            QDialog { background-color: @mantle@; border: 2px solid @surface1@; border-radius: 12px; }
+            QLabel { color: @text@; font-family: 'Segoe UI', sans-serif; }
+            QProgressBar { border: 1px solid @surface1@; border-radius: 6px; background: @base@; height: 12px; text-align: center; color: transparent; }
+            QProgressBar::chunk { background-color: @accent2@; border-radius: 5px; }
+            QTextEdit { background-color: @crust@; color: @red@; border: 1px solid @surface0@; border-radius: 4px; font-family: monospace; font-size: 10px; }
+            QPushButton { background-color: @surface0@; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-weight: bold; }
+            QPushButton:hover { background-color: @surface1@; }
+            QPushButton#btnRetry { background-color: @green@; color: @on_green@; }
+            QPushButton#btnClose { background-color: @red@; color: @on_red@; }
         """)
 
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(25, 25, 25, 25)
 
         self.lbl_title = QLabel(t("launcher.title", exe_name))
-        self.lbl_title.setStyleSheet("font-size: 16px; font-weight: bold; color: rgb(137, 180, 250);")
+        kit_qt.style(self.lbl_title, "font-size: 16px; font-weight: bold; color: @accent2@;")
 
         self.lbl_status = QLabel(t("launcher.init"))
         self.lbl_status.setWordWrap(True)
@@ -339,7 +345,7 @@ class SplashWindow(QDialog):
         self.progress.show()
         self.progress.setValue(0)
         self.lbl_status.setText(t("launcher.init"))
-        self.lbl_status.setStyleSheet("color: rgb(205, 214, 244);")
+        kit_qt.style(self.lbl_status, "color: @text@;")
 
         # Открываем лог на запись (очищаем старый)
         log_out = open(self.log_path, "w", encoding="utf-8")
@@ -355,7 +361,7 @@ class SplashWindow(QDialog):
         self.timer.stop()
         self.setFixedSize(500, 400)
         self.lbl_status.setText(f"Error: Process exited with code {code}")
-        self.lbl_status.setStyleSheet("color: rgb(243, 139, 168); font-weight: bold;")
+        kit_qt.style(self.lbl_status, "color: @red@; font-weight: bold;")
         self.progress.hide()
 
         self.log_file.seek(0)
@@ -387,7 +393,7 @@ class SplashWindow(QDialog):
         self.setFixedSize(500, 480)
         status = t("launcher.debug_exited")
         self.lbl_status.setText(f"{status}\n{self.log_path}")
-        self.lbl_status.setStyleSheet("color: rgb(166, 227, 161); font-weight: bold; font-size: 10px;")
+        kit_qt.style(self.lbl_status, "color: @green@; font-weight: bold; font-size: 10px;")
         self.progress.hide()
 
         self.log_file.seek(0)
@@ -443,6 +449,7 @@ def main():
     if len(sys.argv) < 2: sys.exit(1)
 
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     exe_path = sys.argv[1]
 
     if not os.path.exists(exe_path):

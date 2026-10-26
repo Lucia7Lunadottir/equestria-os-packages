@@ -2,6 +2,12 @@ import os
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
 from PyQt6.QtGui import QPainter, QColor, QPixmap, QPainterPath
 from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, pyqtProperty, QRectF, QSize, QPoint
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 
 class HelpPopup(QLabel):
@@ -21,11 +27,11 @@ class HelpPopup(QLabel):
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.setWordWrap(True)
         self.setMaximumWidth(self._MAX_WIDTH)
-        self.setStyleSheet(
+        kit_qt.style(self, 
             "QLabel {"
-            "background-color: rgb(25, 20, 40);"
-            "color: rgb(210, 200, 235);"
-            "border: 1px solid rgb(110, 90, 160);"
+            "background-color: @base@;"
+            "color: @text@;"
+            "border: 1px solid @accent%55@;"
             "border-radius: 6px;"
             "padding: 6px 10px;"
             "}"
@@ -56,11 +62,11 @@ class HelpButton(QWidget):
     ховера не бывает)."""
 
     _SIZE = 18
-    _BG = QColor(45, 40, 70)
-    _BG_HOVER = QColor(90, 65, 140)
-    _BORDER = QColor(100, 85, 150)
-    _BORDER_HOVER = QColor(160, 120, 220)
-    _TEXT = QColor(190, 170, 230)
+    _BG = kit_qt.theme_color("surface1")
+    _BG_HOVER = kit_qt.theme_color("accent%75")
+    _BORDER = kit_qt.theme_color("subtext")
+    _BORDER_HOVER = kit_qt.theme_color("accent")
+    _TEXT = kit_qt.theme_color("accent_hover")
     _TEXT_HOVER = QColor(230, 220, 255)
 
     def __init__(self, help_text="", parent=None):
@@ -127,8 +133,8 @@ class SafeCheckBox(QWidget):
     """Красивый анимированный Toggle-переключатель с текстом справа."""
     toggled = pyqtSignal(bool)
 
-    _COLOR_ON  = QColor(120, 80, 200)
-    _COLOR_OFF = QColor(55, 48, 80)
+    _COLOR_ON  = kit_qt.theme_color("accent")
+    _COLOR_OFF = kit_qt.theme_color("surface2")
     _COLOR_KNOB = QColor(230, 220, 255)
 
     _TRACK_W = 38
@@ -214,13 +220,13 @@ class SafeCheckBox(QWidget):
         p.drawEllipse(QRectF(lp + self._knob_x, track_y + (self._TRACK_H - self._KNOB_D) / 2, self._KNOB_D, self._KNOB_D))
 
         if self._label:
-            p.setPen(QColor(200, 190, 230))
+            p.setPen(kit_qt.theme_color("accent_hover"))
             p.drawText(int(lp + self._TRACK_W + 6), 0, self.width() - int(lp + self._TRACK_W + 6), h,
                        Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, self._label)
         p.end()
 
 class PanelPreviewWidget(QWidget):
-    def __init__(self, preset_id, panel_color="#1e1e2e", panel_opacity=90, parent=None):
+    def __init__(self, preset_id, panel_color="@base@", panel_opacity=90, parent=None):
         super().__init__(parent)
         self.preset_id = preset_id
         self.panel_color = panel_color
@@ -242,7 +248,7 @@ class PanelPreviewWidget(QWidget):
         painter.setClipPath(clip_path)
 
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor(44, 42, 68))
+        painter.setBrush(kit_qt.theme_color("surface1"))
         painter.drawRect(0, 0, w, h)
 
         for cfg in self.layout_configs:

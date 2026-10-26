@@ -9,6 +9,13 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 
 from ui_relocator import Ui_Relocator
 import core, privilege
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
 
 LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
 
@@ -128,15 +135,14 @@ class RelocatorApp(QMainWindow, Ui_Relocator):
         # Load custom font
         font_path = os.path.join(base_path, "equestria_cyrillic.ttf")
         if os.path.exists(font_path):
-            fid = QFontDatabase.addApplicationFont(font_path)
-            families = QFontDatabase.applicationFontFamilies(fid)
+            families = font_families(font_path)
             if families:
                 self.app_title.setFont(QFont(families[0], 22, QFont.Weight.Bold))
 
         # Load stylesheet
         qss_path = os.path.join(base_path, "style.qss")
         if os.path.exists(qss_path):
-            self.setStyleSheet(open(qss_path).read())
+            kit_qt.style(self, open(qss_path).read())
 
         # Load window icon
         icon_path = os.path.join(base_path, "equestria-os-relocator.png")

@@ -10,6 +10,13 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QFontDatabase
 
 import privilege
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
 
 ASSETS_DIR = os.path.dirname(os.path.abspath(__file__))
 CHECKMARK_SVG = os.path.join(ASSETS_DIR, "check_mark.svg")
@@ -157,8 +164,7 @@ class SwapManagerApp(QMainWindow):
         title_font_family = "sans-serif"
         font_path = os.path.join(base_path, "equestria_cyrillic.ttf")
         if os.path.exists(font_path):
-            fid = QFontDatabase.addApplicationFont(font_path)
-            families = QFontDatabase.applicationFontFamilies(fid)
+            families = font_families(font_path)
             if families:
                 title_font_family = families[0]
 
@@ -168,30 +174,30 @@ class SwapManagerApp(QMainWindow):
             qss = qss.replace("{{CHECKMARK_SVG_PATH}}", CHECKMARK_SVG)
             qss = qss.replace("{{TITLE_FONT}}", f'"{title_font_family}"')
             qss += """
-            QSlider::groove:horizontal { border-radius: 4px; height: 6px; background: #313244; }
-            QSlider::handle:horizontal { background: #f5c2e7; width: 16px; margin: -5px 0; border-radius: 8px; }
-            QSlider::handle:horizontal:hover { background: #f2cdcd; }
-            QComboBox { background-color: #1e1e2e; color: #cdd6f4; border: 1px solid #45475a; border-radius: 6px; padding: 4px 8px; min-height: 28px; }
+            QSlider::groove:horizontal { border-radius: 4px; height: 6px; background: @surface0@; }
+            QSlider::handle:horizontal { background: @accent@; width: 16px; margin: -5px 0; border-radius: 8px; }
+            QSlider::handle:horizontal:hover { background: @accent_hover@; }
+            QComboBox { background-color: @base@; color: @text@; border: 1px solid @surface1@; border-radius: 6px; padding: 4px 8px; min-height: 28px; }
             QComboBox#LangCombo { min-height: 22px; padding: 2px 8px; font-size: 11px; min-width: 46px; }
-            QComboBox QAbstractItemView { background-color: #1e1e2e; color: #cdd6f4; selection-background-color: #313244; border: 1px solid #45475a; }
+            QComboBox QAbstractItemView { background-color: @base@; color: @text@; selection-background-color: @surface0@; border: 1px solid @surface1@; }
             QScrollArea { border: none; background: transparent; }
-            QScrollBar:vertical { background: #1e1e2e; width: 8px; border-radius: 4px; }
-            QScrollBar::handle:vertical { background: #45475a; border-radius: 4px; min-height: 20px; }
+            QScrollBar:vertical { background: @base@; width: 8px; border-radius: 4px; }
+            QScrollBar::handle:vertical { background: @surface1@; border-radius: 4px; min-height: 20px; }
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
-            QScrollBar:horizontal { background: #1e1e2e; height: 8px; border-radius: 4px; }
-            QScrollBar::handle:horizontal { background: #45475a; border-radius: 4px; min-width: 20px; }
+            QScrollBar:horizontal { background: @base@; height: 8px; border-radius: 4px; }
+            QScrollBar::handle:horizontal { background: @surface1@; border-radius: 4px; min-width: 20px; }
             QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }
-            QLabel#HintLabel { color: #6c7086; font-size: 11px; font-style: italic; }
-            QMenu { background-color: #1e1e2e; color: #cdd6f4; border: 1px solid #45475a; border-radius: 6px; padding: 4px; }
+            QLabel#HintLabel { color: @subtext@; font-size: 11px; font-style: italic; }
+            QMenu { background-color: @base@; color: @text@; border: 1px solid @surface1@; border-radius: 6px; padding: 4px; }
             QMenu::item { padding: 6px 20px; border-radius: 4px; }
-            QMenu::item:selected { background-color: #313244; }
-            QMenu::separator { height: 1px; background: #45475a; margin: 4px 8px; }
-            QLabel#ZramStatusLabel { color: #a6e3a1; font-size: 12px; font-weight: bold; }
-            QPushButton#WindowsBtn { background-color: rgb(60, 50, 100); border: 2px solid rgb(137, 180, 250); border-radius: 8px; color: rgb(137, 180, 250); font-size: 13px; font-weight: bold; padding: 6px 18px; }
-            QPushButton#WindowsBtn:hover { background-color: rgb(80, 70, 130); }
-            QPushButton#WindowsBtn:pressed { background-color: rgb(40, 35, 80); }
+            QMenu::item:selected { background-color: @surface0@; }
+            QMenu::separator { height: 1px; background: @surface1@; margin: 4px 8px; }
+            QLabel#ZramStatusLabel { color: @green@; font-size: 12px; font-weight: bold; }
+            QPushButton#WindowsBtn { background-color: @accent2%25@; border: 2px solid @accent2@; border-radius: 8px; color: @accent2@; font-size: 13px; font-weight: bold; padding: 6px 18px; }
+            QPushButton#WindowsBtn:hover { background-color: @accent2%35@; }
+            QPushButton#WindowsBtn:pressed { background-color: @accent2%15@; }
             """
-            self.setStyleSheet(qss)
+            kit_qt.style(self, qss)
 
         # Outer widget
         central = QWidget()
@@ -414,11 +420,11 @@ class SwapManagerApp(QMainWindow):
 
         # Fix transparent dropdown: style view() directly so global
         # "QWidget { background: transparent }" in style.qss doesn't win.
-        _dv = ("background-color: #1e1e2e; color: #cdd6f4; "
-               "selection-background-color: #313244; selection-color: #cdd6f4; "
-               "border: 1px solid #45475a;")
-        self.zram_algo_combo.view().setStyleSheet(_dv)
-        self.overcommit_combo.view().setStyleSheet(_dv)
+        _dv = ("background-color: @base@; color: @text@; "
+               "selection-background-color: @surface0@; selection-color: @text@; "
+               "border: 1px solid @surface1@;")
+        kit_qt.style(self.zram_algo_combo.view(), _dv)
+        kit_qt.style(self.overcommit_combo.view(), _dv)
 
         self.oomd_cb = QCheckBox(self.t("oom_oomd_cb"))
         self.oomd_cb.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -678,6 +684,7 @@ class SwapManagerApp(QMainWindow):
 def main():
     generate_assets()
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     app.setDesktopFileName("equestria-os-swap-manager")
     win = SwapManagerApp()
     win.show()

@@ -13,64 +13,70 @@ from PyQt6.QtWidgets import (
 )
 
 from base_module import BaseModule
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 # ---------------------------------------------------------------------------
 # Inline styles (bypass Kvantum)
 # ---------------------------------------------------------------------------
 
 _BTN_ACTION = (
-    "QPushButton{background:rgb(45,42,68);color:rgb(200,190,220);"
+    "QPushButton{background:@surface1@;color:@text@;"
     "border-radius:6px;padding:5px 14px;font-size:12px;"
-    "border:1px solid rgb(80,75,110);}"
-    "QPushButton:hover{background:rgb(65,60,95);color:white;}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @surface2@;}"
+    "QPushButton:hover{background:@surface2@;color:white;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
 _BTN_INSTALL = (
-    "QPushButton{background:rgb(55,40,95);color:rgb(210,190,240);"
+    "QPushButton{background:@accent%35@;color:@accent_hover@;"
     "border-radius:6px;padding:5px 14px;font-size:12px;"
-    "border:1px solid rgb(100,70,160);}"
-    "QPushButton:hover{background:rgb(80,55,140);color:white;}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @accent%75@;}"
+    "QPushButton:hover{background:@accent%55@;color:white;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
 _BTN_REMOVE = (
-    "QPushButton{background:rgb(80,35,35);color:rgb(255,170,170);"
+    "QPushButton{background:@red%25@;color:@red@;"
     "border-radius:6px;padding:5px 14px;font-size:12px;"
-    "border:1px solid rgb(130,55,55);}"
-    "QPushButton:hover{background:rgb(120,45,45);color:white;}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @red%65@;}"
+    "QPushButton:hover{background:@red%45@;color:white;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
 _BTN_UPDATE = (
-    "QPushButton{background:rgb(80,60,20);color:rgb(255,215,120);"
+    "QPushButton{background:@yellow%25@;color:@yellow@;"
     "border-radius:6px;padding:5px 14px;font-size:12px;"
-    "border:1px solid rgb(150,110,30);}"
-    "QPushButton:hover{background:rgb(120,90,25);color:white;}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @yellow%65@;}"
+    "QPushButton:hover{background:@yellow%45@;color:white;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
 _BADGE_INSTALLED = (
-    "QLabel{background:rgb(40,80,55);color:rgb(140,220,160);"
-    "border:1px solid rgb(60,120,80);border-radius:5px;"
+    "QLabel{background:@green%25@;color:@green@;"
+    "border:1px solid @green%65@;border-radius:5px;"
     "padding:2px 8px;font-size:11px;}"
 )
 _BADGE_MISSING = (
-    "QLabel{background:rgb(50,40,28);color:rgb(200,170,100);"
-    "border:1px solid rgb(100,80,40);border-radius:5px;"
+    "QLabel{background:@yellow%25@;color:@yellow@;"
+    "border:1px solid @yellow%45@;border-radius:5px;"
     "padding:2px 8px;font-size:11px;}"
 )
 _BADGE_UPDATE = (
-    "QLabel{background:rgb(70,52,10);color:rgb(255,210,80);"
-    "border:1px solid rgb(140,105,20);border-radius:5px;"
+    "QLabel{background:@yellow%25@;color:@yellow@;"
+    "border:1px solid @yellow%45@;border-radius:5px;"
     "padding:2px 8px;font-size:11px;}"
 )
 _BADGE_CHECKING = (
-    "QLabel{background:rgb(35,33,52);color:rgb(130,125,160);"
-    "border:1px solid rgb(60,55,85);border-radius:5px;"
+    "QLabel{background:@surface0@;color:@subtext@;"
+    "border:1px solid @surface2@;border-radius:5px;"
     "padding:2px 8px;font-size:11px;}"
 )
 _SEARCH_STYLE = (
-    "QLineEdit{background:rgb(40,35,60);color:rgb(220,210,240);"
-    "border:1px solid rgb(100,80,150);border-radius:6px;"
+    "QLineEdit{background:@surface0@;color:@text@;"
+    "border:1px solid @accent%75@;border-radius:6px;"
     "padding:5px 10px;font-size:13px;}"
-    "QLineEdit:focus{border:1px solid rgb(160,120,220);}"
+    "QLineEdit:focus{border:1px solid @accent@;}"
 )
 
 # ---------------------------------------------------------------------------
@@ -157,11 +163,11 @@ class _PackageCard(QFrame):
         title_row = QHBoxLayout()
         title_row.setSpacing(6)
         self._icon_lbl = QLabel(icon)
-        self._icon_lbl.setStyleSheet("font-size:18px;background:transparent;")
+        kit_qt.style(self._icon_lbl, "font-size:18px;background:transparent;")
         self._name_lbl = QLabel()
         self._name_lbl.setObjectName("SectionTitle")
-        self._name_lbl.setStyleSheet(
-            "QLabel{color:rgb(220,215,240);font-size:13px;"
+        kit_qt.style(self._name_lbl, 
+            "QLabel{color:@text@;font-size:13px;"
             "font-weight:bold;background:transparent;}"
         )
         title_row.addWidget(self._icon_lbl)
@@ -172,14 +178,14 @@ class _PackageCard(QFrame):
         self._desc_lbl = QLabel()
         self._desc_lbl.setObjectName("FieldHint")
         self._desc_lbl.setWordWrap(True)
-        self._desc_lbl.setStyleSheet(
-            "QLabel{color:rgb(140,135,170);font-size:12px;background:transparent;}"
+        kit_qt.style(self._desc_lbl, 
+            "QLabel{color:@subtext@;font-size:12px;background:transparent;}"
         )
         info.addWidget(self._desc_lbl)
 
         self._pkg_lbl = QLabel(pkg_name)
-        self._pkg_lbl.setStyleSheet(
-            "QLabel{color:rgb(100,95,130);font-size:11px;"
+        kit_qt.style(self._pkg_lbl, 
+            "QLabel{color:@subtext@;font-size:11px;"
             "font-family:monospace;background:transparent;}"
         )
         info.addWidget(self._pkg_lbl)
@@ -243,27 +249,27 @@ class _PackageCard(QFrame):
 
     def _set_checking(self):
         self._badge.setText(self._t("install_pkgs.checking"))
-        self._badge.setStyleSheet(_BADGE_CHECKING)
+        kit_qt.style(self._badge, _BADGE_CHECKING)
         self._btn.setText("…")
-        self._btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._btn, _BTN_ACTION)
         self._btn.setEnabled(False)
 
     def _update_status(self):
         if self._installed and self._has_update:
             self._badge.setText(self._t("install_pkgs.update_available"))
-            self._badge.setStyleSheet(_BADGE_UPDATE)
+            kit_qt.style(self._badge, _BADGE_UPDATE)
             self._btn.setText(self._t("install_pkgs.update"))
-            self._btn.setStyleSheet(_BTN_UPDATE)
+            kit_qt.style(self._btn, _BTN_UPDATE)
         elif self._installed:
             self._badge.setText(self._t("install_pkgs.installed"))
-            self._badge.setStyleSheet(_BADGE_INSTALLED)
+            kit_qt.style(self._badge, _BADGE_INSTALLED)
             self._btn.setText(self._t("install_pkgs.remove"))
-            self._btn.setStyleSheet(_BTN_REMOVE)
+            kit_qt.style(self._btn, _BTN_REMOVE)
         else:
             self._badge.setText(self._t("install_pkgs.not_installed"))
-            self._badge.setStyleSheet(_BADGE_MISSING)
+            kit_qt.style(self._badge, _BADGE_MISSING)
             self._btn.setText(self._t("install_pkgs.install"))
-            self._btn.setStyleSheet(_BTN_INSTALL)
+            kit_qt.style(self._btn, _BTN_INSTALL)
         self._btn.setEnabled(True)
 
     def _on_action(self):
@@ -334,7 +340,7 @@ class InstallPackagesModule(BaseModule):
 
         self._search = QLineEdit()
         self._search.setPlaceholderText(self.t("install_pkgs.search_placeholder"))
-        self._search.setStyleSheet(_SEARCH_STYLE)
+        kit_qt.style(self._search, _SEARCH_STYLE)
         self._search.setMaximumWidth(380)
         self._search.textChanged.connect(self._on_search)
         ctrl_row.addWidget(self._search)
@@ -343,7 +349,7 @@ class InstallPackagesModule(BaseModule):
 
         self._refresh_btn = QPushButton(self.t("install_pkgs.refresh"))
         self._refresh_btn.setObjectName("ActionBtn")
-        self._refresh_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._refresh_btn, _BTN_ACTION)
         self._refresh_btn.clicked.connect(self._refresh_all)
         ctrl_row.addWidget(self._refresh_btn)
 

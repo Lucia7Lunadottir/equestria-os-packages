@@ -4,26 +4,32 @@ import json
 import os
 import shutil
 import threading
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 _BTN_ACTION = (
-    "QPushButton{background:rgb(45,42,68);color:rgb(200,190,220);"
+    "QPushButton{background:@surface1@;color:@text@;"
     "border-radius:6px;padding:6px 18px;font-size:13px;"
-    "border:1px solid rgb(80,75,110);}"
-    "QPushButton:hover{background:rgb(65,60,95);color:white;}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @surface2@;}"
+    "QPushButton:hover{background:@surface2@;color:white;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
 _BTN_OPEN = (
-    "QPushButton{background:transparent;color:rgb(180,160,220);"
-    "border:1px solid rgb(80,70,115);border-radius:6px;"
+    "QPushButton{background:transparent;color:@text@;"
+    "border:1px solid @surface2@;border-radius:6px;"
     "padding:4px 14px;font-size:12px;}"
-    "QPushButton:hover{background:rgb(45,42,68);color:rgb(210,190,245);}"
+    "QPushButton:hover{background:@surface1@;color:@accent_hover@;}"
 )
 _BTN_DELETE = (
-    "QPushButton{background:rgb(90,40,40);color:rgb(255,180,180);"
+    "QPushButton{background:@red%45@;color:@red@;"
     "border-radius:6px;padding:6px 14px;font-size:13px;"
-    "border:1px solid rgb(140,60,60);}"
-    "QPushButton:hover{background:rgb(140,50,50);color:white;"
-    "border:1px solid rgb(180,80,80);}"
+    "border:1px solid @red%65@;}"
+    "QPushButton:hover{background:@red%65@;color:white;"
+    "border:1px solid @red@;}"
 )
 
 from PyQt6.QtCore import Qt, pyqtSignal, QObject
@@ -135,13 +141,13 @@ class _AppRow(QFrame):
 
         self._shaders_btn = QPushButton(self._t("cleaner.btn_clear_shaders"))
         self._shaders_btn.setObjectName("ActionBtn")
-        self._shaders_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._shaders_btn, _BTN_ACTION)
         self._shaders_btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self._shaders_btn.clicked.connect(self._clear_shaders)
 
         self._prefix_btn = QPushButton(self._t("cleaner.btn_clear_prefix"))
         self._prefix_btn.setObjectName("DeleteBtn")
-        self._prefix_btn.setStyleSheet(_BTN_DELETE)
+        kit_qt.style(self._prefix_btn, _BTN_DELETE)
         self._prefix_btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self._prefix_btn.clicked.connect(self._clear_prefix)
 
@@ -262,7 +268,7 @@ class ProtonModule(BaseModule):
         open_row = QHBoxLayout()
         self._open_btn = QPushButton(self.t("proton.open_btn"))
         self._open_btn.setObjectName("OpenAppBtn")
-        self._open_btn.setStyleSheet(_BTN_OPEN)
+        kit_qt.style(self._open_btn, _BTN_OPEN)
         self._open_btn.clicked.connect(
             lambda: self.launch_app("/usr/bin/equestria-proton-settings"))
         open_row.addWidget(self._open_btn)
@@ -294,7 +300,7 @@ class ProtonModule(BaseModule):
         refresh_row = QHBoxLayout()
         self._refresh_btn = QPushButton(self.t("cleaner.btn_refresh"))
         self._refresh_btn.setObjectName("ActionBtn")
-        self._refresh_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._refresh_btn, _BTN_ACTION)
         self._refresh_btn.clicked.connect(self._load_apps)
         refresh_row.addWidget(self._refresh_btn)
         refresh_row.addStretch()
@@ -311,7 +317,7 @@ class ProtonModule(BaseModule):
         mc.addStretch()
         self._mesa_btn = QPushButton(self.t("cleaner.btn_clear_mesa"))
         self._mesa_btn.setObjectName("ActionBtn")
-        self._mesa_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._mesa_btn, _BTN_ACTION)
         self._mesa_btn.clicked.connect(self._clear_mesa)
         mc.addWidget(self._mesa_btn)
         main.addWidget(mesa_card)

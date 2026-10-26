@@ -12,6 +12,12 @@ from PyQt6.QtGui import QPainter, QColor
 
 from pacman_repo import FileRepositoryStore
 from repository_dialog import RepositoryManagerDialog
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 # All code comments inside the script are written in English as requested
 
@@ -119,7 +125,7 @@ class SettingsDialog(QDialog):
                     font-size: 13px;
                 }
                 """
-                self.setStyleSheet(qss_content)
+                kit_qt.style(self, qss_content)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 15, 20, 20)

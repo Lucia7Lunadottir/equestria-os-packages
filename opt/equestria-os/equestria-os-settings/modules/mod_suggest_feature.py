@@ -18,19 +18,25 @@ from PyQt6.QtWidgets import (
 )
 
 from base_module import BaseModule
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 _REPO = "Lucia7Lunadottir/equestria-os-packages"
 _CATEGORY = "ideas"
 _MAX_BODY_LEN = 6000  # keep the generated URL well under browser/CDN limits
 
 _BTN_SEND = (
-    "QPushButton{background:rgb(80,55,130);color:white;"
+    "QPushButton{background:@accent%55@;color:white;"
     "border-radius:8px;padding:8px 22px;font-size:14px;font-weight:bold;"
-    "border:1px solid rgb(110,80,170);}"
-    "QPushButton:hover{background:rgb(110,75,170);"
-    "border:1px solid rgb(140,100,210);}"
+    "border:1px solid @accent%75@;}"
+    "QPushButton:hover{background:@accent%75@;"
+    "border:1px solid @accent@;}"
 )
-_RESULT_ERR = "QLabel{color:rgb(255,130,130);font-size:12px;background:transparent;}"
+_RESULT_ERR = "QLabel{color:@red@;font-size:12px;background:transparent;}"
 
 
 class SuggestFeatureModule(BaseModule):
@@ -107,14 +113,14 @@ class SuggestFeatureModule(BaseModule):
 
         btn_row = QHBoxLayout()
         self._send_btn = QPushButton(self.t("suggest_feature.send_btn"))
-        self._send_btn.setStyleSheet(_BTN_SEND)
+        kit_qt.style(self._send_btn, _BTN_SEND)
         self._send_btn.clicked.connect(self._on_send)
         btn_row.addWidget(self._send_btn)
         btn_row.addStretch()
         layout.addLayout(btn_row)
 
         self._error_lbl = QLabel("")
-        self._error_lbl.setStyleSheet(_RESULT_ERR)
+        kit_qt.style(self._error_lbl, _RESULT_ERR)
         self._error_lbl.setWordWrap(True)
         self._error_lbl.hide()
         layout.addWidget(self._error_lbl)

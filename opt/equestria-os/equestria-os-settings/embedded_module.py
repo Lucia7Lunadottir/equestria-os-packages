@@ -20,6 +20,13 @@ from PyQt6.QtWidgets import (
 )
 
 from base_module import BaseModule
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
 
 # Module names that are reused across different apps
 _COMMON_NAMES = [
@@ -96,6 +103,21 @@ class EmbeddedAppModule(BaseModule):
     main_file: str = "main.py"
     main_class: str = ""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Встроенное приложение берём из соседней с настройками папки: в системе
+        # это тот же /opt/equestria-os/<app>, а при запуске из исходников —
+        # свежий код репозитория, а не старая установленная версия.
+        if self.lib_dir:
+            here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            name = os.path.basename(self.lib_dir.rstrip("/"))
+            # в репозитории папка панели задач называется с опечаткой «equstria-…»
+            for cand in (name, name.replace("equestria-", "equstria-", 1)):
+                sibling = os.path.join(here, cand)
+                if os.path.isfile(os.path.join(sibling, self.main_file)):
+                    self.lib_dir = sibling
+                    break
+
     def is_available(self) -> bool:
         """Returns False if the target directory in /opt does not exist."""
         if not self.lib_dir or not os.path.isdir(self.lib_dir):
@@ -153,13 +175,12 @@ class EmbeddedAppModule(BaseModule):
             title_font = "sans-serif"
             if os.path.exists(font_path):
                 from PyQt6.QtGui import QFontDatabase
-                fid = QFontDatabase.addApplicationFont(font_path)
-                families = QFontDatabase.applicationFontFamilies(fid)
+                families = font_families(font_path)
                 if families:
                     title_font = families[0]
             raw = raw.replace("{{TITLE_FONT}}", f'"{title_font}"')
 
-            self._win.setStyleSheet(raw)
+            kit_qt.style(self._win, raw)
         except OSError:
             pass
 
@@ -177,7 +198,8 @@ class EmbeddedAppModule(BaseModule):
             # без %20: Qt читает локальный путь в url() буквально
             return p.replace("\\", "/")
 
-        u, uh, c = _q(cb_u), _q(cb_uh), _q(cb_c)
+        # Общие иконки флажков из equestria_kit — в цветах текущей темы
+        u, uh, c = "@icon:cb_unchecked@", "@icon:cb_unchecked_hover@", "@icon:cb_checked@"
 
         checkboxes = self._win.findChildren(QCheckBox)
         if not checkboxes:
@@ -195,9 +217,9 @@ class EmbeddedAppModule(BaseModule):
                 f"{prefix}::indicator:checked{{image:url({c});"
                 f"background-color:transparent;border:none;}}"
             )
-            cb.setStyleSheet(cb.styleSheet() + win_append)
+            kit_qt.style_append(cb, win_append)
 
-        self._win.setStyleSheet(self._win.styleSheet() + win_append)
+        kit_qt.style_append(self._win, win_append)
 
     def _hide_lang_ui(self) -> None:
         win = self._win

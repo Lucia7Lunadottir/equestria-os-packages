@@ -1,0 +1,18 @@
+# Maintainer: Equestria OS
+pkgname=equestria-clock
+pkgver=1.0
+pkgrel=3
+pkgdesc="Будильник, таймер и секундомер (PyQt6)"
+arch=('any')
+license=('custom')
+depends=('python-pyqt6' 'equestria-qt-kit' 'pipewire')
+source=("equestria_clock.py" "equestria-clock.desktop" "i18n.json")
+sha256sums=('700620a964b111a3f5d40937aee2e43458b25af6407375d308147b0aa0e18aca'
+            '46d614fdce0f80088420dabd34a9cfb7ef0f12a833b1bbb321d11e11157317c5'
+            'a3a3586e02f96a63cca921bebeb6b6ed50a41321fc0b990b2784ec4053789a9d')
+
+package() {
+    install -Dm755 "$srcdir/equestria_clock.py" "$pkgdir/usr/bin/equestria-clock"
+    install -Dm644 "$srcdir/equestria-clock.desktop" "$pkgdir/usr/share/applications/equestria-clock.desktop"
+    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-clock/i18n.json"
+}

@@ -1,5 +1,5 @@
 QWidget#root {
-    background-color: rgb(18, 18, 28);
+    background-color: @crust@;
 }
 
 /* Make stacked widget pages transparent so #root background shows through */
@@ -10,7 +10,7 @@ QStackedWidget {
 QLabel[cssClass="title"] {
     font-family: "Equestria_Cyrillic", "Noto Sans", sans-serif;
     font-size: 24px;
-    color: rgb(220, 200, 255);
+    color: @text@;
     font-weight: bold;
     margin-bottom: 4px;
 }
@@ -18,7 +18,7 @@ QLabel[cssClass="title"] {
 QLabel[cssClass="subtitle"] {
     font-family: "Equestria_Cyrillic", "Noto Sans", sans-serif;
     font-size: 13px;
-    color: rgb(140, 130, 160);
+    color: @subtext@;
     margin-bottom: 20px;
 }
 
@@ -31,19 +31,19 @@ QLabel[cssClass="char-name"] {
 
 /* Status Bar & Panels */
 QWidget[cssClass="status-bar"] {
-    background-color: rgb(25, 22, 38);
+    background-color: @mantle@;
     border-radius: 12px;
 }
 
 QLabel[cssClass="status-label"] {
     font-size: 13px;
-    color: rgb(180, 170, 210);
+    color: @subtext@;
 }
 
 /* Action Buttons */
 QPushButton[cssClass="action-btn"] {
-    background-color: rgb(100, 60, 160);
-    border: 1px solid rgb(140, 90, 200);
+    background-color: @accent%70@;
+    border: 1px solid @accent@;
     border-radius: 8px;
     color: white;
     padding: 6px 16px;
@@ -51,28 +51,28 @@ QPushButton[cssClass="action-btn"] {
 }
 
 QPushButton[cssClass="action-btn"]:hover {
-    background-color: rgb(120, 80, 180);
+    background-color: @accent@;
 }
 
 /* Panel Theme Buttons */
 QPushButton[cssClass="theme-btn"] {
     background-color: transparent;
-    color: rgb(180, 170, 210);
-    border: 1px solid rgb(69, 71, 90);
+    color: @subtext@;
+    border: 1px solid @surface1@;
     border-radius: 6px;
     padding: 4px 14px;
     font-size: 12px;
 }
 
 QPushButton[cssClass="theme-btn"]:hover {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 200, 255);
+    background-color: @surface0@;
+    color: @text@;
 }
 
 QPushButton[cssClass="theme-btn"][active="true"] {
-    background-color: rgb(100, 60, 160);
+    background-color: @accent%70@;
     color: white;
-    border: 1px solid rgb(140, 90, 200);
+    border: 1px solid @accent@;
     font-weight: bold;
 }
 
@@ -80,9 +80,9 @@ QPushButton[cssClass="theme-btn"][active="true"] {
    No ::drop-down/::down-arrow rules here on purpose: declaring them makes
    Qt stop drawing the native arrow. */
 QComboBox#LangCombo {
-    background-color: rgb(40, 35, 60);
-    color: rgb(220, 200, 255);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @surface1@;
     border-radius: 4px;
     padding: 2px 8px;
     font-size: 11px;
@@ -90,7 +90,7 @@ QComboBox#LangCombo {
 }
 
 QComboBox#LangCombo:hover {
-    border: 1px solid rgb(140, 90, 200);
+    border: 1px solid @accent@;
 }
 
 /* Scroll Area */
@@ -101,49 +101,49 @@ QScrollArea {
 
 /* Preset Cards */
 QPushButton[cssClass="preset-card"] {
-    background-color: rgb(30, 25, 45);
+    background-color: @surface0%45@;
     border-radius: 16px;
-    border: 2px solid rgb(49, 44, 70);
+    border: 2px solid @surface1@;
     padding: 8px;
 }
 
 QPushButton[cssClass="preset-card"]:hover {
-    background-color: rgb(40, 35, 60);
-    border: 2px solid rgb(80, 70, 110);
+    background-color: @surface0@;
+    border: 2px solid @surface2@;
 }
 
 QPushButton[cssClass="preset-card"][active="true"] {
-    border: 3px solid rgb(245, 194, 231);
-    background-color: rgb(40, 35, 60);
+    border: 3px solid @accent@;
+    background-color: @surface0@;
 }
 
 /* Color Swatch Button */
 QPushButton#ColorSwatchBtn {
     border-radius: 4px;
-    border: 2px solid rgb(69, 71, 90);
+    border: 2px solid @surface1@;
     min-width: 40px;
     min-height: 24px;
 }
 
 QPushButton#ColorSwatchBtn:hover {
-    border: 2px solid rgb(180, 150, 210);
+    border: 2px solid @accent_hover@;
 }
 
 /* Opacity Slider */
 QSlider::groove:horizontal {
-    background: rgb(40, 35, 60);
+    background: @surface0@;
     height: 4px;
     border-radius: 2px;
 }
 
 QSlider::sub-page:horizontal {
-    background: rgb(140, 100, 200);
+    background: @accent@;
     height: 4px;
     border-radius: 2px;
 }
 
 QSlider::handle:horizontal {
-    background: rgb(245, 194, 231);
+    background: @accent@;
     width: 14px;
     height: 14px;
     margin: -5px 0;
@@ -153,93 +153,93 @@ QSlider::handle:horizontal {
 /* Layout Description Label */
 QLabel[cssClass="layout-desc"] {
     font-size: 11px;
-    color: rgb(120, 110, 150);
+    color: @subtext@;
 }
 
 /* Editor Fields */
 QLineEdit#EditorField {
-    background-color: rgb(15, 12, 25);
-    border: 1px solid rgb(60, 55, 90);
+    background-color: @crust@;
+    border: 1px solid @surface2@;
     border-radius: 6px;
-    color: rgb(220, 200, 255);
+    color: @text@;
     padding: 5px 8px;
     font-size: 13px;
 }
 
 QLineEdit#EditorField:focus {
-    border: 1px solid rgb(140, 90, 200);
+    border: 1px solid @accent@;
 }
 
 QLineEdit#EditorField[readOnly="true"] {
-    color: rgb(120, 110, 150);
+    color: @subtext@;
 }
 
 /* Editor SpinBox */
 QSpinBox#EditorSpinBox {
-    background-color: rgb(15, 12, 25);
-    border: 1px solid rgb(60, 55, 90);
+    background-color: @crust@;
+    border: 1px solid @surface2@;
     border-radius: 6px;
-    color: rgb(220, 200, 255);
+    color: @text@;
     padding: 4px 6px;
     font-size: 13px;
 }
 
 QSpinBox#EditorSpinBox:focus {
-    border: 1px solid rgb(140, 90, 200);
+    border: 1px solid @accent@;
 }
 
 QSpinBox#EditorSpinBox::up-button, QSpinBox#EditorSpinBox::down-button {
-    background: rgb(60, 50, 90);
+    background: @surface1@;
     border: none;
     border-radius: 3px;
     width: 16px;
 }
 
 QSpinBox#EditorSpinBox::up-button:hover, QSpinBox#EditorSpinBox::down-button:hover {
-    background: rgb(100, 60, 160);
+    background: @accent%70@;
 }
 
 /* Browse / small utility button */
 QPushButton#BrowseBtn {
-    background-color: rgb(50, 45, 75);
-    border: 1px solid rgb(80, 70, 110);
+    background-color: @surface1@;
+    border: 1px solid @surface2@;
     border-radius: 4px;
-    color: rgb(200, 190, 230);
+    color: @text@;
     font-size: 13px;
     padding: 0;
 }
 
 QPushButton#BrowseBtn:hover {
-    background-color: rgb(80, 60, 120);
+    background-color: @accent%55@;
 }
 
 /* Editor section divider */
 QFrame#EditorDivider {
-    color: rgb(49, 44, 70);
+    color: @surface2@;
     margin: 4px 0;
 }
 
 /* Capture status label */
 QLabel[cssClass="capture-status"] {
     font-size: 12px;
-    color: rgb(140, 130, 160);
+    color: @subtext@;
     font-style: italic;
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────── */
 QScrollBar:vertical {
-    background: rgb(20, 16, 32);
+    background: @mantle@;
     width: 7px;
     border-radius: 3px;
     margin: 0;
 }
 QScrollBar::handle:vertical {
-    background: rgb(80, 65, 115);
+    background: @accent%35@;
     border-radius: 3px;
     min-height: 24px;
 }
 QScrollBar::handle:vertical:hover {
-    background: rgb(120, 90, 170);
+    background: @accent@;
 }
 QScrollBar::add-line:vertical,
 QScrollBar::sub-line:vertical {
@@ -252,18 +252,18 @@ QScrollBar::sub-page:vertical {
 }
 
 QScrollBar:horizontal {
-    background: rgb(20, 16, 32);
+    background: @mantle@;
     height: 7px;
     border-radius: 3px;
     margin: 0;
 }
 QScrollBar::handle:horizontal {
-    background: rgb(80, 65, 115);
+    background: @accent%35@;
     border-radius: 3px;
     min-width: 24px;
 }
 QScrollBar::handle:horizontal:hover {
-    background: rgb(120, 90, 170);
+    background: @accent@;
 }
 QScrollBar::add-line:horizontal,
 QScrollBar::sub-line:horizontal {
@@ -277,18 +277,18 @@ QScrollBar::sub-page:horizontal {
 
 /* ─── Panel Row Widget ───────────────────────────────────────────── */
 QFrame#PanelRow {
-    background-color: rgb(26, 22, 40);
-    border: 1px solid rgb(70, 60, 100);
+    background-color: @base@;
+    border: 1px solid @surface2@;
     border-radius: 8px;
 }
 
 QFrame#PanelRow QLabel {
-    color: rgb(160, 150, 195);
+    color: @subtext@;
     font-size: 12px;
 }
 
 QFrame#PanelRow QCheckBox {
-    color: rgb(180, 170, 215);
+    color: @text@;
     font-size: 12px;
     spacing: 5px;
 }
@@ -296,37 +296,37 @@ QFrame#PanelRow QCheckBox {
 QFrame#PanelRow QCheckBox::indicator {
     width: 14px;
     height: 14px;
-    border: 1px solid rgb(90, 80, 130);
+    border: 1px solid @subtext@;
     border-radius: 3px;
-    background-color: rgb(18, 14, 28);
+    background-color: @mantle@;
 }
 
 QFrame#PanelRow QCheckBox::indicator:hover {
-    border: 1px solid rgb(140, 100, 200);
+    border: 1px solid @accent@;
 }
 
 QFrame#PanelRow QCheckBox::indicator:checked {
-    background-color: rgb(120, 80, 190);
-    border: 1px solid rgb(160, 110, 220);
+    background-color: @accent@;
+    border: 1px solid @accent@;
 }
 
 QFrame#PanelRow QComboBox {
-    background-color: rgb(18, 14, 28);
-    border: 1px solid rgb(58, 52, 88);
+    background-color: @mantle@;
+    border: 1px solid @surface2@;
     border-radius: 5px;
-    color: rgb(200, 190, 230);
+    color: @text@;
     padding: 3px 6px;
     font-size: 12px;
     min-height: 22px;
 }
 
 QFrame#PanelRow QComboBox:hover {
-    border: 1px solid rgb(110, 80, 160);
+    border: 1px solid @accent%75@;
 }
 
 QFrame#PanelRow QComboBox::drop-down {
-    background: rgb(40, 32, 65);
-    border-left: 1px solid rgb(58, 52, 88);
+    background: @surface1@;
+    border-left: 1px solid @surface2@;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
     width: 18px;
@@ -334,46 +334,46 @@ QFrame#PanelRow QComboBox::drop-down {
 
 QFrame#PanelRow QComboBox QAbstractItemView,
 QFrame#PanelRow QComboBox QListView {
-    background-color: rgb(25, 20, 40);
-    color: rgb(200, 190, 230);
-    border: 1px solid rgb(80, 65, 115);
-    selection-background-color: rgb(100, 60, 160);
+    background-color: @base@;
+    color: @text@;
+    border: 1px solid @accent%35@;
+    selection-background-color: @accent%70@;
     selection-color: white;
     outline: none;
 }
 
 QFrame#PanelRow QSpinBox {
-    background-color: rgb(18, 14, 28);
-    border: 2px solid rgb(100, 80, 140);
+    background-color: @mantle@;
+    border: 2px solid @subtext@;
     border-radius: 5px;
-    color: rgb(200, 190, 230);
+    color: @text@;
     padding: 5px 8px;
     font-size: 14px;
     min-height: 32px;
 }
 
 QFrame#PanelRow QSpinBox:hover {
-    border-color: rgb(140, 100, 200);
+    border-color: @accent@;
 }
 
 QFrame#PanelRow QSpinBox::up-button,
 QFrame#PanelRow QSpinBox::down-button {
-    background-color: rgb(42, 34, 68);
-    border-left: 2px solid rgb(100, 80, 140);
+    background-color: @surface1@;
+    border-left: 2px solid @subtext@;
     width: 22px;
 }
 
 QFrame#PanelRow QSpinBox::up-button:hover,
 QFrame#PanelRow QSpinBox::down-button:hover {
-    background-color: rgb(100, 60, 160);
+    background-color: @accent%70@;
 }
 
 QFrame#PanelRow QSpinBox::up-arrow {
     width: 0px;
     height: 0px;
-    border-left: 5px solid rgb(42, 34, 68);
-    border-right: 5px solid rgb(42, 34, 68);
-    border-bottom: 5px solid rgb(180, 170, 215);
+    border-left: 5px solid @surface1@;
+    border-right: 5px solid @surface1@;
+    border-bottom: 5px solid @accent_hover@;
 }
 
 QFrame#PanelRow QSpinBox::up-arrow:hover {
@@ -383,9 +383,9 @@ QFrame#PanelRow QSpinBox::up-arrow:hover {
 QFrame#PanelRow QSpinBox::down-arrow {
     width: 0px;
     height: 0px;
-    border-left: 5px solid rgb(42, 34, 68);
-    border-right: 5px solid rgb(42, 34, 68);
-    border-top: 5px solid rgb(180, 170, 215);
+    border-left: 5px solid @surface1@;
+    border-right: 5px solid @surface1@;
+    border-top: 5px solid @accent_hover@;
 }
 
 QFrame#PanelRow QSpinBox::down-arrow:hover {
@@ -393,30 +393,30 @@ QFrame#PanelRow QSpinBox::down-arrow:hover {
 }
 
 QPushButton#PanelMoveBtn {
-    background-color: rgb(40, 35, 62);
-    border: 1px solid rgb(70, 60, 100);
+    background-color: @surface1@;
+    border: 1px solid @surface2@;
     border-radius: 4px;
-    color: rgb(180, 170, 215);
+    color: @text@;
     padding: 0;
 }
 
 QPushButton#PanelMoveBtn:hover {
-    background-color: rgb(80, 65, 120);
+    background-color: @accent%35@;
     color: white;
 }
 
 QPushButton#PanelRemoveBtn {
-    background-color: rgb(60, 28, 42);
-    border: 1px solid rgb(100, 50, 70);
+    background-color: @accent2%25@;
+    border: 1px solid @accent2%45@;
     border-radius: 4px;
-    color: rgb(220, 130, 150);
+    color: @red@;
     font-size: 12px;
     padding: 0;
 }
 
 QPushButton#PanelRemoveBtn:hover {
-    background-color: rgb(100, 40, 60);
-    color: rgb(255, 170, 180);
+    background-color: @red%45@;
+    color: @red@;
 }
 
 QPushButton#PanelMoveBtn,
@@ -427,10 +427,10 @@ QPushButton#BrowseBtn {
 /* ─── QComboBox dropdown (global — prevents transparent popups) ─── */
 QComboBox QAbstractItemView,
 QComboBox QListView {
-    background-color: rgb(25, 20, 40); /* Жестко задаем фон окна списка */
-    color: rgb(200, 190, 230);
-    border: 1px solid rgb(80, 65, 115);
-    selection-background-color: rgb(100, 60, 160);
+    background-color: @base@; /* Жестко задаем фон окна списка */
+    color: @text@;
+    border: 1px solid @accent%35@;
+    selection-background-color: @accent%70@;
     selection-color: white;
     outline: none;
     padding: 2px;
@@ -439,8 +439,8 @@ QComboBox QListView {
 /* Явно задаем фон для самих элементов списка, чтобы избежать прозрачности */
 QComboBox QAbstractItemView::item,
 QComboBox QListView::item {
-    background-color: rgb(25, 20, 40);
-    color: rgb(200, 190, 230);
+    background-color: @base@;
+    color: @text@;
     padding: 4px 8px;
     min-height: 22px;
 }
@@ -450,6 +450,6 @@ QComboBox QAbstractItemView::item:hover,
 QComboBox QAbstractItemView::item:selected,
 QComboBox QListView::item:hover,
 QComboBox QListView::item:selected {
-    background-color: rgb(100, 60, 160);
+    background-color: @accent%70@;
     color: white;
 }

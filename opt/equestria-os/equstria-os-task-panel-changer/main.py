@@ -15,6 +15,13 @@ from PyQt6.QtCore import Qt, QTimer, QProcess
 from ui import Ui_MainWindow
 from widgets import PresetCard
 import plasma_utils
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
 
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
 USER_PATH = os.path.expanduser("~/.local/share/EquestriaOS/PanelStyles/")
@@ -426,8 +433,8 @@ class TaskPanelApp(QMainWindow):
             self.ui.btn_ed_restore.setEnabled(has_default)
             self.ui.btn_ed_delete.setVisible(True)
 
-        self.ui.btn_ed_color_dark.setStyleSheet(f"background-color: {self._ed_color_dark};")
-        self.ui.btn_ed_color_light.setStyleSheet(f"background-color: {self._ed_color_light};")
+        kit_qt.style(self.ui.btn_ed_color_dark, f"background-color: {self._ed_color_dark};")
+        kit_qt.style(self.ui.btn_ed_color_light, f"background-color: {self._ed_color_light};")
         self.ui.sld_ed_opacity.setValue(self._ed_opacity)
         self.ui.lbl_ed_opacity_val.setText(f"{self._ed_opacity}%")
         self._update_theme_buttons()
@@ -464,10 +471,10 @@ class TaskPanelApp(QMainWindow):
         if color.isValid():
             if which == "dark":
                 self._ed_color_dark = color.name()
-                self.ui.btn_ed_color_dark.setStyleSheet(f"background-color: {self._ed_color_dark};")
+                kit_qt.style(self.ui.btn_ed_color_dark, f"background-color: {self._ed_color_dark};")
             else:
                 self._ed_color_light = color.name()
-                self.ui.btn_ed_color_light.setStyleSheet(f"background-color: {self._ed_color_light};")
+                kit_qt.style(self.ui.btn_ed_color_light, f"background-color: {self._ed_color_light};")
 
     def on_ed_opacity_changed(self, value):
         self._ed_opacity = value
@@ -867,17 +874,18 @@ class TaskPanelApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     app.setDesktopFileName("equestria-os-task-panel-changer")
     icon_path = "/usr/share/pixmaps/equestria-os-logo.png"
     app.setWindowIcon(QIcon(icon_path) if os.path.exists(icon_path) else QIcon.fromTheme("preferences-desktop-theme"))
 
     font_path = os.path.join(SYSTEM_PATH, "equestria_cyrillic.ttf")
-    if os.path.exists(font_path): QFontDatabase.addApplicationFont(font_path)
+    font_families(font_path)  # подключаем шрифт Эквестрии для заголовков
     app.setFont(QFont("sans-serif", 11))
 
     qss_path = os.path.join(SYSTEM_PATH, "style.qss")
     if os.path.exists(qss_path):
-        with open(qss_path, "r", encoding="utf-8") as f: app.setStyleSheet(f.read())
+        with open(qss_path, "r", encoding="utf-8") as f: kit_qt.app_style(f.read())
 
     window = TaskPanelApp()
     window.show()

@@ -5,6 +5,12 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QGridLayout, QSizePolicy)
 from PyQt6.QtCore import Qt, QEvent
 from PyQt6.QtGui import QIcon, QPixmap
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 
 class ClickableImageLabel(QLabel):
@@ -36,14 +42,14 @@ class ScreenshotOverlay(QWidget):
 
         self.setObjectName("ScreenshotOverlay")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setStyleSheet("QWidget#ScreenshotOverlay { background-color: rgba(17,17,27,235); }")
+        kit_qt.style(self, "QWidget#ScreenshotOverlay { background-color: @crust/235@; }")
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         nav_css = (
-            "QPushButton { background: rgba(49,50,68,0.85); color: rgb(205,214,244); "
+            "QPushButton { background: @surface0/217@; color: @text@; "
             "border: none; border-radius: 20px; font-size: 18px; font-weight: bold; }"
-            "QPushButton:hover { background: rgba(69,71,90,0.95); }"
-            "QPushButton:disabled { color: rgb(69,71,90); }"
+            "QPushButton:hover { background: @surface1/242@; }"
+            "QPushButton:disabled { color: @surface1@; }"
         )
 
         layout = QVBoxLayout(self)
@@ -52,13 +58,13 @@ class ScreenshotOverlay(QWidget):
 
         top_bar = QHBoxLayout()
         self.lbl_counter = QLabel()
-        self.lbl_counter.setStyleSheet("color: rgb(166,173,200); font-size: 12px; background: transparent;")
+        kit_qt.style(self.lbl_counter, "color: @subtext@; font-size: 12px; background: transparent;")
         top_bar.addWidget(self.lbl_counter)
         top_bar.addStretch()
         self.btn_close = QPushButton("✕")
         self.btn_close.setFixedSize(30, 30)
         self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_close.setStyleSheet(nav_css)
+        kit_qt.style(self.btn_close, nav_css)
         self.btn_close.clicked.connect(self.dismiss)
         top_bar.addWidget(self.btn_close)
         layout.addLayout(top_bar)
@@ -69,7 +75,7 @@ class ScreenshotOverlay(QWidget):
         self.btn_prev = QPushButton("‹")
         self.btn_prev.setFixedSize(40, 80)
         self.btn_prev.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_prev.setStyleSheet(nav_css)
+        kit_qt.style(self.btn_prev, nav_css)
         self.btn_prev.clicked.connect(self._show_prev)
         body.addWidget(self.btn_prev)
 
@@ -80,13 +86,13 @@ class ScreenshotOverlay(QWidget):
         # to its current pixmap's size on every layout pass instead of
         # claiming the stretch space the row was given.
         self.lbl_image.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.lbl_image.setStyleSheet("background: transparent;")
+        kit_qt.style(self.lbl_image, "background: transparent;")
         body.addWidget(self.lbl_image, 1)
 
         self.btn_next = QPushButton("›")
         self.btn_next.setFixedSize(40, 80)
         self.btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_next.setStyleSheet(nav_css)
+        kit_qt.style(self.btn_next, nav_css)
         self.btn_next.clicked.connect(self._show_next)
         body.addWidget(self.btn_next)
 
@@ -180,11 +186,11 @@ class EssentialAppRow(QFrame):
 
         text_layout = QVBoxLayout()
         self.lbl_name = QLabel(app_data.display_name)
-        self.lbl_name.setStyleSheet("color: white; font-weight: bold; font-size: 16px; background: transparent;")
+        kit_qt.style(self.lbl_name, "color: white; font-weight: bold; font-size: 16px; background: transparent;")
 
         desc_text = getattr(app_data, 'display_desc', app_data.desc_key)
         self.lbl_desc = QLabel(desc_text)
-        self.lbl_desc.setStyleSheet("color: rgb(170, 160, 200); font-size: 13px; background: transparent;")
+        kit_qt.style(self.lbl_desc, "color: @text@; font-size: 13px; background: transparent;")
 
         text_layout.addWidget(self.lbl_name)
         text_layout.addWidget(self.lbl_desc)
@@ -223,15 +229,15 @@ class StoreAppRow(QFrame):
 
         info_layout = QVBoxLayout()
         self.lbl_name = QLabel(f"{pkg_data.name} <span style='color:gray; font-size:12px;'>v{pkg_data.version}</span>")
-        self.lbl_name.setStyleSheet("color: white; font-weight: bold; font-size: 15px; background: transparent;")
+        kit_qt.style(self.lbl_name, "color: white; font-weight: bold; font-size: 15px; background: transparent;")
         self.lbl_desc = QLabel(pkg_data.desc[:80] + "..." if len(pkg_data.desc) > 80 else pkg_data.desc)
-        self.lbl_desc.setStyleSheet("color: rgb(180, 170, 200); font-size: 12px; background: transparent;")
+        kit_qt.style(self.lbl_desc, "color: @subtext@; font-size: 12px; background: transparent;")
         info_layout.addWidget(self.lbl_name)
         info_layout.addWidget(self.lbl_desc)
         num_votes = getattr(pkg_data, 'num_votes', 0)
         if num_votes and getattr(pkg_data, 'source_type', '') == 'aur':
             lbl_votes = QLabel(f"⬆ {num_votes} votes")
-            lbl_votes.setStyleSheet("color: #f9e2af; font-size: 11px; background: transparent;")
+            kit_qt.style(lbl_votes, "color: @yellow@; font-size: 11px; background: transparent;")
             info_layout.addWidget(lbl_votes)
         layout.addLayout(info_layout, 1)
 
@@ -259,27 +265,27 @@ class AppDetailWidget(QWidget):
     _SS_H = 250
 
     _CSS_BTN_INSTALL = (
-        "QPushButton { background-color: rgb(203,166,247); color: rgb(17,17,27); "
+        "QPushButton { background-color: @accent@; color: @on_accent@; "
         "border-radius: 8px; padding: 8px 16px; font-weight: bold; font-size: 14px; border: none; }"
-        "QPushButton:hover { background-color: rgb(190,140,240); }"
-        "QPushButton:disabled { background-color: rgb(69,71,90); color: rgb(108,112,134); }"
+        "QPushButton:hover { background-color: @accent_hover@; }"
+        "QPushButton:disabled { background-color: @surface1@; color: @subtext@; }"
     )
     _CSS_BTN_REMOVE = (
-        "QPushButton { background-color: rgb(243,139,168); color: rgb(17,17,27); "
+        "QPushButton { background-color: @red@; color: @on_red@; "
         "border-radius: 8px; padding: 8px 16px; font-weight: bold; font-size: 14px; border: none; }"
-        "QPushButton:hover { background-color: rgb(220,100,130); }"
+        "QPushButton:hover { background-color: @red@; }"
     )
     _CSS_BTN_UPDATE = (
-        "QPushButton { background-color: rgb(249,226,175); color: rgb(17,17,27); "
+        "QPushButton { background-color: @yellow@; color: @on_yellow@; "
         "border-radius: 8px; padding: 8px 16px; font-weight: bold; font-size: 14px; border: none; }"
-        "QPushButton:hover { background-color: rgb(230,200,140); }"
+        "QPushButton:hover { background-color: @yellow@; }"
     )
     _CSS_COMBO = (
-        "QComboBox { background-color: rgb(17,17,27); border: 1px solid rgb(49,50,68); "
+        "QComboBox { background-color: @crust@; border: 1px solid @surface0@; "
         "border-radius: 8px; padding: 6px 12px; color: white; }"
         "QComboBox::drop-down { border: none; }"
-        "QComboBox QAbstractItemView { background-color: rgb(17,17,27); color: white; "
-        "selection-background-color: rgb(49,50,68); border: 1px solid rgb(49,50,68); }"
+        "QComboBox QAbstractItemView { background-color: @crust@; color: white; "
+        "selection-background-color: @surface0@; border: 1px solid @surface0@; }"
     )
 
     def _setup_ui(self):
@@ -293,10 +299,10 @@ class AppDetailWidget(QWidget):
         self.btn_back.setObjectName("DetailBackBtn")
         self.btn_back.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_back.setFixedWidth(110)
-        self.btn_back.setStyleSheet(
-            "QPushButton { background-color: transparent; color: rgb(137,180,250); "
-            "border: 1px solid rgb(137,180,250); border-radius: 6px; padding: 6px 10px; font-weight: bold; }"
-            "QPushButton:hover { background-color: rgba(137,180,250,0.15); }"
+        kit_qt.style(self.btn_back, 
+            "QPushButton { background-color: transparent; color: @accent2@; "
+            "border: 1px solid @accent2@; border-radius: 6px; padding: 6px 10px; font-weight: bold; }"
+            "QPushButton:hover { background-color: @accent2/38@; }"
         )
         self.btn_back.clicked.connect(self._on_back)
         main_layout.addWidget(self.btn_back)
@@ -308,23 +314,23 @@ class AppDetailWidget(QWidget):
         self.lbl_icon = QLabel()
         self.lbl_icon.setFixedSize(80, 80)
         self.lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_icon.setStyleSheet(
-            "background: rgba(49,50,68,0.5); border-radius: 10px; border: 1px solid rgba(69,71,90,0.5);"
+        kit_qt.style(self.lbl_icon, 
+            "background: @surface0/128@; border-radius: 10px; border: 1px solid @surface1/128@;"
         )
         header_layout.addWidget(self.lbl_icon)
 
         info_layout = QVBoxLayout()
         info_layout.setSpacing(3)
         self.lbl_app_name = QLabel()
-        self.lbl_app_name.setStyleSheet(
+        kit_qt.style(self.lbl_app_name, 
             "color: white; font-size: 22px; font-weight: bold; background: transparent;"
         )
         self.lbl_version = QLabel()
-        self.lbl_version.setStyleSheet("color: #6c7086; font-size: 14px; background: transparent;")
+        kit_qt.style(self.lbl_version, "color: @subtext@; font-size: 14px; background: transparent;")
         self.lbl_source = QLabel()
-        self.lbl_source.setStyleSheet("color: #89b4fa; font-size: 14px; background: transparent;")
+        kit_qt.style(self.lbl_source, "color: @accent2@; font-size: 14px; background: transparent;")
         self.lbl_votes = QLabel()
-        self.lbl_votes.setStyleSheet("color: #f9e2af; font-size: 13px; background: transparent;")
+        kit_qt.style(self.lbl_votes, "color: @yellow@; font-size: 13px; background: transparent;")
         self.lbl_votes.hide()
         info_layout.addWidget(self.lbl_app_name)
         info_layout.addWidget(self.lbl_version)
@@ -340,19 +346,19 @@ class AppDetailWidget(QWidget):
         self.btn_action.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_action.setFixedWidth(160)
         self.btn_action.setMinimumHeight(40)
-        self.btn_action.setStyleSheet(self._CSS_BTN_INSTALL)
+        kit_qt.style(self.btn_action, self._CSS_BTN_INSTALL)
 
         # Version selector — inline styled to guarantee visibility
         self.combo_version = QComboBox()
         self.combo_version.setFixedWidth(160)
-        self.combo_version.setStyleSheet(self._CSS_COMBO)
+        kit_qt.style(self.combo_version, self._CSS_COMBO)
         self.combo_version.hide()
 
 
         # Source selector (Выбор источника)
         self.combo_source_selector = QComboBox()
         self.combo_source_selector.setFixedWidth(160)
-        self.combo_source_selector.setStyleSheet(self._CSS_COMBO)
+        kit_qt.style(self.combo_source_selector, self._CSS_COMBO)
         self.combo_source_selector.hide()
 
         action_col.addWidget(self.btn_action)
@@ -364,14 +370,14 @@ class AppDetailWidget(QWidget):
         # Separator
         sep = QFrame()
         sep.setFrameShape(QFrame.Shape.HLine)
-        sep.setStyleSheet("background: rgba(49,50,68,0.8); max-height: 1px; border: none;")
+        kit_qt.style(sep, "background: @surface0/204@; max-height: 1px; border: none;")
         main_layout.addWidget(sep)
 
         # AUR warning
         self.lbl_aur_warning = QLabel()
-        self.lbl_aur_warning.setStyleSheet(
-            "color: #f9e2af; background: rgba(249,226,175,0.1); border-radius: 6px; "
-            "padding: 8px; font-size: 13px; border: 1px solid rgba(249,226,175,0.3);"
+        kit_qt.style(self.lbl_aur_warning, 
+            "color: @yellow@; background: @yellow/26@; border-radius: 6px; "
+            "padding: 8px; font-size: 13px; border: 1px solid @yellow/76@;"
         )
         self.lbl_aur_warning.setWordWrap(True)
         self.lbl_aur_warning.hide()
@@ -379,7 +385,7 @@ class AppDetailWidget(QWidget):
 
         # Description (word-wrapped, limited to 3 lines to save space)
         self.lbl_desc = QLabel()
-        self.lbl_desc.setStyleSheet("color: #bac2de; font-size: 14px; background: transparent;")
+        kit_qt.style(self.lbl_desc, "color: @subtext@; font-size: 14px; background: transparent;")
         self.lbl_desc.setWordWrap(True)
         self.lbl_desc.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.lbl_desc.setMaximumHeight(80)
@@ -388,12 +394,12 @@ class AppDetailWidget(QWidget):
         # Screenshots separator + header
         sep2 = QFrame()
         sep2.setFrameShape(QFrame.Shape.HLine)
-        sep2.setStyleSheet("background: rgba(49,50,68,0.8); max-height: 1px; border: none;")
+        kit_qt.style(sep2, "background: @surface0/204@; max-height: 1px; border: none;")
         main_layout.addWidget(sep2)
 
         self.lbl_screenshots_header = QLabel("Screenshots")
-        self.lbl_screenshots_header.setStyleSheet(
-            "color: #89b4fa; font-weight: bold; font-size: 11px; "
+        kit_qt.style(self.lbl_screenshots_header, 
+            "color: @accent2@; font-weight: bold; font-size: 11px; "
             "text-transform: uppercase; background: transparent; padding-left: 2px;"
         )
         main_layout.addWidget(self.lbl_screenshots_header)
@@ -408,12 +414,12 @@ class AppDetailWidget(QWidget):
         self.scroll_screenshots.setFixedHeight(_sa_h)
         self.scroll_screenshots.setWidgetResizable(False)
         # Must set style on both the scroll area and its viewport
-        self.scroll_screenshots.setStyleSheet(
+        kit_qt.style(self.scroll_screenshots, 
             "QScrollArea#ScreenshotScroll { background: transparent; border: none; }"
         )
 
         self.screenshots_container = QWidget()
-        self.screenshots_container.setStyleSheet("background: transparent;")
+        kit_qt.style(self.screenshots_container, "background: transparent;")
         self.screenshots_container.setFixedHeight(self._SS_H + 10)
         self.screenshots_layout = QHBoxLayout(self.screenshots_container)
         self.screenshots_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
@@ -421,7 +427,7 @@ class AppDetailWidget(QWidget):
         self.screenshots_layout.setSpacing(10)
         self.scroll_screenshots.setWidget(self.screenshots_container)
         # Set viewport background AFTER setWidget (it recreates the viewport)
-        self.scroll_screenshots.viewport().setStyleSheet("background: transparent;")
+        kit_qt.style(self.scroll_screenshots.viewport(), "background: transparent;")
 
         main_layout.addWidget(self.scroll_screenshots)
         main_layout.addStretch()
@@ -528,17 +534,17 @@ class AppDetailWidget(QWidget):
         if is_upgradable:
             self.btn_action.setText(t_func("ui.update"))
             self.btn_action.setEnabled(True)
-            self.btn_action.setStyleSheet(self._CSS_BTN_UPDATE)
+            kit_qt.style(self.btn_action, self._CSS_BTN_UPDATE)
             if self.on_install: self.btn_action.clicked.connect(lambda: self.on_install(pkg_data))
         elif is_installed:
             self.btn_action.setText(t_func("ui.remove"))
             self.btn_action.setEnabled(True)
-            self.btn_action.setStyleSheet(self._CSS_BTN_REMOVE)
+            kit_qt.style(self.btn_action, self._CSS_BTN_REMOVE)
             if self.on_remove: self.btn_action.clicked.connect(lambda: self.on_remove(pkg_data))
         else:
             self.btn_action.setText(t_func("ui.install"))
             self.btn_action.setEnabled(True)
-            self.btn_action.setStyleSheet(self._CSS_BTN_INSTALL)
+            kit_qt.style(self.btn_action, self._CSS_BTN_INSTALL)
             if self.on_install: self.btn_action.clicked.connect(lambda: self.on_install(pkg_data))
 
         # Оповещаем main.py, что источник сменился (чтобы подгрузить нужные скриншоты)
@@ -563,9 +569,9 @@ class AppDetailWidget(QWidget):
         lbl = ClickableImageLabel(on_click=self._on_screenshot_clicked)
         self._screenshot_labels.append(lbl)
         lbl.setFixedSize(self._SS_W, self._SS_H)
-        lbl.setStyleSheet(
-            "background: rgba(49,50,68,0.5); border-radius: 8px; "
-            "border: 1px solid rgba(69,71,90,0.5); color: #6c7086;"
+        kit_qt.style(lbl, 
+            "background: @surface0/128@; border-radius: 8px; "
+            "border: 1px solid @surface1/128@; color: @subtext@;"
         )
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl.setText("...")
@@ -588,7 +594,7 @@ class AppDetailWidget(QWidget):
     def show_no_screenshots(self, t_func):
         self.clear_screenshots()
         lbl = QLabel(t_func("ui.no_screenshots"))
-        lbl.setStyleSheet("color: #6c7086; font-size: 13px; background: transparent;")
+        kit_qt.style(lbl, "color: @subtext@; font-size: 13px; background: transparent;")
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.screenshots_layout.addWidget(lbl)
 
@@ -768,7 +774,7 @@ class Ui_SoftwareCenter:
 
         self.store_loading_lbl = QLabel("Loading package database... Please wait.")
         self.store_loading_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.store_loading_lbl.setStyleSheet("color: #a6adc8; font-size: 16px;")
+        kit_qt.style(self.store_loading_lbl, "color: @subtext@; font-size: 16px;")
         self.layout_store.addWidget(self.store_loading_lbl)
 
         page1_layout.addWidget(self.scroll_store)
@@ -782,7 +788,7 @@ class Ui_SoftwareCenter:
         self.btn_prev_page.setFixedWidth(120)
 
         self.lbl_page_info = QLabel("Page 1 / 1")
-        self.lbl_page_info.setStyleSheet("color: rgb(180, 170, 200); font-weight: bold;")
+        kit_qt.style(self.lbl_page_info, "color: @subtext@; font-weight: bold;")
         self.lbl_page_info.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.btn_next_page = QPushButton("Next ➡")

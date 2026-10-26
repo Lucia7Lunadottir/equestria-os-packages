@@ -3,6 +3,13 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QComboBox
 from PyQt6.QtGui import QFontDatabase, QFont, QIcon
 from PyQt6.QtCore import Qt, QLocale # Добавили QLocale
 from ui_welcome import Ui_WelcomeHub
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
 
 class Item:
     def __init__(self, name, target, launch_type="app"):
@@ -20,14 +27,13 @@ class main_app(QMainWindow, Ui_WelcomeHub):
 
         f_path = os.path.join(self.base_path, "equestria_cyrillic.ttf")
         if os.path.exists(f_path):
-            fid = QFontDatabase.addApplicationFont(f_path)
-            families = QFontDatabase.applicationFontFamilies(fid)
+            families = font_families(f_path)
             if families:
                 self.sidebar_title.setFont(QFont(families[0], 22, QFont.Weight.Bold))
                 self.cat_title.setFont(QFont(families[0], 26, QFont.Weight.Bold))
 
         if os.path.exists(os.path.join(self.base_path, "style.qss")):
-            self.setStyleSheet(open(os.path.join(self.base_path, "style.qss")).read())
+            kit_qt.style(self, open(os.path.join(self.base_path, "style.qss")).read())
 
         self.strings = {
             "cat.system": {"en":"🛠️ System", "ru":"🛠️ Система", "de":"🛠️ System", "fr":"🛠️ Système", "es":"🛠️ Sistema", "pt":"🛠️ Sistema", "pl":"🛠️ System", "uk":"🛠️ Система", "zh":"🛠️ 系统", "ja":"🛠️ システム"},
@@ -283,6 +289,7 @@ class main_app(QMainWindow, Ui_WelcomeHub):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     app.setDesktopFileName("equestria-os-welcome")
     icon_path = "/usr/share/pixmaps/equestria-os-logo.png"
     if os.path.exists(icon_path):

@@ -1,9 +1,9 @@
 QWidget#root {
-    background-color: rgb(26, 24, 41);
+    background-color: @base@;
 }
 
 QWidget {
-    color: rgb(205, 214, 244);
+    color: @text@;
     font-family: "Noto Sans", sans-serif;
     font-size: 14px;
 }
@@ -11,19 +11,19 @@ QWidget {
 /* ЗАГОЛОВОК ТЕПЕРЬ ПОДХВАТЫВАЕТ ШРИФТ ИЗ ПИТОНА */
 QLabel#TitleLabel {
     font-family: {{TITLE_FONT}}, "Noto Sans", sans-serif;
-    color: rgb(245, 194, 231);
+    color: @accent@;
     margin-bottom: 10px;
     background: transparent;
 }
 
 QFrame#LeftPanel {
-    background-color: rgb(30, 28, 48);
+    background-color: @surface0%30@;
     border-radius: 15px;
-    border: 1px solid rgb(49, 50, 68);
+    border: 1px solid @surface0@;
 }
 
 QLabel#CategoryHeader {
-    color: rgb(137, 180, 250);
+    color: @accent2@;
     font-weight: bold;
     padding-left: 5px;
     margin-top: 10px;
@@ -40,36 +40,36 @@ QListWidget#CategoryList {
 QListWidget#CategoryList::item {
     padding: 10px;
     border-radius: 8px;
-    color: rgb(186, 194, 222);
+    color: @subtext@;
 }
 
 QListWidget#CategoryList::item:hover {
-    background-color: rgb(49, 50, 68);
+    background-color: @surface0@;
 }
 
 QListWidget#CategoryList::item:selected {
-    background-color: rgb(137, 180, 250);
-    color: rgb(17, 17, 27);
+    background-color: @accent2@;
+    color: @on_accent2@;
     font-weight: bold;
 }
 
 QPushButton#NavBtn {
-    background-color: rgb(49, 50, 68);
+    background-color: @surface0@;
     color: white;
     border-radius: 8px;
     padding: 10px;
     text-align: left;
-    border: 1px solid rgb(69, 71, 90);
+    border: 1px solid @surface1@;
 }
 
 QPushButton#NavBtn:hover {
-    background-color: rgb(69, 71, 90);
-    border: 1px solid rgb(137, 180, 250);
+    background-color: @surface1@;
+    border: 1px solid @accent2@;
 }
 
 QPushButton#IntegrityBtn {
-    background-color: rgb(137, 180, 250);
-    color: rgb(17, 17, 27);
+    background-color: @accent2@;
+    color: @on_accent2@;
     border-radius: 10px;
     font-weight: bold;
     font-size: 14px;
@@ -77,23 +77,23 @@ QPushButton#IntegrityBtn {
 }
 
 QPushButton#IntegrityBtn:hover {
-    background-color: rgb(116, 160, 230);
+    background-color: @accent2@;
 }
 
 /* Диалог выбора режима очистки кэша: системный QMessageBox светлый,
    красим под тему приложения. Кнопкам в коде назначены DetailActionBtn /
    CacheCleanBtn / DetailBackBtn — они берут стили ниже. */
 QMessageBox {
-    background-color: rgb(30, 30, 46);
+    background-color: @base@;
 }
 QMessageBox QLabel {
-    color: rgb(205, 214, 244);
+    color: @text@;
     font-size: 13px;
 }
 
 QPushButton#CacheCleanBtn {
-    background-color: rgb(250, 179, 135);
-    color: rgb(17, 17, 27);
+    background-color: @yellow@;
+    color: @on_yellow@;
     border-radius: 10px;
     font-weight: bold;
     font-size: 14px;
@@ -101,51 +101,51 @@ QPushButton#CacheCleanBtn {
 }
 
 QPushButton#CacheCleanBtn:hover {
-    background-color: rgb(230, 155, 110);
+    background-color: @yellow@;
 }
 
 /* Кнопка ручного обновления базы pacman — полноразмерная, в одном ряду
    с Check System Files / Clean Package Cache / Update System */
 QPushButton#RefreshDbBtn {
-    background-color: rgb(203, 166, 247);
-    color: rgb(17, 17, 27);
+    background-color: @accent@;
+    color: @on_accent@;
     border-radius: 10px;
     font-weight: bold;
     font-size: 14px;
     border: none;
 }
 QPushButton#RefreshDbBtn:hover {
-    background-color: rgb(190, 140, 240);
+    background-color: @accent_hover@;
 }
 QPushButton#RefreshDbBtn:disabled {
-    background-color: rgb(69, 71, 90);
-    color: rgb(108, 112, 134);
+    background-color: @surface1@;
+    color: @subtext@;
 }
 
 /* Баннер «база устарела» / индикатор хода обновления над списком App Store */
 QFrame#DbStaleBanner {
-    background-color: rgba(250, 179, 135, 0.15);
-    border: 1px solid rgb(250, 179, 135);
+    background-color: @yellow/38@;
+    border: 1px solid @yellow@;
     border-radius: 8px;
 }
 QLabel#DbStaleLabel {
-    color: rgb(250, 179, 135);
+    color: @yellow@;
     font-size: 13px;
     background: transparent;
 }
 QProgressBar#DbRefreshProgress {
-    background-color: rgba(250, 179, 135, 0.2);
+    background-color: @yellow/51@;
     border: none;
     border-radius: 3px;
 }
 QProgressBar#DbRefreshProgress::chunk {
-    background-color: rgb(250, 179, 135);
+    background-color: @yellow@;
     border-radius: 3px;
 }
 
 QPushButton#UpdateAllBtn {
-    background-color: rgb(166, 227, 161);
-    color: rgb(17, 17, 27);
+    background-color: @green@;
+    color: @on_green@;
     border-radius: 10px;
     font-weight: bold;
     font-size: 15px;
@@ -153,13 +153,13 @@ QPushButton#UpdateAllBtn {
 }
 
 QPushButton#UpdateAllBtn:hover {
-    background-color: rgb(148, 226, 213);
+    background-color: @accent2@;
 }
 
 QFrame#RightPanel {
-    background-color: rgb(30, 28, 48);
+    background-color: @surface0%30@;
     border-radius: 15px;
-    border: 1px solid rgb(49, 50, 68);
+    border: 1px solid @surface0@;
 }
 
 QScrollArea {
@@ -172,15 +172,15 @@ QWidget#AppScrollContent, QWidget#ScrollContent {
 }
 
 QLineEdit#SearchField, QComboBox#CategoryDropdown, QPlainTextEdit#SearchField {
-    background-color: rgb(17, 17, 27);
-    border: 1px solid rgb(49, 50, 68);
+    background-color: @crust@;
+    border: 1px solid @surface0@;
     border-radius: 8px;
     padding: 8px 12px;
     color: white;
 }
 
 QLineEdit#SearchField:focus, QPlainTextEdit#SearchField:focus {
-    border: 1px solid rgb(203, 166, 247);
+    border: 1px solid @accent@;
 }
 
 /* A custom border/background on QComboBox makes Qt stop drawing its native
@@ -198,16 +198,16 @@ QComboBox#CategoryDropdown::down-arrow, QComboBox#SettingsDropdown::down-arrow {
     /* Base64 data: URIs silently fail to render for QSS image properties on
        this Qt build (verified — same is true of the checkbox icons below),
        so this must be a real file, resolved via {{BASE_PATH}} at load time. */
-    image: url({{BASE_PATH}}/chevron_down.svg);
+    image: url(@icon:chevron_down@);
     width: 12px;
     height: 12px;
 }
 
 QComboBox QAbstractItemView {
-    background-color: rgb(17, 17, 27);
+    background-color: @crust@;
     color: white;
-    selection-background-color: rgb(49, 50, 68);
-    border: 1px solid rgb(49, 50, 68);
+    selection-background-color: @surface0@;
+    border: 1px solid @surface0@;
     outline: none;
 }
 
@@ -222,40 +222,40 @@ QComboBox QAbstractItemView::item {
 }
 
 QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:selected {
-    background-color: rgb(49, 50, 68);
+    background-color: @surface0@;
     color: white;
 }
 
 QFrame#AppRow, QFrame#PackageRow {
-    background-color: rgba(49, 50, 68, 0.3);
+    background-color: @surface0/76@;
     border-radius: 10px;
     margin-bottom: 2px;
     border: 1px solid transparent;
 }
 
 QFrame#AppRow:hover, QFrame#PackageRow:hover {
-    background-color: rgba(49, 50, 68, 0.6);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0/153@;
+    border: 1px solid @surface1@;
 }
 
 QPushButton#AppToggle {
-    background-color: rgb(17, 17, 27);
+    background-color: @crust@;
     color: transparent;
-    border: 2px solid rgb(69, 71, 90);
+    border: 2px solid @surface1@;
     border-radius: 6px;
     font-size: 16px;
     font-weight: bold;
 }
 
 QPushButton#AppToggle:checked {
-    background-color: rgb(245, 194, 231);
-    color: rgb(17, 17, 27);
-    border: 2px solid rgb(245, 194, 231);
+    background-color: @accent@;
+    color: @on_accent@;
+    border: 2px solid @accent@;
 }
 
 QPushButton#ListInstallBtn, QPushButton#InstallSelectedBtn {
-    background-color: rgb(203, 166, 247);
-    color: rgb(17, 17, 27);
+    background-color: @accent@;
+    color: @on_accent@;
     border-radius: 8px;
     padding: 8px 16px;
     font-weight: bold;
@@ -263,32 +263,32 @@ QPushButton#ListInstallBtn, QPushButton#InstallSelectedBtn {
 }
 
 QPushButton#ListInstallBtn:hover, QPushButton#InstallSelectedBtn:hover {
-    background-color: rgb(190, 140, 240);
+    background-color: @accent_hover@;
 }
 
 QPushButton#ListInstallBtn:disabled, QPushButton#InstallSelectedBtn:disabled {
-    background-color: rgb(69, 71, 90);
-    color: rgb(108, 112, 134);
+    background-color: @surface1@;
+    color: @subtext@;
 }
 
 QPushButton#LangBtn {
     background-color: transparent;
-    color: rgb(147, 153, 178);
-    border: 1px solid rgb(49, 50, 68);
+    color: @subtext@;
+    border: 1px solid @surface0@;
     border-radius: 4px;
     padding: 4px; /* Чуть увеличили отступ для сетки */
     font-size: 10px;
 }
 
 QPushButton#LangBtn:hover {
-    background-color: rgb(49, 50, 68);
+    background-color: @surface0@;
     color: white;
 }
 
 QPushButton#LangBtn[active="true"] {
-    background-color: rgb(203, 166, 247);
-    color: rgb(17, 17, 27);
-    border: 1px solid rgb(203, 166, 247);
+    background-color: @accent@;
+    color: @on_accent@;
+    border: 1px solid @accent@;
     font-weight: bold;
 }
 
@@ -299,13 +299,13 @@ QScrollBar:horizontal {
 }
 
 QScrollBar::handle:horizontal {
-    background: rgb(49, 50, 68);
+    background: @surface0@;
     min-width: 20px;
     border-radius: 4px;
 }
 
 QScrollBar::handle:horizontal:hover {
-    background: rgb(69, 71, 90);
+    background: @surface1@;
 }
 
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
@@ -319,13 +319,13 @@ QScrollBar:vertical {
 }
 
 QScrollBar::handle:vertical {
-    background: rgb(49, 50, 68);
+    background: @surface0@;
     min-height: 20px;
     border-radius: 4px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background: rgb(69, 71, 90);
+    background: @surface1@;
 }
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
@@ -335,24 +335,24 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 /* Detail back button */
 QPushButton#DetailBackBtn {
     background-color: transparent;
-    color: rgb(137, 180, 250);
-    border: 1px solid rgb(137, 180, 250);
+    color: @accent2@;
+    border: 1px solid @accent2@;
     border-radius: 6px;
     padding: 6px 10px;
     font-weight: bold;
 }
 QPushButton#DetailBackBtn:hover {
-    background-color: rgba(137, 180, 250, 0.15);
+    background-color: @accent2/38@;
 }
 QPushButton#DetailBackBtn:disabled {
-    color: rgb(108, 112, 134);
-    border: 1px solid rgb(69, 71, 90);
+    color: @subtext@;
+    border: 1px solid @surface1@;
 }
 
 /* Detail action button (Install / Remove) */
 QPushButton#DetailActionBtn {
-    background-color: rgb(203, 166, 247);
-    color: rgb(17, 17, 27);
+    background-color: @accent@;
+    color: @on_accent@;
     border-radius: 8px;
     padding: 8px 16px;
     font-weight: bold;
@@ -360,11 +360,11 @@ QPushButton#DetailActionBtn {
     border: none;
 }
 QPushButton#DetailActionBtn:hover {
-    background-color: rgb(190, 140, 240);
+    background-color: @accent_hover@;
 }
 QPushButton#DetailActionBtn:disabled {
-    background-color: rgb(69, 71, 90);
-    color: rgb(108, 112, 134);
+    background-color: @surface1@;
+    color: @subtext@;
 }
 
 /* Screenshot scroll area */
@@ -375,33 +375,33 @@ QScrollArea#ScreenshotScroll {
 
 /* Кнопки пагинации */
 QPushButton#PaginationBtn {
-    background-color: rgb(49, 50, 68);
-    color: rgb(205, 214, 244);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @surface1@;
     border-radius: 8px;
     padding: 8px 12px;
     font-weight: bold;
 }
 QPushButton#PaginationBtn:hover {
-    background-color: rgb(69, 71, 90);
-    border: 1px solid rgb(137, 180, 250);
+    background-color: @surface1@;
+    border: 1px solid @accent2@;
 }
 QPushButton#PaginationBtn:disabled {
-    background-color: rgb(24, 24, 37);
-    color: rgb(69, 71, 90);
-    border: 1px solid rgb(49, 50, 68);
+    background-color: @mantle@;
+    color: @surface1@;
+    border: 1px solid @surface0@;
 }
 
 
 /* --- Settings Dialog Layout Extensions --- */
 QDialog#SettingsDialog {
-    background-color: rgb(26, 24, 41);
+    background-color: @base@;
 }
 
 QGroupBox#SettingsGroup {
-    color: rgb(137, 180, 250);
+    color: @accent2@;
     font-weight: bold;
-    border: 1px solid rgb(49, 50, 68);
+    border: 1px solid @surface0@;
     border-radius: 8px;
     margin-top: 10px;
     padding-top: 15px;
@@ -409,7 +409,7 @@ QGroupBox#SettingsGroup {
 
 /* Premium Checkbox Toggle with Embedded Base64 SVG Vectors */
 QCheckBox#SettingsToggle {
-    color: rgb(205, 214, 244);
+    color: @text@;
     font-size: 14px;
     spacing: 12px;
     padding: 6px;
@@ -423,36 +423,36 @@ QCheckBox#SettingsToggle::indicator {
 
 /* Unchecked state: Dark input background with crisp red cross icon placeholder */
 QCheckBox#SettingsToggle::indicator:unchecked {
-    background-color: rgb(17, 17, 27);
-    border: 2px solid rgb(49, 50, 68);
+    background-color: @crust@;
+    border: 2px solid @surface0@;
     image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjM4YmE4IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGxpbmUgeDE9IjE4IiB5MT0iNiIgeDI9IjYiIHkyPSIxOCIvPjxsaW5lIHgxPSI2IiB5MT0iNiIgeDI9IjE4IiB5Mj0iMTgiLz48L3N2Zz4=);
 }
 
 QCheckBox#SettingsToggle::indicator:unchecked:hover {
-    background-color: rgb(49, 50, 68);
-    border: 2px solid rgb(137, 180, 250);
+    background-color: @surface0@;
+    border: 2px solid @accent2@;
 }
 
 /* Checked state: Smooth Catppuccin Green accent filling with dark contrast checkmark vector */
 QCheckBox#SettingsToggle::indicator:checked {
-    background-color: rgb(166, 227, 161);
-    border: 2px solid rgb(166, 227, 161);
+    background-color: @green@;
+    border: 2px solid @green@;
     image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTExMTFiIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBvbHlsaW5lIHBvaW50cz0iMjAgNiA5IDE3IDQgMTIiLz48L3N2Zz4=);
 }
 
 QCheckBox#SettingsToggle::indicator:checked:hover {
-    background-color: rgb(148, 226, 213);
-    border: 2px solid rgb(148, 226, 213);
+    background-color: @accent2@;
+    border: 2px solid @accent2@;
 }
 
 QCheckBox#SettingsToggle::indicator:disabled {
-    background-color: rgb(24, 24, 37);
-    border: 2px solid rgb(49, 50, 68);
+    background-color: @mantle@;
+    border: 2px solid @surface0@;
 }
 
 QComboBox#SettingsDropdown {
-    background-color: rgb(17, 17, 27);
-    border: 1px solid rgb(49, 50, 68);
+    background-color: @crust@;
+    border: 1px solid @surface0@;
     border-radius: 6px;
     padding: 4px 8px;
     color: white;
@@ -460,15 +460,15 @@ QComboBox#SettingsDropdown {
 }
 
 QComboBox#SettingsDropdown QAbstractItemView {
-    background-color: rgb(17, 17, 27);
+    background-color: @crust@;
     color: white;
-    selection-background-color: rgb(49, 50, 68);
-    border: 1px solid rgb(49, 50, 68);
+    selection-background-color: @surface0@;
+    border: 1px solid @surface0@;
 }
 
 QPushButton#SettingsSaveBtn {
-    background-color: rgb(166, 227, 161);
-    color: rgb(17, 17, 27);
+    background-color: @green@;
+    color: @on_green@;
     border-radius: 6px;
     padding: 6px 14px;
     font-weight: bold;
@@ -477,72 +477,72 @@ QPushButton#SettingsSaveBtn {
 }
 
 QPushButton#SettingsSaveBtn:hover {
-    background-color: rgb(148, 226, 213);
+    background-color: @accent2@;
 }
 
 QPushButton#SettingsCancelBtn {
-    background-color: rgb(49, 50, 68);
+    background-color: @surface0@;
     color: white;
     border-radius: 6px;
     padding: 6px 14px;
     font-weight: bold;
     font-size: 13px;
-    border: 1px solid rgb(69, 71, 90);
+    border: 1px solid @surface1@;
 }
 
 QPushButton#SettingsCancelBtn:hover {
-    background-color: rgb(69, 71, 90);
+    background-color: @surface1@;
 }
 
 /* Install/Remove progress panel (see install_panel.py) */
 QDialog#InstallProgressDialog {
-    background-color: rgb(26, 24, 41);
+    background-color: @base@;
 }
 
 QLabel#InstallTitleLabel {
     font-size: 16px;
     font-weight: bold;
-    color: rgb(205, 214, 244);
+    color: @text@;
 }
 
 QLabel#InstallStatusLabel, QLabel#InstallStatusOk,
 QLabel#InstallStatusWarn, QLabel#InstallStatusError {
     font-size: 12px;
-    color: rgb(186, 194, 222);
+    color: @subtext@;
 }
 
 QLabel#InstallStatusOk {
-    color: rgb(166, 227, 161);
+    color: @green@;
     font-weight: bold;
 }
 
 QLabel#InstallStatusWarn {
-    color: rgb(250, 179, 135);
+    color: @yellow@;
     font-weight: bold;
 }
 
 QLabel#InstallStatusError {
-    color: rgb(243, 139, 168);
+    color: @red@;
     font-weight: bold;
 }
 
 QPlainTextEdit#InstallLogView {
-    background-color: rgb(17, 17, 27);
-    color: rgb(166, 227, 161);
+    background-color: @crust@;
+    color: @green@;
     font-family: "Noto Sans Mono", monospace;
     font-size: 12px;
-    border: 1px solid rgb(49, 50, 68);
+    border: 1px solid @surface0@;
     border-radius: 8px;
     padding: 8px;
 }
 
 QProgressBar#InstallProgressBar {
-    background-color: rgba(137, 180, 250, 0.2);
+    background-color: @accent2/51@;
     border: none;
     border-radius: 3px;
     max-height: 6px;
 }
 QProgressBar#InstallProgressBar::chunk {
-    background-color: rgb(137, 180, 250);
+    background-color: @accent2@;
     border-radius: 3px;
 }

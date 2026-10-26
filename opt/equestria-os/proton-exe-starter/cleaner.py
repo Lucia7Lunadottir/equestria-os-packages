@@ -15,6 +15,12 @@ from PyQt6.QtWidgets import (
     QSizePolicy, QMenu)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
@@ -179,11 +185,11 @@ class AppCard(QWidget):
 
         info = QVBoxLayout()
         self.lbl_name = QLabel(self.display_name)
-        self.lbl_name.setStyleSheet("font-weight: bold; font-size: 13px;")
+        kit_qt.style(self.lbl_name, "font-weight: bold; font-size: 13px;")
 
         size = get_dir_size(self.prefix_path) if os.path.isdir(self.prefix_path) else 0
         self.lbl_size = QLabel(f"{t('cleaner.size')}: {format_size(size)}")
-        self.lbl_size.setStyleSheet("color: rgb(150, 140, 180); font-size: 11px;")
+        kit_qt.style(self.lbl_size, "color: @subtext@; font-size: 11px;")
 
         info.addWidget(self.lbl_name)
         info.addWidget(self.lbl_size)
@@ -349,7 +355,7 @@ class CleanerWindow(QMainWindow):
         # Header
         header = QHBoxLayout()
         lbl_title = QLabel(t("cleaner.title"))
-        lbl_title.setStyleSheet("font-size: 18px; font-weight: bold; color: rgb(137, 180, 250);")
+        kit_qt.style(lbl_title, "font-size: 18px; font-weight: bold; color: @accent2@;")
         header.addWidget(lbl_title)
         header.addStretch()
         btn_refresh = QPushButton(t("cleaner.btn_refresh"))
@@ -451,7 +457,7 @@ class CleanerWindow(QMainWindow):
             card = AppCard(app_id, prefix_path, self._remove_card)
             if i % 2 == 1:
                 card.setObjectName("appCardAlt")
-                card.setStyleSheet("#appCardAlt { background-color: rgba(255,255,255,0.03); }")
+                kit_qt.style(card, "#appCardAlt { background-color: rgba(255,255,255,0.03); }")
             self.scroll_layout.insertWidget(i, card)
             self._app_cards.append(card)
 
@@ -465,7 +471,7 @@ class CleanerWindow(QMainWindow):
     def _show_empty(self):
         lbl = QLabel(t("cleaner.no_apps"))
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl.setStyleSheet("color: rgb(150, 140, 180); padding: 30px;")
+        kit_qt.style(lbl, "color: @subtext@; padding: 30px;")
         self.scroll_layout.insertWidget(0, lbl)
 
     def _refresh_mesa_label(self):
@@ -503,6 +509,7 @@ if __name__ == "__main__":
     _detect_language()
 
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     app.setDesktopFileName("equestria-os-proton-cleaner")
 
     icon_path = "/usr/share/pixmaps/equestria-os-proton-starter.png"
@@ -514,7 +521,7 @@ if __name__ == "__main__":
     qss_path = os.path.join(SYSTEM_PATH, "style.qss")
     if os.path.exists(qss_path):
         with open(qss_path, "r") as f:
-            app.setStyleSheet(f.read())
+            kit_qt.app_style(f.read())
 
     window = CleanerWindow()
     window.show()

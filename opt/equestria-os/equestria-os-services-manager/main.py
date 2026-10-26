@@ -3,6 +3,13 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QComboBox
 from PyQt6.QtGui import QIcon, QFontDatabase, QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 from ui_services import Ui_ServicesManager, ServiceRow
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
 
 
 class ServiceData:
@@ -194,8 +201,7 @@ class ServicesApp(QMainWindow, Ui_ServicesManager):
 
         f_path = os.path.join(self.base_path, "equestria_cyrillic.ttf")
         if os.path.exists(f_path):
-            fid = QFontDatabase.addApplicationFont(f_path)
-            families = QFontDatabase.applicationFontFamilies(fid)
+            families = font_families(f_path)
             if families:
                 font = QFont(families[0])
                 self.title_label.setFont(QFont(families[0], 28, QFont.Weight.Bold))
@@ -203,7 +209,7 @@ class ServicesApp(QMainWindow, Ui_ServicesManager):
 
         q_path = os.path.join(self.base_path, "style.qss")
         if os.path.exists(q_path):
-            self.setStyleSheet(open(q_path).read())
+            kit_qt.style(self, open(q_path).read())
 
         icon_path = os.path.join(self.base_path, "equestria-os-services-manager.png")
         if os.path.exists(icon_path):
@@ -447,6 +453,7 @@ class ServicesApp(QMainWindow, Ui_ServicesManager):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     win = ServicesApp()
     win.show()
     sys.exit(app.exec())

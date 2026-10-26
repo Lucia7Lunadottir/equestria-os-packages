@@ -18,6 +18,13 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import QFontDatabase, QFont, QIcon, QPainter, QColor
 
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
+
 import privilege
 import disk_backend  # только константы и build_mkfs_cmd для предпросмотра
 
@@ -28,12 +35,11 @@ class SwitchToggle(QAbstractButton):
     stateChanged = pyqtSignal(int)
 
     TRACK_W, TRACK_H, KNOB_M = 34, 18, 3
-    C_TRACK_OFF = (69, 71, 90)
-    C_TRACK_ON  = (245, 194, 231)
-    C_KNOB_OFF  = (205, 214, 244)
-    C_KNOB_ON   = (30, 30, 46)
-    C_TEXT_OFF  = (147, 153, 178)
-    C_TEXT_ON   = (203, 166, 247)
+    # Роли общей темы (выкл → вкл); цвета берутся в момент отрисовки,
+    # поэтому смена темы в переключателе персонажей видна сразу.
+    TRACK = ("surface1", "accent")
+    KNOB = ("text", "on_accent")
+    TEXT = ("subtext", "accent")
 
     def __init__(self, label, parent=None):
         super().__init__(parent)
@@ -78,8 +84,12 @@ class SwitchToggle(QAbstractButton):
     knobPos = pyqtProperty(float, _get_pos, _set_pos)
 
     @staticmethod
-    def _blend(a, b, t):
-        return QColor(*(round(x + (y - x) * t) for x, y in zip(a, b)))
+    def _blend(roles, t, text=False):
+        pick = kit_qt.text_color if text else kit_qt.theme_color
+        a, b = (pick(r) for r in roles)
+        return QColor(round(a.red() + (b.red() - a.red()) * t),
+                      round(a.green() + (b.green() - a.green()) * t),
+                      round(a.blue() + (b.blue() - a.blue()) * t))
 
     def sizeHint(self):
         fm = self.fontMetrics()
@@ -93,16 +103,16 @@ class SwitchToggle(QAbstractButton):
         ty = (self.height() - self.TRACK_H) / 2
 
         p.setPen(Qt.PenStyle.NoPen)
-        p.setBrush(self._blend(self.C_TRACK_OFF, self.C_TRACK_ON, t))
+        p.setBrush(self._blend(self.TRACK, t))
         p.drawRoundedRect(QRectF(0, ty, self.TRACK_W, self.TRACK_H),
                           self.TRACK_H / 2, self.TRACK_H / 2)
 
         kd = self.TRACK_H - 2 * self.KNOB_M
         kx = self.KNOB_M + t * (self.TRACK_W - kd - 2 * self.KNOB_M)
-        p.setBrush(self._blend(self.C_KNOB_OFF, self.C_KNOB_ON, t))
+        p.setBrush(self._blend(self.KNOB, t))
         p.drawEllipse(QRectF(kx, ty + self.KNOB_M, kd, kd))
 
-        p.setPen(self._blend(self.C_TEXT_OFF, self.C_TEXT_ON, t))
+        p.setPen(self._blend(self.TEXT, t, text=True))
         p.drawText(QRectF(self.TRACK_W + 8, 0,
                           self.width() - self.TRACK_W - 8, self.height()),
                    Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
@@ -796,6 +806,13 @@ class DiskWorker(QThread):
 
 
 class DiskManagerApp(QMainWindow):
+    @staticmethod
+    def _set_btn_state(btn, state):
+        """Вид кнопки задаётся свойством state в style.qss, а не цветами в коде."""
+        btn.setProperty("state", state)
+        btn.style().unpolish(btn)
+        btn.style().polish(btn)
+
     def __init__(self):
         super().__init__()
         self.current_lang = os.getenv("LANG", "en")[:2]
@@ -907,16 +924,16 @@ class DiskManagerApp(QMainWindow):
         title_font_family = "sans-serif"
         font_path = os.path.join(base_path, "equestria_cyrillic.ttf")
         if os.path.exists(font_path):
-            fid = QFontDatabase.addApplicationFont(font_path)
-            families = QFontDatabase.applicationFontFamilies(fid)
+            families = font_families(font_path)
             if families:
                 title_font_family = families[0]
 
         qss_path = os.path.join(base_path, "style.qss")
         if os.path.exists(qss_path):
             qss = open(qss_path).read()
-            qss = qss.replace("{{TITLE_FONT}}", f'"{title_font_family}"')
-            self.setStyleSheet(qss)
+            # Цвета в style.qss — роли общей темы; ThemeManager сам перекрасит
+            # приложение при выборе другого персонажа в переключателе тем.
+            kit_qt.style(self, qss.replace("{{TITLE_FONT}}", f'"{title_font_family}"'))
 
         # Central → scroll → content
         central = QWidget()
@@ -985,7 +1002,7 @@ class DiskManagerApp(QMainWindow):
 
         # Info panel (UUID, fstype, size, mount status, usage)
         self.info_lbl = QLabel("")
-        self.info_lbl.setObjectName("StatusLabel")
+        self.info_lbl.setObjectName("PartInfoLabel")  # сведения о разделе — обычный текст, не «успех»
         self.info_lbl.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.info_lbl.setCursor(Qt.CursorShape.IBeamCursor)
         main_layout.addWidget(self.info_lbl)
@@ -1532,9 +1549,7 @@ class DiskManagerApp(QMainWindow):
 
         if is_in_fstab:
             self.automount_btn.setText(self.t("disable_auto"))
-            self.automount_btn.setStyleSheet(
-                "background-color: transparent; color: rgb(243, 139, 168); border: 1px solid rgb(243, 139, 168);"
-            )
+            self._set_btn_state(self.automount_btn, "danger")
             # Parse fstab line carefully: device and options/dump/pass have no
             # spaces, but the mount point might (e.g. "Documents Photo and Video").
             # Work from both ends: parts[-1]=pass, parts[-2]=dump,
@@ -1558,7 +1573,7 @@ class DiskManagerApp(QMainWindow):
                 self.opts_widget.set_options(self._last_gen_opts)
         else:
             self.automount_btn.setText(self.t("automount"))
-            self.automount_btn.setStyleSheet("")
+            self._set_btn_state(self.automount_btn, "")
             label = info.get("label")
             self.mount_input.setText(f"/mnt/{label}" if label else f"/mnt/{dev_name}")
             self._last_gen_opts = self._generate_default_opts(fstype, info)
@@ -2504,6 +2519,7 @@ class DiskManagerApp(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     # Wayland: link window to the .desktop file so the compositor uses its icon
     app.setDesktopFileName("equestria-os-disk-manager")
     icon_path = os.path.join(os.path.dirname(__file__), "equestria-os-disk-manager.png")

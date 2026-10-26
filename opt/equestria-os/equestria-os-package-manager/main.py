@@ -5,6 +5,13 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QComboBox
 from PyQt6.QtGui import QIcon, QFontDatabase, QFont
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from ui_pkg import Ui_PackageManager, PackageRow
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
 
 # .deb/.rpm поставленные через equestria-installer (foreign_bridge.py) — не
 # трогают базу pacman, свой манифест с полным списком файлов на пакет
@@ -175,14 +182,13 @@ class main_app(QMainWindow, Ui_PackageManager):
 
         f_path = os.path.join(self.base_path, "equestria_cyrillic.ttf")
         if os.path.exists(f_path):
-            fid = QFontDatabase.addApplicationFont(f_path)
-            families = QFontDatabase.applicationFontFamilies(fid)
+            families = font_families(f_path)
             if families:
                 self.title_label.setFont(QFont(families[0], 28, QFont.Weight.Bold))
                 self.modal_title.setFont(QFont(families[0], 22, QFont.Weight.Bold))
 
         q_path = os.path.join(self.base_path, "style.qss")
-        if os.path.exists(q_path): self.setStyleSheet(open(q_path, "r").read())
+        if os.path.exists(q_path): kit_qt.style(self, open(q_path, "r").read())
 
         icon_path = os.path.join(self.base_path, "equestria-os-package-manager.png")
         if os.path.exists(icon_path): self.setWindowIcon(QIcon(icon_path))
@@ -1073,6 +1079,7 @@ class main_app(QMainWindow, Ui_PackageManager):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     win = main_app()
     win.show()
     sys.exit(app.exec())

@@ -3,6 +3,12 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QLineEdit, QFrame)
 from PyQt6.QtCore import Qt
 from widgets import SafeCheckBox, HelpButton
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 class Ui_MainWindow:
     def setupUi(self, MainWindow):
@@ -107,7 +113,7 @@ class Ui_MainWindow:
 
         ed_scroll = QScrollArea()
         ed_scroll.setWidgetResizable(True)
-        ed_scroll.setStyleSheet("background: transparent; border: none;")
+        kit_qt.style(ed_scroll, "background: transparent; border: none;")
 
         ed_container = QWidget()
         ed_form = QVBoxLayout(ed_container)
@@ -135,19 +141,19 @@ class Ui_MainWindow:
 
         self.fld_ed_id = QLineEdit()
         self.fld_ed_id.setObjectName("EditorField")
-        self.fld_ed_id.setStyleSheet("QLineEdit { background-color: rgb(15, 12, 25); border: 2px solid rgb(90, 80, 130); border-radius: 6px; color: rgb(220, 200, 255); padding: 4px 7px; font-size: 13px; } QLineEdit:focus { border: 2px solid rgb(140, 90, 200); } QLineEdit[readOnly=\"true\"] { color: rgb(120, 110, 150); border: 2px solid rgb(60, 55, 90); }")
+        kit_qt.style(self.fld_ed_id, "QLineEdit { background-color: @crust@; border: 2px solid @subtext@; border-radius: 6px; color: @text@; padding: 4px 7px; font-size: 13px; } QLineEdit:focus { border: 2px solid @accent@; } QLineEdit[readOnly=\"true\"] { color: @subtext@; border: 2px solid @surface2@; }")
         self.fld_ed_id.setFixedWidth(220)
         self.row_ed_id, self.lbl_ed_id_row, _ = add_row("Preset ID:", self.fld_ed_id)
 
         self.fld_ed_name = QLineEdit()
         self.fld_ed_name.setObjectName("EditorField")
-        self.fld_ed_name.setStyleSheet(self.fld_ed_id.styleSheet())
+        kit_qt.style(self.fld_ed_name, self.fld_ed_id.styleSheet())
         self.fld_ed_name.setFixedWidth(220)
         _, self.lbl_ed_name_row, _ = add_row("Display Name:", self.fld_ed_name)
 
         self.fld_ed_desc = QLineEdit()
         self.fld_ed_desc.setObjectName("EditorField")
-        self.fld_ed_desc.setStyleSheet(self.fld_ed_id.styleSheet())
+        kit_qt.style(self.fld_ed_desc, self.fld_ed_id.styleSheet())
         self.fld_ed_desc.setFixedWidth(320)
         _, self.lbl_ed_desc_row, _ = add_row("Description:", self.fld_ed_desc)
 
@@ -157,7 +163,7 @@ class Ui_MainWindow:
         icon_lo.setSpacing(6)
         self.fld_ed_icon = QLineEdit()
         self.fld_ed_icon.setObjectName("EditorField")
-        self.fld_ed_icon.setStyleSheet(self.fld_ed_id.styleSheet())
+        kit_qt.style(self.fld_ed_icon, self.fld_ed_id.styleSheet())
         self.fld_ed_icon.setFixedWidth(260)
         self.btn_ed_icon = QPushButton("…")
         self.btn_ed_icon.setObjectName("BrowseBtn")
@@ -217,9 +223,9 @@ class Ui_MainWindow:
 
         self.btn_ed_open_kde = QPushButton("🛠 Enter KDE Panel Edit Mode")
         self.btn_ed_open_kde.setProperty("cssClass", "action-btn")
-        self.btn_ed_open_kde.setStyleSheet("""
-            QPushButton { background-color: rgb(50, 40, 85); border: 1px solid rgb(110, 80, 180); padding: 6px 16px; font-weight: bold; }
-            QPushButton:hover { background-color: rgb(70, 55, 115); border-color: rgb(140, 100, 220); }
+        kit_qt.style(self.btn_ed_open_kde, """
+            QPushButton { background-color: @surface2@; border: 1px solid @accent@; padding: 6px 16px; font-weight: bold; }
+            QPushButton:hover { background-color: @accent%55@; border-color: @accent@; }
         """)
         self.row_ed_kde, self.lbl_ed_kde_row, self.help_ed_kde = add_row("KDE Plasma Shell:", self.btn_ed_open_kde, has_help=True)
 
@@ -234,9 +240,9 @@ class Ui_MainWindow:
         layout_lo.setSpacing(10)
         self.btn_ed_capture = QPushButton("📸 Capture current panels")
         self.btn_ed_capture.setProperty("cssClass", "action-btn")
-        self.btn_ed_capture.setStyleSheet("""
-            QPushButton { background-color: rgb(100, 60, 160); border: 1px solid rgb(140, 90, 200); border-radius: 8px; color: white; padding: 6px 16px; font-size: 12px; }
-            QPushButton:hover { background-color: rgb(120, 80, 180); }
+        kit_qt.style(self.btn_ed_capture, """
+            QPushButton { background-color: @accent%70@; border: 1px solid @accent@; border-radius: 8px; color: white; padding: 6px 16px; font-size: 12px; }
+            QPushButton:hover { background-color: @accent@; }
         """)
         self.lbl_ed_capture_status = QLabel("Not captured")
         self.lbl_ed_capture_status.setProperty("cssClass", "capture-status")
@@ -261,9 +267,9 @@ class Ui_MainWindow:
 
         self.btn_ed_delete = QPushButton("Delete")
         self.btn_ed_delete.setProperty("cssClass", "action-btn")
-        self.btn_ed_delete.setStyleSheet("""
-            QPushButton { background-color: rgb(130, 40, 60); border: 1px solid rgb(170, 60, 80); }
-            QPushButton:hover { background-color: rgb(160, 50, 75); }
+        kit_qt.style(self.btn_ed_delete, """
+            QPushButton { background-color: @red%45@; border: 1px solid @red%65@; }
+            QPushButton:hover { background-color: @red%65@; }
         """)
         ed_status_lo.addWidget(self.btn_ed_delete)
 

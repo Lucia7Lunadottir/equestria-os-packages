@@ -2,6 +2,12 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QPushButton, QCheckBox, QLineEdit, QGroupBox,
                              QComboBox)
 from PyQt6.QtCore import Qt
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 class Ui_SettingsWindow:
     def setupUi(self, MainWindow):
@@ -19,11 +25,11 @@ class Ui_SettingsWindow:
 
         # Шапка
         self.lbl_title = QLabel()
-        self.lbl_title.setStyleSheet("font-size: 18px; font-weight: bold; color: white;")
+        kit_qt.style(self.lbl_title, "font-size: 18px; font-weight: bold; color: white;")
         layout.addWidget(self.lbl_title)
 
         self.lbl_path = QLabel()
-        self.lbl_path.setStyleSheet("color: rgb(140, 130, 160); font-size: 11px;")
+        kit_qt.style(self.lbl_path, "color: @subtext@; font-size: 11px;")
         self.lbl_path.setWordWrap(True)
         layout.addWidget(self.lbl_path)
 
@@ -65,7 +71,7 @@ class Ui_SettingsWindow:
 
         ver_layout = QHBoxLayout()
         self.lbl_proton_ver = QLabel()
-        self.lbl_proton_ver.setStyleSheet("color: rgb(140, 130, 160); font-size: 11px; font-weight: normal;")
+        kit_qt.style(self.lbl_proton_ver, "color: @subtext@; font-size: 11px; font-weight: normal;")
         self.btn_proton_update = QPushButton()
         ver_layout.addWidget(self.lbl_proton_ver)
         ver_layout.addStretch()

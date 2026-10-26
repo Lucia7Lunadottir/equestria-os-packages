@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Clock
+Comment=Будильник, таймер и секундомер
+Exec=equestria-clock
+Icon=preferences-system-time
+Categories=Utility;Clock;Qt;
+Terminal=false

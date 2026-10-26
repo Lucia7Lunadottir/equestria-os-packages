@@ -6,6 +6,12 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPlainTextEdit, QProgressBar)
 from PyQt6.QtGui import QPixmap, QFont
 from PyQt6.QtCore import Qt, QProcess
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 THUMB_W = 128
 THUMB_H = 72      # 16:9 at 128px wide
@@ -74,12 +80,12 @@ class SnapshotRow(QFrame):
         info.setSpacing(5)
 
         lbl_date = QLabel(snap_data.date_str)
-        lbl_date.setStyleSheet(
+        kit_qt.style(lbl_date, 
             "color: white; font-weight: bold; font-size: 15px; background: transparent;")
 
         lbl_comment = QLabel(snap_data.comment if snap_data.comment else "")
-        lbl_comment.setStyleSheet(
-            "color: rgb(155, 145, 185); font-size: 12px;"
+        kit_qt.style(lbl_comment, 
+            "color: @subtext@; font-size: 12px;"
             " font-style: italic; background: transparent;")
 
         info.addWidget(lbl_date)
@@ -97,29 +103,29 @@ class SnapshotRow(QFrame):
         if snap_data.tags:
             lbl_tag = QLabel(tag_label_text)
             lbl_tag.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            lbl_tag.setStyleSheet(
+            kit_qt.style(lbl_tag, 
                 f"background-color: {tag_color}; color: white; font-size: 11px;"
                 f" font-weight: bold; border-radius: 4px; padding: 2px 8px;")
             right.addWidget(lbl_tag, 0, Qt.AlignmentFlag.AlignRight)
 
         lbl_num = QLabel(f"#{snap_data.num}")
         lbl_num.setAlignment(Qt.AlignmentFlag.AlignRight)
-        lbl_num.setStyleSheet(
-            "color: rgb(120, 110, 160); font-size: 12px; background: transparent;")
+        kit_qt.style(lbl_num, 
+            "color: @surface2@; font-size: 12px; background: transparent;")
         right.addWidget(lbl_num, 0, Qt.AlignmentFlag.AlignRight)
 
         if snap_data.protected:
             lbl_lock = QLabel("[protected]")
             lbl_lock.setAlignment(Qt.AlignmentFlag.AlignRight)
-            lbl_lock.setStyleSheet(
-                "color: #c07800; font-size: 10px; font-style: italic;"
+            kit_qt.style(lbl_lock, 
+                "color: @yellow%70@; font-size: 10px; font-style: italic;"
                 " background: transparent;")
             right.addWidget(lbl_lock, 0, Qt.AlignmentFlag.AlignRight)
 
         self.lbl_size = QLabel("")
         self.lbl_size.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.lbl_size.setStyleSheet(
-            "color: rgb(100, 90, 140); font-size: 11px; background: transparent;")
+        kit_qt.style(self.lbl_size, 
+            "color: @subtext@; font-size: 11px; background: transparent;")
         right.addWidget(self.lbl_size, 0, Qt.AlignmentFlag.AlignRight)
         right.addStretch()
 
@@ -132,9 +138,9 @@ class SnapshotRow(QFrame):
 
     def _set_placeholder(self):
         self.lbl_thumb.setText("📷")
-        self.lbl_thumb.setStyleSheet(
-            "background-color: rgb(35, 32, 52); border-radius: 6px;"
-            " color: rgb(80, 70, 100); font-size: 22px; border: 1px solid rgb(55, 50, 75);")
+        kit_qt.style(self.lbl_thumb, 
+            "background-color: @surface0@; border-radius: 6px;"
+            " color: @surface2@; font-size: 22px; border: 1px solid @surface2@;")
 
     def set_size(self, size_str: str):
         self.lbl_size.setText(size_str)
@@ -496,13 +502,13 @@ class Ui_SavePoint:
         m_layout.setSpacing(10)
 
         self.modal_title = QLabel("✨ Confirm Restore")
-        self.modal_title.setStyleSheet(
+        kit_qt.style(self.modal_title, 
             "color: white; font-size: 20px; font-weight: bold; background: transparent;")
         self.modal_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.modal_text = QLabel("")
-        self.modal_text.setStyleSheet(
-            "color: rgb(210, 200, 230); font-size: 14px; background: transparent;")
+        kit_qt.style(self.modal_text, 
+            "color: @text@; font-size: 14px; background: transparent;")
         self.modal_text.setWordWrap(True)
         self.modal_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
