@@ -1,0 +1,27 @@
+# Maintainer: Equestria OS
+pkgname=equestria-clock-widget
+pkgver=2.0
+pkgrel=1
+pkgdesc="Clock widget for the Plasma panel: calendar, Equestria Calendar events and world clocks, like in Windows"
+arch=('any')
+license=('GPL-2.0-or-later')
+depends=('plasma-workspace')
+makedepends=('gettext')
+optdepends=('equestria-calendar: события в календаре виджета'
+            'equestria-clock: будильник, таймер и секундомер по кнопке и среднему щелчку')
+source=()
+
+_id=org.equestria.clockwidget
+
+package() {
+    local dst="$pkgdir/usr/share/plasma/plasmoids/$_id"
+    install -dm755 "$dst"
+    cp -r "$startdir/equestria-clock-widget/." "$dst/"
+    # переводы: po/<язык>.po → contents/locale/<язык>/LC_MESSAGES/plasma_applet_<id>.mo
+    local po lang
+    for po in "$startdir"/po/*.po; do
+        lang=$(basename "$po" .po)
+        install -dm755 "$dst/contents/locale/$lang/LC_MESSAGES"
+        msgfmt -o "$dst/contents/locale/$lang/LC_MESSAGES/plasma_applet_$_id.mo" "$po"
+    done
+}

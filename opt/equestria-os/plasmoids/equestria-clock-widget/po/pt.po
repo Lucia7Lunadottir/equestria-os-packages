@@ -1,0 +1,104 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plasma_applet_org.equestria.clockwidget\n"
+"Language: pt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Additional clocks:"
+msgstr "Relógios adicionais:"
+
+msgid "Alarms and timers"
+msgstr "Alarmes e temporizadores"
+
+msgid "Alarms, timer and stopwatch"
+msgstr "Alarmes, temporizador e cronômetro"
+
+msgid "All day"
+msgstr "Dia inteiro"
+
+msgid "Back to today"
+msgstr "Voltar para hoje"
+
+msgid "Calendar"
+msgstr "Calendário"
+
+msgid "Calendar:"
+msgstr "Calendário:"
+
+msgid "Calendar app:"
+msgstr "Aplicativo de calendário:"
+
+msgctxt "hours offset, e.g. +3 h"
+msgid "%1 h"
+msgstr "%1 h"
+
+msgid "Clock app:"
+msgstr "Aplicativo de relógio:"
+
+msgid "Date and time settings"
+msgstr "Configurações de data e hora"
+
+msgid "Date format:"
+msgstr "Formato da data:"
+
+msgid "General"
+msgstr "Geral"
+
+msgid "Install Equestria Calendar to see events here"
+msgstr "Instale o Equestria Calendar para ver os eventos aqui"
+
+msgid "ISO: %1"
+msgstr "ISO: %1"
+
+msgid "Next month"
+msgstr "Próximo mês"
+
+msgid "No events"
+msgstr "Nenhum evento"
+
+msgid "One time zone per line, for example Europe/Moscow, Asia/Tokyo, America/New_York. They appear in the calendar popup and in the tooltip."
+msgstr "Um fuso horário por linha, por exemplo Europe/Moscow, Asia/Tokyo, America/New_York. Eles aparecem no calendário e na dica."
+
+msgid "Open Equestria Calendar"
+msgstr "Abrir o Equestria Calendar"
+
+msgid "Panel:"
+msgstr "Painel:"
+
+msgid "Previous month"
+msgstr "Mês anterior"
+
+msgid "same time"
+msgstr "mesmo horário"
+
+msgid "Short: %1"
+msgstr "Curto: %1"
+
+msgid "Show date"
+msgstr "Mostrar a data"
+
+msgid "Show seconds"
+msgstr "Mostrar os segundos"
+
+msgid "Show week numbers"
+msgstr "Mostrar números das semanas"
+
+msgid "Today"
+msgstr "Hoje"
+
+msgid "tomorrow"
+msgstr "amanhã"
+
+msgid "With weekday: %1"
+msgstr "Com dia da semana: %1"
+
+msgid "yesterday"
+msgstr "ontem"
+
+msgid "%1 event today"
+msgid_plural "%1 events today"
+msgstr[0] "%1 evento hoje"
+msgstr[1] "%1 eventos hoje"

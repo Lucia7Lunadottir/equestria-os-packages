@@ -1,0 +1,103 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plasma_applet_org.equestria.clockwidget\n"
+"Language: zh\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Additional clocks:"
+msgstr "附加时钟："
+
+msgid "Alarms and timers"
+msgstr "闹钟和计时器"
+
+msgid "Alarms, timer and stopwatch"
+msgstr "闹钟、计时器和秒表"
+
+msgid "All day"
+msgstr "全天"
+
+msgid "Back to today"
+msgstr "回到今天"
+
+msgid "Calendar"
+msgstr "日历"
+
+msgid "Calendar:"
+msgstr "日历："
+
+msgid "Calendar app:"
+msgstr "日历应用："
+
+msgctxt "hours offset, e.g. +3 h"
+msgid "%1 h"
+msgstr "%1 小时"
+
+msgid "Clock app:"
+msgstr "时钟应用："
+
+msgid "Date and time settings"
+msgstr "日期和时间设置"
+
+msgid "Date format:"
+msgstr "日期格式："
+
+msgid "General"
+msgstr "常规"
+
+msgid "Install Equestria Calendar to see events here"
+msgstr "安装 Equestria Calendar 以在此查看事件"
+
+msgid "ISO: %1"
+msgstr "ISO：%1"
+
+msgid "Next month"
+msgstr "下个月"
+
+msgid "No events"
+msgstr "没有事件"
+
+msgid "One time zone per line, for example Europe/Moscow, Asia/Tokyo, America/New_York. They appear in the calendar popup and in the tooltip."
+msgstr "每行一个时区，例如 Europe/Moscow、Asia/Tokyo、America/New_York。它们会显示在弹出日历和提示中。"
+
+msgid "Open Equestria Calendar"
+msgstr "打开 Equestria Calendar"
+
+msgid "Panel:"
+msgstr "面板："
+
+msgid "Previous month"
+msgstr "上个月"
+
+msgid "same time"
+msgstr "同一时间"
+
+msgid "Short: %1"
+msgstr "简短：%1"
+
+msgid "Show date"
+msgstr "显示日期"
+
+msgid "Show seconds"
+msgstr "显示秒"
+
+msgid "Show week numbers"
+msgstr "显示周数"
+
+msgid "Today"
+msgstr "今天"
+
+msgid "tomorrow"
+msgstr "明天"
+
+msgid "With weekday: %1"
+msgstr "带星期：%1"
+
+msgid "yesterday"
+msgstr "昨天"
+
+msgid "%1 event today"
+msgid_plural "%1 events today"
+msgstr[0] "今天有 %1 个事件"

@@ -1,0 +1,104 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plasma_applet_org.equestria.clockwidget\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Additional clocks:"
+msgstr "Zusätzliche Uhren:"
+
+msgid "Alarms and timers"
+msgstr "Wecker und Timer"
+
+msgid "Alarms, timer and stopwatch"
+msgstr "Wecker, Timer und Stoppuhr"
+
+msgid "All day"
+msgstr "Ganztägig"
+
+msgid "Back to today"
+msgstr "Zurück zu heute"
+
+msgid "Calendar"
+msgstr "Kalender"
+
+msgid "Calendar:"
+msgstr "Kalender:"
+
+msgid "Calendar app:"
+msgstr "Kalender-App:"
+
+msgctxt "hours offset, e.g. +3 h"
+msgid "%1 h"
+msgstr "%1 Std."
+
+msgid "Clock app:"
+msgstr "Uhr-App:"
+
+msgid "Date and time settings"
+msgstr "Datum und Uhrzeit einstellen"
+
+msgid "Date format:"
+msgstr "Datumsformat:"
+
+msgid "General"
+msgstr "Allgemein"
+
+msgid "Install Equestria Calendar to see events here"
+msgstr "Installieren Sie Equestria Calendar, um hier Termine zu sehen"
+
+msgid "ISO: %1"
+msgstr "ISO: %1"
+
+msgid "Next month"
+msgstr "Nächster Monat"
+
+msgid "No events"
+msgstr "Keine Termine"
+
+msgid "One time zone per line, for example Europe/Moscow, Asia/Tokyo, America/New_York. They appear in the calendar popup and in the tooltip."
+msgstr "Eine Zeitzone pro Zeile, z. B. Europe/Moscow, Asia/Tokyo, America/New_York. Sie erscheinen im Kalender-Popup und im Tooltip."
+
+msgid "Open Equestria Calendar"
+msgstr "Equestria Calendar öffnen"
+
+msgid "Panel:"
+msgstr "Leiste:"
+
+msgid "Previous month"
+msgstr "Vorheriger Monat"
+
+msgid "same time"
+msgstr "gleiche Zeit"
+
+msgid "Short: %1"
+msgstr "Kurz: %1"
+
+msgid "Show date"
+msgstr "Datum anzeigen"
+
+msgid "Show seconds"
+msgstr "Sekunden anzeigen"
+
+msgid "Show week numbers"
+msgstr "Kalenderwochen anzeigen"
+
+msgid "Today"
+msgstr "Heute"
+
+msgid "tomorrow"
+msgstr "morgen"
+
+msgid "With weekday: %1"
+msgstr "Mit Wochentag: %1"
+
+msgid "yesterday"
+msgstr "gestern"
+
+msgid "%1 event today"
+msgid_plural "%1 events today"
+msgstr[0] "%1 Termin heute"
+msgstr[1] "%1 Termine heute"

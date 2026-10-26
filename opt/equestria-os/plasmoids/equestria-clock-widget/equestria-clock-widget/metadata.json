@@ -1,0 +1,36 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Id": "org.equestria.clockwidget",
+        "Name": "Equestria Clock",
+        "Description": "Time and date on the panel with a calendar, events from Equestria Calendar and clocks of other time zones — like in Windows",
+        "Category": "Date and Time",
+        "Icon": "preferences-system-time",
+        "Version": "2.0",
+        "License": "GPL-2.0+",
+        "Authors": [
+            {
+                "Name": "Equestria"
+            }
+        ],
+        "Name[ru]": "Часы Equestria",
+        "Name[de]": "Equestria-Uhr",
+        "Name[fr]": "Horloge Equestria",
+        "Name[es]": "Reloj Equestria",
+        "Name[pt]": "Relógio Equestria",
+        "Name[pl]": "Zegar Equestria",
+        "Name[uk]": "Годинник Equestria",
+        "Name[zh]": "Equestria 时钟",
+        "Name[ja]": "Equestria 時計",
+        "Description[ru]": "Время и дата на панели с календарём, событиями Equestria Calendar и часами других поясов — как в Windows",
+        "Description[de]": "Uhrzeit und Datum in der Leiste mit Kalender, Terminen aus Equestria Calendar und Uhren anderer Zeitzonen — wie unter Windows",
+        "Description[fr]": "Heure et date dans le panneau, avec calendrier, événements d’Equestria Calendar et horloges d’autres fuseaux — comme sous Windows",
+        "Description[es]": "Hora y fecha en el panel con calendario, eventos de Equestria Calendar y relojes de otras zonas horarias, como en Windows",
+        "Description[pt]": "Hora e data no painel com calendário, eventos do Equestria Calendar e relógios de outros fusos — como no Windows",
+        "Description[pl]": "Godzina i data na panelu z kalendarzem, wydarzeniami Equestria Calendar i zegarami innych stref — jak w Windows",
+        "Description[uk]": "Час і дата на панелі з календарем, подіями Equestria Calendar і годинниками інших поясів — як у Windows",
+        "Description[zh]": "面板上的时间和日期，带日历、Equestria Calendar 事件以及其他时区的时钟——就像 Windows",
+        "Description[ja]": "パネルに時刻と日付。カレンダー、Equestria Calendar の予定、ほかのタイムゾーンの時計付き — Windows のように"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

@@ -1,0 +1,104 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plasma_applet_org.equestria.clockwidget\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Additional clocks:"
+msgstr "Relojes adicionales:"
+
+msgid "Alarms and timers"
+msgstr "Alarmas y temporizadores"
+
+msgid "Alarms, timer and stopwatch"
+msgstr "Alarmas, temporizador y cronómetro"
+
+msgid "All day"
+msgstr "Todo el día"
+
+msgid "Back to today"
+msgstr "Volver a hoy"
+
+msgid "Calendar"
+msgstr "Calendario"
+
+msgid "Calendar:"
+msgstr "Calendario:"
+
+msgid "Calendar app:"
+msgstr "Aplicación de calendario:"
+
+msgctxt "hours offset, e.g. +3 h"
+msgid "%1 h"
+msgstr "%1 h"
+
+msgid "Clock app:"
+msgstr "Aplicación de reloj:"
+
+msgid "Date and time settings"
+msgstr "Ajustes de fecha y hora"
+
+msgid "Date format:"
+msgstr "Formato de fecha:"
+
+msgid "General"
+msgstr "General"
+
+msgid "Install Equestria Calendar to see events here"
+msgstr "Instala Equestria Calendar para ver aquí los eventos"
+
+msgid "ISO: %1"
+msgstr "ISO: %1"
+
+msgid "Next month"
+msgstr "Mes siguiente"
+
+msgid "No events"
+msgstr "No hay eventos"
+
+msgid "One time zone per line, for example Europe/Moscow, Asia/Tokyo, America/New_York. They appear in the calendar popup and in the tooltip."
+msgstr "Una zona horaria por línea, por ejemplo Europe/Moscow, Asia/Tokyo, America/New_York. Aparecen en el calendario emergente y en la descripción."
+
+msgid "Open Equestria Calendar"
+msgstr "Abrir Equestria Calendar"
+
+msgid "Panel:"
+msgstr "Panel:"
+
+msgid "Previous month"
+msgstr "Mes anterior"
+
+msgid "same time"
+msgstr "misma hora"
+
+msgid "Short: %1"
+msgstr "Corto: %1"
+
+msgid "Show date"
+msgstr "Mostrar la fecha"
+
+msgid "Show seconds"
+msgstr "Mostrar los segundos"
+
+msgid "Show week numbers"
+msgstr "Mostrar números de semana"
+
+msgid "Today"
+msgstr "Hoy"
+
+msgid "tomorrow"
+msgstr "mañana"
+
+msgid "With weekday: %1"
+msgstr "Con día de la semana: %1"
+
+msgid "yesterday"
+msgstr "ayer"
+
+msgid "%1 event today"
+msgid_plural "%1 events today"
+msgstr[0] "%1 evento hoy"
+msgstr[1] "%1 eventos hoy"

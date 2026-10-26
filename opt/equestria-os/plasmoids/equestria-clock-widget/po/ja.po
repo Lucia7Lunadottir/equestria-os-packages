@@ -1,0 +1,103 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plasma_applet_org.equestria.clockwidget\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Additional clocks:"
+msgstr "追加の時計:"
+
+msgid "Alarms and timers"
+msgstr "アラームとタイマー"
+
+msgid "Alarms, timer and stopwatch"
+msgstr "アラーム、タイマー、ストップウォッチ"
+
+msgid "All day"
+msgstr "終日"
+
+msgid "Back to today"
+msgstr "今日に戻る"
+
+msgid "Calendar"
+msgstr "カレンダー"
+
+msgid "Calendar:"
+msgstr "カレンダー:"
+
+msgid "Calendar app:"
+msgstr "カレンダーアプリ:"
+
+msgctxt "hours offset, e.g. +3 h"
+msgid "%1 h"
+msgstr "%1 時間"
+
+msgid "Clock app:"
+msgstr "時計アプリ:"
+
+msgid "Date and time settings"
+msgstr "日付と時刻の設定"
+
+msgid "Date format:"
+msgstr "日付の形式:"
+
+msgid "General"
+msgstr "全般"
+
+msgid "Install Equestria Calendar to see events here"
+msgstr "ここに予定を表示するには Equestria Calendar をインストールしてください"
+
+msgid "ISO: %1"
+msgstr "ISO: %1"
+
+msgid "Next month"
+msgstr "次の月"
+
+msgid "No events"
+msgstr "予定はありません"
+
+msgid "One time zone per line, for example Europe/Moscow, Asia/Tokyo, America/New_York. They appear in the calendar popup and in the tooltip."
+msgstr "1 行に 1 つのタイムゾーン（例: Europe/Moscow、Asia/Tokyo、America/New_York）。カレンダーのポップアップとツールチップに表示されます。"
+
+msgid "Open Equestria Calendar"
+msgstr "Equestria Calendar を開く"
+
+msgid "Panel:"
+msgstr "パネル:"
+
+msgid "Previous month"
+msgstr "前の月"
+
+msgid "same time"
+msgstr "同じ時刻"
+
+msgid "Short: %1"
+msgstr "短い形式: %1"
+
+msgid "Show date"
+msgstr "日付を表示"
+
+msgid "Show seconds"
+msgstr "秒を表示"
+
+msgid "Show week numbers"
+msgstr "週番号を表示"
+
+msgid "Today"
+msgstr "今日"
+
+msgid "tomorrow"
+msgstr "明日"
+
+msgid "With weekday: %1"
+msgstr "曜日付き: %1"
+
+msgid "yesterday"
+msgstr "昨日"
+
+msgid "%1 event today"
+msgid_plural "%1 events today"
+msgstr[0] "今日の予定 %1 件"

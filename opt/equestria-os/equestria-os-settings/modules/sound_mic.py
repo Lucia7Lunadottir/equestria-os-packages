@@ -1,4 +1,6 @@
-"""Microphone module — built-in mic gain control and drop/stutter diagnostics."""
+"""Микрофон: усиление встроенного микрофона и диагностика заиканий.
+Бывший модуль «Микрофон» — теперь вкладка модуля «Звук» (mod_sound.py), поэтому
+module_id пустой: «Настройки» не показывают его отдельно."""
 
 import os
 import re
@@ -236,8 +238,8 @@ class _MicTestWorker(QObject):
 
 # ── Module ────────────────────────────────────────────────────────────────────
 
-class MicrophoneModule(BaseModule):
-    module_id = "mod_microphone"
+class MicrophonePanel(BaseModule):
+    module_id = ""  # вкладка «Звука», не отдельный модуль
     display_name_key = "module.microphone.name"
     description_key = "module.microphone.desc"
     category = "system"

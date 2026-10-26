@@ -17,9 +17,10 @@ echo "╚═══════════════════════�
 echo ""
 
 # Все папки с PKGBUILD: системные пакеты верхнего уровня и приложения
-# из opt/equestria-os/ (раньше приложения сюда не попадали — их собирали руками)
+# из opt/equestria-os/ и виджеты Plasma из opt/equestria-os/plasmoids/
+# (раньше приложения сюда не попадали — их собирали руками)
 PKG_DIRS=()
-for dir in "$BASE_DIR"/*/ "$BASE_DIR"/opt/equestria-os/*/; do
+for dir in "$BASE_DIR"/*/ "$BASE_DIR"/opt/equestria-os/*/ "$BASE_DIR"/opt/equestria-os/plasmoids/*/; do
     [[ "$dir" == *"/docs/"* ]] && continue
     [ -f "$dir/PKGBUILD" ] || continue
     PKG_DIRS+=("$dir")
