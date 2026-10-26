@@ -4,12 +4,13 @@ import os
 import shutil
 import signal
 import subprocess
+import sys
 import threading
 
 from PyQt6.QtCore import Qt, QObject, QTimer, pyqtSignal
 from PyQt6.QtWidgets import (
     QCheckBox, QFrame, QHBoxLayout, QLabel, QMessageBox, QPushButton,
-    QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
+    QScrollArea, QSizePolicy, QTabWidget, QVBoxLayout, QWidget,
 )
 
 from base_module import BaseModule
@@ -468,6 +469,28 @@ class _CmdWorker(QObject):
 
 # ── Module ────────────────────────────────────────────────────────────────────
 
+def _load_gpu_panel():
+    """Панель менеджера видеокарт из equestria-gpu или None, если его нет.
+    Установленный — один файл /usr/bin/equestria-gpu; из исходников — соседняя папка."""
+    import importlib.machinery
+    import importlib.util
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for path in ("/usr/bin/equestria-gpu", os.path.join(os.path.dirname(here), "equestria-gpu", "equestria_gpu.py")):
+        if not os.path.isfile(path):
+            continue
+        try:
+            loader = importlib.machinery.SourceFileLoader("equestria_gpu", path)
+            spec = importlib.util.spec_from_file_location("equestria_gpu", path, loader=loader)
+            mod = importlib.util.module_from_spec(spec)
+            sys.modules["equestria_gpu"] = mod  # dataclass ищет свой модуль в sys.modules
+            loader.exec_module(mod)
+            return mod.GpuPanel(embedded=True)
+        except Exception as e:  # повреждённая установка не должна ронять «Настройки»
+            sys.modules.pop("equestria_gpu", None)
+            print(f"mod_gpu: equestria-gpu не загрузился ({path}): {e}")
+    return None
+
+
 class GpuModule(BaseModule):
     module_id = "mod_gpu"
     display_name_key = "module.gpu.name"
@@ -481,6 +504,11 @@ class GpuModule(BaseModule):
     # ── Build ─────────────────────────────────────────────────────────────────
 
     def build_widget(self) -> QWidget:
+        wrapper = QWidget()
+        wrapper.setObjectName("ContentPage")
+        wl = QVBoxLayout(wrapper)
+        wl.setContentsMargins(0, 0, 0, 0)
+
         outer = QWidget()
         outer.setObjectName("ContentPage")
         scroll = QScrollArea()
@@ -494,12 +522,9 @@ class GpuModule(BaseModule):
 
         self._title_lbl = QLabel(self.t(self.display_name_key))
         self._title_lbl.setObjectName("ModTitle")
-        layout.addWidget(self._title_lbl)
-
         self._desc_lbl = QLabel(self.t(self.description_key))
         self._desc_lbl.setObjectName("ModDesc")
         self._desc_lbl.setWordWrap(True)
-        layout.addWidget(self._desc_lbl)
 
         self._build_gpu_info_card(layout)
         self._build_graphics_status_card(layout)
@@ -508,14 +533,35 @@ class GpuModule(BaseModule):
         self._build_driver_status_card(layout)
         self._build_driver_actions_card(layout)
         self._build_driver_cache_card(layout)
-
         layout.addStretch()
 
-        wrapper = QWidget()
-        wrapper.setObjectName("ContentPage")
-        wl = QVBoxLayout(wrapper)
-        wl.setContentsMargins(0, 0, 0, 0)
-        wl.addWidget(scroll)
+        # Менеджер видеокарт (equestria-gpu) — драйвер и диагностика для каждой карты.
+        # Есть он — две вкладки, а карточки «Статус драйвера» и «Действия» здесь
+        # только скрываются (их делает менеджер точнее, по каждой карте; код и
+        # данные остаются). Нет — модуль такой же, как раньше.
+        self._gpu_panel = _load_gpu_panel()
+        if self._gpu_panel is None:
+            layout.insertWidget(0, self._title_lbl)
+            layout.insertWidget(1, self._desc_lbl)
+            wl.addWidget(scroll)
+            return wrapper
+
+        self._driver_status_card.hide()
+        self._driver_actions_card.hide()
+        head = QVBoxLayout()
+        head.setContentsMargins(40, 30, 40, 0)
+        head.setSpacing(8)
+        head.addWidget(self._title_lbl)
+        head.addWidget(self._desc_lbl)
+        wl.addLayout(head)
+        self._tabs = QTabWidget()
+        self._tabs.setDocumentMode(True)
+        self._tabs.addTab(self._gpu_panel, self.t("gpu.tab_cards"))
+        self._tabs.addTab(scroll, self.t("gpu.tab_system"))
+        tabs_box = QVBoxLayout()
+        tabs_box.setContentsMargins(40, 12, 40, 20)
+        tabs_box.addWidget(self._tabs)
+        wl.addLayout(tabs_box, 1)
         return wrapper
 
     # ── GPU Info card ─────────────────────────────────────────────────────────
@@ -704,6 +750,7 @@ class GpuModule(BaseModule):
         layout.setContentsMargins(20, 16, 20, 16)
         layout.setSpacing(10)
 
+        self._driver_status_card = card
         self._status_title_lbl = QLabel(self.t("gpu.status_title"))
         self._status_title_lbl.setObjectName("SectionTitle")
         layout.addWidget(self._status_title_lbl)
@@ -727,6 +774,7 @@ class GpuModule(BaseModule):
         layout.setContentsMargins(20, 16, 20, 16)
         layout.setSpacing(12)
 
+        self._driver_actions_card = card
         self._actions_title_lbl = QLabel(self.t("gpu.actions_title"))
         self._actions_title_lbl.setObjectName("SectionTitle")
         layout.addWidget(self._actions_title_lbl)
@@ -822,6 +870,9 @@ class GpuModule(BaseModule):
             return
         self._title_lbl.setText(self.t(self.display_name_key))
         self._desc_lbl.setText(self.t(self.description_key))
+        if getattr(self, "_tabs", None) is not None:
+            self._tabs.setTabText(0, self.t("gpu.tab_cards"))
+            self._tabs.setTabText(1, self.t("gpu.tab_system"))
         self._info_title_lbl.setText(self.t("gpu.info_title"))
         self._refresh_btn.setText(self.t("gpu.refresh"))
         self._gfx_title_lbl.setText(self.t("gpu.gfx_title"))

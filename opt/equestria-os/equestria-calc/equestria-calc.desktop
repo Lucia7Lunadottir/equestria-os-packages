@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Calc
+Comment=Calculator
+Comment[ru]=Калькулятор
+Comment[de]=Taschenrechner
+Comment[fr]=Calculatrice
+Comment[es]=Calculadora
+Comment[pt]=Calculadora
+Comment[pl]=Kalkulator
+Comment[uk]=Калькулятор
+Comment[zh]=计算器
+Comment[ja]=電卓
+Exec=equestria-calc
+Icon=accessories-calculator
+Categories=Utility;Calculator;Qt;
+Terminal=false

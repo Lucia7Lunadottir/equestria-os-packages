@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Closer
+Comment=Close a frozen window or process
+Comment[ru]=Закрыть зависшее окно или процесс
+Comment[de]=Hängendes Fenster oder Prozess schließen
+Comment[fr]=Fermer une fenêtre ou un processus bloqué
+Comment[es]=Cerrar una ventana o proceso bloqueado
+Comment[pt]=Fechar uma janela ou processo travado
+Comment[pl]=Zamknij zawieszone okno lub proces
+Comment[uk]=Закрити зависле вікно або процес
+Comment[zh]=关闭卡死的窗口或进程
+Comment[ja]=固まったウィンドウやプロセスを閉じる
+Exec=equestria-closer
+Icon=process-stop
+Categories=System;Monitor;Qt;
+Terminal=false

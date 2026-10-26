@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Notes
+Comment=Markdown notes with images and to-do lists
+Comment[ru]=Заметки в Markdown с картинками и задачами
+Comment[de]=Markdown-Notizen mit Bildern und Aufgaben
+Comment[fr]=Notes Markdown avec images et tâches
+Comment[es]=Notas en Markdown con imágenes y tareas
+Comment[pt]=Notas em Markdown com imagens e tarefas
+Comment[pl]=Notatki Markdown z obrazami i zadaniami
+Comment[uk]=Нотатки в Markdown з картинками та завданнями
+Comment[zh]=支持图片和待办的 Markdown 笔记
+Comment[ja]=画像とタスク付きの Markdown メモ
+Exec=equestria-notes
+Icon=accessories-text-editor
+Categories=Utility;TextEditor;Qt;
+Terminal=false

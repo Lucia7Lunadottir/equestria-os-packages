@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-welcome-hub
 pkgver=2.3.2
-pkgrel=5
+pkgrel=6
 pkgdesc="The official Equestria OS Welcome Center and Community Portal"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('python-pyqt6' 'xdg-utils')
+depends=('equestria-qt-kit' 'python-pyqt6' 'xdg-utils')
 
 package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"

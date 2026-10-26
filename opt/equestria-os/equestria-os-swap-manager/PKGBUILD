@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-swap-manager
 pkgver=2.0.1
-pkgrel=5
+pkgrel=6
 pkgdesc="GUI tool for managing swap files, partitions, and swappiness"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('polkit' 'python-pyqt6')
+depends=('equestria-qt-kit' 'polkit' 'python-pyqt6')
 optdepends=('kdesu: alternative privilege elevation')
 
 package() {

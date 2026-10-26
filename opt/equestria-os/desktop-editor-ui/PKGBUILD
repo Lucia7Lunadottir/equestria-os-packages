@@ -2,10 +2,10 @@
 
 pkgname=desktop-editor-ui
 pkgver=1.0.0
-pkgrel=7
+pkgrel=8
 pkgdesc="Утилита для быстрого создания и редактирования .desktop файлов"
 arch=('any')
-depends=('python-pyqt6')
+depends=('equestria-qt-kit' 'python-pyqt6')
 
 # Явно указываем makepkg, какие файлы нужно взять из папки проекта
 source=('desktop_editor_ui.py'

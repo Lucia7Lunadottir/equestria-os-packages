@@ -311,6 +311,8 @@
   "gpu.optimus_yes": "Ja (iGPU + NVIDIA dGPU)",
   "gpu.optimus_no": "Nein",
   "gpu.no_packages": "Keine NVIDIA-Pakete installiert",
+  "gpu.tab_cards": "Grafikkarten und Treiber",
+  "gpu.tab_system": "System und Stabilität",
   "gpu.status_title": "Treiberstatus",
   "gpu.dkms_status": "DKMS-Module",
   "gpu.dkms_none": "Keine NVIDIA-DKMS-Module gefunden",

@@ -7,9 +7,9 @@ arch=('any')
 license=('custom')
 depends=('python-pyqt6' 'equestria-qt-kit' 'qt6-multimedia')
 source=("equestria_calendar.py" "equestria-calendar.desktop" "i18n.json")
-sha256sums=('74f2865e5bcf213aa18f410848e7c228738368c4126f938f42caa1587ec9fc19'
-            'bdea744d8c340575de06773c6525b29004c9b68d265cc8864bc12371394f4c31'
-            'cc72b914a6b4292f5dcaf56a0cd6f76893b1eec07cf0d89a70f8154332e9c527')
+sha256sums=('25f6791ab74e23dfc31fdb532e6eca5d25edb8dfc1475306fb62a6e588b44171'
+            '700ca2c0a056c715d544a0190d660d387e6308c1812b2ebe8c90531ca6f35fa9'
+            'd128faa99b7b3cff6084d5ec8b13481296bab3d56e01f9e308fa5ba4daf1d4fe')
 
 package() {
     install -Dm755 "$srcdir/equestria_calendar.py" "$pkgdir/usr/bin/equestria-calendar"

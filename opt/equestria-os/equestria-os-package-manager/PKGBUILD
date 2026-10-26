@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-package-manager
 pkgver=2.8.0
-pkgrel=5
+pkgrel=6
 pkgdesc="Official Equestria OS Package Manager (Uninstall, Manage, Clean App Data)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('polkit' 'python-pyqt6')
+depends=('equestria-qt-kit' 'polkit' 'python-pyqt6')
 optdepends=('equestria-installer: remove packages installed from .deb/.rpm files')
 
 package() {

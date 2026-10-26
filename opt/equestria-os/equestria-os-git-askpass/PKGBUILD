@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-git-askpass
 pkgver=1.0.1
-pkgrel=2
+pkgrel=3
 pkgdesc="Native GUI Git credential interceptor for Equestria OS (fixes Unity Git errors)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('git' 'python-pyqt6')
+depends=('equestria-qt-kit' 'git' 'python-pyqt6')
 install="$pkgname.install"
 
 package() {

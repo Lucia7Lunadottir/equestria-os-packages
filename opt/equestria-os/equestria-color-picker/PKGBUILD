@@ -1,0 +1,20 @@
+# Maintainer: Equestria OS
+pkgname=equestria-color-picker
+pkgver=1.0
+pkgrel=1
+pkgdesc="Color picker with ready-made color formats (PyQt6)"
+arch=('any')
+license=('custom')
+depends=('python-pyqt6' 'equestria-qt-kit')
+optdepends=('python-gobject: пипетка через xdg-desktop-portal (GNOME, KDE)'
+            'hyprpicker: пипетка в Hyprland'
+            'grim: пипетка в sway (вместе со slurp)'
+            'slurp: пипетка в sway (вместе с grim)')
+source=("equestria_color_picker.py" "equestria-color-picker.desktop" "i18n.json")
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -Dm755 "$srcdir/equestria_color_picker.py" "$pkgdir/usr/bin/equestria-color-picker"
+    install -Dm644 "$srcdir/equestria-color-picker.desktop" "$pkgdir/usr/share/applications/equestria-color-picker.desktop"
+    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-color-picker/i18n.json"
+}

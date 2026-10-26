@@ -311,6 +311,8 @@
   "gpu.optimus_yes": "是 (iGPU + NVIDIA dGPU)",
   "gpu.optimus_no": "否",
   "gpu.no_packages": "未安装 NVIDIA 软件包",
+  "gpu.tab_cards": "显卡与驱动",
+  "gpu.tab_system": "系统与稳定性",
   "gpu.status_title": "驱动状态",
   "gpu.dkms_status": "DKMS 模块",
   "gpu.dkms_none": "未找到 NVIDIA DKMS 模块",

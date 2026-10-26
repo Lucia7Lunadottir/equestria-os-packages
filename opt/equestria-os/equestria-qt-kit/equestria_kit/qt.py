@@ -216,6 +216,13 @@ class ThemeManager:
 
 
 _manager: ThemeManager | None = None
+
+
+def on_theme_change(fn: Callable[[dict], object]) -> None:
+    """Подписка на смену темы — для того, что рисуется в коде (иконки, paintEvent).
+    Работает, если в приложении есть ThemeManager; иначе ничего не делает."""
+    if _manager is not None:
+        _manager.on_change(fn)
 _TEMPLATE_PROP = "_equestria_style_template"
 
 

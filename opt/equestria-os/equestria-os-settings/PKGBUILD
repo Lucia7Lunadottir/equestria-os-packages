@@ -1,13 +1,13 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-settings
-pkgver=1.7.2
-pkgrel=1
+pkgver=1.7.3
+pkgrel=2
 pkgdesc="Unified settings panel for Equestria OS — all system tools in one place"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('python-pyqt6')
+depends=('equestria-qt-kit' 'equestria-gpu' 'python-pyqt6')
 install=equestria-os-settings.install
 optdepends=(
     'equestria-os-disk-manager: disk management module'

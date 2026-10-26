@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Converter
+Comment=Convert audio and make videos from audio
+Comment[ru]=Конвертер аудио и видео из аудио
+Comment[de]=Audio konvertieren und Videos aus Audio erstellen
+Comment[fr]=Convertir l’audio et créer des vidéos à partir de l’audio
+Comment[es]=Convertir audio y crear vídeos a partir de audio
+Comment[pt]=Converter áudio e criar vídeos a partir de áudio
+Comment[pl]=Konwersja audio i tworzenie wideo z dźwięku
+Comment[uk]=Конвертер аудіо та відео з аудіо
+Comment[zh]=音频转换与音频生成视频
+Comment[ja]=音声の変換と音声からの動画作成
+Exec=equestria-audio-converter
+Icon=audio-x-generic
+Categories=AudioVideo;Audio;Video;Qt;
+Terminal=false

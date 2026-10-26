@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-disk-manager
 pkgver=1.3.0
-pkgrel=1
+pkgrel=2
 pkgdesc="GUI tool for managing disks: mount, fstab, permissions, labels, format, partitioning"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('polkit' 'python-pyqt6')
+depends=('equestria-qt-kit' 'polkit' 'python-pyqt6')
 optdepends=(
     'kdesu: alternative privilege elevation'
     'ntfs-3g: NTFS fallback driver, ntfslabel and ntfsresize'

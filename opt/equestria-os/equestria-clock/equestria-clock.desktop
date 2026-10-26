@@ -1,7 +1,16 @@
 [Desktop Entry]
 Type=Application
 Name=Equestria Clock
-Comment=Будильник, таймер и секундомер
+Comment=Alarm clock, timer and stopwatch
+Comment[ru]=Будильник, таймер и секундомер
+Comment[de]=Wecker, Timer und Stoppuhr
+Comment[fr]=Réveil, minuteur et chronomètre
+Comment[es]=Alarma, temporizador y cronómetro
+Comment[pt]=Despertador, temporizador e cronômetro
+Comment[pl]=Budzik, minutnik i stoper
+Comment[uk]=Будильник, таймер і секундомір
+Comment[zh]=闹钟、计时器和秒表
+Comment[ja]=アラーム、タイマー、ストップウォッチ
 Exec=equestria-clock
 Icon=preferences-system-time
 Categories=Utility;Clock;Qt;

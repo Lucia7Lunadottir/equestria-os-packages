@@ -66,5 +66,7 @@ class Catalog:
 def install(app_id: str, script_file: str, lang: str | None = None):
     """Загрузить i18n.json приложения и вернуть функцию tr."""
     here = Path(script_file).resolve().parent
-    catalog = Catalog.load([here / "i18n.json", Path("/usr/share") / app_id / "i18n.json"], lang)
+    # рядом со скриптом (запуск из исходников), затем каталоги данных XDG
+    data_dirs = (os.environ.get("XDG_DATA_DIRS") or "/usr/local/share:/usr/share").split(":")
+    catalog = Catalog.load([here / "i18n.json"] + [Path(d) / app_id / "i18n.json" for d in data_dirs if d], lang)
     return catalog.tr

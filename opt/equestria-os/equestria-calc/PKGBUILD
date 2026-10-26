@@ -1,0 +1,16 @@
+# Maintainer: Equestria OS
+pkgname=equestria-calc
+pkgver=1.0
+pkgrel=1
+pkgdesc="Calculator (PyQt6)"
+arch=('any')
+license=('custom')
+depends=('python-pyqt6' 'equestria-qt-kit')
+source=("equestria_calc.py" "equestria-calc.desktop" "i18n.json")
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -Dm755 "$srcdir/equestria_calc.py" "$pkgdir/usr/bin/equestria-calc"
+    install -Dm644 "$srcdir/equestria-calc.desktop" "$pkgdir/usr/share/applications/equestria-calc.desktop"
+    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-calc/i18n.json"
+}

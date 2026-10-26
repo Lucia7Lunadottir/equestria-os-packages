@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria GPU
+Comment=Graphics card drivers and diagnostics
+Comment[ru]=Драйверы и диагностика видеокарт
+Comment[de]=Grafikkartentreiber und Diagnose
+Comment[fr]=Pilotes et diagnostic des cartes graphiques
+Comment[es]=Controladores y diagnóstico de tarjetas gráficas
+Comment[pt]=Drivers e diagnóstico de placas de vídeo
+Comment[pl]=Sterowniki i diagnostyka kart graficznych
+Comment[uk]=Драйвери та діагностика відеокарт
+Comment[zh]=显卡驱动与诊断
+Comment[ja]=グラフィックカードのドライバーと診断
+Exec=equestria-gpu
+Icon=video-display
+Categories=Settings;HardwareSettings;Qt;
+Terminal=false

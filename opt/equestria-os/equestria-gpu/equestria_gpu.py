@@ -20,11 +20,14 @@ import shlex
 import shutil
 import subprocess
 import sys
+import threading
+import weakref
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from PyQt6.QtCore import QPointF, QProcess, QSize, Qt, QTimer
+from PyQt6 import sip
+from PyQt6.QtCore import QPointF, QProcess, QSize, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import (QAction, QColor, QFontDatabase, QGuiApplication, QIcon,
                          QPainter, QPalette, QPen, QPixmap, QPolygonF)
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QDialog, QFrame, QGridLayout,
@@ -100,7 +103,7 @@ QPushButton#small { padding: 6px 12px; font-size: 13px; border-radius: 9px; }
 QFrame#card { background: @surface0@; border-radius: 14px; }
 QCheckBox { spacing: 10px; background: transparent; }
 QCheckBox::indicator { width: 18px; height: 18px; border-radius: 5px; background: @mantle@; border: 2px solid @surface2@; }
-QCheckBox::indicator:checked { background: @accent@; border-color: @accent@; image: url("@check@"); }
+QCheckBox::indicator:checked { background: @accent@; border-color: @accent@; image: url("@icon:check_mark@"); }
 QCheckBox::indicator:disabled { background: @mantle@; border-color: @surface1@; }
 QCheckBox:disabled { color: @surface2@; }
 
@@ -127,7 +130,7 @@ QToolTip { background: @surface1@; color: @text@; border: none; padding: 4px 8px
 """
 
 
-_THEME_APPLIER = kit_qt.ThemeApplier(QSS, THEME, extras=lambda t: {"check": kit_qt.check_png(t["base"], "equestria-gpu")})
+_THEME_APPLIER = kit_qt.ThemeApplier(QSS, THEME)
 
 
 def apply_theme(name: str) -> str:
@@ -415,7 +418,9 @@ def probe_system() -> Sys:
 #  ПРОВЕРКИ
 # ════════════════════════════════════════════════════════════════════════════
 LVL_ORDER = {"fail": 0, "warn": 1, "info": 2, "ok": 3}
-SYNC = (tr("Установить рекомендуемый драйвер"), "sync", [])
+# --reset-mode: рекомендуемый драйвер = снова автоподбор (снимает сохранённый выбор nouveau,
+# иначе служба pg-gpu-watch при загрузке перестала бы следить за драйвером)
+SYNC = (tr("Установить рекомендуемый драйвер"), "sync", ["--reset-mode"])
 
 
 @dataclass
@@ -902,7 +907,8 @@ def build_cmd(kind: str, arg, o: dict):
 #  ВИДЖЕТЫ
 # ════════════════════════════════════════════════════════════════════════════
 def lvl_color(lvl: str) -> str:
-    return {"ok": THEME["green"], "warn": THEME["yellow"], "fail": THEME["red"]}.get(lvl, THEME["subtext"])
+    # цвета текущей темы — и в отдельном окне, и внутри «Настроек»
+    return kit_qt.theme_color({"ok": "green", "warn": "yellow", "fail": "red"}.get(lvl, "subtext")).name()
 
 
 def dot_icon(lvl: str) -> QIcon:
@@ -1263,29 +1269,33 @@ class GpuPage(QTabWidget):
 # ════════════════════════════════════════════════════════════════════════════
 #  ГЛАВНОЕ ОКНО
 # ════════════════════════════════════════════════════════════════════════════
-class MainWindow(QMainWindow):
-    def __init__(self, cfg: dict):
-        super().__init__()
-        self.cfg = cfg
-        self.theme = cfg["theme"]
+class GpuPanel(QWidget):
+    """Содержимое менеджера: список видеокарт слева, страница выбранной справа,
+    действия с драйвером. Один и тот же виджет — в отдельном окне Equestria GPU
+    и в «Настройки → Видеокарта».
+
+    embedded=True — внутри чужого окна: стиль ставится только на сам виджет
+    (на приложение его ставит хозяин окна), как у остальных модулей «Настроек»."""
+    scanned = pyqtSignal(object)
+
+    def __init__(self, embedded: bool = False, parent=None):
+        super().__init__(parent)
         self.opts = {"b32": True, "settings": True, "nodkms": False}
         self.S = Sys()
-        self.setWindowTitle("Equestria GPU")
-        self.setMinimumSize(980, 640)
-        self.resize(1120, 760)
-
-        central = QWidget()
-        self.setCentralWidget(central)
-        root = QHBoxLayout(central)
-        root.setContentsMargins(18, 16, 18, 16)
+        self._scanning = False
+        root = QHBoxLayout(self)
+        root.setContentsMargins(*((0, 8, 0, 0) if embedded else (18, 16, 18, 16)))
         root.setSpacing(16)
 
         side = QVBoxLayout()
         side.setSpacing(8)
-        title = QLabel("Equestria GPU")
-        title.setObjectName("title")
-        sub = QLabel(tr("Менеджер драйверов видеокарт"))
-        sub.setObjectName("hint")
+        if not embedded:
+            title = QLabel("Equestria GPU")
+            title.setObjectName("title")
+            sub = QLabel(tr("Менеджер драйверов видеокарт"))
+            sub.setObjectName("hint")
+            side.addWidget(title)
+            side.addWidget(sub)
         self.list = QListWidget()
         self.list.setIconSize(QSize(14, 14))
         self.list.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -1293,35 +1303,60 @@ class MainWindow(QMainWindow):
         self.sys_label = QLabel("")
         self.sys_label.setObjectName("hint")
         self.sys_label.setWordWrap(True)
-        brow = QHBoxLayout()
-        refresh = small_btn(tr("Обновить"))
-        refresh.clicked.connect(self.refresh)
-        theme_btn = small_btn(tr("Тема"))
-        theme_btn.clicked.connect(lambda: self._theme_menu(theme_btn))
-        brow.addWidget(refresh)
-        brow.addWidget(theme_btn)
-        side.addWidget(title)
-        side.addWidget(sub)
+        self.buttons = QHBoxLayout()
+        self.refresh_btn = small_btn(tr("Обновить"))
+        self.refresh_btn.clicked.connect(self.refresh)
+        self.buttons.addWidget(self.refresh_btn)
         side.addWidget(self.list, 1)
         side.addWidget(self.sys_label)
-        side.addLayout(brow)
+        side.addLayout(self.buttons)
         sw = QWidget()
         sw.setLayout(side)
-        sw.setFixedWidth(300)
+        sw.setFixedWidth(280 if embedded else 300)
         root.addWidget(sw)
 
         self.stack = QStackedWidget()
         root.addWidget(self.stack, 1)
+        if embedded:
+            kit_qt.style(self, QSS)
+            # значки состояния нарисованы в цветах темы — перерисовать при её смене;
+            # слабая ссылка: удалённая панель просто пропускается
+            ref = weakref.ref(self)
+
+            def _theme_changed(_theme):
+                w = ref()
+                if w is not None and not sip.isdeleted(w) and w.S.gpus:
+                    w.rebuild()
+            kit_qt.on_theme_change(_theme_changed)
+        self.scanned.connect(self._scan_done)
         self.refresh()
 
-    # --- данные
+    # --- данные: опрос системы занимает секунды (vulkaninfo до 25 с) — в фоне
     def refresh(self) -> None:
-        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
-        try:
-            self.S = probe_system()
-        finally:
-            QApplication.restoreOverrideCursor()
+        if self._scanning:
+            return
+        self._scanning = True
+        self.refresh_btn.setEnabled(False)
+        self.sys_label.setText(tr("Опрашиваю видеокарты…"))
+        if not self.S.gpus:
+            self._show_message(tr("Опрашиваю видеокарты…"))
+        threading.Thread(target=lambda: self.scanned.emit(probe_system()), daemon=True).start()
+
+    def _scan_done(self, S) -> None:
+        self._scanning = False
+        self.refresh_btn.setEnabled(True)
+        self.S = S
         self.rebuild()
+
+    def _show_message(self, text: str) -> None:
+        while self.stack.count():
+            w = self.stack.widget(0)
+            self.stack.removeWidget(w)
+            w.deleteLater()
+        msg = QLabel(text)
+        msg.setObjectName("hint")
+        msg.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.stack.addWidget(msg)
 
     def rebuild(self) -> None:
         keep = max(0, self.list.currentRow())
@@ -1333,10 +1368,7 @@ class MainWindow(QMainWindow):
             w.deleteLater()
         S = self.S
         if not S.gpus:
-            msg = QLabel(tr("Видеокарты не найдены.\nУстановите пакет pciutils (lspci) и нажмите «Обновить»."))
-            msg.setObjectName("hint")
-            msg.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.stack.addWidget(msg)
+            self._show_message(tr("Видеокарты не найдены.\nУстановите пакет pciutils (lspci) и нажмите «Обновить»."))
         for g in S.gpus:
             sub = g.fam_name or VENDOR_LABEL[g.vendor]
             it = QListWidgetItem(dot_icon(g.worst), f"{g.name}\n{sub}")
@@ -1367,13 +1399,28 @@ class MainWindow(QMainWindow):
         RunDialog(self, label, cmd).exec()
         self.refresh()
 
+
+class MainWindow(QMainWindow):
+    def __init__(self, cfg: dict):
+        super().__init__()
+        self.cfg = cfg
+        self.theme = cfg["theme"]
+        self.setWindowTitle("Equestria GPU")
+        self.setMinimumSize(980, 640)
+        self.resize(1120, 760)
+        self.panel = GpuPanel()
+        theme_btn = small_btn(tr("Тема"))
+        theme_btn.clicked.connect(lambda: self._theme_menu(theme_btn))
+        self.panel.buttons.addWidget(theme_btn)
+        self.setCentralWidget(self.panel)
+
     # --- тема
     def _theme_menu(self, btn) -> None:
         kit_qt.theme_menu(self, btn, self.theme, self._set_theme)
 
     def _set_theme(self, name: str) -> None:
         self.theme = self.cfg["theme"] = apply_theme(name)
-        self.rebuild()
+        self.panel.rebuild()
         try:
             CONFIG.parent.mkdir(parents=True, exist_ok=True)
             CONFIG.write_text(json.dumps(self.cfg, ensure_ascii=False), encoding="utf-8")

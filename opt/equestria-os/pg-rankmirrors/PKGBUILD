@@ -2,12 +2,12 @@
 
 pkgname=pg-rankmirrors
 pkgver=2.1.1
-pkgrel=6
+pkgrel=7
 pkgdesc='Equestria OS — Mirror manager with country selection'
 arch=('any')
 license=('GPL3')
 url='https://psyche-games.com'
-depends=('reflector' 'polkit' 'python-pyqt6')
+depends=('equestria-qt-kit' 'reflector' 'polkit' 'python-pyqt6')
 install='pg-rankmirrors.install'
 
 package() {

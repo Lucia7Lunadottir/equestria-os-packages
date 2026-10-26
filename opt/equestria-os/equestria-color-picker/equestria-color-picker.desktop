@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Picker
+Comment=Color picker with ready-made color formats
+Comment[ru]=Пипетка и готовые форматы цвета
+Comment[de]=Farbpipette mit fertigen Farbformaten
+Comment[fr]=Pipette avec formats de couleur prêts à l’emploi
+Comment[es]=Cuentagotas con formatos de color listos
+Comment[pt]=Conta-gotas com formatos de cor prontos
+Comment[pl]=Pipeta z gotowymi formatami kolorów
+Comment[uk]=Піпетка та готові формати кольору
+Comment[zh]=取色器与现成的颜色格式
+Comment[ja]=スポイトと色フォーマット
+Exec=equestria-color-picker
+Icon=color-picker
+Categories=Graphics;Qt;
+Terminal=false

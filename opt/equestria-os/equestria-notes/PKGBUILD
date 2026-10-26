@@ -1,0 +1,16 @@
+# Maintainer: Equestria OS
+pkgname=equestria-notes
+pkgver=1.0
+pkgrel=1
+pkgdesc="Markdown notes with images and to-do lists (PyQt6)"
+arch=('any')
+license=('custom')
+depends=('python-pyqt6' 'equestria-qt-kit')
+source=("equestria_notes.py" "equestria-notes.desktop" "i18n.json")
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -Dm755 "$srcdir/equestria_notes.py" "$pkgdir/usr/bin/equestria-notes"
+    install -Dm644 "$srcdir/equestria-notes.desktop" "$pkgdir/usr/share/applications/equestria-notes.desktop"
+    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-notes/i18n.json"
+}

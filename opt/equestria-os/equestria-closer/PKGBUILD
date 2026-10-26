@@ -1,0 +1,21 @@
+# Maintainer: Equestria OS
+pkgname=equestria-closer
+pkgver=1.0
+pkgrel=1
+pkgdesc="Close a frozen window or process (PyQt6)"
+arch=('any')
+license=('custom')
+depends=('python-pyqt6' 'equestria-qt-kit')
+optdepends=('wmctrl: окна на X11'
+            'xdotool: выбор окна кликом на X11'
+            'xorg-xprop: окна на X11 без wmctrl'
+            'xorg-xwininfo: выбор окна кликом без xdotool'
+            'kdotool: показать окно в KDE Wayland')
+source=("equestria_closer.py" "equestria-closer.desktop" "i18n.json")
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -Dm755 "$srcdir/equestria_closer.py" "$pkgdir/usr/bin/equestria-closer"
+    install -Dm644 "$srcdir/equestria-closer.desktop" "$pkgdir/usr/share/applications/equestria-closer.desktop"
+    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-closer/i18n.json"
+}

@@ -1,0 +1,16 @@
+# Maintainer: Equestria OS
+pkgname=equestria-recorder
+pkgver=1.0
+pkgrel=1
+pkgdesc="Sound recorder (PyQt6)"
+arch=('any')
+license=('custom')
+depends=('python-pyqt6' 'equestria-qt-kit' 'qt6-multimedia')
+source=("equestria_recorder.py" "equestria-recorder.desktop" "i18n.json")
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+    install -Dm755 "$srcdir/equestria_recorder.py" "$pkgdir/usr/bin/equestria-recorder"
+    install -Dm644 "$srcdir/equestria-recorder.desktop" "$pkgdir/usr/share/applications/equestria-recorder.desktop"
+    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-recorder/i18n.json"
+}

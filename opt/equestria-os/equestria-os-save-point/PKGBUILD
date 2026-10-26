@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-save-point
 pkgver=1.4.0
-pkgrel=2
+pkgrel=3
 pkgdesc="Equestria OS Save Point — system snapshot manager (Btrfs/Restic/Timeshift)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('restic' 'python-pyqt6')
+depends=('equestria-qt-kit' 'restic' 'python-pyqt6')
 install='equestria-os-save-point.install'
 optdepends=(
     'btrfs-progs: native Btrfs CoW snapshot backend'

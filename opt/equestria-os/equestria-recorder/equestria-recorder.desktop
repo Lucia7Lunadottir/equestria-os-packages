@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Recorder
+Comment=Sound recorder
+Comment[ru]=Запись звука
+Comment[de]=Tonaufnahme
+Comment[fr]=Enregistreur audio
+Comment[es]=Grabadora de sonido
+Comment[pt]=Gravador de som
+Comment[pl]=Rejestrator dźwięku
+Comment[uk]=Запис звуку
+Comment[zh]=录音机
+Comment[ja]=録音
+Exec=equestria-recorder
+Icon=audio-input-microphone
+Categories=AudioVideo;Audio;Recorder;Qt;
+Terminal=false

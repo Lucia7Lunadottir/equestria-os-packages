@@ -290,6 +290,8 @@
   "gpu.optimus_yes": "Да (iGPU + NVIDIA dGPU)",
   "gpu.optimus_no": "Нет",
   "gpu.no_packages": "Пакеты NVIDIA не установлены",
+  "gpu.tab_cards": "Видеокарты и драйверы",
+  "gpu.tab_system": "Система и стабильность",
   "gpu.status_title": "Статус драйвера",
   "gpu.dkms_status": "Модули DKMS",
   "gpu.dkms_none": "Модули NVIDIA DKMS не найдены",
