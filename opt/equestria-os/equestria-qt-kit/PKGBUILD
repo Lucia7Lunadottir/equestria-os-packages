@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS
 pkgname=equestria-qt-kit
 pkgver=1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Общая библиотека PyQt6-приложений Equestria OS: темы персонажей, локализация, автозапуск, общие виджеты"
 arch=('any')
 license=('custom')

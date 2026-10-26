@@ -17,6 +17,13 @@ from PyQt6.QtWidgets import (
 )
 
 from base_module import BaseModule
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
 
 SUPPORTED_LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
 
@@ -37,8 +44,8 @@ class SidebarDelegate(QStyledItemDelegate):
         painter.save()
 
         if item_type == _ITEM_TYPE_CATEGORY:
-            painter.fillRect(option.rect, QColor(40, 38, 58))
-            painter.setPen(QColor(140, 130, 170))
+            painter.fillRect(option.rect, kit_qt.theme_color("surface0"))
+            painter.setPen(kit_qt.theme_color("subtext"))
             font = QFont(option.font)
             font.setPointSize(9)
             font.setBold(False)
@@ -49,14 +56,14 @@ class SidebarDelegate(QStyledItemDelegate):
         else:
             is_selected = bool(option.state & option.state.State_Selected)
             if is_selected:
-                painter.fillRect(option.rect, QColor(203, 166, 247))
-                painter.setPen(QColor(30, 30, 46))
+                painter.fillRect(option.rect, kit_qt.theme_color("accent"))
+                painter.setPen(kit_qt.theme_color("base"))
             elif bool(option.state & option.state.State_MouseOver):
-                painter.fillRect(option.rect, QColor(50, 47, 72))
-                painter.setPen(QColor(220, 215, 240))
+                painter.fillRect(option.rect, kit_qt.theme_color("surface1"))
+                painter.setPen(kit_qt.theme_color("accent_hover"))
             else:
-                painter.fillRect(option.rect, QColor(30, 28, 46))
-                painter.setPen(QColor(200, 195, 220))
+                painter.fillRect(option.rect, kit_qt.theme_color("surface0%45"))
+                painter.setPen(kit_qt.theme_color("subtext"))
 
             font = QFont(option.font)
             font.setPointSize(11)
@@ -106,7 +113,7 @@ class NotInstalledWidget(QWidget):
 
         self._icon_lbl = QLabel("📦")
         self._icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._icon_lbl.setStyleSheet("font-size: 48px; background: transparent;")
+        kit_qt.style(self._icon_lbl, "font-size: 48px; background: transparent;")
 
         self._title_lbl = QLabel()
         self._title_lbl.setObjectName("ModTitle")
@@ -180,7 +187,7 @@ class LaunchWidget(QWidget):
 
         icon_lbl = QLabel(icon)
         icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon_lbl.setStyleSheet("font-size: 52px; background: transparent;")
+        kit_qt.style(icon_lbl, "font-size: 52px; background: transparent;")
 
         self._title_lbl = QLabel()
         self._title_lbl.setObjectName("ModTitle")
@@ -253,7 +260,7 @@ class WelcomePage(QWidget):
 
         lbl = QLabel("⚙")
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl.setStyleSheet("font-size: 64px; background: transparent;")
+        kit_qt.style(lbl, "font-size: 64px; background: transparent;")
 
         self._hint = QLabel(self._t("welcome.hint"))
         self._hint.setObjectName("ModDesc")
@@ -277,8 +284,7 @@ class SettingsWindow(QMainWindow):
         self.resize(1200, 720)
 
         font_path = os.path.join(base_path, "equestria_cyrillic.ttf")
-        fid = QFontDatabase.addApplicationFont(font_path)
-        families = QFontDatabase.applicationFontFamilies(fid)
+        families = font_families(font_path)
         self._eq_font_family = families[0] if families else "Sans Serif"
 
         self.langs: dict[str, dict] = self._load_locales()
@@ -294,10 +300,10 @@ class SettingsWindow(QMainWindow):
             # буквально, а не как URI) — путь передаём как есть.
             base = base_path.replace("\\", "/")
             raw = raw.replace("{{BASE_PATH}}", base)
-            raw = raw.replace("{{CHECKMARK_SVG_PATH}}", os.path.join(base_path, "icons", "cb_checked.svg"))
+            raw = raw.replace("{{CHECKMARK_SVG_PATH}}", "@icon:cb_checked@")
             raw = raw.replace("{{TITLE_FONT}}", f'"{self._eq_font_family}"')
             self._qss = raw
-            self.setStyleSheet(self._qss)
+            kit_qt.style(self, self._qss)
 
         self._modules: list[BaseModule] = self._discover_modules()
 
@@ -498,10 +504,10 @@ class SettingsWindow(QMainWindow):
             
             from embedded_module import EmbeddedAppModule
             if self._qss and not isinstance(module, EmbeddedAppModule):
-                widget.setStyleSheet(self._qss)
+                kit_qt.style(widget, self._qss)
                 for child in widget.findChildren(QWidget):
                     if not child.styleSheet():
-                        child.setStyleSheet(self._qss)
+                        kit_qt.style(child, self._qss)
 
             module.apply_language()
 

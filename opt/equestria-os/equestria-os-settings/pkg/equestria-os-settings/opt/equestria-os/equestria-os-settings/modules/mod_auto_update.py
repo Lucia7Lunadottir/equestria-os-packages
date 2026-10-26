@@ -12,24 +12,30 @@ from PyQt6.QtWidgets import (
 )
 
 from base_module import BaseModule
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 _BTN_ACTION = (
-    "QPushButton{background:rgb(45,42,68);color:rgb(200,190,220);"
+    "QPushButton{background:@surface1@;color:@text@;"
     "border-radius:6px;padding:6px 18px;font-size:13px;"
-    "border:1px solid rgb(80,75,110);}"
-    "QPushButton:hover{background:rgb(65,60,95);color:white;}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @surface2@;}"
+    "QPushButton:hover{background:@surface2@;color:white;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
 _WARNING_CARD = (
-    "QFrame#WarningCard{background:rgb(55,38,10);border:1px solid rgb(160,100,20);"
+    "QFrame#WarningCard{background:@yellow%12@;border:1px solid @yellow%65@;"
     "border-radius:10px;}"
 )
 _WARNING_TITLE = (
-    "QLabel{color:rgb(255,190,60);font-size:14px;font-weight:bold;"
+    "QLabel{color:@yellow@;font-size:14px;font-weight:bold;"
     "background:transparent;}"
 )
 _WARNING_TEXT = (
-    "QLabel{color:rgb(220,175,100);font-size:12px;background:transparent;}"
+    "QLabel{color:@yellow@;font-size:12px;background:transparent;}"
 )
 
 _INTERVALS = [
@@ -154,17 +160,17 @@ class AutoUpdateModule(BaseModule):
         # ── Warning card ──────────────────────────────────────────────────────
         warn_card = QFrame()
         warn_card.setObjectName("WarningCard")
-        warn_card.setStyleSheet(_WARNING_CARD)
+        kit_qt.style(warn_card, _WARNING_CARD)
         warn_layout = QVBoxLayout(warn_card)
         warn_layout.setContentsMargins(20, 16, 20, 16)
         warn_layout.setSpacing(8)
 
         self._warn_title_lbl = QLabel(self.t("auto_update.warning_title"))
-        self._warn_title_lbl.setStyleSheet(_WARNING_TITLE)
+        kit_qt.style(self._warn_title_lbl, _WARNING_TITLE)
         warn_layout.addWidget(self._warn_title_lbl)
 
         self._warn_text_lbl = QLabel(self.t("auto_update.warning_text"))
-        self._warn_text_lbl.setStyleSheet(_WARNING_TEXT)
+        kit_qt.style(self._warn_text_lbl, _WARNING_TEXT)
         self._warn_text_lbl.setWordWrap(True)
         warn_layout.addWidget(self._warn_text_lbl)
 
@@ -194,17 +200,17 @@ class AutoUpdateModule(BaseModule):
         self._interval_lbl.setObjectName("FieldLabel")
         interval_row.addWidget(self._interval_lbl)
         self._interval_cb = QComboBox()
-        self._interval_cb.setStyleSheet(
-            "QComboBox{background:rgb(40,35,60);color:rgb(220,210,240);"
-            "border:1px solid rgb(100,80,150);border-radius:6px;padding:4px 10px;}"
+        kit_qt.style(self._interval_cb, 
+            "QComboBox{background:@surface0@;color:@text@;"
+            "border:1px solid @accent%75@;border-radius:6px;padding:4px 10px;}"
             "QComboBox::drop-down{subcontrol-origin:padding;subcontrol-position:top right;"
-            "width:22px;border-left:1px solid rgb(80,60,110);background:rgb(50,44,72);"
+            "width:22px;border-left:1px solid @accent%55@;background:@surface1@;"
             "border-top-right-radius:6px;border-bottom-right-radius:6px;}"
             "QComboBox::down-arrow{width:0;height:0;border-style:solid;"
             "border-width:5px 4px 0 4px;"
-            "border-color:rgb(180,160,220) transparent transparent transparent;}"
-            "QComboBox QAbstractItemView{background:rgb(40,35,60);color:rgb(220,210,240);"
-            "border:1px solid rgb(100,80,150);selection-background-color:rgb(80,60,130);}"
+            "border-color:@accent_hover@ transparent transparent transparent;}"
+            "QComboBox QAbstractItemView{background:@surface0@;color:@text@;"
+            "border:1px solid @accent%75@;selection-background-color:@accent%55@;}"
         )
         for key, _ in _INTERVALS:
             self._interval_cb.addItem(self.t(f"auto_update.interval_{key}"), key)
@@ -271,13 +277,13 @@ class AutoUpdateModule(BaseModule):
         btn_row = QHBoxLayout()
         self._check_btn = QPushButton(self.t("auto_update.check_now"))
         self._check_btn.setObjectName("ActionBtn")
-        self._check_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._check_btn, _BTN_ACTION)
         self._check_btn.clicked.connect(self._check_now)
         btn_row.addWidget(self._check_btn)
 
         self._update_btn = QPushButton(self.t("auto_update.update_system"))
         self._update_btn.setObjectName("ActionBtn")
-        self._update_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._update_btn, _BTN_ACTION)
         self._update_btn.clicked.connect(self._update_system)
         btn_row.addWidget(self._update_btn)
 

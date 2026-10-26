@@ -8,6 +8,12 @@
 # неудач подряд вызывается fix-plasmashell — одиночный долгий ответ под
 # нагрузкой не считается зависанием. Работает как пользовательский сервис,
 # root не нужен. Вне сессии KDE Plasma ничего не делает.
+#
+# Второй признак — «сломалась отрисовка»: когда кончается видеопамять, драйвер
+# NVIDIA не может выделить буфер, plasmashell пишет в журнал
+# «eglSwapBuffers failed», и панель/рабочий стол замирают или чернеют. При этом
+# процесс жив и на Ping отвечает, поэтому первая проверка такого не видит.
+# Строка появляется один раз на поломку — перезапуск по первой же.
 
 set -u
 
@@ -30,12 +36,36 @@ plasmashell_responds() {
         org.freedesktop.DBus.Peer Ping >/dev/null 2>&1
 }
 
+# Писал ли plasmashell о сломанной отрисовке после момента $1 (секунды epoch).
+render_broken_since() {
+    journalctl --user -t plasmashell --since "@$1" -o cat --no-pager -q 2>/dev/null \
+        | grep -q -e "eglSwapBuffers failed" -e "Graphics device lost"
+}
+
+restart_plasmashell() {
+    now=$(date +%s)
+    (( now - last_fix > COOLDOWN )) || return 0
+    logger -t pg-plasmashell-watchdog "$1 — перезапуск"
+    /usr/bin/fix-plasmashell
+    last_fix=$(date +%s)
+}
+
 sleep "$STARTUP_GRACE"
+last_check=$(date +%s)
 
 while true; do
     sleep "$CHECK_INTERVAL"
+    since=$last_check
+    last_check=$(date +%s)
 
     is_plasma_session || { fails=0; continue; }
+
+    if render_broken_since "$since"; then
+        restart_plasmashell "plasmashell не может отрисовать окна (кончилась видеопамять?)"
+        last_check=$(date +%s)   # строки, написанные до перезапуска, уже обработаны
+        fails=0
+        continue
+    fi
 
     if plasmashell_responds; then
         fails=0
@@ -45,11 +75,6 @@ while true; do
     fails=$((fails + 1))
     (( fails < FAIL_LIMIT )) && continue
 
-    now=$(date +%s)
-    if (( now - last_fix > COOLDOWN )); then
-        logger -t pg-plasmashell-watchdog "plasmashell не отвечает ${fails} проверок подряд — перезапуск"
-        /usr/bin/fix-plasmashell
-        last_fix=$(date +%s)
-    fi
+    restart_plasmashell "plasmashell не отвечает ${fails} проверок подряд"
     fails=0
 done

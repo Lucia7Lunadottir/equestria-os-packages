@@ -28,6 +28,12 @@ from PyQt6.QtWidgets import (
 )
 
 from base_module import BaseModule
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 _BACKLIGHT_DIR = "/sys/class/backlight"
 _GRUB_DEFAULT_FILE = "/etc/default/grub"
@@ -45,25 +51,25 @@ _KERNEL_PARAM_CHOICES = [
 ]
 
 _BTN_ACTION = (
-    "QPushButton{background:rgb(45,42,68);color:rgb(200,190,220);"
+    "QPushButton{background:@surface1@;color:@text@;"
     "border-radius:6px;padding:6px 18px;font-size:13px;"
-    "border:1px solid rgb(80,75,110);}"
-    "QPushButton:hover{background:rgb(65,60,95);color:white;}"
+    "border:1px solid @surface2@;}"
+    "QPushButton:hover{background:@surface2@;color:white;}"
 )
 _BTN_APPLY = (
-    "QPushButton{background:rgb(80,55,130);color:white;"
+    "QPushButton{background:@accent%55@;color:white;"
     "border-radius:8px;padding:8px 22px;font-size:14px;font-weight:bold;"
-    "border:1px solid rgb(110,80,170);}"
-    "QPushButton:hover{background:rgb(110,75,170);"
-    "border:1px solid rgb(140,100,210);}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @accent%75@;}"
+    "QPushButton:hover{background:@accent%75@;"
+    "border:1px solid @accent@;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
-_RESULT_OK = "QLabel{color:rgb(140,220,160);font-size:12px;background:transparent;}"
-_RESULT_ERR = "QLabel{color:rgb(255,130,130);font-size:12px;background:transparent;}"
-_WARN_STYLE = "QLabel{color:rgb(220,185,80);font-size:12px;background:transparent;}"
+_RESULT_OK = "QLabel{color:@green@;font-size:12px;background:transparent;}"
+_RESULT_ERR = "QLabel{color:@red@;font-size:12px;background:transparent;}"
+_WARN_STYLE = "QLabel{color:@yellow@;font-size:12px;background:transparent;}"
 _STATUS_MONO = (
-    "QLabel{color:rgb(170,165,195);font-size:12px;font-family:monospace;"
-    "background:rgb(20,18,33);border:1px solid rgb(50,47,72);"
+    "QLabel{color:@text@;font-size:12px;font-family:monospace;"
+    "background:@base@;border:1px solid @surface1@;"
     "border-radius:6px;padding:8px 12px;}"
 )
 
@@ -553,7 +559,7 @@ class BrightnessModule(BaseModule):
         header_row.addWidget(self._title_lbl)
         header_row.addStretch()
         self._refresh_btn = QPushButton(self.t("brightness.refresh"))
-        self._refresh_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._refresh_btn, _BTN_ACTION)
         self._refresh_btn.clicked.connect(self._refresh)
         header_row.addWidget(self._refresh_btn)
         layout.addLayout(header_row)
@@ -809,7 +815,7 @@ class BrightnessModule(BaseModule):
 
         if recommended:
             recommended_lbl = QLabel(self.t("brightness.kernel_param_recommended_hint"))
-            recommended_lbl.setStyleSheet(_WARN_STYLE)
+            kit_qt.style(recommended_lbl, _WARN_STYLE)
             recommended_lbl.setWordWrap(True)
             layout.addWidget(recommended_lbl)
 
@@ -839,7 +845,7 @@ class BrightnessModule(BaseModule):
 
         # -- live before/after preview, so Apply never acts on unseen data --
         self._kparam_preview_lbl = QLabel()
-        self._kparam_preview_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._kparam_preview_lbl, _STATUS_MONO)
         self._kparam_preview_lbl.setWordWrap(True)
         layout.addWidget(self._kparam_preview_lbl)
 
@@ -849,7 +855,7 @@ class BrightnessModule(BaseModule):
 
         row = QHBoxLayout()
         self._kparam_apply_btn = QPushButton(self.t("brightness.kernel_param_apply_btn"))
-        self._kparam_apply_btn.setStyleSheet(_BTN_APPLY)
+        kit_qt.style(self._kparam_apply_btn, _BTN_APPLY)
         self._kparam_apply_btn.clicked.connect(self._on_apply_kernel_param)
         row.addWidget(self._kparam_apply_btn)
         row.addStretch()
@@ -875,7 +881,7 @@ class BrightnessModule(BaseModule):
 
             restore_row = QHBoxLayout()
             self._kparam_restore_btn = QPushButton(self.t("brightness.kparam_restore_btn"))
-            self._kparam_restore_btn.setStyleSheet(_BTN_ACTION)
+            kit_qt.style(self._kparam_restore_btn, _BTN_ACTION)
             self._kparam_restore_btn.clicked.connect(self._on_restore_backup)
             restore_row.addWidget(self._kparam_restore_btn)
             restore_row.addStretch()
@@ -919,15 +925,15 @@ class BrightnessModule(BaseModule):
     def _set_kernel_param_status(self, status: str):
         if status == "active":
             self._kparam_status_lbl.setText(self.t("brightness.kernel_param_status_active"))
-            self._kparam_status_lbl.setStyleSheet(_RESULT_OK)
+            kit_qt.style(self._kparam_status_lbl, _RESULT_OK)
             self._kparam_apply_btn.setEnabled(False)
         elif status == "pending":
             self._kparam_status_lbl.setText(self.t("brightness.kernel_param_status_pending"))
-            self._kparam_status_lbl.setStyleSheet(_WARN_STYLE)
+            kit_qt.style(self._kparam_status_lbl, _WARN_STYLE)
             self._kparam_apply_btn.setEnabled(False)
         else:
             self._kparam_status_lbl.setText(self.t("brightness.kernel_param_status_absent"))
-            self._kparam_status_lbl.setStyleSheet("")
+            kit_qt.style(self._kparam_status_lbl, "")
             self._kparam_apply_btn.setEnabled(True)
 
     def _on_apply_kernel_param(self):
@@ -954,7 +960,7 @@ class BrightnessModule(BaseModule):
 
         self._kparam_apply_btn.setEnabled(False)
         self._kparam_result_lbl.setText(self.t("brightness.kernel_param_applying"))
-        self._kparam_result_lbl.setStyleSheet("")
+        kit_qt.style(self._kparam_result_lbl, "")
         self._kparam_result_lbl.show()
 
         worker = _ApplyKernelParamWorker(value)
@@ -973,7 +979,7 @@ class BrightnessModule(BaseModule):
             if message:
                 text += f"\n{message[:400]}"
             self._kparam_result_lbl.setText(text)
-            self._kparam_result_lbl.setStyleSheet(_RESULT_ERR)
+            kit_qt.style(self._kparam_result_lbl, _RESULT_ERR)
 
     # ── Backup restore ────────────────────────────────────────────────────────
 
@@ -999,7 +1005,7 @@ class BrightnessModule(BaseModule):
 
         self._kparam_restore_btn.setEnabled(False)
         self._kparam_restore_result_lbl.setText(self.t("brightness.kparam_restoring"))
-        self._kparam_restore_result_lbl.setStyleSheet("")
+        kit_qt.style(self._kparam_restore_result_lbl, "")
         self._kparam_restore_result_lbl.show()
 
         worker = _RestoreBackupWorker(path)
@@ -1021,4 +1027,4 @@ class BrightnessModule(BaseModule):
             if message:
                 text += f"\n{message[:400]}"
             self._kparam_restore_result_lbl.setText(text)
-            self._kparam_restore_result_lbl.setStyleSheet(_RESULT_ERR)
+            kit_qt.style(self._kparam_restore_result_lbl, _RESULT_ERR)

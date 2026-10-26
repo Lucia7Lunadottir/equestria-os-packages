@@ -19,7 +19,10 @@ last_mem_notify=0
 last_vram_notify=0
 
 top_consumer() {
-    ps -eo comm,rss --sort=-rss --no-headers | awk 'NR==1{printf "%s (%.1f ГБ)", $1, $2/1024/1024}'
+    ps -eo comm=,rss= --sort=-rss --no-headers |
+        awk 'NR==1 {
+            printf "%s (%.2f ГиБ)", $1, $2/1048576
+        }'
 }
 
 check_memory() {
@@ -35,7 +38,7 @@ check_memory() {
 
     now=$(date +%s)
     if (( now - last_mem_notify > COOLDOWN )); then
-        notify-send -u critical -a "Equestria OS" \
+        notify-send -u normal -a "Equestria OS" -t 2500 \
             "Не хватает оперативной памяти" \
             "Система тормозит из-за нехватки ОЗУ. Больше всего занимает: $(top_consumer)" 2>/dev/null
         last_mem_notify=$now
@@ -59,7 +62,7 @@ check_vram() {
 
     now=$(date +%s)
     if (( now - last_vram_notify > COOLDOWN )); then
-        notify-send -u critical -a "Equestria OS" \
+        notify-send -u normal -a "Equestria OS" -t 2500 \
             "Видеопамять почти закончилась" \
             "Занято ${used} / ${total} МБ. Возможны сбои в играх, Unity или OBS." 2>/dev/null
         last_vram_notify=$now

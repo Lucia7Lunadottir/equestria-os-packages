@@ -22,7 +22,7 @@ import wave
 from array import array
 from pathlib import Path
 
-from PyQt6.QtCore import (QLockFile, QObject, QProcess, QRectF, Qt, QTimer, QUrl,
+from PyQt6.QtCore import (QObject, QProcess, QRectF, Qt, QTimer, QUrl,
                           pyqtSignal)
 from PyQt6.QtGui import (QAction, QColor, QDesktopServices, QFont,
                          QFontDatabase, QIcon, QIntValidator, QPainter,
@@ -41,6 +41,7 @@ except ImportError:  # запуск из исходников, пакет equest
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
 from equestria_kit.autostart import Autostart
+from equestria_kit.single_instance import SingleInstance
 from equestria_kit import themes as kit_themes
 from equestria_kit import i18n as kit_i18n
 
@@ -1547,10 +1548,9 @@ def main() -> int:
     app.setQuitOnLastWindowClosed(False)
 
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    lock = QLockFile(str(CACHE_DIR / "app.lock"))
-    lock.setStaleLockTime(0)
-    if not lock.tryLock(100):
-        print("Equestria Clock уже запущен (ищите значок в трее).", file=sys.stderr)
+    instance = SingleInstance(APP_NAME)
+    if not instance.claim():   # уже запущен (в трее) — показываем его окно
+        instance.notify_running(show="--hidden" not in sys.argv)
         return 0
 
     settings = Settings()
@@ -1558,10 +1558,11 @@ def main() -> int:
     settings["theme"] = apply_theme(kit_themes.current_name())
     win = MainWindow(settings)
     kit_themes.follow(win.set_theme, lambda: win.settings["theme"])
+    instance.on_show(win.show_window)
     if not ("--hidden" in sys.argv and win.tray is not None and win.settings["tray"]):
         win.show()
     code = app.exec()
-    lock.unlock()
+    instance.release()
     return code
 
 

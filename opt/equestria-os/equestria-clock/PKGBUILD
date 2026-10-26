@@ -1,13 +1,13 @@
 # Maintainer: Equestria OS
 pkgname=equestria-clock
 pkgver=1.0
-pkgrel=3
+pkgrel=4
 pkgdesc="Будильник, таймер и секундомер (PyQt6)"
 arch=('any')
 license=('custom')
-depends=('python-pyqt6' 'equestria-qt-kit' 'pipewire')
+depends=('python-pyqt6' 'equestria-qt-kit>=1.0-2' 'pipewire')
 source=("equestria_clock.py" "equestria-clock.desktop" "i18n.json")
-sha256sums=('55dcefff59be8d20d0b4df4abbaeb663699dbec724c5ea487a7b75b45a4ae2d9'
+sha256sums=('eacba69e71089f3a3f95b5dfa3bea556969756891ffa6769b7c531d596b59baf'
             '3a8650073f834aad1f03808ca13969a926a6cf0ed0ea32321255941f4abce801'
             'f111d7a81996de37b23f6c0bd33813998633bb602126dac9262272968432ddb2')
 

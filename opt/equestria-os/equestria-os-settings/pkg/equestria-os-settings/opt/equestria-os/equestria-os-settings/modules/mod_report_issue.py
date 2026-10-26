@@ -23,29 +23,35 @@ from PyQt6.QtWidgets import (
 )
 
 from base_module import BaseModule
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 _REPO = "Lucia7Lunadottir/equestria-os-packages"
 _MAX_BODY_LEN = 6000  # keep the generated URL well under browser/CDN limits
 
 _BTN_ACTION = (
-    "QPushButton{background:rgb(45,42,68);color:rgb(200,190,220);"
+    "QPushButton{background:@surface1@;color:@text@;"
     "border-radius:6px;padding:6px 18px;font-size:13px;"
-    "border:1px solid rgb(80,75,110);}"
-    "QPushButton:hover{background:rgb(65,60,95);color:white;}"
+    "border:1px solid @surface2@;}"
+    "QPushButton:hover{background:@surface2@;color:white;}"
 )
 _BTN_SEND = (
-    "QPushButton{background:rgb(80,55,130);color:white;"
+    "QPushButton{background:@accent%55@;color:white;"
     "border-radius:8px;padding:8px 22px;font-size:14px;font-weight:bold;"
-    "border:1px solid rgb(110,80,170);}"
-    "QPushButton:hover{background:rgb(110,75,170);"
-    "border:1px solid rgb(140,100,210);}"
+    "border:1px solid @accent%75@;}"
+    "QPushButton:hover{background:@accent%75@;"
+    "border:1px solid @accent@;}"
 )
 _STATUS_MONO = (
-    "QLabel{color:rgb(170,165,195);font-size:12px;font-family:monospace;"
-    "background:rgb(20,18,33);border:1px solid rgb(50,47,72);"
+    "QLabel{color:@text@;font-size:12px;font-family:monospace;"
+    "background:@base@;border:1px solid @surface1@;"
     "border-radius:6px;padding:8px 12px;}"
 )
-_RESULT_ERR = "QLabel{color:rgb(255,130,130);font-size:12px;background:transparent;}"
+_RESULT_ERR = "QLabel{color:@red@;font-size:12px;background:transparent;}"
 
 
 # ── Diagnostics collection (self-contained, no cross-module imports) ───────
@@ -233,14 +239,14 @@ class ReportIssueModule(BaseModule):
 
         btn_row = QHBoxLayout()
         self._send_btn = QPushButton(self.t("report_issue.send_btn"))
-        self._send_btn.setStyleSheet(_BTN_SEND)
+        kit_qt.style(self._send_btn, _BTN_SEND)
         self._send_btn.clicked.connect(self._on_send)
         btn_row.addWidget(self._send_btn)
         btn_row.addStretch()
         layout.addLayout(btn_row)
 
         self._error_lbl = QLabel("")
-        self._error_lbl.setStyleSheet(_RESULT_ERR)
+        kit_qt.style(self._error_lbl, _RESULT_ERR)
         self._error_lbl.setWordWrap(True)
         self._error_lbl.hide()
         layout.addWidget(self._error_lbl)
@@ -265,13 +271,13 @@ class ReportIssueModule(BaseModule):
         row.addWidget(self._diag_title_lbl)
         row.addStretch()
         self._diag_refresh_btn = QPushButton(self.t("report_issue.diag_refresh"))
-        self._diag_refresh_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._diag_refresh_btn, _BTN_ACTION)
         self._diag_refresh_btn.clicked.connect(self._refresh_diagnostics)
         row.addWidget(self._diag_refresh_btn)
         layout.addLayout(row)
 
         self._diag_lbl = QLabel(self.t("report_issue.diag_loading"))
-        self._diag_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._diag_lbl, _STATUS_MONO)
         self._diag_lbl.setWordWrap(True)
         layout.addWidget(self._diag_lbl)
 

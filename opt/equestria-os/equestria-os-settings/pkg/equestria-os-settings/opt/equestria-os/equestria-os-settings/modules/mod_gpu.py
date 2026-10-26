@@ -4,41 +4,48 @@ import os
 import shutil
 import signal
 import subprocess
+import sys
 import threading
 
 from PyQt6.QtCore import Qt, QObject, QTimer, pyqtSignal
 from PyQt6.QtWidgets import (
     QCheckBox, QFrame, QHBoxLayout, QLabel, QMessageBox, QPushButton,
-    QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
+    QScrollArea, QSizePolicy, QTabWidget, QVBoxLayout, QWidget,
 )
 
 from base_module import BaseModule
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 _QDBUS = shutil.which("qdbus6") or shutil.which("qdbus") or "qdbus"
 
 # ── Styles ────────────────────────────────────────────────────────────────────
 
 _BTN_ACTION = (
-    "QPushButton{background:rgb(45,42,68);color:rgb(200,190,220);"
+    "QPushButton{background:@surface1@;color:@text@;"
     "border-radius:6px;padding:6px 18px;font-size:13px;"
-    "border:1px solid rgb(80,75,110);}"
-    "QPushButton:hover{background:rgb(65,60,95);color:white;}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @surface2@;}"
+    "QPushButton:hover{background:@surface2@;color:white;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
 _BTN_DANGER = (
-    "QPushButton{background:rgb(90,40,40);color:rgb(255,180,180);"
+    "QPushButton{background:@red%45@;color:@red@;"
     "border-radius:6px;padding:6px 14px;font-size:13px;"
-    "border:1px solid rgb(140,60,60);}"
-    "QPushButton:hover{background:rgb(140,50,50);color:white;}"
+    "border:1px solid @red%65@;}"
+    "QPushButton:hover{background:@red%65@;color:white;}"
 )
-_RESULT_OK = "QLabel{color:rgb(140,220,160);font-size:12px;background:transparent;}"
-_RESULT_ERR = "QLabel{color:rgb(255,130,130);font-size:12px;background:transparent;}"
+_RESULT_OK = "QLabel{color:@green@;font-size:12px;background:transparent;}"
+_RESULT_ERR = "QLabel{color:@red@;font-size:12px;background:transparent;}"
 _STATUS_MONO = (
-    "QLabel{color:rgb(170,165,195);font-size:12px;font-family:monospace;"
-    "background:rgb(20,18,33);border:1px solid rgb(50,47,72);"
+    "QLabel{color:@text@;font-size:12px;font-family:monospace;"
+    "background:@base@;border:1px solid @surface1@;"
     "border-radius:6px;padding:8px 12px;}"
 )
-_WARN_STYLE = "QLabel{color:rgb(220,185,80);font-size:12px;background:transparent;}"
+_WARN_STYLE = "QLabel{color:@yellow@;font-size:12px;background:transparent;}"
 
 _BLACKLIST_NOUVEAU_FILE = "/etc/modprobe.d/blacklist-nouveau.conf"
 _DRIVER_CACHE_DIR = "/usr/share/pg-gpu-sync/drivers"
@@ -462,6 +469,28 @@ class _CmdWorker(QObject):
 
 # ── Module ────────────────────────────────────────────────────────────────────
 
+def _load_gpu_panel():
+    """Панель менеджера видеокарт из equestria-gpu или None, если его нет.
+    Установленный — один файл /usr/bin/equestria-gpu; из исходников — соседняя папка."""
+    import importlib.machinery
+    import importlib.util
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for path in ("/usr/bin/equestria-gpu", os.path.join(os.path.dirname(here), "equestria-gpu", "equestria_gpu.py")):
+        if not os.path.isfile(path):
+            continue
+        try:
+            loader = importlib.machinery.SourceFileLoader("equestria_gpu", path)
+            spec = importlib.util.spec_from_file_location("equestria_gpu", path, loader=loader)
+            mod = importlib.util.module_from_spec(spec)
+            sys.modules["equestria_gpu"] = mod  # dataclass ищет свой модуль в sys.modules
+            loader.exec_module(mod)
+            return mod.GpuPanel(embedded=True)
+        except Exception as e:  # повреждённая установка не должна ронять «Настройки»
+            sys.modules.pop("equestria_gpu", None)
+            print(f"mod_gpu: equestria-gpu не загрузился ({path}): {e}")
+    return None
+
+
 class GpuModule(BaseModule):
     module_id = "mod_gpu"
     display_name_key = "module.gpu.name"
@@ -475,6 +504,11 @@ class GpuModule(BaseModule):
     # ── Build ─────────────────────────────────────────────────────────────────
 
     def build_widget(self) -> QWidget:
+        wrapper = QWidget()
+        wrapper.setObjectName("ContentPage")
+        wl = QVBoxLayout(wrapper)
+        wl.setContentsMargins(0, 0, 0, 0)
+
         outer = QWidget()
         outer.setObjectName("ContentPage")
         scroll = QScrollArea()
@@ -488,12 +522,9 @@ class GpuModule(BaseModule):
 
         self._title_lbl = QLabel(self.t(self.display_name_key))
         self._title_lbl.setObjectName("ModTitle")
-        layout.addWidget(self._title_lbl)
-
         self._desc_lbl = QLabel(self.t(self.description_key))
         self._desc_lbl.setObjectName("ModDesc")
         self._desc_lbl.setWordWrap(True)
-        layout.addWidget(self._desc_lbl)
 
         self._build_gpu_info_card(layout)
         self._build_graphics_status_card(layout)
@@ -502,14 +533,35 @@ class GpuModule(BaseModule):
         self._build_driver_status_card(layout)
         self._build_driver_actions_card(layout)
         self._build_driver_cache_card(layout)
-
         layout.addStretch()
 
-        wrapper = QWidget()
-        wrapper.setObjectName("ContentPage")
-        wl = QVBoxLayout(wrapper)
-        wl.setContentsMargins(0, 0, 0, 0)
-        wl.addWidget(scroll)
+        # Менеджер видеокарт (equestria-gpu) — драйвер и диагностика для каждой карты.
+        # Есть он — две вкладки, а карточки «Статус драйвера» и «Действия» здесь
+        # только скрываются (их делает менеджер точнее, по каждой карте; код и
+        # данные остаются). Нет — модуль такой же, как раньше.
+        self._gpu_panel = _load_gpu_panel()
+        if self._gpu_panel is None:
+            layout.insertWidget(0, self._title_lbl)
+            layout.insertWidget(1, self._desc_lbl)
+            wl.addWidget(scroll)
+            return wrapper
+
+        self._driver_status_card.hide()
+        self._driver_actions_card.hide()
+        head = QVBoxLayout()
+        head.setContentsMargins(40, 30, 40, 0)
+        head.setSpacing(8)
+        head.addWidget(self._title_lbl)
+        head.addWidget(self._desc_lbl)
+        wl.addLayout(head)
+        self._tabs = QTabWidget()
+        self._tabs.setDocumentMode(True)
+        self._tabs.addTab(self._gpu_panel, self.t("gpu.tab_cards"))
+        self._tabs.addTab(scroll, self.t("gpu.tab_system"))
+        tabs_box = QVBoxLayout()
+        tabs_box.setContentsMargins(40, 12, 40, 20)
+        tabs_box.addWidget(self._tabs)
+        wl.addLayout(tabs_box, 1)
         return wrapper
 
     # ── GPU Info card ─────────────────────────────────────────────────────────
@@ -526,7 +578,7 @@ class GpuModule(BaseModule):
         layout.addWidget(self._info_title_lbl)
 
         self._gpu_info_lbl = QLabel(self.t("gpu.loading"))
-        self._gpu_info_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._gpu_info_lbl, _STATUS_MONO)
         self._gpu_info_lbl.setWordWrap(True)
         self._gpu_info_lbl.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
@@ -535,7 +587,7 @@ class GpuModule(BaseModule):
 
         btn_row = QHBoxLayout()
         self._refresh_btn = QPushButton(self.t("gpu.refresh"))
-        self._refresh_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._refresh_btn, _BTN_ACTION)
         self._refresh_btn.clicked.connect(self._refresh_all)
         btn_row.addWidget(self._refresh_btn)
         btn_row.addStretch()
@@ -557,7 +609,7 @@ class GpuModule(BaseModule):
         layout.addWidget(self._gfx_title_lbl)
 
         self._gfx_status_lbl = QLabel(self.t("gpu.loading"))
-        self._gfx_status_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._gfx_status_lbl, _STATUS_MONO)
         self._gfx_status_lbl.setWordWrap(True)
         self._gfx_status_lbl.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
@@ -567,7 +619,7 @@ class GpuModule(BaseModule):
         # nvidia-settings button (hidden if not installed)
         btn_row = QHBoxLayout()
         self._nvsettings_btn = QPushButton(self.t("gpu.btn_nvidia_settings"))
-        self._nvsettings_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._nvsettings_btn, _BTN_ACTION)
         self._nvsettings_btn.clicked.connect(self._open_nvidia_settings)
         self._nvsettings_btn.hide()
         btn_row.addWidget(self._nvsettings_btn)
@@ -609,7 +661,7 @@ class GpuModule(BaseModule):
 
         scanout_btn_row = QHBoxLayout()
         self._scanout_apply_btn = QPushButton(self.t("gpu.scanout_apply_now"))
-        self._scanout_apply_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._scanout_apply_btn, _BTN_ACTION)
         self._scanout_apply_btn.clicked.connect(self._apply_scanout_now)
         scanout_btn_row.addWidget(self._scanout_apply_btn)
         scanout_btn_row.addStretch()
@@ -631,7 +683,7 @@ class GpuModule(BaseModule):
         layout.addWidget(self._watchdog_hint_lbl)
 
         self._watchdog_status_lbl = QLabel("")
-        self._watchdog_status_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._watchdog_status_lbl, _STATUS_MONO)
         self._watchdog_status_lbl.setWordWrap(True)
         self._watchdog_status_lbl.hide()
         layout.addWidget(self._watchdog_status_lbl)
@@ -666,7 +718,7 @@ class GpuModule(BaseModule):
         layout.addWidget(self._resguard_hint_lbl)
 
         self._vram_summary_lbl = QLabel(self.t("gpu.loading"))
-        self._vram_summary_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._vram_summary_lbl, _STATUS_MONO)
         self._vram_summary_lbl.setWordWrap(True)
         layout.addWidget(self._vram_summary_lbl)
 
@@ -681,7 +733,7 @@ class GpuModule(BaseModule):
 
         btn_row = QHBoxLayout()
         self._vram_refresh_btn = QPushButton(self.t("gpu.refresh"))
-        self._vram_refresh_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._vram_refresh_btn, _BTN_ACTION)
         self._vram_refresh_btn.clicked.connect(self._refresh_all)
         btn_row.addWidget(self._vram_refresh_btn)
         btn_row.addStretch()
@@ -698,12 +750,13 @@ class GpuModule(BaseModule):
         layout.setContentsMargins(20, 16, 20, 16)
         layout.setSpacing(10)
 
+        self._driver_status_card = card
         self._status_title_lbl = QLabel(self.t("gpu.status_title"))
         self._status_title_lbl.setObjectName("SectionTitle")
         layout.addWidget(self._status_title_lbl)
 
         self._driver_status_lbl = QLabel(self.t("gpu.loading"))
-        self._driver_status_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._driver_status_lbl, _STATUS_MONO)
         self._driver_status_lbl.setWordWrap(True)
         self._driver_status_lbl.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
@@ -721,6 +774,7 @@ class GpuModule(BaseModule):
         layout.setContentsMargins(20, 16, 20, 16)
         layout.setSpacing(12)
 
+        self._driver_actions_card = card
         self._actions_title_lbl = QLabel(self.t("gpu.actions_title"))
         self._actions_title_lbl.setObjectName("SectionTitle")
         layout.addWidget(self._actions_title_lbl)
@@ -729,12 +783,12 @@ class GpuModule(BaseModule):
         row1 = QHBoxLayout()
 
         self._reconfigure_btn = QPushButton(self.t("gpu.btn_reconfigure"))
-        self._reconfigure_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._reconfigure_btn, _BTN_ACTION)
         self._reconfigure_btn.clicked.connect(self._run_reconfigure)
         row1.addWidget(self._reconfigure_btn)
 
         self._test_btn = QPushButton(self.t("gpu.btn_test"))
-        self._test_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._test_btn, _BTN_ACTION)
         self._test_btn.clicked.connect(self._run_test_mode)
         row1.addWidget(self._test_btn)
 
@@ -745,7 +799,7 @@ class GpuModule(BaseModule):
         row2 = QHBoxLayout()
 
         self._nouveau_btn = QPushButton(self.t("gpu.btn_nouveau"))
-        self._nouveau_btn.setStyleSheet(_BTN_DANGER)
+        kit_qt.style(self._nouveau_btn, _BTN_DANGER)
         self._nouveau_btn.clicked.connect(self._run_switch_nouveau)
         row2.addWidget(self._nouveau_btn)
 
@@ -754,7 +808,7 @@ class GpuModule(BaseModule):
 
         # Action output area
         self._action_output_lbl = QLabel("")
-        self._action_output_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._action_output_lbl, _STATUS_MONO)
         self._action_output_lbl.setWordWrap(True)
         self._action_output_lbl.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
@@ -771,7 +825,7 @@ class GpuModule(BaseModule):
         # Reboot warning
         self._reboot_warn_lbl = QLabel(self.t("gpu.reboot_warning"))
         self._reboot_warn_lbl.setWordWrap(True)
-        self._reboot_warn_lbl.setStyleSheet(_WARN_STYLE)
+        kit_qt.style(self._reboot_warn_lbl, _WARN_STYLE)
         layout.addWidget(self._reboot_warn_lbl)
 
         parent_layout.addWidget(card)
@@ -790,14 +844,14 @@ class GpuModule(BaseModule):
         layout.addWidget(self._cache_title_lbl)
 
         self._cache_hint_lbl = QLabel(f"{_DRIVER_CACHE_DIR}")
-        self._cache_hint_lbl.setStyleSheet(
-            "QLabel{color:rgb(100,95,130);font-size:11px;font-family:monospace;"
+        kit_qt.style(self._cache_hint_lbl, 
+            "QLabel{color:@subtext@;font-size:11px;font-family:monospace;"
             "background:transparent;}"
         )
         layout.addWidget(self._cache_hint_lbl)
 
         self._cache_list_lbl = QLabel(self.t("gpu.loading"))
-        self._cache_list_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._cache_list_lbl, _STATUS_MONO)
         self._cache_list_lbl.setWordWrap(True)
         self._cache_list_lbl.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
@@ -816,6 +870,9 @@ class GpuModule(BaseModule):
             return
         self._title_lbl.setText(self.t(self.display_name_key))
         self._desc_lbl.setText(self.t(self.description_key))
+        if getattr(self, "_tabs", None) is not None:
+            self._tabs.setTabText(0, self.t("gpu.tab_cards"))
+            self._tabs.setTabText(1, self.t("gpu.tab_system"))
         self._info_title_lbl.setText(self.t("gpu.info_title"))
         self._refresh_btn.setText(self.t("gpu.refresh"))
         self._gfx_title_lbl.setText(self.t("gpu.gfx_title"))
@@ -1002,10 +1059,10 @@ class GpuModule(BaseModule):
         for pid, name, mib in procs[:10]:
             row = QHBoxLayout()
             lbl = QLabel(f"{name}  (PID {pid})  —  {mib} MB")
-            lbl.setStyleSheet(_STATUS_MONO)
+            kit_qt.style(lbl, _STATUS_MONO)
             row.addWidget(lbl, stretch=1)
             end_btn = QPushButton(self.t("gpu.btn_end_process"))
-            end_btn.setStyleSheet(_BTN_DANGER)
+            kit_qt.style(end_btn, _BTN_DANGER)
             end_btn.clicked.connect(lambda _, p=pid, n=name: self._end_vram_process(p, n))
             row.addWidget(end_btn)
             self._vram_list_container.addLayout(row)
@@ -1068,7 +1125,7 @@ class GpuModule(BaseModule):
 
     def _show_action_running(self, msg: str):
         self._action_result_lbl.setText(msg)
-        self._action_result_lbl.setStyleSheet("")
+        kit_qt.style(self._action_result_lbl, "")
         self._action_output_lbl.setText("...")
         self._action_output_lbl.show()
         self._set_buttons_enabled(False)
@@ -1078,7 +1135,7 @@ class GpuModule(BaseModule):
         style = _RESULT_OK if ok else _RESULT_ERR
         result_text = self.t("gpu.action_ok") if ok else self.t("gpu.action_err")
         self._action_result_lbl.setText(result_text)
-        self._action_result_lbl.setStyleSheet(style)
+        kit_qt.style(self._action_result_lbl, style)
         if output:
             self._action_output_lbl.setText(output[:1200])
             self._action_output_lbl.show()

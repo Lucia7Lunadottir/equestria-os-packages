@@ -1,4 +1,6 @@
-"""Microphone module — built-in mic gain control and drop/stutter diagnostics."""
+"""Микрофон: усиление встроенного микрофона и диагностика заиканий.
+Бывший модуль «Микрофон» — теперь вкладка модуля «Звук» (mod_sound.py), поэтому
+module_id пустой: «Настройки» не показывают его отдельно."""
 
 import os
 import re
@@ -13,31 +15,37 @@ from PyQt6.QtWidgets import (
 )
 
 from base_module import BaseModule
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 # ── Styles ────────────────────────────────────────────────────────────────────
 
 _BTN_ACTION = (
-    "QPushButton{background:rgb(45,42,68);color:rgb(200,190,220);"
+    "QPushButton{background:@surface1@;color:@text@;"
     "border-radius:6px;padding:6px 18px;font-size:13px;"
-    "border:1px solid rgb(80,75,110);}"
-    "QPushButton:hover{background:rgb(65,60,95);color:white;}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @surface2@;}"
+    "QPushButton:hover{background:@surface2@;color:white;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
 _BTN_DANGER = (
-    "QPushButton{background:rgb(90,40,40);color:rgb(255,180,180);"
+    "QPushButton{background:@red%45@;color:@red@;"
     "border-radius:6px;padding:6px 14px;font-size:13px;"
-    "border:1px solid rgb(140,60,60);}"
-    "QPushButton:hover{background:rgb(140,50,50);color:white;}"
-    "QPushButton:disabled{background:rgb(35,33,52);color:rgb(90,85,110);}"
+    "border:1px solid @red%65@;}"
+    "QPushButton:hover{background:@red%65@;color:white;}"
+    "QPushButton:disabled{background:@surface0@;color:@surface2@;}"
 )
-_RESULT_OK = "QLabel{color:rgb(140,220,160);font-size:12px;background:transparent;}"
-_RESULT_ERR = "QLabel{color:rgb(255,130,130);font-size:12px;background:transparent;}"
+_RESULT_OK = "QLabel{color:@green@;font-size:12px;background:transparent;}"
+_RESULT_ERR = "QLabel{color:@red@;font-size:12px;background:transparent;}"
 _STATUS_MONO = (
-    "QLabel{color:rgb(170,165,195);font-size:12px;font-family:monospace;"
-    "background:rgb(20,18,33);border:1px solid rgb(50,47,72);"
+    "QLabel{color:@text@;font-size:12px;font-family:monospace;"
+    "background:@base@;border:1px solid @surface1@;"
     "border-radius:6px;padding:8px 12px;}"
 )
-_WARN_STYLE = "QLabel{color:rgb(220,185,80);font-size:12px;background:transparent;}"
+_WARN_STYLE = "QLabel{color:@yellow@;font-size:12px;background:transparent;}"
 
 # Safe defaults offered by the "reset" button — moderate gain instead of the
 # maxed-out boost+capture stack that turns the internal mic into a noise
@@ -230,8 +238,8 @@ class _MicTestWorker(QObject):
 
 # ── Module ────────────────────────────────────────────────────────────────────
 
-class MicrophoneModule(BaseModule):
-    module_id = "mod_microphone"
+class MicrophonePanel(BaseModule):
+    module_id = ""  # вкладка «Звука», не отдельный модуль
     display_name_key = "module.microphone.name"
     description_key = "module.microphone.desc"
     category = "system"
@@ -306,7 +314,7 @@ class MicrophoneModule(BaseModule):
         layout.addWidget(self._level_desc_lbl)
 
         self._level_not_found_lbl = QLabel(self.t("mic.level_not_found"))
-        self._level_not_found_lbl.setStyleSheet(_WARN_STYLE)
+        kit_qt.style(self._level_not_found_lbl, _WARN_STYLE)
         self._level_not_found_lbl.setWordWrap(True)
         self._level_not_found_lbl.hide()
         layout.addWidget(self._level_not_found_lbl)
@@ -317,12 +325,12 @@ class MicrophoneModule(BaseModule):
 
         btn_row = QHBoxLayout()
         self._reset_btn = QPushButton(self.t("mic.btn_reset_safe"))
-        self._reset_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._reset_btn, _BTN_ACTION)
         self._reset_btn.clicked.connect(self._reset_to_safe)
         btn_row.addWidget(self._reset_btn)
 
         self._save_btn = QPushButton(self.t("mic.btn_save"))
-        self._save_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._save_btn, _BTN_ACTION)
         self._save_btn.clicked.connect(self._save_mixer_state)
         btn_row.addWidget(self._save_btn)
 
@@ -335,7 +343,7 @@ class MicrophoneModule(BaseModule):
         layout.addWidget(self._save_result_lbl)
 
         self._save_hint_lbl = QLabel(self.t("mic.save_hint"))
-        self._save_hint_lbl.setStyleSheet(_WARN_STYLE)
+        kit_qt.style(self._save_hint_lbl, _WARN_STYLE)
         self._save_hint_lbl.setWordWrap(True)
         layout.addWidget(self._save_hint_lbl)
 
@@ -360,7 +368,7 @@ class MicrophoneModule(BaseModule):
         layout.addWidget(self._stab_desc_lbl)
 
         self._stab_status_lbl = QLabel(self.t("mic.loading"))
-        self._stab_status_lbl.setStyleSheet(_STATUS_MONO)
+        kit_qt.style(self._stab_status_lbl, _STATUS_MONO)
         self._stab_status_lbl.setWordWrap(True)
         self._stab_status_lbl.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
@@ -369,17 +377,17 @@ class MicrophoneModule(BaseModule):
 
         btn_row = QHBoxLayout()
         self._test_btn = QPushButton(self.t("mic.btn_test"))
-        self._test_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._test_btn, _BTN_ACTION)
         self._test_btn.clicked.connect(self._test_mic)
         btn_row.addWidget(self._test_btn)
 
         self._restart_btn = QPushButton(self.t("mic.btn_restart_audio"))
-        self._restart_btn.setStyleSheet(_BTN_DANGER)
+        kit_qt.style(self._restart_btn, _BTN_DANGER)
         self._restart_btn.clicked.connect(self._restart_audio)
         btn_row.addWidget(self._restart_btn)
 
         self._refresh_btn = QPushButton(self.t("mic.refresh"))
-        self._refresh_btn.setStyleSheet(_BTN_ACTION)
+        kit_qt.style(self._refresh_btn, _BTN_ACTION)
         self._refresh_btn.clicked.connect(self._refresh_all)
         btn_row.addWidget(self._refresh_btn)
 
@@ -551,7 +559,7 @@ class MicrophoneModule(BaseModule):
     def _save_mixer_state(self):
         self._save_btn.setEnabled(False)
         self._save_result_lbl.setText(self.t("mic.saving"))
-        self._save_result_lbl.setStyleSheet("")
+        kit_qt.style(self._save_result_lbl, "")
 
         worker = _CmdWorker(["pkexec", "alsactl", "store"], timeout=15)
         worker.done.connect(self._on_save_done)
@@ -561,7 +569,7 @@ class MicrophoneModule(BaseModule):
     def _on_save_done(self, ok: bool, output: str):
         self._save_btn.setEnabled(True)
         self._save_result_lbl.setText(self.t("mic.save_ok") if ok else self.t("mic.save_err"))
-        self._save_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+        kit_qt.style(self._save_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
 
     # ── Actions: stability card ───────────────────────────────────────────────
 
@@ -575,7 +583,7 @@ class MicrophoneModule(BaseModule):
     def _test_mic(self):
         self._test_btn.setEnabled(False)
         self._test_result_lbl.setText(self.t("mic.testing"))
-        self._test_result_lbl.setStyleSheet("")
+        kit_qt.style(self._test_result_lbl, "")
 
         worker = _MicTestWorker()
         worker.done.connect(self._on_test_done)
@@ -585,7 +593,7 @@ class MicrophoneModule(BaseModule):
     def _on_test_done(self, ok: bool, output: str):
         self._test_btn.setEnabled(True)
         self._test_result_lbl.setText(self.t("mic.test_done") if ok else self.t("mic.test_err"))
-        self._test_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+        kit_qt.style(self._test_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
 
     def _restart_audio(self):
         if not self._confirm(
@@ -596,7 +604,7 @@ class MicrophoneModule(BaseModule):
 
         self._restart_btn.setEnabled(False)
         self._restart_result_lbl.setText(self.t("mic.restarting"))
-        self._restart_result_lbl.setStyleSheet("")
+        kit_qt.style(self._restart_result_lbl, "")
 
         worker = _CmdWorker(
             ["systemctl", "--user", "restart", "wireplumber", "pipewire-pulse", "pipewire"],
@@ -609,5 +617,5 @@ class MicrophoneModule(BaseModule):
     def _on_restart_done(self, ok: bool, output: str):
         self._restart_btn.setEnabled(True)
         self._restart_result_lbl.setText(self.t("mic.action_ok") if ok else self.t("mic.action_err"))
-        self._restart_result_lbl.setStyleSheet(_RESULT_OK if ok else _RESULT_ERR)
+        kit_qt.style(self._restart_result_lbl, _RESULT_OK if ok else _RESULT_ERR)
         self._refresh_all()

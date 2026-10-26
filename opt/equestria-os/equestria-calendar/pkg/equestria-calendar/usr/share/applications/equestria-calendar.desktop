@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Calendar
+Comment=Calendar with moon phases and reminders
+Comment[ru]=Календарь с фазами луны и напоминаниями
+Comment[de]=Kalender mit Mondphasen und Erinnerungen
+Comment[fr]=Calendrier avec phases de lune et rappels
+Comment[es]=Calendario con fases lunares y recordatorios
+Comment[pt]=Calendário com fases da lua e lembretes
+Comment[pl]=Kalendarz z fazami księżyca i przypomnieniami
+Comment[uk]=Календар із фазами місяця та нагадуваннями
+Comment[zh]=带月相和提醒的日历
+Comment[ja]=月相とリマインダー付きカレンダー
+Exec=equestria-calendar
+Icon=x-office-calendar
+Categories=Utility;Calendar;Qt;
+Terminal=false
