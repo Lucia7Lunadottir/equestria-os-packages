@@ -162,5 +162,7 @@
   "install.title_init_db": "パッケージデータベースを初期化しています…",
   "ui.update_no_sources": "有効な更新元がありません。設定で少なくとも1つ有効にしてください。",
   "ui.flatpak_ref_not_found_title": "アプリが見つかりません",
-  "ui.flatpak_ref_not_found_body": "「{name}」はまだローカルの Flatpak カタログにありません。Flatpak サポートが有効でカタログが最新であることを確認してから、リンクをもう一度お試しください。"
+  "ui.flatpak_ref_not_found_body": "「{name}」はまだローカルの Flatpak カタログにありません。Flatpak サポートが有効でカタログが最新であることを確認してから、リンクをもう一度お試しください。",
+  "install.input_placeholder": "回答を入力（例：1）して Enter を押してください",
+  "install.btn_send": "送信"
 }

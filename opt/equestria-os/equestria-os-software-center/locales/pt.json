@@ -162,5 +162,7 @@
   "install.title_init_db": "A inicializar a base de dados de pacotes…",
   "ui.update_no_sources": "Nenhuma fonte de atualização está ativada. Ative pelo menos uma nas Definições.",
   "ui.flatpak_ref_not_found_title": "Aplicação não encontrada",
-  "ui.flatpak_ref_not_found_body": "“{name}” ainda não está no catálogo local do Flatpak. Certifique-se de que o suporte a Flatpak está ativado e o catálogo atualizado, depois tente o link novamente."
+  "ui.flatpak_ref_not_found_body": "“{name}” ainda não está no catálogo local do Flatpak. Certifique-se de que o suporte a Flatpak está ativado e o catálogo atualizado, depois tente o link novamente.",
+  "install.input_placeholder": "Digite sua resposta (ex.: 1) e pressione Enter",
+  "install.btn_send": "Enviar"
 }

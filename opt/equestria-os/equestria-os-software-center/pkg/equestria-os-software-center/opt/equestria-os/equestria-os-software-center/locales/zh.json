@@ -162,5 +162,7 @@
   "install.title_init_db": "正在初始化软件包数据库…",
   "ui.update_no_sources": "未启用任何更新源。请在设置中至少启用一个。",
   "ui.flatpak_ref_not_found_title": "未找到应用",
-  "ui.flatpak_ref_not_found_body": "本地 Flatpak 目录中还没有“{name}”。请确认已启用 Flatpak 支持且目录已更新，然后重新尝试该链接。"
+  "ui.flatpak_ref_not_found_body": "本地 Flatpak 目录中还没有“{name}”。请确认已启用 Flatpak 支持且目录已更新，然后重新尝试该链接。",
+  "install.input_placeholder": "请输入答案（例如 1）并按回车",
+  "install.btn_send": "发送"
 }

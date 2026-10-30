@@ -546,3 +546,16 @@ QProgressBar#InstallProgressBar::chunk {
     background-color: @accent2@;
     border-radius: 3px;
 }
+
+QLineEdit#InstallInputField {
+    background-color: @crust@;
+    color: @text@;
+    font-family: "Noto Sans Mono", monospace;
+    font-size: 12px;
+    border: 1px solid @surface0@;
+    border-radius: 8px;
+    padding: 6px 10px;
+}
+QLineEdit#InstallInputField:focus {
+    border: 1px solid @accent@;
+}

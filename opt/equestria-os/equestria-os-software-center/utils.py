@@ -139,3 +139,24 @@ def merge_packages(pacman_pkgs, flatpak_pkgs):
             unmatched.append(fp)
 
     return list(pacman_pkgs) + unmatched
+
+
+def flathub_install_scope(remote="flathub"):
+    """Pick '--system' or '--user' for `flatpak install <remote> ...`.
+
+    When the same remote exists in both installations, flatpak stops and asks
+    which one to use. We resolve that up front: prefer the system-wide
+    installation (the usual choice for a distro) and fall back to the user one
+    if the remote is only configured there. Returns None if undetermined, in
+    which case flatpak's own behaviour (and the panel's input field) applies.
+    """
+    import subprocess
+    for scope in ("--system", "--user"):
+        try:
+            r = subprocess.run(["flatpak", "remotes", scope, "--columns=name"],
+                               capture_output=True, text=True, timeout=5)
+        except Exception:
+            return None
+        if r.returncode == 0 and remote in r.stdout.split():
+            return scope
+    return None

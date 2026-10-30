@@ -16,7 +16,7 @@ from PyQt6.QtCore import (Qt, QThread, QTimer, QFileSystemWatcher, QEvent,
 
 from models import EssentialData, StoreData
 from github_installer import GithubAppRegistry
-from utils import (FLATPAK_APPSTREAM, cleanup_screenshot_cache, parse_appstream_uri,
+from utils import (flathub_install_scope, FLATPAK_APPSTREAM, cleanup_screenshot_cache, parse_appstream_uri,
                    parse_flatpakref_uri, FLATPAKREF_SCHEMES, normalize_key, merge_packages,
                    _GENERIC_PACMAN_DESC, guess_cat)
 from workers import (stop_all_threads, AppStoreLoader, FlatpakLoader, FlatpakRefResolveThread,
@@ -322,6 +322,17 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
             self.flatpak_upgradable = set()
             if shutil.which("flatpak"):
+                # Re-read the installed Flatpak apps too: this set used to be
+                # filled only once, when the catalog loaded, so Install/Remove
+                # buttons stayed stale after any later flatpak install/remove.
+                res_inst = subprocess.run(
+                    ["flatpak", "list", "--app", "--columns=application"],
+                    capture_output=True, text=True
+                )
+                if res_inst.returncode == 0:
+                    self.flatpak_installed = {
+                        line.strip() for line in res_inst.stdout.splitlines() if line.strip()
+                    }
                 res_flat = subprocess.run(
                     ["flatpak", "list", "--updates", "--columns=application"],
                     capture_output=True, text=True
@@ -361,6 +372,12 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.load_essentials_csv()
         if self.store_packages or self.aur_packages:
             self.filter_store()
+        # Also refresh the open detail page, otherwise its Install/Remove
+        # button keeps showing the old state after a change made elsewhere.
+        if self.stacked_widget.currentIndex() == 2 and getattr(self.page_detail, "alts_dict", None):
+            current = self.page_detail.alts_dict.get(self.page_detail.combo_source_selector.currentData())
+            if current is not None:
+                self.open_app_detail(current)
 
     def _compute_status(self, pkg):
         """Sets pkg.status from the current installed/upgradable system state."""
@@ -1260,7 +1277,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             if getattr(pkg, 'status', '') == "upgradable":
                 program, args, elevated = "flatpak", ["update", "-y", pkg.app_id], False
             else:
-                program, args, elevated = "flatpak", ["install", "-y", "flathub", pkg.app_id], False
+                scope = flathub_install_scope("flathub")
+                args = ["install", "-y"] + ([scope] if scope else []) + ["flathub", pkg.app_id]
+                program, elevated = "flatpak", False
         else:
             # Одиночное обновление — тоже `-S <пакет>`, БЕЗ -y/-u: «-Syu» обновлял всю
             # систему. База синхронизации уже свежая (по ней pacman -Qu нашёл обновление),

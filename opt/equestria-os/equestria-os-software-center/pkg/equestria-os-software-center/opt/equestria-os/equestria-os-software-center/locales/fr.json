@@ -162,5 +162,7 @@
   "install.title_init_db": "Initialisation de la base de paquets…",
   "ui.update_no_sources": "Aucune source de mise à jour n'est activée. Activez-en au moins une dans les Paramètres.",
   "ui.flatpak_ref_not_found_title": "Application introuvable",
-  "ui.flatpak_ref_not_found_body": "« {name} » n'est pas encore dans le catalogue Flatpak local. Vérifiez que le support Flatpak est activé et que le catalogue est à jour, puis réessayez le lien."
+  "ui.flatpak_ref_not_found_body": "« {name} » n'est pas encore dans le catalogue Flatpak local. Vérifiez que le support Flatpak est activé et que le catalogue est à jour, puis réessayez le lien.",
+  "install.input_placeholder": "Saisissez votre réponse (ex. 1) puis appuyez sur Entrée",
+  "install.btn_send": "Envoyer"
 }

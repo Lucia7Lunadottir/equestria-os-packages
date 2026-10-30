@@ -162,5 +162,7 @@
   "install.repair_failed": "Couldn't remove the lock. You may need to do it manually.",
   "install.retrying": "Retrying",
   "install.title_init_db": "Initializing package database…",
-  "ui.update_no_sources": "No update sources are enabled. Enable at least one in Settings."
+  "ui.update_no_sources": "No update sources are enabled. Enable at least one in Settings.",
+  "install.input_placeholder": "Type your answer here (e.g. 1) and press Enter",
+  "install.btn_send": "Send"
 }

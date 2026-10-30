@@ -36,7 +36,7 @@ import tempfile
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QPlainTextEdit, QProgressBar, QMessageBox,
+    QPlainTextEdit, QProgressBar, QMessageBox, QLineEdit,
 )
 try:
     import equestria_kit  # noqa: F401
@@ -133,6 +133,23 @@ class InstallProgressDialog(QDialog):
         self.log_view.setMaximumBlockCount(2000)
         layout.addWidget(self.log_view, 1)
 
+        # Interactive input row: some tools (e.g. flatpak asking which remote to
+        # use) wait for an answer on stdin. The process's stdin is a pipe, and
+        # whatever is typed here is written to it followed by a newline.
+        input_row = QHBoxLayout()
+        self.input_field = QLineEdit()
+        self.input_field.setObjectName("InstallInputField")
+        self.input_field.setPlaceholderText(self.t("install.input_placeholder"))
+        self.input_field.returnPressed.connect(self._send_input)
+        self.btn_send = QPushButton(self.t("install.btn_send"))
+        self.btn_send.setObjectName("DetailActionBtn")
+        self.btn_send.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_send.clicked.connect(self._send_input)
+        input_row.addWidget(self.input_field, 1)
+        input_row.addWidget(self.btn_send)
+        layout.addLayout(input_row)
+        self._set_input_enabled(False)
+
         buttons = QHBoxLayout()
         self.btn_repair = QPushButton(self.t("install.btn_repair"))
         self.btn_repair.setObjectName("CacheCleanBtn")
@@ -195,6 +212,7 @@ class InstallProgressDialog(QDialog):
                 # this survives our own process exiting, not just this dialog.
                 self._proc = subprocess.Popen(
                     [self.program] + self.args,
+                    stdin=subprocess.PIPE,
                     stdout=log_fh, stderr=subprocess.STDOUT,
                     start_new_session=True,
                 )
@@ -207,7 +225,37 @@ class InstallProgressDialog(QDialog):
             return
 
         self._running = True
+        self._set_input_enabled(True)
         self.poll_timer.start(self.POLL_MS)
+
+    # -------------------------------------------------------------------
+    # Interactive input (answers to prompts such as "Which do you want to use [0-2]:")
+    # -------------------------------------------------------------------
+
+    def _set_input_enabled(self, enabled: bool):
+        self.input_field.setEnabled(enabled)
+        self.btn_send.setEnabled(enabled)
+        if enabled:
+            self.input_field.setFocus()
+
+    def _send_input(self):
+        if not self._running or self._proc is None or self._proc.stdin is None:
+            return
+        text = self.input_field.text()
+        try:
+            self._proc.stdin.write((text + "\n").encode("utf-8"))
+            self._proc.stdin.flush()
+        except (OSError, ValueError):
+            # Process already closed its stdin / exited.
+            return
+        # Echo the answer into the log (the child's own output has no echo
+        # because it isn't attached to a terminal).
+        if self._pending:
+            self.log_view.appendPlainText(self._pending + text)
+            self._pending = ""
+        else:
+            self.log_view.appendPlainText("> " + text)
+        self.input_field.clear()
 
     def _poll(self):
         try:
@@ -260,6 +308,12 @@ class InstallProgressDialog(QDialog):
         self._running = False
         self.progress.setRange(0, 1)
         self.progress.setValue(1)
+        self._set_input_enabled(False)
+        try:
+            if self._proc is not None and self._proc.stdin:
+                self._proc.stdin.close()
+        except OSError:
+            pass
         self.btn_cancel.setEnabled(False)
         self.btn_close.setEnabled(True)
 

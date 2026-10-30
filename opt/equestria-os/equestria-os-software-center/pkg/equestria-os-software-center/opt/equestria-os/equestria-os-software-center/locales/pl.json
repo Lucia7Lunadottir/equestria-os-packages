@@ -162,5 +162,7 @@
   "install.title_init_db": "Inicjowanie bazy pakietów…",
   "ui.update_no_sources": "Żadne źródło aktualizacji nie jest włączone. Włącz co najmniej jedno w Ustawieniach.",
   "ui.flatpak_ref_not_found_title": "Nie znaleziono aplikacji",
-  "ui.flatpak_ref_not_found_body": "„{name}” nie ma jeszcze w lokalnym katalogu Flatpak. Upewnij się, że obsługa Flatpak jest włączona, a katalog zaktualizowany, i spróbuj otworzyć link ponownie."
+  "ui.flatpak_ref_not_found_body": "„{name}” nie ma jeszcze w lokalnym katalogu Flatpak. Upewnij się, że obsługa Flatpak jest włączona, a katalog zaktualizowany, i spróbuj otworzyć link ponownie.",
+  "install.input_placeholder": "Wpisz odpowiedź (np. 1) i naciśnij Enter",
+  "install.btn_send": "Wyślij"
 }

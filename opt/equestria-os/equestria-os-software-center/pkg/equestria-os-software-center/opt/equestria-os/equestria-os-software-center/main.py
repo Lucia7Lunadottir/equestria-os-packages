@@ -16,7 +16,7 @@ from PyQt6.QtCore import (Qt, QThread, QTimer, QFileSystemWatcher, QEvent,
 
 from models import EssentialData, StoreData
 from github_installer import GithubAppRegistry
-from utils import (FLATPAK_APPSTREAM, cleanup_screenshot_cache, parse_appstream_uri,
+from utils import (flathub_install_scope, FLATPAK_APPSTREAM, cleanup_screenshot_cache, parse_appstream_uri,
                    parse_flatpakref_uri, FLATPAKREF_SCHEMES, normalize_key, merge_packages,
                    _GENERIC_PACMAN_DESC, guess_cat)
 from workers import (stop_all_threads, AppStoreLoader, FlatpakLoader, FlatpakRefResolveThread,
@@ -28,6 +28,13 @@ from settings import load_settings, save_settings, resolve_language
 from settings_dialog import SettingsDialog
 from install_panel import InstallProgressDialog, cleanup_old_logs
 from pacman_repo import FileRepositoryStore, RepositoryError
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.widgets import font_families
 
 # All code comments inside the script are written in English as requested
 
@@ -271,11 +278,10 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     def init_resources(self):
         self.custom_font_family = "sans-serif"
         f_path = os.path.join(self.base_path, "equestria_cyrillic.ttf")
-        if os.path.exists(f_path):
-            fid = QFontDatabase.addApplicationFont(f_path)
-            if fid != -1:
-                self.custom_font_family = QFontDatabase.applicationFontFamilies(fid)[0]
-                self.title_label.setFont(QFont(self.custom_font_family, 24))
+        families = font_families(f_path)
+        if families:
+            self.custom_font_family = families[0]
+            self.title_label.setFont(QFont(self.custom_font_family, 24))
 
         icon_path = os.path.join(self.base_path, "equestria-os-software-center.png")
         if os.path.exists(icon_path):
@@ -291,7 +297,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
                 qss = (f.read()
                        .replace("{{TITLE_FONT}}", f'"{self.custom_font_family}"')
                        .replace("{{BASE_PATH}}", base))
-                self.setStyleSheet(qss)
+                kit_qt.style(self, qss)
 
     def discover_langs(self):
         locale_dir = os.path.join(self.base_path, "locales")
@@ -316,6 +322,17 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
             self.flatpak_upgradable = set()
             if shutil.which("flatpak"):
+                # Re-read the installed Flatpak apps too: this set used to be
+                # filled only once, when the catalog loaded, so Install/Remove
+                # buttons stayed stale after any later flatpak install/remove.
+                res_inst = subprocess.run(
+                    ["flatpak", "list", "--app", "--columns=application"],
+                    capture_output=True, text=True
+                )
+                if res_inst.returncode == 0:
+                    self.flatpak_installed = {
+                        line.strip() for line in res_inst.stdout.splitlines() if line.strip()
+                    }
                 res_flat = subprocess.run(
                     ["flatpak", "list", "--updates", "--columns=application"],
                     capture_output=True, text=True
@@ -355,6 +372,12 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.load_essentials_csv()
         if self.store_packages or self.aur_packages:
             self.filter_store()
+        # Also refresh the open detail page, otherwise its Install/Remove
+        # button keeps showing the old state after a change made elsewhere.
+        if self.stacked_widget.currentIndex() == 2 and getattr(self.page_detail, "alts_dict", None):
+            current = self.page_detail.alts_dict.get(self.page_detail.combo_source_selector.currentData())
+            if current is not None:
+                self.open_app_detail(current)
 
     def _compute_status(self, pkg):
         """Sets pkg.status from the current installed/upgradable system state."""
@@ -973,7 +996,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.store_loading_lbl.hide()
         lbl = QLabel(msg)
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl.setStyleSheet("color: #a6adc8; font-size: 16px;")
+        kit_qt.style(lbl, "color: @subtext@; font-size: 16px;")
         self.layout_store.addWidget(lbl)
         self.lbl_page_info.setText("")
         self.btn_prev_page.setEnabled(False)
@@ -992,11 +1015,11 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
         if no_binary:
             lbl_title = QLabel(self.t("ui.flatpak_not_installed_title"))
-            lbl_title.setStyleSheet("color: white; font-size: 18px; font-weight: bold; background: transparent;")
+            kit_qt.style(lbl_title, "color: white; font-size: 18px; font-weight: bold; background: transparent;")
             lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
             lbl_desc = QLabel(self.t("ui.flatpak_not_installed_desc"))
-            lbl_desc.setStyleSheet("color: #a6adc8; font-size: 14px; background: transparent;")
+            kit_qt.style(lbl_desc, "color: @subtext@; font-size: 14px; background: transparent;")
             lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
             lbl_desc.setWordWrap(True)
 
@@ -1012,11 +1035,11 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             layout.addWidget(btn, alignment=Qt.AlignmentFlag.AlignCenter)
         else:
             lbl_title = QLabel(self.t("ui.flatpak_not_setup"))
-            lbl_title.setStyleSheet("color: white; font-size: 18px; font-weight: bold; background: transparent;")
+            kit_qt.style(lbl_title, "color: white; font-size: 18px; font-weight: bold; background: transparent;")
             lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
             lbl_desc = QLabel(self.t("ui.flatpak_init_desc"))
-            lbl_desc.setStyleSheet("color: #a6adc8; font-size: 14px; background: transparent;")
+            kit_qt.style(lbl_desc, "color: @subtext@; font-size: 14px; background: transparent;")
             lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
             lbl_desc.setWordWrap(True)
 
@@ -1064,7 +1087,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             key = "ui.no_updates" if self._current_source == "updates" else "ui.nothing_found"
             lbl = QLabel(self.t(key))
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            lbl.setStyleSheet("color: #a6adc8; font-size: 16px;")
+            kit_qt.style(lbl, "color: @subtext@; font-size: 16px;")
             self.layout_store.addWidget(lbl)
         pages = max(1, (total + self.items_per_page - 1) // self.items_per_page)
         start = (self.current_page - 1) * self.items_per_page
@@ -1077,7 +1100,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
                 txt = self.t("ui.install")
             row = StoreAppRow(pkg, txt, self.install_package, on_row_click=self.open_app_detail)
             if pkg.status == "upgradable":
-                row.btn_action.setStyleSheet("background-color: #f9e2af; color: #11111b;")
+                kit_qt.style(row.btn_action, "background-color: @yellow@; color: @on_accent@;")
             elif pkg.status == "installed":
                 row.btn_action.setEnabled(False)
             self.layout_store.addWidget(row)
@@ -1254,12 +1277,14 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             if getattr(pkg, 'status', '') == "upgradable":
                 program, args, elevated = "flatpak", ["update", "-y", pkg.app_id], False
             else:
-                program, args, elevated = "flatpak", ["install", "-y", "flathub", pkg.app_id], False
+                scope = flathub_install_scope("flathub")
+                args = ["install", "-y"] + ([scope] if scope else []) + ["flathub", pkg.app_id]
+                program, elevated = "flatpak", False
         else:
-            if getattr(pkg, 'status', '') == "upgradable":
-                program, args, elevated = "pkexec", ["pacman", "-Syu", "--noconfirm", pkg.name], True
-            else:
-                program, args, elevated = "pkexec", ["pacman", "-S", "--noconfirm", pkg.name], True
+            # Одиночное обновление — тоже `-S <пакет>`, БЕЗ -y/-u: «-Syu» обновлял всю
+            # систему. База синхронизации уже свежая (по ней pacman -Qu нашёл обновление),
+            # а -Sy без -u дал бы частичное обновление, которое Arch не поддерживает.
+            program, args, elevated = "pkexec", ["pacman", "-S", "--noconfirm", pkg.name], True
 
         title = self.t("install.title_installing").replace("{0}", pkg.name)
         self._run_in_panel(title, program, args, elevated,
@@ -1625,6 +1650,7 @@ def _install_crash_guards():
 if __name__ == "__main__":
     _install_crash_guards()
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     app.setDesktopFileName("equestria-os-software-center")
 
     pending_appstream_id = None
