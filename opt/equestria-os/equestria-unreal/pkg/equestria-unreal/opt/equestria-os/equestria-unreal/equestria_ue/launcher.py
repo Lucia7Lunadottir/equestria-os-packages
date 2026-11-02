@@ -170,8 +170,9 @@ def launch_editor(cfg: Config, eng: Engine, uproject: str = "") -> str:
     try:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
         logp = CACHE_DIR / "editor.log"
+        log_start = logp.stat().st_size if logp.exists() else 0
         proc = _spawn(editor_command(cfg, eng, uproject, mode), eng, cfg, logp)
-        _watch_ddc(proc, mode, eng, cfg, uproject, logp)
+        _watch_ddc(proc, mode, eng, cfg, uproject, logp, log_start)
     except OSError as ex:
         return str(ex)
     return ""
@@ -184,10 +185,45 @@ def _spawn(cmd, eng, cfg, logp):
                                 stdout=log, stderr=log)
 
 
-def _watch_ddc(proc, mode, eng, cfg, uproject, logp) -> None:
-    """Если редактор упал на старте (обычно из-за кеша DDC) — один раз перезапускаем
-    со следующим по надёжности кешем. Запоминаем только файловый кеш: кеш в памяти
-    навсегда означал бы полную перекомпиляцию шейдеров при каждом запуске."""
+class CrashCause:
+    """Почему редактор завершился — по коду выхода и журналу этого запуска.
+
+    Перезапуск с другим кешем помогает только при сбое самого кеша (Zen/DDC). Раньше
+    лаунчер перезапускал редактор после любого падения в первые 2 минуты — в том числе
+    после нехватки видеопамяти и после ручного «убить», и редактор будто открывался сам
+    снова и снова."""
+
+    USER_SIGNALS = (-9, -15, -2, -1)    # SIGKILL, SIGTERM, SIGINT, SIGHUP: завершили вручную или сеанс
+    DDC_MARKERS = ("LogZenServiceInstance: Error", "LogZenServiceInstance: Warning: Unable to reach",
+                   "LogDerivedDataCache: Error", "LogDerivedDataCache: Fatal", "Failed to launch zenserver")
+    VRAM_MARKERS = ("Out of memory on Vulkan", "VulkanRHI::FMemoryManager", "Failed to allocate Device Memory")
+
+    def __init__(self, code: int, log_text: str):
+        self.code, self.log = code, log_text
+
+    @classmethod
+    def read(cls, code: int, logp: Path, start: int) -> "CrashCause":
+        try:
+            with open(logp, "rb") as f:
+                f.seek(start)
+                text = f.read().decode("utf-8", "replace")
+        except OSError:
+            text = ""
+        return cls(code, text)
+
+    @property
+    def ddc_failure(self) -> bool:
+        if self.code == 0 or self.code in self.USER_SIGNALS:
+            return False
+        if any(m in self.log for m in self.VRAM_MARKERS):
+            return False
+        return any(m in self.log for m in self.DDC_MARKERS)
+
+
+def _watch_ddc(proc, mode, eng, cfg, uproject, logp, log_start=0) -> None:
+    """Если редактор упал на старте из-за кеша DDC — один раз перезапускаем со следующим
+    по надёжности кешем. Запоминаем только файловый кеш: кеш в памяти навсегда означал
+    бы полную перекомпиляцию шейдеров при каждом запуске."""
     import threading
     import time
 
@@ -198,11 +234,11 @@ def _watch_ddc(proc, mode, eng, cfg, uproject, logp) -> None:
     def run():
         t0 = time.time()
         code = proc.wait()
-        if code == 0 or time.time() - t0 > 120:
+        if time.time() - t0 > 120 or not CrashCause.read(code, logp, log_start).ddc_failure:
             return
         with open(logp, "ab") as f:
-            f.write(f"\n[launcher] editor exited after {time.time() - t0:.0f} s (code {code}); "
-                    f"retrying with DDC mode '{nxt}'\n".encode())
+            f.write(f"\n[launcher] editor exited after {time.time() - t0:.0f} s (code {code}) because of the "
+                    f"derived data cache; retrying once with DDC mode '{nxt}'\n".encode())
         try:
             p2 = _spawn(editor_command(cfg, eng, uproject, nxt), eng, cfg, logp)
         except OSError:
