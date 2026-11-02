@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Id": "Equestria-fluttershy-Dark",
+        "Name": "Equestria — Fluttershy (Dark)",
+        "Name[ru]": "Equestria — Fluttershy (ночь)",
+        "Description": "Fluttershy: night",
+        "Description[ru]": "Fluttershy: ночь",
+        "Icon": "preferences-desktop-theme-global",
+        "Authors": [
+            {
+                "Name": "Equestria OS"
+            }
+        ],
+        "Version": "2.0"
+    }
+}

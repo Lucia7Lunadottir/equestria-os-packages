@@ -20,7 +20,7 @@ from utils import (flathub_install_scope, FLATPAK_APPSTREAM, cleanup_screenshot_
                    parse_flatpakref_uri, FLATPAKREF_SCHEMES, normalize_key, merge_packages,
                    _GENERIC_PACMAN_DESC, guess_cat)
 from workers import (stop_all_threads, AppStoreLoader, FlatpakLoader, FlatpakRefResolveThread,
-                     AURSearchThread, AURPopularLoader, AURUpgradableLoader,
+                     AURSearchThread, AURPopularLoader, AURUpgradableLoader, ForeignUpdatesLoader,
                      ScreenshotDownloadThread, LocalAppStreamLoader,
                      PacmanInfoLoader)
 from ui_software import Ui_SoftwareCenter, EssentialAppRow, StoreAppRow, AppDetailWidget
@@ -251,6 +251,10 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self._aur_upgradable_loader.finished.connect(self._on_aur_upgradable_loaded)
         self._aur_upgradable_loader.start()
 
+        # Программы из DEB/RPM (equestria-installer): их обновления — в разделе «Обновления»
+        self.foreign_updates: list = []
+        self._load_foreign_updates()
+
         self._flatpak_watcher = QFileSystemWatcher()
         flatpak_dir = os.path.dirname(FLATPAK_APPSTREAM)
         if os.path.exists(flatpak_dir):
@@ -381,6 +385,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
     def _compute_status(self, pkg):
         """Sets pkg.status from the current installed/upgradable system state."""
+        if pkg.source_type == "foreign":   # DEB/RPM: установлена (в этом списке — только с обновлением)
+            pkg.status = "upgradable" if any(u["name"] == pkg.name for u in self.foreign_updates) else "installed"
+            return
         if pkg.source_type == "flatpak":
             if pkg.app_id in self.flatpak_upgradable:
                 pkg.status = "upgradable"
@@ -885,6 +892,15 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
                 pkg.status = "upgradable"
                 pkg.category = guess_cat(name)
                 self.filtered_store_packages.append(pkg)
+            for u in self.foreign_updates:
+                if query and query not in u["name"].lower():
+                    continue
+                pkg = StoreData(u["name"], u["latest"],
+                                self.t("ui.foreign_desc").replace("{0}", u["installed"]), "DEB/RPM",
+                                source_type="foreign")
+                pkg.status = "upgradable"
+                pkg.category = guess_cat(u["name"])
+                self.filtered_store_packages.append(pkg)
 
         self.current_page = 1
         self.render_store_page()
@@ -912,6 +928,16 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             self._rebuild_merged()
             if self._current_source == "all":
                 self.filter_store()
+
+    def _load_foreign_updates(self):
+        self._foreign_loader = ForeignUpdatesLoader()
+        self._foreign_loader.loaded.connect(self._on_foreign_updates_loaded)
+        self._foreign_loader.start()
+
+    def _on_foreign_updates_loaded(self, items):
+        self.foreign_updates = items
+        if self._current_source == "updates":
+            self.filter_store()
 
     def _on_aur_upgradable_loaded(self, pkgs):
         if pkgs:
@@ -1267,7 +1293,11 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     # -------------------------------------------------------------------------
 
     def install_package(self, pkg):
-        if pkg.source_type == "aur":
+        if pkg.source_type == "foreign":
+            # DEB/RPM: скачивание с сайта производителя и установка — в equestria-installer
+            # (он сам запрашивает пароль через pkexec)
+            program, args, elevated = "equestria-installer", ["--update-foreign", pkg.name], False
+        elif pkg.source_type == "aur":
             # By default yay shells out to plain 'sudo' for its privileged step,
             # which needs a real interactive terminal for the password prompt.
             # --sudo pkexec swaps that for the same graphical polkit prompt the
@@ -1292,7 +1322,10 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
                             on_done=lambda ok: self._on_package_action_done(pkg, ok))
 
     def remove_package(self, pkg):
-        if pkg.source_type == "flatpak":
+        if pkg.source_type == "foreign":
+            bridge = "/usr/lib/equestria-installer/foreign_bridge.py"
+            program, args, elevated = "pkexec", ["python3", bridge, "uninstall", pkg.name], True
+        elif pkg.source_type == "flatpak":
             program, args, elevated = "flatpak", ["uninstall", "-y", pkg.app_id], False
         else:
             program, args, elevated = "pkexec", ["pacman", "-Rs", "--noconfirm", pkg.name], True
@@ -1322,6 +1355,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     def _on_package_action_done(self, pkg, success):
         if not success:
             return
+        if pkg.source_type == "foreign":
+            self.foreign_updates = [u for u in self.foreign_updates if u["name"] != pkg.name]
+            self._load_foreign_updates()
         self.refresh_system_status()
         self._compute_status(pkg)
         self.load_essentials_csv()
@@ -1543,6 +1579,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         do_aur = self._settings.get("update_aur", True) and self._settings.get("enable_aur", True)
         do_flatpak = (self._settings.get("update_flatpak", True)
                       and self._settings.get("enable_flatpak", True))
+        do_foreign = self._settings.get("update_foreign", True) and bool(shutil.which("equestria-installer"))
 
         steps = []
         step_n = 0
@@ -1605,6 +1642,13 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
                 "else "
                 "  echo 'flatpak not installed — skipping.'; "
                 "fi; echo; "
+            )
+
+        if do_foreign:
+            step_n += 1
+            steps.append(
+                f"echo '==> [{step_n}] Updating DEB/RPM apps (equestria-installer)...'; echo; "
+                "equestria-installer --update-foreign; echo; "
             )
 
         if not steps:
@@ -1675,5 +1719,5 @@ if __name__ == "__main__":
 
     win = main_app(pending_appstream_id=pending_appstream_id,
                     pending_flatpakref_uri=pending_flatpakref_uri)
-    win.show()
+    win.showMaximized()   # сразу на весь экран: каталог в маленьком окне смотрится тесно
     sys.exit(app.exec())

@@ -1,6 +1,12 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QScrollArea, QFrame, QSpacerItem, QSizePolicy)
 from PyQt6.QtCore import Qt
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 class Ui_WelcomeHub:
     def setupUi(self, MainWindow):
@@ -45,7 +51,7 @@ class Ui_WelcomeHub:
         self.autostart_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.autostart_label = QLabel("Launch on startup")
-        self.autostart_label.setStyleSheet("color: rgb(166, 173, 200); font-size: 13px; font-family: sans-serif;")
+        kit_qt.style(self.autostart_label, "color: @subtext@; font-size: 13px; font-family: sans-serif;")
         self.autostart_label.setCursor(Qt.CursorShape.PointingHandCursor)
         self.autostart_label.mousePressEvent = lambda e: self.autostart_checkbox.toggle() # Клик по тексту переключает галочку
 

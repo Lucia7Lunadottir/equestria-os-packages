@@ -1,6 +1,12 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QLineEdit, QComboBox, QScrollArea, QFrame)
 from PyQt6.QtCore import Qt
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 
 class ServiceRow(QFrame):
@@ -228,11 +234,11 @@ class Ui_ServicesManager:
         m_layout.setContentsMargins(32, 28, 32, 28)
 
         self.modal_title = QLabel("Confirmation")
-        self.modal_title.setStyleSheet("color: white; font-size: 20px; font-weight: bold; background: transparent;")
+        kit_qt.style(self.modal_title, "color: white; font-size: 20px; font-weight: bold; background: transparent;")
         self.modal_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.modal_text = QLabel("")
-        self.modal_text.setStyleSheet("color: rgb(210, 200, 230); font-size: 14px; background: transparent;")
+        kit_qt.style(self.modal_text, "color: @text@; font-size: 14px; background: transparent;")
         self.modal_text.setWordWrap(True)
         self.modal_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
 

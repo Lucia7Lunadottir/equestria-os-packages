@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Id": "Equestria-rainbow",
+        "Name": "Equestria — Rainbow Dash",
+        "Name[ru]": "Equestria — Rainbow Dash",
+        "Description": "Rainbow Dash: day",
+        "Description[ru]": "Rainbow Dash: день",
+        "Icon": "preferences-desktop-theme-global",
+        "Authors": [
+            {
+                "Name": "Equestria OS"
+            }
+        ],
+        "Version": "2.0"
+    }
+}

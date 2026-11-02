@@ -1,51 +1,27 @@
 pkgname=equestria-installer
-pkgver=1.2.0
-pkgrel=6
-pkgdesc="Graphical local package installer for Equestria OS"
+pkgver=2.0.0
+pkgrel=3
+pkgdesc="Graphical local package installer for Equestria OS: pacman, DEB, RPM and Flatpak packages, with updates for DEB/RPM apps"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL3')
-depends=('python' 'python-pyqt6' 'polkit' 'tar' 'libarchive' 'pacman')
+depends=('python' 'python-pyqt6' 'equestria-qt-kit>=1.1' 'polkit' 'tar' 'libarchive' 'zstd' 'pacman')
 optdepends=('flatpak: install .flatpak/.flatpakref packages')
-makedepends=('qt6-tools')
 install=equestria-installer.install
 
-source=('installer.py'
-        'foreign_bridge.py'
-        'equestria-installer.desktop'
-        'Installer.svg')
-
-sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP')
-
-_languages=('ru_RU' 'uk_UA' 'de_DE' 'en_US' 'es_ES' 'fr_FR' 'pl_PL' 'it_IT' 'kk_KZ' 'zh_CN' 'ja_JP')
-
-build() {
-    cd "${srcdir}"
-
-    local lang
-    for lang in "${_languages[@]}"; do
-        if [ -f "${startdir}/translations/${lang}.ts" ]; then
-            /usr/lib/qt6/bin/lrelease "${startdir}/translations/${lang}.ts" -qm "${lang}.qm"
-        fi
-    done
-}
-
 package() {
-    cd "${srcdir}"
-
-    install -Dm755 installer.py "${pkgdir}/usr/bin/equestria-installer"
-    install -Dm755 foreign_bridge.py "${pkgdir}/usr/lib/equestria-installer/foreign_bridge.py"
-
-    # 2. Desktop-файл
-    install -Dm644 equestria-installer.desktop "${pkgdir}/usr/share/applications/equestria-installer.desktop"
-
-    # 3. Иконка (тема hicolor, чтобы QIcon.fromTheme находила её)
-    install -Dm644 Installer.svg "${pkgdir}/usr/share/icons/hicolor/scalable/apps/equestria-installer.svg"
-
-    local lang
-    for lang in "${_languages[@]}"; do
-        if [ -f "${lang}.qm" ]; then
-            install -Dm644 "${lang}.qm" "${pkgdir}/usr/share/equestria-installer/translations/${lang}.qm"
-        fi
+    local _lib="$pkgdir/usr/lib/equestria-installer"
+    local f
+    for f in installer.py install_wizard.py foreign_apps.py foreign_cli.py sources.py pkgmeta.py ui_common.py i18n.json Installer.svg; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
     done
+    # от root через pkexec: установка/удаление DEB и RPM
+    install -Dm755 "$startdir/foreign_bridge.py" "$_lib/foreign_bridge.py"
+
+    install -dm755 "$pkgdir/usr/bin"
+    ln -s /usr/lib/equestria-installer/installer.py "$pkgdir/usr/bin/equestria-installer"
+    chmod 755 "$_lib/installer.py"
+
+    install -Dm644 "$startdir/equestria-installer.desktop" "$pkgdir/usr/share/applications/equestria-installer.desktop"
+    install -Dm644 "$startdir/Installer.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/equestria-installer.svg"
 }

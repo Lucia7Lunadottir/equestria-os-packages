@@ -23,6 +23,7 @@ _DEFAULTS = {
     "update_pacman": True,
     "update_aur": True,
     "update_flatpak": True,
+    "update_foreign": True,      # программы из DEB/RPM (equestria-installer)
 
     # Source enable flags — whether to load / show each source at all
     "enable_aur": True,
@@ -39,25 +40,26 @@ def _detect_system_lang(available_langs: list[str]) -> str:
     3. `locale` command output
     Fallback: "en"
     """
+    # Код языка — по правилу общей библиотеки: "zh_TW.UTF-8" → "zh_TW", "ru_RU.UTF-8" → "ru"
+    # (первые две буквы не годятся: традиционный китайский стал бы упрощённым)
+    from equestria_kit.i18n import normalize
     candidates = []
 
     # $LANGUAGE can hold multiple codes separated by colons
     env_language = os.environ.get("LANGUAGE", "")
     for part in env_language.split(":"):
-        code = part.split("_")[0].split(".")[0].lower().strip()
+        code = normalize(part)
         if code:
             candidates.append(code)
 
     # $LANG: "ru_RU.UTF-8" → "ru"
-    env_lang = os.environ.get("LANG", "")
-    code = env_lang.split("_")[0].split(".")[0].lower().strip()
-    if code and code != "c" and code != "posix":
+    code = normalize(os.environ.get("LANG", ""))
+    if code:
         candidates.append(code)
 
     # Try Python's own locale
     try:
-        loc = locale.getdefaultlocale()[0] or ""
-        code = loc.split("_")[0].lower()
+        code = normalize(locale.getdefaultlocale()[0] or "")
         if code:
             candidates.append(code)
     except Exception:
@@ -68,8 +70,8 @@ def _detect_system_lang(available_langs: list[str]) -> str:
         res = subprocess.run(["locale"], capture_output=True, text=True, timeout=2)
         for line in res.stdout.splitlines():
             if line.startswith("LANG="):
-                code = line.split("=")[1].split("_")[0].split(".")[0].lower().strip()
-                if code and code not in ("c", "posix"):
+                code = normalize(line.split("=", 1)[1].strip().strip('"'))
+                if code:
                     candidates.append(code)
                 break
     except Exception:
@@ -79,12 +81,6 @@ def _detect_system_lang(available_langs: list[str]) -> str:
     for c in candidates:
         if c in available_langs:
             return c
-
-    # Partial match: "zh" matches "zh_CN"
-    for c in candidates:
-        for lang in available_langs:
-            if lang.startswith(c):
-                return lang
 
     return "en"
 

@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Id": "Equestria-pinkie-Dark",
+        "Name": "Equestria — Pinkie Pie (Dark)",
+        "Name[ru]": "Equestria — Pinkie Pie (ночь)",
+        "Description": "Pinkie Pie: night",
+        "Description[ru]": "Pinkie Pie: ночь",
+        "Icon": "preferences-desktop-theme-global",
+        "Authors": [
+            {
+                "Name": "Equestria OS"
+            }
+        ],
+        "Version": "2.0"
+    }
+}

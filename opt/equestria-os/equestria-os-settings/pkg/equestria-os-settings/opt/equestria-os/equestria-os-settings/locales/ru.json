@@ -51,7 +51,7 @@
   "pkg.disk_manager.name": "Менеджер дисков",
   "pkg.disk_manager.desc": "Точки монтирования, fstab и разделы дисков",
   "pkg.save_point.name": "Точка сохранения",
-  "pkg.save_point.desc": "Системные снимки и резервные копии через Timeshift",
+  "pkg.save_point.desc": "Системные снимки Btrfs",
   "pkg.services.name": "Менеджер служб",
   "pkg.services.desc": "Запуск, остановка и управление службами systemd",
   "pkg.swap_manager.name": "Менеджер подкачки",

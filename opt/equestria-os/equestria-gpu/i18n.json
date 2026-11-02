@@ -8,7 +8,9 @@
   "pl": "Otwarte moduły jądra NVIDIA z firmware GSP — dla Turing i nowszych. Jedyna gałąź 590+, działają w niej DX12, DLSS i ray tracing.",
   "uk": "Відкриті модулі ядра NVIDIA з GSP-прошивкою — для Turing і новіших. Єдина гілка 590+, у ній працюють DX12, DLSS і трасування променів.",
   "zh": "带 GSP 固件的 NVIDIA 开源内核模块 — 适用于 Turing 及更新架构。唯一的 590+ 分支，支持 DX12、DLSS 和光线追踪。",
-  "ja": "GSP ファームウェア付き NVIDIA オープンカーネルモジュール — Turing 以降向け。唯一の 590+ ブランチで、DX12・DLSS・レイトレーシングが動作します。"
+  "ja": "GSP ファームウェア付き NVIDIA オープンカーネルモジュール — Turing 以降向け。唯一の 590+ ブランチで、DX12・DLSS・レイトレーシングが動作します。",
+  "zh_TW": "帶 GSP 韌體的 NVIDIA 開源核心模組 — 適用於 Turing 及更新架構。唯一的 590+ 分支，支援 DX12、DLSS 和光線追蹤。",
+  "ko": "GSP 펌웨어를 사용하는 오픈 NVIDIA 커널 모듈 — Turing 이상용. 유일한 590+ 브랜치이며 DX12, DLSS, 레이 트레이싱이 작동합니다."
  },
  "Последняя ветка драйвера (580.xx), где ещё поддерживаются Maxwell / Pascal / Volta. nvidia-open и ветки 590+ на этих картах не запускаются (kernel panic) — поэтому нужен именно этот пакет.": {
   "en": "The last driver branch (580.xx) that still supports Maxwell / Pascal / Volta. nvidia-open and 590+ branches do not start on these cards (kernel panic) — that is why exactly this package is needed.",
@@ -19,7 +21,9 @@
   "pl": "Ostatnia gałąź sterownika (580.xx) wspierająca Maxwell / Pascal / Volta. nvidia-open i gałęzie 590+ nie startują na tych kartach (kernel panic) — dlatego potrzebny jest właśnie ten pakiet.",
   "uk": "Остання гілка драйвера (580.xx), де ще підтримуються Maxwell / Pascal / Volta. nvidia-open і гілки 590+ на цих картах не запускаються (kernel panic) — тому потрібен саме цей пакет.",
   "zh": "仍支持 Maxwell / Pascal / Volta 的最后一个驱动分支（580.xx）。nvidia-open 和 590+ 分支在这些显卡上无法启动（kernel panic），因此必须使用这个包。",
-  "ja": "Maxwell / Pascal / Volta をサポートする最後のドライバーブランチ（580.xx）。nvidia-open と 590+ はこれらのカードで起動しません（カーネルパニック）— そのためこのパッケージが必要です。"
+  "ja": "Maxwell / Pascal / Volta をサポートする最後のドライバーブランチ（580.xx）。nvidia-open と 590+ はこれらのカードで起動しません（カーネルパニック）— そのためこのパッケージが必要です。",
+  "zh_TW": "仍支援 Maxwell / Pascal / Volta 的最後一個驅動分支（580.xx）。nvidia-open 和 590+ 分支在這些顯示卡上無法啟動（kernel panic），因此必須使用這個包。",
+  "ko": "Maxwell / Pascal / Volta를 아직 지원하는 마지막 드라이버 브랜치(580.xx). nvidia-open과 590+ 브랜치는 이 카드에서 시작되지 않습니다 (커널 패닉) — 그래서 바로 이 패키지가 필요합니다."
  },
  "Последняя ветка с поддержкой Kepler. Vulkan 1.2, DX12 нет. Пакеты берутся из офлайн-кэша pg-gpu-sync.": {
   "en": "The last branch supporting Kepler. Vulkan 1.2, no DX12. Packages come from the pg-gpu-sync offline cache.",
@@ -30,7 +34,9 @@
   "pl": "Ostatnia gałąź wspierająca Kepler. Vulkan 1.2, bez DX12. Pakiety pochodzą z pamięci offline pg-gpu-sync.",
   "uk": "Остання гілка з підтримкою Kepler. Vulkan 1.2, DX12 немає. Пакети беруться з офлайн-кешу pg-gpu-sync.",
   "zh": "支持 Kepler 的最后一个分支。Vulkan 1.2，无 DX12。软件包来自 pg-gpu-sync 离线缓存。",
-  "ja": "Kepler をサポートする最後のブランチ。Vulkan 1.2、DX12 なし。パッケージは pg-gpu-sync のオフラインキャッシュから取得します。"
+  "ja": "Kepler をサポートする最後のブランチ。Vulkan 1.2、DX12 なし。パッケージは pg-gpu-sync のオフラインキャッシュから取得します。",
+  "zh_TW": "支援 Kepler 的最後一個分支。Vulkan 1.2，無 DX12。軟體包來自 pg-gpu-sync 離線快取。",
+  "ko": "Kepler를 지원하는 마지막 브랜치. Vulkan 1.2, DX12 없음. 패키지는 pg-gpu-sync 오프라인 캐시에서 가져옵니다."
  },
  "Последняя ветка с поддержкой Fermi. Только OpenGL, без Vulkan. Пакеты берутся из офлайн-кэша pg-gpu-sync.": {
   "en": "The last branch supporting Fermi. OpenGL only, no Vulkan. Packages come from the pg-gpu-sync offline cache.",
@@ -41,7 +47,9 @@
   "pl": "Ostatnia gałąź wspierająca Fermi. Tylko OpenGL, bez Vulkan. Pakiety pochodzą z pamięci offline pg-gpu-sync.",
   "uk": "Остання гілка з підтримкою Fermi. Лише OpenGL, без Vulkan. Пакети беруться з офлайн-кешу pg-gpu-sync.",
   "zh": "支持 Fermi 的最后一个分支。仅 OpenGL，无 Vulkan。软件包来自 pg-gpu-sync 离线缓存。",
-  "ja": "Fermi をサポートする最後のブランチ。OpenGL のみ、Vulkan なし。パッケージは pg-gpu-sync のオフラインキャッシュから取得します。"
+  "ja": "Fermi をサポートする最後のブランチ。OpenGL のみ、Vulkan なし。パッケージは pg-gpu-sync のオフラインキャッシュから取得します。",
+  "zh_TW": "支援 Fermi 的最後一個分支。僅 OpenGL，無 Vulkan。軟體包來自 pg-gpu-sync 離線快取。",
+  "ko": "Fermi를 지원하는 마지막 브랜치. OpenGL만, Vulkan 없음. 패키지는 pg-gpu-sync 오프라인 캐시에서 가져옵니다."
  },
  "Для этого поколения проприетарных драйверов нет — работает nouveau.": {
   "en": "There are no proprietary drivers for this generation — nouveau is used.",
@@ -52,7 +60,9 @@
   "pl": "Dla tej generacji nie ma sterowników własnościowych — działa nouveau.",
   "uk": "Для цього покоління пропрієтарних драйверів немає — працює nouveau.",
   "zh": "此代显卡没有专有驱动 — 使用 nouveau。",
-  "ja": "この世代向けのプロプライエタリドライバーはありません — nouveau を使用します。"
+  "ja": "この世代向けのプロプライエタリドライバーはありません — nouveau を使用します。",
+  "zh_TW": "此代顯示卡沒有專有驅動 — 使用 nouveau。",
+  "ko": "이 세대에는 독점 드라이버가 없어 nouveau를 사용합니다."
  },
  "Turing и новее — GeForce RTX 20 / 30 / 40 / 50, GTX 16xx (1650, 1660), Quadro RTX, ноутбучные RTX": {
   "en": "Turing and newer — GeForce RTX 20 / 30 / 40 / 50, GTX 16xx (1650, 1660), Quadro RTX, laptop RTX",
@@ -63,7 +73,9 @@
   "pl": "Turing i nowsze — GeForce RTX 20 / 30 / 40 / 50, GTX 16xx (1650, 1660), Quadro RTX, laptopowe RTX",
   "uk": "Turing і новіші — GeForce RTX 20 / 30 / 40 / 50, GTX 16xx (1650, 1660), Quadro RTX, ноутбучні RTX",
   "zh": "Turing 及更新 — GeForce RTX 20 / 30 / 40 / 50、GTX 16xx（1650、1660）、Quadro RTX、笔记本 RTX",
-  "ja": "Turing 以降 — GeForce RTX 20 / 30 / 40 / 50、GTX 16xx（1650、1660）、Quadro RTX、ノート PC 向け RTX"
+  "ja": "Turing 以降 — GeForce RTX 20 / 30 / 40 / 50、GTX 16xx（1650、1660）、Quadro RTX、ノート PC 向け RTX",
+  "zh_TW": "Turing 及更新 — GeForce RTX 20 / 30 / 40 / 50、GTX 16xx（1650、1660）、Quadro RTX、筆記本 RTX",
+  "ko": "Turing 이상 — GeForce RTX 20 / 30 / 40 / 50, GTX 16xx (1650, 1660), Quadro RTX, 노트북 RTX"
  },
  "Maxwell, Pascal, Volta — GTX 750 / 750 Ti, GTX 9xx, GTX 10xx (1050, 1060, 1070, 1080), Titan X / Xp / V, ноутбучные 9xxM / 10xx. Работает и на RTX, но без новых возможностей": {
   "en": "Maxwell, Pascal, Volta — GTX 750 / 750 Ti, GTX 9xx, GTX 10xx (1050, 1060, 1070, 1080), Titan X / Xp / V, laptop 9xxM / 10xx. Also works on RTX, but without new features",
@@ -74,7 +86,9 @@
   "pl": "Maxwell, Pascal, Volta — GTX 750 / 750 Ti, GTX 9xx, GTX 10xx (1050, 1060, 1070, 1080), Titan X / Xp / V, laptopowe 9xxM / 10xx. Działa też na RTX, ale bez nowych funkcji",
   "uk": "Maxwell, Pascal, Volta — GTX 750 / 750 Ti, GTX 9xx, GTX 10xx (1050, 1060, 1070, 1080), Titan X / Xp / V, ноутбучні 9xxM / 10xx. Працює і на RTX, але без нових можливостей",
   "zh": "Maxwell、Pascal、Volta — GTX 750 / 750 Ti、GTX 9xx、GTX 10xx（1050、1060、1070、1080）、Titan X / Xp / V、笔记本 9xxM / 10xx。也可用于 RTX，但没有新功能",
-  "ja": "Maxwell・Pascal・Volta — GTX 750 / 750 Ti、GTX 9xx、GTX 10xx（1050、1060、1070、1080）、Titan X / Xp / V、ノート PC 9xxM / 10xx。RTX でも動作しますが新機能は使えません"
+  "ja": "Maxwell・Pascal・Volta — GTX 750 / 750 Ti、GTX 9xx、GTX 10xx（1050、1060、1070、1080）、Titan X / Xp / V、ノート PC 9xxM / 10xx。RTX でも動作しますが新機能は使えません",
+  "zh_TW": "Maxwell、Pascal、Volta — GTX 750 / 750 Ti、GTX 9xx、GTX 10xx（1050、1060、1070、1080）、Titan X / Xp / V、筆記本 9xxM / 10xx。也可用於 RTX，但沒有新功能",
+  "ko": "Maxwell, Pascal, Volta — GTX 750 / 750 Ti, GTX 9xx, GTX 10xx (1050, 1060, 1070, 1080), Titan X / Xp / V, 노트북 9xxM / 10xx. RTX에서도 작동하지만 새 기능은 없음"
  },
  "Kepler — GTX 650 / 660 / 670 / 680 / 760 / 770 / 780, Titan, GT 6xx / 7xx, ноутбучные 6xxM / 7xxM": {
   "en": "Kepler — GTX 650 / 660 / 670 / 680 / 760 / 770 / 780, Titan, GT 6xx / 7xx, laptop 6xxM / 7xxM",
@@ -85,7 +99,9 @@
   "pl": "Kepler — GTX 650 / 660 / 670 / 680 / 760 / 770 / 780, Titan, GT 6xx / 7xx, laptopowe 6xxM / 7xxM",
   "uk": "Kepler — GTX 650 / 660 / 670 / 680 / 760 / 770 / 780, Titan, GT 6xx / 7xx, ноутбучні 6xxM / 7xxM",
   "zh": "Kepler — GTX 650 / 660 / 670 / 680 / 760 / 770 / 780、Titan、GT 6xx / 7xx、笔记本 6xxM / 7xxM",
-  "ja": "Kepler — GTX 650 / 660 / 670 / 680 / 760 / 770 / 780、Titan、GT 6xx / 7xx、ノート PC 6xxM / 7xxM"
+  "ja": "Kepler — GTX 650 / 660 / 670 / 680 / 760 / 770 / 780、Titan、GT 6xx / 7xx、ノート PC 6xxM / 7xxM",
+  "zh_TW": "Kepler — GTX 650 / 660 / 670 / 680 / 760 / 770 / 780、Titan、GT 6xx / 7xx、筆記本 6xxM / 7xxM",
+  "ko": "Kepler — GTX 650 / 660 / 670 / 680 / 760 / 770 / 780, Titan, GT 6xx / 7xx, 노트북 6xxM / 7xxM"
  },
  "Fermi — GTX 460 / 470 / 480 / 550 Ti / 560 / 570 / 580, GT 4xx / 5xx, ноутбучные 4xxM / 5xxM": {
   "en": "Fermi — GTX 460 / 470 / 480 / 550 Ti / 560 / 570 / 580, GT 4xx / 5xx, laptop 4xxM / 5xxM",
@@ -96,7 +112,9 @@
   "pl": "Fermi — GTX 460 / 470 / 480 / 550 Ti / 560 / 570 / 580, GT 4xx / 5xx, laptopowe 4xxM / 5xxM",
   "uk": "Fermi — GTX 460 / 470 / 480 / 550 Ti / 560 / 570 / 580, GT 4xx / 5xx, ноутбучні 4xxM / 5xxM",
   "zh": "Fermi — GTX 460 / 470 / 480 / 550 Ti / 560 / 570 / 580、GT 4xx / 5xx、笔记本 4xxM / 5xxM",
-  "ja": "Fermi — GTX 460 / 470 / 480 / 550 Ti / 560 / 570 / 580、GT 4xx / 5xx、ノート PC 4xxM / 5xxM"
+  "ja": "Fermi — GTX 460 / 470 / 480 / 550 Ti / 560 / 570 / 580、GT 4xx / 5xx、ノート PC 4xxM / 5xxM",
+  "zh_TW": "Fermi — GTX 460 / 470 / 480 / 550 Ti / 560 / 570 / 580、GT 4xx / 5xx、筆記本 4xxM / 5xxM",
+  "ko": "Fermi — GTX 460 / 470 / 480 / 550 Ti / 560 / 570 / 580, GT 4xx / 5xx, 노트북 4xxM / 5xxM"
  },
  "Любая карта как запасной вариант; для GeForce 8xxx — GT 3xx (Tesla) и старее — единственный": {
   "en": "Any card as a fallback; for GeForce 8xxx — GT 3xx (Tesla) and older it is the only option",
@@ -107,7 +125,9 @@
   "pl": "Dowolna karta jako zapas; dla GeForce 8xxx — GT 3xx (Tesla) i starszych jedyna opcja",
   "uk": "Будь-яка карта як запасний варіант; для GeForce 8xxx — GT 3xx (Tesla) і старіших — єдиний",
   "zh": "任何显卡的备用方案；对 GeForce 8xxx — GT 3xx（Tesla）及更老显卡是唯一选择",
-  "ja": "どのカードでも予備として使用可。GeForce 8xxx — GT 3xx（Tesla）以前では唯一の選択肢"
+  "ja": "どのカードでも予備として使用可。GeForce 8xxx — GT 3xx（Tesla）以前では唯一の選択肢",
+  "zh_TW": "任何顯示卡的備用方案；對 GeForce 8xxx — GT 3xx（Tesla）及更老顯示卡是唯一選擇",
+  "ko": "어떤 카드든 대체 수단으로 사용. GeForce 8xxx — GT 3xx (Tesla) 이하에서는 유일한 선택지"
  },
  "Другой": {
   "en": "Other",
@@ -118,7 +138,9 @@
   "pl": "Inna",
   "uk": "Інша",
   "zh": "其他",
-  "ja": "その他"
+  "ja": "その他",
+  "zh_TW": "其他",
+  "ko": "기타"
  },
  "Установить рекомендуемый драйвер": {
   "en": "Install recommended driver",
@@ -129,7 +151,9 @@
   "pl": "Zainstaluj zalecany sterownik",
   "uk": "Встановити рекомендований драйвер",
   "zh": "安装推荐驱动",
-  "ja": "推奨ドライバーをインストール"
+  "ja": "推奨ドライバーをインストール",
+  "zh_TW": "安裝推薦驅動",
+  "ko": "권장 드라이버 설치"
  },
  "Как применить: Steam → игра → Свойства → Параметры запуска → вставить строку.\nДля Proton выбирайте Proton 9+, Proton-GE или Proton Experimental.": {
   "en": "How to apply: Steam → game → Properties → Launch options → paste the line.\nFor Proton choose Proton 9+, Proton-GE or Proton Experimental.",
@@ -140,7 +164,9 @@
   "pl": "Jak zastosować: Steam → gra → Właściwości → Opcje uruchamiania → wklej wiersz.\nDla Proton wybierz Proton 9+, Proton-GE lub Proton Experimental.",
   "uk": "Як застосувати: Steam → гра → Властивості → Параметри запуску → вставити рядок.\nДля Proton обирайте Proton 9+, Proton-GE або Proton Experimental.",
   "zh": "使用方法：Steam → 游戏 → 属性 → 启动选项 → 粘贴此行。\nProton 请选择 Proton 9+、Proton-GE 或 Proton Experimental。",
-  "ja": "適用方法：Steam → ゲーム → プロパティ → 起動オプション → 行を貼り付け。\nProton は Proton 9+、Proton-GE または Proton Experimental を選択してください。"
+  "ja": "適用方法：Steam → ゲーム → プロパティ → 起動オプション → 行を貼り付け。\nProton は Proton 9+、Proton-GE または Proton Experimental を選択してください。",
+  "zh_TW": "使用方法：Steam → 遊戲 → 屬性 → 啟動選項 → 貼上此行。\nProton 請選擇 Proton 9+、Proton-GE 或 Proton Experimental。",
+  "ko": "적용 방법: Steam → 게임 → 속성 → 실행 옵션 → 줄을 붙여 넣기.\nProton은 Proton 9+, Proton-GE 또는 Proton Experimental을 선택하세요."
  },
  "DX12 на Pascal идёт через VKD3D-Proton и работает только на драйвере 580.xx (ветки 590+ и nvidia-open эту архитектуру не поддерживают). Нужны Proton 9+ / Proton-GE.": {
   "en": "DX12 on Pascal goes through VKD3D-Proton and works only on driver 580.xx (590+ branches and nvidia-open do not support this architecture). Proton 9+ / Proton-GE are required.",
@@ -151,7 +177,9 @@
   "pl": "DX12 na Pascal działa przez VKD3D-Proton i tylko na sterowniku 580.xx (gałęzie 590+ i nvidia-open nie wspierają tej architektury). Wymagany Proton 9+ / Proton-GE.",
   "uk": "DX12 на Pascal працює через VKD3D-Proton і лише на драйвері 580.xx (гілки 590+ і nvidia-open цю архітектуру не підтримують). Потрібні Proton 9+ / Proton-GE.",
   "zh": "Pascal 上的 DX12 通过 VKD3D-Proton 实现，且仅在 580.xx 驱动上可用（590+ 分支和 nvidia-open 不支持此架构）。需要 Proton 9+ / Proton-GE。",
-  "ja": "Pascal の DX12 は VKD3D-Proton 経由で、ドライバー 580.xx でのみ動作します（590+ と nvidia-open はこのアーキテクチャ非対応）。Proton 9+ / Proton-GE が必要です。"
+  "ja": "Pascal の DX12 は VKD3D-Proton 経由で、ドライバー 580.xx でのみ動作します（590+ と nvidia-open はこのアーキテクチャ非対応）。Proton 9+ / Proton-GE が必要です。",
+  "zh_TW": "Pascal 上的 DX12 通過 VKD3D-Proton 實現，且僅在 580.xx 驅動上可用（590+ 分支和 nvidia-open 不支援此架構）。需要 Proton 9+ / Proton-GE。",
+  "ko": "Pascal에서 DX12는 VKD3D-Proton을 거치며 드라이버 580.xx에서만 작동합니다(590+ 브랜치와 nvidia-open은 이 아키텍처를 지원하지 않음). Proton 9+ / Proton-GE가 필요합니다."
  },
  "У Maxwell 1-го поколения (GTX 750 / 750 Ti, GM107/GM108) уровень DX12 урезан — часть игр не запустится.": {
   "en": "First-generation Maxwell (GTX 750 / 750 Ti, GM107/GM108) has a reduced DX12 level — some games will not start.",
@@ -162,7 +190,9 @@
   "pl": "Maxwell 1. generacji (GTX 750 / 750 Ti, GM107/GM108) ma okrojony poziom DX12 — część gier nie uruchomi się.",
   "uk": "У Maxwell 1-го покоління (GTX 750 / 750 Ti, GM107/GM108) рівень DX12 урізаний — частина ігор не запуститься.",
   "zh": "第一代 Maxwell（GTX 750 / 750 Ti，GM107/GM108）的 DX12 等级受限 — 部分游戏无法启动。",
-  "ja": "第 1 世代 Maxwell（GTX 750 / 750 Ti、GM107/GM108）は DX12 レベルが制限されており、一部のゲームは起動しません。"
+  "ja": "第 1 世代 Maxwell（GTX 750 / 750 Ti、GM107/GM108）は DX12 レベルが制限されており、一部のゲームは起動しません。",
+  "zh_TW": "第一代 Maxwell（GTX 750 / 750 Ti，GM107/GM108）的 DX12 等級受限 — 部分遊戲無法啟動。",
+  "ko": "1세대 Maxwell(GTX 750 / 750 Ti, GM107/GM108)은 DX12 수준이 낮아 일부 게임이 시작되지 않습니다."
  },
  "Драйвер 470 даёт только Vulkan 1.2: DX12 невозможен, DX9–11 — лишь со старым DXVK (≤ 1.10.3).": {
   "en": "Driver 470 provides only Vulkan 1.2: DX12 is impossible, DX9–11 only with old DXVK (≤ 1.10.3).",
@@ -173,7 +203,9 @@
   "pl": "Sterownik 470 daje tylko Vulkan 1.2: DX12 niemożliwy, DX9–11 tylko ze starym DXVK (≤ 1.10.3).",
   "uk": "Драйвер 470 дає лише Vulkan 1.2: DX12 неможливий, DX9–11 — лише зі старим DXVK (≤ 1.10.3).",
   "zh": "470 驱动仅提供 Vulkan 1.2：无法使用 DX12，DX9–11 只能用旧版 DXVK（≤ 1.10.3）。",
-  "ja": "ドライバー 470 は Vulkan 1.2 のみ：DX12 は不可、DX9–11 は旧 DXVK（≤ 1.10.3）のみ。"
+  "ja": "ドライバー 470 は Vulkan 1.2 のみ：DX12 は不可、DX9–11 は旧 DXVK（≤ 1.10.3）のみ。",
+  "zh_TW": "470 驅動僅提供 Vulkan 1.2：無法使用 DX12，DX9–11 只能用舊版 DXVK（≤ 1.10.3）。",
+  "ko": "드라이버 470은 Vulkan 1.2만 제공합니다: DX12는 불가능하고, DX9–11은 구형 DXVK(≤ 1.10.3)에서만 됩니다."
  },
  "Fermi: только OpenGL 4.5, Vulkan нет — DXVK/Proton не работают.": {
   "en": "Fermi: OpenGL 4.5 only, no Vulkan — DXVK/Proton do not work.",
@@ -184,7 +216,9 @@
   "pl": "Fermi: tylko OpenGL 4.5, brak Vulkan — DXVK/Proton nie działają.",
   "uk": "Fermi: лише OpenGL 4.5, Vulkan немає — DXVK/Proton не працюють.",
   "zh": "Fermi：仅 OpenGL 4.5，无 Vulkan — DXVK/Proton 无法工作。",
-  "ja": "Fermi：OpenGL 4.5 のみ、Vulkan なし — DXVK/Proton は動作しません。"
+  "ja": "Fermi：OpenGL 4.5 のみ、Vulkan なし — DXVK/Proton は動作しません。",
+  "zh_TW": "Fermi：僅 OpenGL 4.5，無 Vulkan — DXVK/Proton 無法工作。",
+  "ko": "Fermi: OpenGL 4.5만 지원, Vulkan 없음 — DXVK/Proton이 작동하지 않습니다."
  },
  "Для этих карт в Arch нет проприетарных драйверов, используется nouveau.": {
   "en": "Arch has no proprietary drivers for these cards; nouveau is used.",
@@ -195,7 +229,9 @@
   "pl": "Arch nie ma sterowników własnościowych dla tych kart, używany jest nouveau.",
   "uk": "Для цих карт в Arch немає пропрієтарних драйверів, використовується nouveau.",
   "zh": "Arch 没有这些显卡的专有驱动，使用 nouveau。",
-  "ja": "Arch にはこれらのカード向けのプロプライエタリドライバーがなく、nouveau を使用します。"
+  "ja": "Arch にはこれらのカード向けのプロプライエタリドライバーがなく、nouveau を使用します。",
+  "zh_TW": "Arch 沒有這些顯示卡的專有驅動，使用 nouveau。",
+  "ko": "Arch에는 이 카드용 독점 드라이버가 없어 nouveau를 사용합니다."
  },
  "нет ни в репозиториях, ни в офлайн-кэше": {
   "en": "neither in the repositories nor in the offline cache",
@@ -206,7 +242,9 @@
   "pl": "ani w repozytoriach, ani w pamięci offline",
   "uk": "немає ні в репозиторіях, ні в офлайн-кеші",
   "zh": "仓库和离线缓存中都没有",
-  "ja": "リポジトリにもオフラインキャッシュにもありません"
+  "ja": "リポジトリにもオフラインキャッシュにもありません",
+  "zh_TW": "倉庫和離線快取中都沒有",
+  "ko": "저장소에도 오프라인 캐시에도 없음"
  },
  "echo; echo 'Готово. Перезагрузите систему, чтобы загрузился новый драйвер.'": {
   "en": "echo; echo 'Done. Reboot the system to load the new driver.'",
@@ -217,7 +255,9 @@
   "pl": "echo; echo 'Gotowe. Uruchom ponownie system, aby załadować nowy sterownik.'",
   "uk": "echo; echo 'Готово. Перезавантажте систему, щоб завантажився новий драйвер.'",
   "zh": "echo; echo '完成。请重启系统以加载新驱动。'",
-  "ja": "echo; echo '完了しました。新しいドライバーを読み込むにはシステムを再起動してください。'"
+  "ja": "echo; echo '完了しました。新しいドライバーを読み込むにはシステムを再起動してください。'",
+  "zh_TW": "echo; echo '完成。請重啟系統以載入新驅動。'",
+  "ko": "echo; echo '완료. 새 드라이버를 불러오려면 시스템을 재부팅하세요.'"
  },
  "nouveau (открытый драйвер)": {
   "en": "nouveau (open driver)",
@@ -228,7 +268,9 @@
   "pl": "nouveau (otwarty sterownik)",
   "uk": "nouveau (відкритий драйвер)",
   "zh": "nouveau（开源驱动）",
-  "ja": "nouveau（オープンドライバー）"
+  "ja": "nouveau（オープンドライバー）",
+  "zh_TW": "nouveau（開源驅動）",
+  "ko": "nouveau (오픈 드라이버)"
  },
  "Драйвер ядра: nvidia": {
   "en": "Kernel driver: nvidia",
@@ -239,7 +281,9 @@
   "pl": "Sterownik jądra: nvidia",
   "uk": "Драйвер ядра: nvidia",
   "zh": "内核驱动：nvidia",
-  "ja": "カーネルドライバー：nvidia"
+  "ja": "カーネルドライバー：nvidia",
+  "zh_TW": "核心驅動：nvidia",
+  "ko": "커널 드라이버: nvidia"
  },
  "Карта работает на драйвере NVIDIA{}.": {
   "en": "The card runs on the NVIDIA driver{}.",
@@ -250,7 +294,9 @@
   "pl": "Karta działa na sterowniku NVIDIA{}.",
   "uk": "Карта працює на драйвері NVIDIA{}.",
   "zh": "显卡正在使用 NVIDIA 驱动{}。",
-  "ja": "カードは NVIDIA ドライバー{}で動作しています。"
+  "ja": "カードは NVIDIA ドライバー{}で動作しています。",
+  "zh_TW": "顯示卡正在使用 NVIDIA 驅動{}。",
+  "ko": "카드가 NVIDIA 드라이버{}(으)로 작동합니다."
  },
  "Чтобы DLSS заработал в Proton": {
   "en": "To make DLSS work in Proton",
@@ -261,7 +307,9 @@
   "pl": "Aby DLSS działał w Proton",
   "uk": "Щоб DLSS запрацював у Proton",
   "zh": "让 DLSS 在 Proton 中工作",
-  "ja": "Proton で DLSS を動かすには"
+  "ja": "Proton で DLSS を動かすには",
+  "zh_TW": "讓 DLSS 在 Proton 中工作",
+  "ko": "Proton에서 DLSS가 작동하게 하려면"
  },
  "Нужны: игра запущена именно на NVIDIA (а не на встроенной графике), Proton 9+ / Proton-GE / Experimental и переменные PROTON_ENABLE_NVAPI=1 DXVK_ENABLE_NVAPI=1 — готовая строка есть на вкладке «Игры».": {
   "en": "Required: the game actually runs on NVIDIA (not on integrated graphics), Proton 9+ / Proton-GE / Experimental and the variables PROTON_ENABLE_NVAPI=1 DXVK_ENABLE_NVAPI=1 — a ready line is on the “Games” tab.",
@@ -272,7 +320,9 @@
   "pl": "Wymagane: gra faktycznie działa na NVIDIA (nie na zintegrowanej grafice), Proton 9+ / Proton-GE / Experimental oraz zmienne PROTON_ENABLE_NVAPI=1 DXVK_ENABLE_NVAPI=1 — gotowy wiersz jest na karcie „Gry”.",
   "uk": "Потрібно: гра запущена саме на NVIDIA (а не на вбудованій графіці), Proton 9+ / Proton-GE / Experimental і змінні PROTON_ENABLE_NVAPI=1 DXVK_ENABLE_NVAPI=1 — готовий рядок є на вкладці «Ігри».",
   "zh": "需要：游戏确实运行在 NVIDIA 上（而非集成显卡），使用 Proton 9+ / Proton-GE / Experimental，并设置 PROTON_ENABLE_NVAPI=1 DXVK_ENABLE_NVAPI=1 — “游戏”页有现成的启动行。",
-  "ja": "必要条件：ゲームが内蔵グラフィックではなく NVIDIA で動作していること、Proton 9+ / Proton-GE / Experimental、変数 PROTON_ENABLE_NVAPI=1 DXVK_ENABLE_NVAPI=1 — 「ゲーム」タブに既成の行があります。"
+  "ja": "必要条件：ゲームが内蔵グラフィックではなく NVIDIA で動作していること、Proton 9+ / Proton-GE / Experimental、変数 PROTON_ENABLE_NVAPI=1 DXVK_ENABLE_NVAPI=1 — 「ゲーム」タブに既成の行があります。",
+  "zh_TW": "需要：遊戲確實執行在 NVIDIA 上（而非整合顯示卡），使用 Proton 9+ / Proton-GE / Experimental，並設定 PROTON_ENABLE_NVAPI=1 DXVK_ENABLE_NVAPI=1 — “遊戲”頁有現成的啟動行。",
+  "ko": "필요 조건: 게임이 실제로 NVIDIA에서 실행되어야 하며(내장 그래픽 아님), Proton 9+ / Proton-GE / Experimental과 변수 PROTON_ENABLE_NVAPI=1 DXVK_ENABLE_NVAPI=1이 필요합니다 — 준비된 줄은 “게임” 탭에 있습니다."
  },
  "DLSS и RT на этой карте недоступны": {
   "en": "DLSS and RT are not available on this card",
@@ -283,7 +333,9 @@
   "pl": "DLSS i RT są niedostępne na tej karcie",
   "uk": "DLSS і RT на цій карті недоступні",
   "zh": "此显卡不支持 DLSS 和光追",
-  "ja": "このカードでは DLSS と RT は使用できません"
+  "ja": "このカードでは DLSS と RT は使用できません",
+  "zh_TW": "此顯示卡不支援 DLSS 和光追",
+  "ko": "이 카드에서는 DLSS와 RT를 사용할 수 없습니다"
  },
  "DLSS и аппаратная трассировка требуют RTX (тензорные/RT-ядра). У GTX 10xx и 16xx их нет — используйте FSR или XeSS в настройках игры, они работают на любых картах.": {
   "en": "DLSS and hardware ray tracing require RTX (tensor/RT cores). GTX 10xx and 16xx do not have them — use FSR or XeSS in game settings, they work on any card.",
@@ -294,7 +346,9 @@
   "pl": "DLSS i sprzętowy ray tracing wymagają RTX (rdzenie Tensor/RT). GTX 10xx i 16xx ich nie mają — użyj FSR lub XeSS w ustawieniach gry, działają na każdej karcie.",
   "uk": "DLSS і апаратне трасування потребують RTX (тензорні/RT-ядра). У GTX 10xx і 16xx їх немає — використовуйте FSR або XeSS у налаштуваннях гри, вони працюють на будь-яких картах.",
   "zh": "DLSS 和硬件光追需要 RTX（Tensor/RT 核心）。GTX 10xx 和 16xx 没有 — 请在游戏设置中使用 FSR 或 XeSS，它们适用于任何显卡。",
-  "ja": "DLSS とハードウェアレイトレーシングには RTX（Tensor/RT コア）が必要です。GTX 10xx と 16xx にはありません — ゲーム設定で FSR か XeSS を使ってください。どのカードでも動作します。"
+  "ja": "DLSS とハードウェアレイトレーシングには RTX（Tensor/RT コア）が必要です。GTX 10xx と 16xx にはありません — ゲーム設定で FSR か XeSS を使ってください。どのカードでも動作します。",
+  "zh_TW": "DLSS 和硬體光追需要 RTX（Tensor/RT 核心）。GTX 10xx 和 16xx 沒有 — 請在遊戲設定中使用 FSR 或 XeSS，它們適用於任何顯示卡。",
+  "ko": "DLSS와 하드웨어 레이 트레이싱에는 RTX(텐서/RT 코어)가 필요합니다. GTX 10xx와 16xx에는 없으므로 게임 설정에서 FSR이나 XeSS를 사용하세요. 어떤 카드에서든 작동합니다."
  },
  "Гибридная графика (встроенная + NVIDIA)": {
   "en": "Hybrid graphics (integrated + NVIDIA)",
@@ -305,7 +359,9 @@
   "pl": "Grafika hybrydowa (zintegrowana + NVIDIA)",
   "uk": "Гібридна графіка (вбудована + NVIDIA)",
   "zh": "混合显卡（集成 + NVIDIA）",
-  "ja": "ハイブリッドグラフィックス（内蔵 + NVIDIA）"
+  "ja": "ハイブリッドグラフィックス（内蔵 + NVIDIA）",
+  "zh_TW": "混合顯示卡（整合 + NVIDIA）",
+  "ko": "하이브리드 그래픽 (내장 + NVIDIA)"
  },
  "Игры нужно запускать на NVIDIA: prime-run %command%. Если игра попала на встроенную графику, DX12 «пропадает», а DLSS недоступен — это самая частая причина проблем на ноутбуках с RTX.": {
   "en": "Games must run on NVIDIA: prime-run %command%. If a game lands on integrated graphics, DX12 “disappears” and DLSS is unavailable — the most common cause of problems on RTX laptops.",
@@ -316,7 +372,9 @@
   "pl": "Gry trzeba uruchamiać na NVIDIA: prime-run %command%. Gdy gra trafi na zintegrowaną grafikę, DX12 „znika”, a DLSS jest niedostępny — to najczęstsza przyczyna problemów na laptopach z RTX.",
   "uk": "Ігри треба запускати на NVIDIA: prime-run %command%. Якщо гра потрапила на вбудовану графіку, DX12 «зникає», а DLSS недоступний — це найчастіша причина проблем на ноутбуках з RTX.",
   "zh": "游戏必须在 NVIDIA 上运行：prime-run %command%。如果游戏跑在集成显卡上，DX12 会“消失”，DLSS 也不可用 — 这是 RTX 笔记本最常见的问题原因。",
-  "ja": "ゲームは NVIDIA で実行する必要があります：prime-run %command%。内蔵グラフィックで動くと DX12 が「消え」、DLSS も使えません — RTX ノート PC で最も多い原因です。"
+  "ja": "ゲームは NVIDIA で実行する必要があります：prime-run %command%。内蔵グラフィックで動くと DX12 が「消え」、DLSS も使えません — RTX ノート PC で最も多い原因です。",
+  "zh_TW": "遊戲必須在 NVIDIA 上執行：prime-run %command%。如果遊戲跑在整合顯示卡上，DX12 會“消失”，DLSS 也不可用 — 這是 RTX 筆記本最常見的問題原因。",
+  "ko": "게임은 NVIDIA에서 실행되어야 합니다: prime-run %command%. 게임이 내장 그래픽으로 실행되면 DX12가 “사라지고” DLSS를 사용할 수 없습니다 — RTX 노트북에서 가장 흔한 문제 원인입니다."
  },
  "Модель": {
   "en": "Model",
@@ -327,7 +385,9 @@
   "pl": "Model",
   "uk": "Модель",
   "zh": "型号",
-  "ja": "モデル"
+  "ja": "モデル",
+  "zh_TW": "型號",
+  "ko": "모델"
  },
  "Производитель": {
   "en": "Vendor",
@@ -338,7 +398,9 @@
   "pl": "Producent",
   "uk": "Виробник",
   "zh": "厂商",
-  "ja": "メーカー"
+  "ja": "メーカー",
+  "zh_TW": "廠商",
+  "ko": "제조사"
  },
  "Роль": {
   "en": "Role",
@@ -349,7 +411,9 @@
   "pl": "Rola",
   "uk": "Роль",
   "zh": "角色",
-  "ja": "役割"
+  "ja": "役割",
+  "zh_TW": "角色",
+  "ko": "역할"
  },
  "Драйвер сейчас": {
   "en": "Current driver",
@@ -360,7 +424,9 @@
   "pl": "Bieżący sterownik",
   "uk": "Драйвер зараз",
   "zh": "当前驱动",
-  "ja": "現在のドライバー"
+  "ja": "現在のドライバー",
+  "zh_TW": "當前驅動",
+  "ko": "현재 드라이버"
  },
  "Сессия": {
   "en": "Session",
@@ -371,7 +437,9 @@
   "pl": "Sesja",
   "uk": "Сесія",
   "zh": "会话",
-  "ja": "セッション"
+  "ja": "セッション",
+  "zh_TW": "會話",
+  "ko": "세션"
  },
  "RTX: включайте NVAPI для DLSS; DXR (трассировка) — отдельной галочкой. На ноутбуках с гибридной графикой обязательно запускайте игру через PRIME (галочка выше).": {
   "en": "RTX: enable NVAPI for DLSS; DXR (ray tracing) is a separate checkbox. On laptops with hybrid graphics always launch the game via PRIME (checkbox above).",
@@ -382,7 +450,9 @@
   "pl": "RTX: włącz NVAPI dla DLSS; DXR (ray tracing) to osobne pole. Na laptopach z grafiką hybrydową zawsze uruchamiaj grę przez PRIME (pole wyżej).",
   "uk": "RTX: вмикайте NVAPI для DLSS; DXR (трасування) — окремою галочкою. На ноутбуках з гібридною графікою обов’язково запускайте гру через PRIME (галочка вище).",
   "zh": "RTX：为 DLSS 启用 NVAPI；DXR（光追）是单独的选项。混合显卡笔记本务必通过 PRIME 启动游戏（上方选项）。",
-  "ja": "RTX：DLSS には NVAPI を有効に。DXR（レイトレーシング）は別のチェック。ハイブリッドグラフィックスのノート PC では必ず PRIME 経由で起動してください（上のチェック）。"
+  "ja": "RTX：DLSS には NVAPI を有効に。DXR（レイトレーシング）は別のチェック。ハイブリッドグラフィックスのノート PC では必ず PRIME 経由で起動してください（上のチェック）。",
+  "zh_TW": "RTX：為 DLSS 啟用 NVAPI；DXR（光追）是單獨的選項。混合顯示卡筆記本務必通過 PRIME 啟動遊戲（上方選項）。",
+  "ko": "RTX: DLSS를 위해 NVAPI를 켜세요. DXR(레이 트레이싱)은 별도 체크박스입니다. 하이브리드 그래픽 노트북에서는 항상 PRIME으로 게임을 실행하세요 (위의 체크박스)."
  },
  "встроен в ядро": {
   "en": "built into the kernel",
@@ -393,7 +463,9 @@
   "pl": "wbudowany w jądro",
   "uk": "вбудований у ядро",
   "zh": "内置于内核",
-  "ja": "カーネルに内蔵"
+  "ja": "カーネルに内蔵",
+  "zh_TW": "內置於核心",
+  "ko": "커널에 내장됨"
  },
  "Выполняется… Система попросит пароль администратора.": {
   "en": "Running… The system will ask for the administrator password.",
@@ -404,7 +476,9 @@
   "pl": "Wykonywanie… System poprosi o hasło administratora.",
   "uk": "Виконується… Система попросить пароль адміністратора.",
   "zh": "正在执行… 系统将要求输入管理员密码。",
-  "ja": "実行中… システムが管理者パスワードを求めます。"
+  "ja": "実行中… システムが管理者パスワードを求めます。",
+  "zh_TW": "正在執行… 系統將要求輸入管理員密碼。",
+  "ko": "실행 중… 시스템이 관리자 암호를 물어봅니다."
  },
  "Отмена": {
   "en": "Cancel",
@@ -415,7 +489,9 @@
   "pl": "Anuluj",
   "uk": "Скасувати",
   "zh": "取消",
-  "ja": "キャンセル"
+  "ja": "キャンセル",
+  "zh_TW": "取消",
+  "ko": "취소"
  },
  "Закрыть": {
   "en": "Close",
@@ -426,7 +502,9 @@
   "pl": "Zamknij",
   "uk": "Закрити",
   "zh": "关闭",
-  "ja": "閉じる"
+  "ja": "閉じる",
+  "zh_TW": "關閉",
+  "ko": "닫기"
  },
  "Обзор": {
   "en": "Overview",
@@ -437,7 +515,9 @@
   "pl": "Przegląd",
   "uk": "Огляд",
   "zh": "概览",
-  "ja": "概要"
+  "ja": "概要",
+  "zh_TW": "概覽",
+  "ko": "개요"
  },
  "Диагностика ({})": {
   "en": "Diagnostics ({})",
@@ -448,7 +528,9 @@
   "pl": "Diagnostyka ({})",
   "uk": "Діагностика ({})",
   "zh": "诊断（{}）",
-  "ja": "診断（{}）"
+  "ja": "診断（{}）",
+  "zh_TW": "診斷（{}）",
+  "ko": "진단 ({})"
  },
  "Игры": {
   "en": "Games",
@@ -459,7 +541,9 @@
   "pl": "Gry",
   "uk": "Ігри",
   "zh": "游戏",
-  "ja": "ゲーム"
+  "ja": "ゲーム",
+  "zh_TW": "遊戲",
+  "ko": "게임"
  },
  "Видеокарта": {
   "en": "Graphics card",
@@ -470,7 +554,9 @@
   "pl": "Karta graficzna",
   "uk": "Відеокарта",
   "zh": "显卡",
-  "ja": "グラフィックカード"
+  "ja": "グラフィックカード",
+  "zh_TW": "顯示卡",
+  "ko": "그래픽 카드"
  },
  "Рекомендуемый драйвер": {
   "en": "Recommended driver",
@@ -481,7 +567,9 @@
   "pl": "Zalecany sterownik",
   "uk": "Рекомендований драйвер",
   "zh": "推荐驱动",
-  "ja": "推奨ドライバー"
+  "ja": "推奨ドライバー",
+  "zh_TW": "推薦驅動",
+  "ko": "권장 드라이버"
  },
  "Выбор драйвера": {
   "en": "Driver selection",
@@ -492,7 +580,9 @@
   "pl": "Wybór sterownika",
   "uk": "Вибір драйвера",
   "zh": "选择驱动",
-  "ja": "ドライバーの選択"
+  "ja": "ドライバーの選択",
+  "zh_TW": "選擇驅動",
+  "ko": "드라이버 선택"
  },
  "Выберите ветку драйвера для этой карты. Зелёная точка — рекомендуется, жёлтая — работает, но не оптимальна, красная — не подходит.": {
   "en": "Choose a driver branch for this card. Green dot — recommended, yellow — works but not optimal, red — not suitable.",
@@ -503,7 +593,9 @@
   "pl": "Wybierz gałąź sterownika dla tej karty. Zielona kropka — zalecana, żółta — działa, ale nie optymalnie, czerwona — nie pasuje.",
   "uk": "Оберіть гілку драйвера для цієї карти. Зелена точка — рекомендовано, жовта — працює, але не оптимально, червона — не підходить.",
   "zh": "为此显卡选择驱动分支。绿点 — 推荐，黄点 — 可用但非最佳，红点 — 不适用。",
-  "ja": "このカードのドライバーブランチを選択してください。緑 — 推奨、黄 — 動作するが最適ではない、赤 — 不適合。"
+  "ja": "このカードのドライバーブランチを選択してください。緑 — 推奨、黄 — 動作するが最適ではない、赤 — 不適合。",
+  "zh_TW": "為此顯示卡選擇驅動分支。綠點 — 推薦，黃點 — 可用但非最佳，紅點 — 不適用。",
+  "ko": "이 카드의 드라이버 브랜치를 선택하세요. 초록 점 — 권장, 노랑 — 작동하지만 최적은 아님, 빨강 — 적합하지 않음."
  },
  "рекомендуется для вашей карты": {
   "en": "recommended for your card",
@@ -514,7 +606,9 @@
   "pl": "zalecany dla Twojej karty",
   "uk": "рекомендовано для вашої карти",
   "zh": "推荐用于您的显卡",
-  "ja": "お使いのカードに推奨"
+  "ja": "お使いのカードに推奨",
+  "zh_TW": "推薦用於您的顯示卡",
+  "ko": "카드에 권장됨"
  },
  "совместим с вашей картой": {
   "en": "compatible with your card",
@@ -525,7 +619,9 @@
   "pl": "zgodny z Twoją kartą",
   "uk": "сумісний з вашою картою",
   "zh": "与您的显卡兼容",
-  "ja": "お使いのカードと互換"
+  "ja": "お使いのカードと互換",
+  "zh_TW": "與您的顯示卡相容",
+  "ko": "카드와 호환됨"
  },
  "не подходит для вашей карты": {
   "en": "not suitable for your card",
@@ -536,7 +632,9 @@
   "pl": "nie pasuje do Twojej karty",
   "uk": "не підходить для вашої карти",
   "zh": "不适用于您的显卡",
-  "ja": "お使いのカードには不適合"
+  "ja": "お使いのカードには不適合",
+  "zh_TW": "不適用於您的顯示卡",
+  "ko": "카드에 적합하지 않음"
  },
  "Установить выбранный драйвер": {
   "en": "Install selected driver",
@@ -547,7 +645,9 @@
   "pl": "Zainstaluj wybrany sterownik",
   "uk": "Встановити обраний драйвер",
   "zh": "安装所选驱动",
-  "ja": "選択したドライバーをインストール"
+  "ja": "選択したドライバーをインストール",
+  "zh_TW": "安裝所選驅動",
+  "ko": "선택한 드라이버 설치"
  },
  "Параметры установки": {
   "en": "Installation options",
@@ -558,7 +658,9 @@
   "pl": "Opcje instalacji",
   "uk": "Параметри встановлення",
   "zh": "安装选项",
-  "ja": "インストールオプション"
+  "ja": "インストールオプション",
+  "zh_TW": "安裝選項",
+  "ko": "설치 옵션"
  },
  "Действия": {
   "en": "Actions",
@@ -569,7 +671,9 @@
   "pl": "Działania",
   "uk": "Дії",
   "zh": "操作",
-  "ja": "操作"
+  "ja": "操作",
+  "zh_TW": "操作",
+  "ko": "작업"
  },
  "Установка идёт через pkexec (запросит пароль). После смены драйвера перезагрузите систему.": {
   "en": "Installation runs via pkexec (asks for a password). Reboot the system after changing the driver.",
@@ -580,7 +684,9 @@
   "pl": "Instalacja przez pkexec (poprosi o hasło). Po zmianie sterownika uruchom system ponownie.",
   "uk": "Встановлення йде через pkexec (запитає пароль). Після зміни драйвера перезавантажте систему.",
   "zh": "通过 pkexec 安装（会要求密码）。更换驱动后请重启系统。",
-  "ja": "インストールは pkexec 経由（パスワードを要求）。ドライバー変更後はシステムを再起動してください。"
+  "ja": "インストールは pkexec 経由（パスワードを要求）。ドライバー変更後はシステムを再起動してください。",
+  "zh_TW": "通過 pkexec 安裝（會要求密碼）。更換驅動後請重啟系統。",
+  "ko": "설치는 pkexec로 진행됩니다 (암호를 묻습니다). 드라이버를 바꾼 뒤 시스템을 재부팅하세요."
  },
  "Параметры запуска Steam": {
   "en": "Steam launch options",
@@ -591,7 +697,9 @@
   "pl": "Opcje uruchamiania Steam",
   "uk": "Параметри запуску Steam",
   "zh": "Steam 启动选项",
-  "ja": "Steam 起動オプション"
+  "ja": "Steam 起動オプション",
+  "zh_TW": "Steam 啟動選項",
+  "ko": "Steam 실행 옵션"
  },
  "Копировать": {
   "en": "Copy",
@@ -602,7 +710,9 @@
   "pl": "Kopiuj",
   "uk": "Копіювати",
   "zh": "复制",
-  "ja": "コピー"
+  "ja": "コピー",
+  "zh_TW": "複製",
+  "ko": "복사"
  },
  "Подсказки": {
   "en": "Tips",
@@ -613,7 +723,9 @@
   "pl": "Wskazówki",
   "uk": "Підказки",
   "zh": "提示",
-  "ja": "ヒント"
+  "ja": "ヒント",
+  "zh_TW": "提示",
+  "ko": "팁"
  },
  "Менеджер драйверов видеокарт": {
   "en": "Graphics driver manager",
@@ -624,7 +736,9 @@
   "pl": "Menedżer sterowników grafiki",
   "uk": "Менеджер драйверів відеокарт",
   "zh": "显卡驱动管理器",
-  "ja": "グラフィックドライバーマネージャー"
+  "ja": "グラフィックドライバーマネージャー",
+  "zh_TW": "顯示卡驅動管理器",
+  "ko": "그래픽 드라이버 관리자"
  },
  "Обновить": {
   "en": "Refresh",
@@ -635,7 +749,9 @@
   "pl": "Odśwież",
   "uk": "Оновити",
   "zh": "刷新",
-  "ja": "更新"
+  "ja": "更新",
+  "zh_TW": "重新整理",
+  "ko": "새로 고침"
  },
  "Тема": {
   "en": "Theme",
@@ -646,7 +762,9 @@
   "pl": "Motyw",
   "uk": "Тема",
   "zh": "主题",
-  "ja": "テーマ"
+  "ja": "テーマ",
+  "zh_TW": "主題",
+  "ko": "테마"
  },
  "Пакет драйвера установлен: {}": {
   "en": "Driver package installed: {}",
@@ -657,7 +775,9 @@
   "pl": "Pakiet sterownika zainstalowany: {}",
   "uk": "Пакет драйвера встановлено: {}",
   "zh": "驱动包已安装：{}",
-  "ja": "ドライバーパッケージをインストール済み：{}"
+  "ja": "ドライバーパッケージをインストール済み：{}",
+  "zh_TW": "驅動包已安裝：{}",
+  "ko": "드라이버 패키지 설치됨: {}"
  },
  "Ветка для {}: {}.": {
   "en": "Branch for {}: {}.",
@@ -668,7 +788,9 @@
   "pl": "Gałąź dla {}: {}.",
   "uk": "Гілка для {}: {}.",
   "zh": "{} 的分支：{}。",
-  "ja": "{} のブランチ：{}。"
+  "ja": "{} のブランチ：{}。",
+  "zh_TW": "{} 的分支：{}。",
+  "ko": "{}의 브랜치: {}."
  },
  "Не установлен рекомендуемый пакет {}": {
   "en": "Recommended package {} is not installed",
@@ -679,7 +801,9 @@
   "pl": "Zalecany pakiet {} nie jest zainstalowany",
   "uk": "Не встановлено рекомендований пакет {}",
   "zh": "未安装推荐包 {}",
-  "ja": "推奨パッケージ {} がインストールされていません"
+  "ja": "推奨パッケージ {} がインストールされていません",
+  "zh_TW": "未安裝推薦包 {}",
+  "ko": "권장 패키지 {}이(가) 설치되지 않았습니다"
  },
  "Для {} нужен {}. {}": {
   "en": "{} needs {}. {}",
@@ -690,7 +814,9 @@
   "pl": "{} wymaga {}. {}",
   "uk": "Для {} потрібен {}. {}",
   "zh": "{} 需要 {}。{}",
-  "ja": "{} には {} が必要です。{}"
+  "ja": "{} には {} が必要です。{}",
+  "zh_TW": "{} 需要 {}。{}",
+  "ko": "{}에는 {}이(가) 필요합니다. {}"
  },
  "Установлены пакеты другой ветки драйвера": {
   "en": "Packages of another driver branch are installed",
@@ -701,7 +827,9 @@
   "pl": "Zainstalowane są pakiety innej gałęzi sterownika",
   "uk": "Встановлено пакети іншої гілки драйвера",
   "zh": "已安装其他驱动分支的软件包",
-  "ja": "別のドライバーブランチのパッケージがインストールされています"
+  "ja": "別のドライバーブランチのパッケージがインストールされています",
+  "zh_TW": "已安裝其他驅動分支的軟體包",
+  "ko": "다른 드라이버 브랜치의 패키지가 설치되어 있습니다"
  },
  "DKMS-модуль собран для ядра {}": {
   "en": "DKMS module built for kernel {}",
@@ -712,7 +840,9 @@
   "pl": "Moduł DKMS zbudowany dla jądra {}",
   "uk": "DKMS-модуль зібрано для ядра {}",
   "zh": "已为内核 {} 构建 DKMS 模块",
-  "ja": "カーネル {} 用の DKMS モジュールはビルド済み"
+  "ja": "カーネル {} 用の DKMS モジュールはビルド済み",
+  "zh_TW": "已為核心 {} 構建 DKMS 模組",
+  "ko": "커널 {}용 DKMS 모듈이 빌드되었습니다"
  },
  "Модули nvidia готовы к загрузке.": {
   "en": "nvidia modules are ready to load.",
@@ -723,7 +853,9 @@
   "pl": "Moduły nvidia są gotowe do załadowania.",
   "uk": "Модулі nvidia готові до завантаження.",
   "zh": "nvidia 模块已可加载。",
-  "ja": "nvidia モジュールは読み込み可能です。"
+  "ja": "nvidia モジュールは読み込み可能です。",
+  "zh_TW": "nvidia 模組已可載入。",
+  "ko": "nvidia 모듈을 불러올 준비가 되었습니다."
  },
  "Версии совпадают: {}": {
   "en": "Versions match: {}",
@@ -734,7 +866,9 @@
   "pl": "Wersje zgodne: {}",
   "uk": "Версії збігаються: {}",
   "zh": "版本一致：{}",
-  "ja": "バージョン一致：{}"
+  "ja": "バージョン一致：{}",
+  "zh_TW": "版本一致：{}",
+  "ko": "버전 일치: {}"
  },
  "Модуль ядра и пользовательские библиотеки одной версии.": {
   "en": "Kernel module and user libraries are the same version.",
@@ -745,7 +879,9 @@
   "pl": "Moduł jądra i biblioteki mają tę samą wersję.",
   "uk": "Модуль ядра і бібліотеки однієї версії.",
   "zh": "内核模块与用户态库版本相同。",
-  "ja": "カーネルモジュールとユーザーライブラリは同じバージョンです。"
+  "ja": "カーネルモジュールとユーザーライブラリは同じバージョンです。",
+  "zh_TW": "核心模組與使用者態庫版本相同。",
+  "ko": "커널 모듈과 사용자 라이브러리의 버전이 같습니다."
  },
  "Модуль ядра {} ≠ библиотеки {}": {
   "en": "Kernel module {} ≠ libraries {}",
@@ -756,7 +892,9 @@
   "pl": "Moduł jądra {} ≠ biblioteki {}",
   "uk": "Модуль ядра {} ≠ бібліотеки {}",
   "zh": "内核模块 {} ≠ 库 {}",
-  "ja": "カーネルモジュール {} ≠ ライブラリ {}"
+  "ja": "カーネルモジュール {} ≠ ライブラリ {}",
+  "zh_TW": "核心模組 {} ≠ 庫 {}",
+  "ko": "커널 모듈 {} ≠ 라이브러리 {}"
  },
  "Драйвер обновили, но модуль ядра старый. Перезагрузите систему — иначе будет ошибка «Driver/library version mismatch», а Vulkan/DX12 не заработают.": {
   "en": "The driver was updated but the kernel module is old. Reboot — otherwise you will get “Driver/library version mismatch” and Vulkan/DX12 will not work.",
@@ -767,7 +905,9 @@
   "pl": "Sterownik zaktualizowano, ale moduł jądra jest stary. Uruchom ponownie — inaczej pojawi się „Driver/library version mismatch”, a Vulkan/DX12 nie zadziałają.",
   "uk": "Драйвер оновили, але модуль ядра старий. Перезавантажте систему — інакше буде помилка «Driver/library version mismatch», а Vulkan/DX12 не запрацюють.",
   "zh": "驱动已更新，但内核模块仍是旧的。请重启 — 否则会出现 “Driver/library version mismatch”，Vulkan/DX12 无法工作。",
-  "ja": "ドライバーは更新されましたがカーネルモジュールが古いままです。再起動してください — さもないと「Driver/library version mismatch」となり Vulkan/DX12 が動きません。"
+  "ja": "ドライバーは更新されましたがカーネルモジュールが古いままです。再起動してください — さもないと「Driver/library version mismatch」となり Vulkan/DX12 が動きません。",
+  "zh_TW": "驅動已更新，但核心模組仍是舊的。請重啟 — 否則會出現 “Driver/library version mismatch”，Vulkan/DX12 無法工作。",
+  "ko": "드라이버는 업데이트되었지만 커널 모듈은 예전 것입니다. 재부팅하세요 — 그러지 않으면 “Driver/library version mismatch”가 나고 Vulkan/DX12가 작동하지 않습니다."
  },
  "Wayland, PRIME и корректный вывод в играх включены.": {
   "en": "Wayland, PRIME and correct output in games are enabled.",
@@ -778,7 +918,9 @@
   "pl": "Wayland, PRIME i poprawne wyświetlanie w grach są włączone.",
   "uk": "Wayland, PRIME і коректний вивід в іграх увімкнено.",
   "zh": "Wayland、PRIME 和游戏正确输出已启用。",
-  "ja": "Wayland・PRIME・ゲームでの正しい出力が有効です。"
+  "ja": "Wayland・PRIME・ゲームでの正しい出力が有効です。",
+  "zh_TW": "Wayland、PRIME 和遊戲正確輸出已啟用。",
+  "ko": "Wayland, PRIME, 게임의 올바른 출력이 활성화되었습니다."
  },
  "nvidia_drm.modeset выключен": {
   "en": "nvidia_drm.modeset is off",
@@ -789,7 +931,9 @@
   "pl": "nvidia_drm.modeset jest wyłączony",
   "uk": "nvidia_drm.modeset вимкнено",
   "zh": "nvidia_drm.modeset 已关闭",
-  "ja": "nvidia_drm.modeset がオフです"
+  "ja": "nvidia_drm.modeset がオフです",
+  "zh_TW": "nvidia_drm.modeset 已關閉",
+  "ko": "nvidia_drm.modeset이 꺼져 있습니다"
  },
  "Для Wayland, гибридной графики и стабильного вывода нужен modeset=1 — pg-gpu-sync пропишет его.": {
   "en": "Wayland, hybrid graphics and stable output need modeset=1 — pg-gpu-sync will set it.",
@@ -800,7 +944,9 @@
   "pl": "Wayland, grafika hybrydowa i stabilny obraz wymagają modeset=1 — pg-gpu-sync to ustawi.",
   "uk": "Для Wayland, гібридної графіки та стабільного виводу потрібен modeset=1 — pg-gpu-sync пропише його.",
   "zh": "Wayland、混合显卡和稳定输出需要 modeset=1 — pg-gpu-sync 会设置它。",
-  "ja": "Wayland・ハイブリッドグラフィックス・安定した出力には modeset=1 が必要です — pg-gpu-sync が設定します。"
+  "ja": "Wayland・ハイブリッドグラフィックス・安定した出力には modeset=1 が必要です — pg-gpu-sync が設定します。",
+  "zh_TW": "Wayland、混合顯示卡和穩定輸出需要 modeset=1 — pg-gpu-sync 會設定它。",
+  "ko": "Wayland, 하이브리드 그래픽, 안정적인 출력에는 modeset=1이 필요합니다 — pg-gpu-sync가 설정합니다."
  },
  "Нет файла nvidia_icd.json": {
   "en": "No nvidia_icd.json file",
@@ -811,7 +957,9 @@
   "pl": "Brak pliku nvidia_icd.json",
   "uk": "Немає файлу nvidia_icd.json",
   "zh": "缺少 nvidia_icd.json 文件",
-  "ja": "nvidia_icd.json ファイルがありません"
+  "ja": "nvidia_icd.json ファイルがありません",
+  "zh_TW": "缺少 nvidia_icd.json 檔案",
+  "ko": "nvidia_icd.json 파일 없음"
  },
  "Vulkan-загрузчик не знает о драйвере NVIDIA — не работают ни DXVK (DX9–11), ни VKD3D-Proton (DX12).": {
   "en": "The Vulkan loader does not know about the NVIDIA driver — neither DXVK (DX9–11) nor VKD3D-Proton (DX12) work.",
@@ -822,7 +970,9 @@
   "pl": "Loader Vulkan nie zna sterownika NVIDIA — nie działa ani DXVK (DX9–11), ani VKD3D-Proton (DX12).",
   "uk": "Vulkan-завантажувач не знає про драйвер NVIDIA — не працюють ні DXVK (DX9–11), ні VKD3D-Proton (DX12).",
   "zh": "Vulkan 加载器不知道 NVIDIA 驱动 — DXVK（DX9–11）和 VKD3D-Proton（DX12）都无法工作。",
-  "ja": "Vulkan ローダーが NVIDIA ドライバーを認識していません — DXVK（DX9–11）も VKD3D-Proton（DX12）も動作しません。"
+  "ja": "Vulkan ローダーが NVIDIA ドライバーを認識していません — DXVK（DX9–11）も VKD3D-Proton（DX12）も動作しません。",
+  "zh_TW": "Vulkan 載入器不知道 NVIDIA 驅動 — DXVK（DX9–11）和 VKD3D-Proton（DX12）都無法工作。",
+  "ko": "Vulkan 로더가 NVIDIA 드라이버를 모릅니다 — DXVK(DX9–11)도 VKD3D-Proton(DX12)도 작동하지 않습니다."
  },
  "Не установлен Vulkan-загрузчик": {
   "en": "Vulkan loader is not installed",
@@ -833,7 +983,9 @@
   "pl": "Loader Vulkan nie jest zainstalowany",
   "uk": "Не встановлено Vulkan-завантажувач",
   "zh": "未安装 Vulkan 加载器",
-  "ja": "Vulkan ローダーがインストールされていません"
+  "ja": "Vulkan ローダーがインストールされていません",
+  "zh_TW": "未安裝 Vulkan 載入器",
+  "ko": "Vulkan 로더가 설치되지 않았습니다"
  },
  "vulkaninfo не найден": {
   "en": "vulkaninfo not found",
@@ -844,7 +996,9 @@
   "pl": "Nie znaleziono vulkaninfo",
   "uk": "vulkaninfo не знайдено",
   "zh": "未找到 vulkaninfo",
-  "ja": "vulkaninfo が見つかりません"
+  "ja": "vulkaninfo が見つかりません",
+  "zh_TW": "未找到 vulkaninfo",
+  "ko": "vulkaninfo를 찾을 수 없음"
  },
  "Установите vulkan-tools — тогда здесь появится проверка Vulkan.": {
   "en": "Install vulkan-tools — then a Vulkan check will appear here.",
@@ -855,7 +1009,9 @@
   "pl": "Zainstaluj vulkan-tools — wtedy pojawi się tu sprawdzenie Vulkan.",
   "uk": "Встановіть vulkan-tools — тоді тут з’явиться перевірка Vulkan.",
   "zh": "安装 vulkan-tools 后，这里会显示 Vulkan 检查。",
-  "ja": "vulkan-tools をインストールすると、ここに Vulkan チェックが表示されます。"
+  "ja": "vulkan-tools をインストールすると、ここに Vulkan チェックが表示されます。",
+  "zh_TW": "安裝 vulkan-tools 後，這裡會顯示 Vulkan 檢查。",
+  "ko": "vulkan-tools를 설치하세요 — 그러면 여기에 Vulkan 검사가 나타납니다."
  },
  "Переменная {} скрывает драйвер NVIDIA": {
   "en": "Variable {} hides the NVIDIA driver",
@@ -866,7 +1022,9 @@
   "pl": "Zmienna {} ukrywa sterownik NVIDIA",
   "uk": "Змінна {} приховує драйвер NVIDIA",
   "zh": "变量 {} 隐藏了 NVIDIA 驱动",
-  "ja": "変数 {} が NVIDIA ドライバーを隠しています"
+  "ja": "変数 {} が NVIDIA ドライバーを隠しています",
+  "zh_TW": "變數 {} 隱藏了 NVIDIA 驅動",
+  "ko": "변수 {}이(가) NVIDIA 드라이버를 가립니다"
  },
  "{}={}. Уберите её из /etc/environment или environment.d.": {
   "en": "{}={}. Remove it from /etc/environment or environment.d.",
@@ -877,7 +1035,9 @@
   "pl": "{}={}. Usuń ją z /etc/environment lub environment.d.",
   "uk": "{}={}. Приберіть її з /etc/environment або environment.d.",
   "zh": "{}={}。请从 /etc/environment 或 environment.d 中删除。",
-  "ja": "{}={}。/etc/environment または environment.d から削除してください。"
+  "ja": "{}={}。/etc/environment または environment.d から削除してください。",
+  "zh_TW": "{}={}。請從 /etc/environment 或 environment.d 中刪除。",
+  "ko": "{}={}. /etc/environment 또는 environment.d에서 제거하세요."
  },
  "Репозиторий [multilib] не включён": {
   "en": "The [multilib] repository is not enabled",
@@ -888,7 +1048,9 @@
   "pl": "Repozytorium [multilib] nie jest włączone",
   "uk": "Репозиторій [multilib] не ввімкнено",
   "zh": "未启用 [multilib] 仓库",
-  "ja": "[multilib] リポジトリが有効ではありません"
+  "ja": "[multilib] リポジトリが有効ではありません",
+  "zh_TW": "未啟用 [multilib] 倉庫",
+  "ko": "[multilib] 저장소가 켜져 있지 않습니다"
  },
  "Без него не поставить 32-битные библиотеки драйвера — Steam и 32-битные игры работают хуже. Раскомментируйте [multilib] в /etc/pacman.conf.": {
   "en": "Without it the 32-bit driver libraries cannot be installed — Steam and 32-bit games work worse. Uncomment [multilib] in /etc/pacman.conf.",
@@ -899,7 +1061,9 @@
   "pl": "Bez niego nie da się zainstalować 32-bitowych bibliotek sterownika — Steam i gry 32-bitowe działają gorzej. Odkomentuj [multilib] w /etc/pacman.conf.",
   "uk": "Без нього не встановити 32-бітні бібліотеки драйвера — Steam і 32-бітні ігри працюють гірше. Розкоментуйте [multilib] у /etc/pacman.conf.",
   "zh": "没有它就无法安装 32 位驱动库 — Steam 和 32 位游戏会运行得更差。请在 /etc/pacman.conf 中取消 [multilib] 的注释。",
-  "ja": "これがないと 32 ビットのドライバーライブラリを入れられず、Steam や 32 ビットゲームの動作が悪くなります。/etc/pacman.conf の [multilib] のコメントを外してください。"
+  "ja": "これがないと 32 ビットのドライバーライブラリを入れられず、Steam や 32 ビットゲームの動作が悪くなります。/etc/pacman.conf の [multilib] のコメントを外してください。",
+  "zh_TW": "沒有它就無法安裝 32 位驅動庫 — Steam 和 32 位遊戲會執行得更差。請在 /etc/pacman.conf 中取消 [multilib] 的註釋。",
+  "ko": "이것이 없으면 32비트 드라이버 라이브러리를 설치할 수 없어 Steam과 32비트 게임이 제대로 작동하지 않습니다. /etc/pacman.conf에서 [multilib]의 주석을 해제하세요."
  },
  "32-битные библиотеки недоступны": {
   "en": "32-bit libraries are not available",
@@ -910,7 +1074,9 @@
   "pl": "Biblioteki 32-bitowe niedostępne",
   "uk": "32-бітні бібліотеки недоступні",
   "zh": "32 位库不可用",
-  "ja": "32 ビットライブラリは利用できません"
+  "ja": "32 ビットライブラリは利用できません",
+  "zh_TW": "32 位庫不可用",
+  "ko": "32비트 라이브러리를 사용할 수 없습니다"
  },
  "Для этой ветки драйвера lib32-пакетов не существует.": {
   "en": "No lib32 packages exist for this driver branch.",
@@ -921,7 +1087,9 @@
   "pl": "Dla tej gałęzi sterownika nie ma pakietów lib32.",
   "uk": "Для цієї гілки драйвера lib32-пакетів не існує.",
   "zh": "此驱动分支没有 lib32 软件包。",
-  "ja": "このドライバーブランチには lib32 パッケージがありません。"
+  "ja": "このドライバーブランチには lib32 パッケージがありません。",
+  "zh_TW": "此驅動分支沒有 lib32 軟體包。",
+  "ko": "이 드라이버 브랜치에는 lib32 패키지가 없습니다."
  },
  "Файлы DLSS (NGX) на месте": {
   "en": "DLSS (NGX) files are in place",
@@ -932,7 +1100,9 @@
   "pl": "Pliki DLSS (NGX) są na miejscu",
   "uk": "Файли DLSS (NGX) на місці",
   "zh": "DLSS（NGX）文件已就位",
-  "ja": "DLSS（NGX）ファイルは揃っています"
+  "ja": "DLSS（NGX）ファイルは揃っています",
+  "zh_TW": "DLSS（NGX）檔案已就位",
+  "ko": "DLSS(NGX) 파일이 있습니다"
  },
  "libnvidia-ngx.so и nvngx.dll найдены.": {
   "en": "libnvidia-ngx.so and nvngx.dll found.",
@@ -943,7 +1113,9 @@
   "pl": "Znaleziono libnvidia-ngx.so i nvngx.dll.",
   "uk": "libnvidia-ngx.so і nvngx.dll знайдено.",
   "zh": "已找到 libnvidia-ngx.so 和 nvngx.dll。",
-  "ja": "libnvidia-ngx.so と nvngx.dll が見つかりました。"
+  "ja": "libnvidia-ngx.so と nvngx.dll が見つかりました。",
+  "zh_TW": "已找到 libnvidia-ngx.so 和 nvngx.dll。",
+  "ko": "libnvidia-ngx.so와 nvngx.dll을 찾았습니다."
  },
  "Не найдены файлы DLSS (NGX)": {
   "en": "DLSS (NGX) files not found",
@@ -954,7 +1126,9 @@
   "pl": "Nie znaleziono plików DLSS (NGX)",
   "uk": "Не знайдено файли DLSS (NGX)",
   "zh": "未找到 DLSS（NGX）文件",
-  "ja": "DLSS（NGX）ファイルが見つかりません"
+  "ja": "DLSS（NGX）ファイルが見つかりません",
+  "zh_TW": "未找到 DLSS（NGX）檔案",
+  "ko": "DLSS(NGX) 파일을 찾을 수 없음"
  },
  "nvidia-utils кладёт libnvidia-ngx.so и nvngx.dll в /usr/lib и /usr/lib/nvidia/wine. Без них DLSS в Proton недоступен — переустановите nvidia-utils.": {
   "en": "nvidia-utils puts libnvidia-ngx.so and nvngx.dll into /usr/lib and /usr/lib/nvidia/wine. Without them DLSS is unavailable in Proton — reinstall nvidia-utils.",
@@ -965,7 +1139,9 @@
   "pl": "nvidia-utils umieszcza libnvidia-ngx.so i nvngx.dll w /usr/lib i /usr/lib/nvidia/wine. Bez nich DLSS w Proton jest niedostępny — przeinstaluj nvidia-utils.",
   "uk": "nvidia-utils кладе libnvidia-ngx.so і nvngx.dll у /usr/lib та /usr/lib/nvidia/wine. Без них DLSS у Proton недоступний — перевстановіть nvidia-utils.",
   "zh": "nvidia-utils 会把 libnvidia-ngx.so 和 nvngx.dll 放到 /usr/lib 与 /usr/lib/nvidia/wine。缺少它们 Proton 中无法使用 DLSS — 请重装 nvidia-utils。",
-  "ja": "nvidia-utils は libnvidia-ngx.so と nvngx.dll を /usr/lib と /usr/lib/nvidia/wine に置きます。これがないと Proton で DLSS は使えません — nvidia-utils を再インストールしてください。"
+  "ja": "nvidia-utils は libnvidia-ngx.so と nvngx.dll を /usr/lib と /usr/lib/nvidia/wine に置きます。これがないと Proton で DLSS は使えません — nvidia-utils を再インストールしてください。",
+  "zh_TW": "nvidia-utils 會把 libnvidia-ngx.so 和 nvngx.dll 放到 /usr/lib 與 /usr/lib/nvidia/wine。缺少它們 Proton 中無法使用 DLSS — 請重灌 nvidia-utils。",
+  "ko": "nvidia-utils는 libnvidia-ngx.so와 nvngx.dll을 /usr/lib와 /usr/lib/nvidia/wine에 넣습니다. 이것이 없으면 Proton에서 DLSS를 사용할 수 없습니다 — nvidia-utils를 다시 설치하세요."
  },
  "DX12 поддерживается через VKD3D-Proton.": {
   "en": "DX12 is supported via VKD3D-Proton.",
@@ -976,7 +1152,9 @@
   "pl": "DX12 jest obsługiwany przez VKD3D-Proton.",
   "uk": "DX12 підтримується через VKD3D-Proton.",
   "zh": "通过 VKD3D-Proton 支持 DX12。",
-  "ja": "DX12 は VKD3D-Proton 経由でサポートされます。"
+  "ja": "DX12 は VKD3D-Proton 経由でサポートされます。",
+  "zh_TW": "通過 VKD3D-Proton 支援 DX12。",
+  "ko": "VKD3D-Proton으로 DX12가 지원됩니다."
  },
  "DX12 — ограниченно.": {
   "en": "DX12 — limited.",
@@ -987,7 +1165,9 @@
   "pl": "DX12 — ograniczony.",
   "uk": "DX12 — обмежено.",
   "zh": "DX12 — 受限。",
-  "ja": "DX12 — 制限あり。"
+  "ja": "DX12 — 制限あり。",
+  "zh_TW": "DX12 — 受限。",
+  "ko": "DX12 — 제한적."
  },
  "DX12 недоступен.": {
   "en": "DX12 is not available.",
@@ -998,7 +1178,9 @@
   "pl": "DX12 niedostępny.",
   "uk": "DX12 недоступний.",
   "zh": "DX12 不可用。",
-  "ja": "DX12 は使用できません。"
+  "ja": "DX12 は使用できません。",
+  "zh_TW": "DX12 不可用。",
+  "ko": "DX12를 사용할 수 없습니다."
  },
  "Не установлен nvidia-prime": {
   "en": "nvidia-prime is not installed",
@@ -1009,7 +1191,9 @@
   "pl": "nvidia-prime nie jest zainstalowany",
   "uk": "Не встановлено nvidia-prime",
   "zh": "未安装 nvidia-prime",
-  "ja": "nvidia-prime がインストールされていません"
+  "ja": "nvidia-prime がインストールされていません",
+  "zh_TW": "未安裝 nvidia-prime",
+  "ko": "nvidia-prime이 설치되지 않았습니다"
  },
  "Нужен для prime-run (запуск программ на NVIDIA).": {
   "en": "Needed for prime-run (running programs on NVIDIA).",
@@ -1020,7 +1204,9 @@
   "pl": "Potrzebny do prime-run (uruchamianie programów na NVIDIA).",
   "uk": "Потрібен для prime-run (запуск програм на NVIDIA).",
   "zh": "prime-run 所需（在 NVIDIA 上运行程序）。",
-  "ja": "prime-run（NVIDIA でのプログラム実行）に必要です。"
+  "ja": "prime-run（NVIDIA でのプログラム実行）に必要です。",
+  "zh_TW": "prime-run 所需（在 NVIDIA 上執行程式）。",
+  "ko": "prime-run(NVIDIA에서 프로그램 실행)에 필요합니다."
  },
  "Рабочий стол целиком идёт на NVIDIA": {
   "en": "The whole desktop runs on NVIDIA",
@@ -1031,7 +1217,9 @@
   "pl": "Cały pulpit działa na NVIDIA",
   "uk": "Робочий стіл повністю працює на NVIDIA",
   "zh": "整个桌面运行在 NVIDIA 上",
-  "ja": "デスクトップ全体が NVIDIA で動作しています"
+  "ja": "デスクトップ全体が NVIDIA で動作しています",
+  "zh_TW": "整個桌面執行在 NVIDIA 上",
+  "ko": "바탕 화면 전체가 NVIDIA에서 실행됩니다"
  },
  "Глобально выставлено __GLX_VENDOR_LIBRARY_NAME=nvidia — это быстрее для игр, но сильнее расходует батарею.": {
   "en": "__GLX_VENDOR_LIBRARY_NAME=nvidia is set globally — faster for games but drains the battery more.",
@@ -1042,7 +1230,9 @@
   "pl": "Globalnie ustawiono __GLX_VENDOR_LIBRARY_NAME=nvidia — szybciej w grach, ale bardziej zużywa baterię.",
   "uk": "Глобально виставлено __GLX_VENDOR_LIBRARY_NAME=nvidia — це швидше для ігор, але більше витрачає батарею.",
   "zh": "已全局设置 __GLX_VENDOR_LIBRARY_NAME=nvidia — 游戏更快，但更耗电。",
-  "ja": "__GLX_VENDOR_LIBRARY_NAME=nvidia がグローバルに設定されています — ゲームは速くなりますがバッテリー消費が増えます。"
+  "ja": "__GLX_VENDOR_LIBRARY_NAME=nvidia がグローバルに設定されています — ゲームは速くなりますがバッテリー消費が増えます。",
+  "zh_TW": "已全域性設定 __GLX_VENDOR_LIBRARY_NAME=nvidia — 遊戲更快，但更耗電。",
+  "ko": "__GLX_VENDOR_LIBRARY_NAME=nvidia가 전역으로 설정되어 있습니다 — 게임에는 더 빠르지만 배터리를 더 소모합니다."
  },
  "Установите vulkan-tools для проверки Vulkan.": {
   "en": "Install vulkan-tools to check Vulkan.",
@@ -1053,7 +1243,9 @@
   "pl": "Zainstaluj vulkan-tools, aby sprawdzić Vulkan.",
   "uk": "Встановіть vulkan-tools для перевірки Vulkan.",
   "zh": "安装 vulkan-tools 以检查 Vulkan。",
-  "ja": "Vulkan を確認するには vulkan-tools をインストールしてください。"
+  "ja": "Vulkan を確認するには vulkan-tools をインストールしてください。",
+  "zh_TW": "安裝 vulkan-tools 以檢查 Vulkan。",
+  "ko": "Vulkan을 확인하려면 vulkan-tools를 설치하세요."
  },
  "? Поколение не определено": {
   "en": "? Generation unknown",
@@ -1064,7 +1256,9 @@
   "pl": "? Nieznana generacja",
   "uk": "? Покоління не визначено",
   "zh": "? 未识别代数",
-  "ja": "? 世代不明"
+  "ja": "? 世代不明",
+  "zh_TW": "? 未識別代數",
+  "ko": "? 세대 알 수 없음"
  },
  "Поколение": {
   "en": "Generation",
@@ -1075,7 +1269,9 @@
   "pl": "Generacja",
   "uk": "Покоління",
   "zh": "代数",
-  "ja": "世代"
+  "ja": "世代",
+  "zh_TW": "代數",
+  "ko": "세대"
  },
  "Основная (boot VGA)": {
   "en": "Primary (boot VGA)",
@@ -1086,7 +1282,9 @@
   "pl": "Główna (boot VGA)",
   "uk": "Основна (boot VGA)",
   "zh": "主显卡（boot VGA）",
-  "ja": "プライマリ（boot VGA）"
+  "ja": "プライマリ（boot VGA）",
+  "zh_TW": "主顯示卡（boot VGA）",
+  "ko": "기본 (부팅 VGA)"
  },
  "не загружен": {
   "en": "not loaded",
@@ -1097,7 +1295,9 @@
   "pl": "nie załadowany",
   "uk": "не завантажено",
   "zh": "未加载",
-  "ja": "未読み込み"
+  "ja": "未読み込み",
+  "zh_TW": "未載入",
+  "ko": "로드되지 않음"
  },
  "Рекомендуемая ветка": {
   "en": "Recommended branch",
@@ -1108,7 +1308,9 @@
   "pl": "Zalecana gałąź",
   "uk": "Рекомендована гілка",
   "zh": "推荐分支",
-  "ja": "推奨ブランチ"
+  "ja": "推奨ブランチ",
+  "zh_TW": "推薦分支",
+  "ko": "권장 브랜치"
  },
  "Установлено": {
   "en": "Installed",
@@ -1119,7 +1321,9 @@
   "pl": "Zainstalowano",
   "uk": "Встановлено",
   "zh": "已安装",
-  "ja": "インストール済み"
+  "ja": "インストール済み",
+  "zh_TW": "已安裝",
+  "ko": "설치됨"
  },
  "не определён": {
   "en": "unknown",
@@ -1130,7 +1334,9 @@
   "pl": "nieznany",
   "uk": "не визначено",
   "zh": "未知",
-  "ja": "不明"
+  "ja": "不明",
+  "zh_TW": "未知",
+  "ko": "알 수 없음"
  },
  "{} МиБ": {
   "en": "{} MiB",
@@ -1141,7 +1347,9 @@
   "pl": "{} MiB",
   "uk": "{} МіБ",
   "zh": "{} MiB",
-  "ja": "{} MiB"
+  "ja": "{} MiB",
+  "zh_TW": "{} MiB",
+  "ko": "{} MiB"
  },
  "Температура": {
   "en": "Temperature",
@@ -1152,7 +1360,9 @@
   "pl": "Temperatura",
   "uk": "Температура",
   "zh": "温度",
-  "ja": "温度"
+  "ja": "温度",
+  "zh_TW": "溫度",
+  "ko": "온도"
  },
  "Нагрузка": {
   "en": "Load",
@@ -1163,7 +1373,9 @@
   "pl": "Obciążenie",
   "uk": "Навантаження",
   "zh": "负载",
-  "ja": "負荷"
+  "ja": "負荷",
+  "zh_TW": "負載",
+  "ko": "불러오기"
  },
  "Мощность": {
   "en": "Power",
@@ -1174,7 +1386,9 @@
   "pl": "Moc",
   "uk": "Потужність",
   "zh": "功耗",
-  "ja": "電力"
+  "ja": "電力",
+  "zh_TW": "功耗",
+  "ko": "전원"
  },
  "{} Вт": {
   "en": "{} W",
@@ -1185,7 +1399,9 @@
   "pl": "{} W",
   "uk": "{} Вт",
   "zh": "{} W",
-  "ja": "{} W"
+  "ja": "{} W",
+  "zh_TW": "{} W",
+  "ko": "{} W"
  },
  "Частота ядра": {
   "en": "Core clock",
@@ -1196,7 +1412,9 @@
   "pl": "Taktowanie rdzenia",
   "uk": "Частота ядра",
   "zh": "核心频率",
-  "ja": "コアクロック"
+  "ja": "コアクロック",
+  "zh_TW": "核心頻率",
+  "ko": "코어 클럭"
  },
  "{} МГц": {
   "en": "{} MHz",
@@ -1207,7 +1425,9 @@
   "pl": "{} MHz",
   "uk": "{} МГц",
   "zh": "{} MHz",
-  "ja": "{} MHz"
+  "ja": "{} MHz",
+  "zh_TW": "{} MHz",
+  "ko": "{} MHz"
  },
  "установлен ({})": {
   "en": "installed ({})",
@@ -1218,7 +1438,9 @@
   "pl": "zainstalowany ({})",
   "uk": "встановлено ({})",
   "zh": "已安装（{}）",
-  "ja": "インストール済み（{}）"
+  "ja": "インストール済み（{}）",
+  "zh_TW": "已安裝（{}）",
+  "ko": "설치됨 ({})"
  },
  "в репозитории": {
   "en": "in the repository",
@@ -1229,7 +1451,9 @@
   "pl": "w repozytorium",
   "uk": "у репозиторії",
   "zh": "在仓库中",
-  "ja": "リポジトリ内"
+  "ja": "リポジトリ内",
+  "zh_TW": "在倉庫中",
+  "ko": "저장소에 있음"
  },
  "в офлайн-кэше": {
   "en": "in the offline cache",
@@ -1240,7 +1464,9 @@
   "pl": "w pamięci offline",
   "uk": "в офлайн-кеші",
   "zh": "在离线缓存中",
-  "ja": "オフラインキャッシュ内"
+  "ja": "オフラインキャッシュ内",
+  "zh_TW": "在離線快取中",
+  "ko": "오프라인 캐시에 있음"
  },
  "Готово. Если менялся драйвер — перезагрузите систему.": {
   "en": "Done. If the driver was changed, reboot the system.",
@@ -1251,7 +1477,9 @@
   "pl": "Gotowe. Jeśli zmieniono sterownik, uruchom system ponownie.",
   "uk": "Готово. Якщо змінювався драйвер — перезавантажте систему.",
   "zh": "完成。如果更换了驱动，请重启系统。",
-  "ja": "完了。ドライバーを変更した場合はシステムを再起動してください。"
+  "ja": "完了。ドライバーを変更した場合はシステムを再起動してください。",
+  "zh_TW": "完成。如果更換了驅動，請重啟系統。",
+  "ko": "완료. 드라이버를 바꿨다면 시스템을 재부팅하세요."
  },
  "Не удалось запустить pkexec. Установите polkit.": {
   "en": "Could not start pkexec. Install polkit.",
@@ -1262,7 +1490,9 @@
   "pl": "Nie udało się uruchomić pkexec. Zainstaluj polkit.",
   "uk": "Не вдалося запустити pkexec. Встановіть polkit.",
   "zh": "无法启动 pkexec。请安装 polkit。",
-  "ja": "pkexec を起動できません。polkit をインストールしてください。"
+  "ja": "pkexec を起動できません。polkit をインストールしてください。",
+  "zh_TW": "無法啟動 pkexec。請安裝 polkit。",
+  "ko": "pkexec를 시작할 수 없습니다. polkit을 설치하세요."
  },
  "Ошибка запуска.": {
   "en": "Launch error.",
@@ -1273,7 +1503,9 @@
   "pl": "Błąd uruchomienia.",
   "uk": "Помилка запуску.",
   "zh": "启动错误。",
-  "ja": "起動エラー。"
+  "ja": "起動エラー。",
+  "zh_TW": "啟動錯誤。",
+  "ko": "실행 오류."
  },
  "Драйвер": {
   "en": "Driver",
@@ -1284,7 +1516,9 @@
   "pl": "Sterownik",
   "uk": "Драйвер",
   "zh": "驱动",
-  "ja": "ドライバー"
+  "ja": "ドライバー",
+  "zh_TW": "驅動",
+  "ko": "드라이버"
  },
  "В системе несколько карт NVIDIA: pg-gpu-sync выбирает драйвер по первой из них.": {
   "en": "There are several NVIDIA cards in the system: pg-gpu-sync picks the driver by the first one.",
@@ -1295,7 +1529,9 @@
   "pl": "W systemie jest kilka kart NVIDIA: pg-gpu-sync wybiera sterownik według pierwszej.",
   "uk": "У системі кілька карт NVIDIA: pg-gpu-sync обирає драйвер за першою з них.",
   "zh": "系统中有多块 NVIDIA 显卡：pg-gpu-sync 按第一块选择驱动。",
-  "ja": "システムに複数の NVIDIA カードがあります：pg-gpu-sync は最初のカードでドライバーを選びます。"
+  "ja": "システムに複数の NVIDIA カードがあります：pg-gpu-sync は最初のカードでドライバーを選びます。",
+  "zh_TW": "系統中有多塊 NVIDIA 顯示卡：pg-gpu-sync 按第一塊選擇驅動。",
+  "ko": "시스템에 NVIDIA 카드가 여러 개 있습니다: pg-gpu-sync는 첫 번째 카드를 기준으로 드라이버를 고릅니다."
  },
  "Установить pg-gpu-sync": {
   "en": "Install pg-gpu-sync",
@@ -1306,7 +1542,9 @@
   "pl": "Zainstaluj pg-gpu-sync",
   "uk": "Встановити pg-gpu-sync",
   "zh": "安装 pg-gpu-sync",
-  "ja": "pg-gpu-sync をインストール"
+  "ja": "pg-gpu-sync をインストール",
+  "zh_TW": "安裝 pg-gpu-sync",
+  "ko": "pg-gpu-sync 설치"
  },
  "{}\nПодходит для: {}\n{} · {}": {
   "en": "{}\nSuitable for: {}\n{} · {}",
@@ -1317,7 +1555,9 @@
   "pl": "{}\nPasuje do: {}\n{} · {}",
   "uk": "{}\nПідходить для: {}\n{} · {}",
   "zh": "{}\n适用于：{}\n{} · {}",
-  "ja": "{}\n対象：{}\n{} · {}"
+  "ja": "{}\n対象：{}\n{} · {}",
+  "zh_TW": "{}\n適用於：{}\n{} · {}",
+  "ko": "{}\n적합한 대상: {}\n{} · {}"
  },
  "32-битные библиотеки (Steam, Proton, Wine) — --32": {
   "en": "32-bit libraries (Steam, Proton, Wine) — --32",
@@ -1328,7 +1568,9 @@
   "pl": "Biblioteki 32-bitowe (Steam, Proton, Wine) — --32",
   "uk": "32-бітні бібліотеки (Steam, Proton, Wine) — --32",
   "zh": "32 位库（Steam、Proton、Wine）— --32",
-  "ja": "32 ビットライブラリ（Steam、Proton、Wine）— --32"
+  "ja": "32 ビットライブラリ（Steam、Proton、Wine）— --32",
+  "zh_TW": "32 位庫（Steam、Proton、Wine）— --32",
+  "ko": "32비트 라이브러리 (Steam, Proton, Wine) — --32"
  },
  "Панель nvidia-settings": {
   "en": "nvidia-settings panel",
@@ -1339,7 +1581,9 @@
   "pl": "Panel nvidia-settings",
   "uk": "Панель nvidia-settings",
   "zh": "nvidia-settings 面板",
-  "ja": "nvidia-settings パネル"
+  "ja": "nvidia-settings パネル",
+  "zh_TW": "nvidia-settings 面板",
+  "ko": "nvidia-settings 패널"
  },
  "Без DKMS: пакет nvidia-open (только ядра linux / linux-lts)": {
   "en": "Without DKMS: nvidia-open package (linux / linux-lts kernels only)",
@@ -1350,7 +1594,9 @@
   "pl": "Bez DKMS: pakiet nvidia-open (tylko jądra linux / linux-lts)",
   "uk": "Без DKMS: пакет nvidia-open (лише ядра linux / linux-lts)",
   "zh": "不用 DKMS：nvidia-open 包（仅 linux / linux-lts 内核）",
-  "ja": "DKMS なし：nvidia-open パッケージ（linux / linux-lts カーネルのみ）"
+  "ja": "DKMS なし：nvidia-open パッケージ（linux / linux-lts カーネルのみ）",
+  "zh_TW": "不用 DKMS：nvidia-open 包（僅 linux / linux-lts 核心）",
+  "ko": "DKMS 없이: nvidia-open 패키지 (linux / linux-lts 커널 전용)"
  },
  "Установить / исправить драйвер": {
   "en": "Install / repair driver",
@@ -1361,7 +1607,9 @@
   "pl": "Zainstaluj / napraw sterownik",
   "uk": "Встановити / виправити драйвер",
   "zh": "安装 / 修复驱动",
-  "ja": "ドライバーをインストール / 修復"
+  "ja": "ドライバーをインストール / 修復",
+  "zh_TW": "安裝 / 修復驅動",
+  "ko": "드라이버 설치 / 복구"
  },
  "Показать план (dry run)": {
   "en": "Show plan (dry run)",
@@ -1372,7 +1620,9 @@
   "pl": "Pokaż plan (próba)",
   "uk": "Показати план (dry run)",
   "zh": "显示计划（演练）",
-  "ja": "計画を表示（ドライラン）"
+  "ja": "計画を表示（ドライラン）",
+  "zh_TW": "顯示計劃（演練）",
+  "ko": "계획 표시 (드라이 런)"
  },
  "Пересобрать DKMS и initramfs": {
   "en": "Rebuild DKMS and initramfs",
@@ -1383,7 +1633,9 @@
   "pl": "Przebuduj DKMS i initramfs",
   "uk": "Перезібрати DKMS та initramfs",
   "zh": "重新构建 DKMS 和 initramfs",
-  "ja": "DKMS と initramfs を再構築"
+  "ja": "DKMS と initramfs を再構築",
+  "zh_TW": "重新構建 DKMS 和 initramfs",
+  "ko": "DKMS와 initramfs 다시 빌드"
  },
  "Переключиться на nouveau": {
   "en": "Switch to nouveau",
@@ -1394,7 +1646,9 @@
   "pl": "Przełącz na nouveau",
   "uk": "Перейти на nouveau",
   "zh": "切换到 nouveau",
-  "ja": "nouveau に切り替え"
+  "ja": "nouveau に切り替え",
+  "zh_TW": "切換到 nouveau",
+  "ko": "nouveau로 전환"
  },
  "Вернуться к автоподбору": {
   "en": "Back to automatic selection",
@@ -1405,7 +1659,9 @@
   "pl": "Wróć do automatycznego wyboru",
   "uk": "Повернутися до автодобору",
   "zh": "恢复自动选择",
-  "ja": "自動選択に戻す"
+  "ja": "自動選択に戻す",
+  "zh_TW": "恢復自動選擇",
+  "ko": "자동 선택으로 돌아가기"
  },
  "Запускать игру на этой карте (гибридная графика / PRIME)": {
   "en": "Run the game on this card (hybrid graphics / PRIME)",
@@ -1416,7 +1672,9 @@
   "pl": "Uruchom grę na tej karcie (grafika hybrydowa / PRIME)",
   "uk": "Запускати гру на цій карті (гібридна графіка / PRIME)",
   "zh": "在此显卡上运行游戏（混合显卡 / PRIME）",
-  "ja": "このカードでゲームを実行（ハイブリッド / PRIME）"
+  "ja": "このカードでゲームを実行（ハイブリッド / PRIME）",
+  "zh_TW": "在此顯示卡上運行遊戲（混合顯示卡 / PRIME）",
+  "ko": "이 카드에서 게임 실행 (하이브리드 그래픽 / PRIME)"
  },
  "NVAPI + DLSS (только RTX)": {
   "en": "NVAPI + DLSS (RTX only)",
@@ -1427,7 +1685,9 @@
   "pl": "NVAPI + DLSS (tylko RTX)",
   "uk": "NVAPI + DLSS (лише RTX)",
   "zh": "NVAPI + DLSS（仅 RTX）",
-  "ja": "NVAPI + DLSS（RTX のみ）"
+  "ja": "NVAPI + DLSS（RTX のみ）",
+  "zh_TW": "NVAPI + DLSS（僅 RTX）",
+  "ko": "NVAPI + DLSS (RTX 전용)"
  },
  "Трассировка лучей DX12 — VKD3D_CONFIG=dxr (только RTX)": {
   "en": "DX12 ray tracing — VKD3D_CONFIG=dxr (RTX only)",
@@ -1438,7 +1698,9 @@
   "pl": "Ray tracing DX12 — VKD3D_CONFIG=dxr (tylko RTX)",
   "uk": "Трасування променів DX12 — VKD3D_CONFIG=dxr (лише RTX)",
   "zh": "DX12 光线追踪 — VKD3D_CONFIG=dxr（仅 RTX）",
-  "ja": "DX12 レイトレーシング — VKD3D_CONFIG=dxr（RTX のみ）"
+  "ja": "DX12 レイトレーシング — VKD3D_CONFIG=dxr（RTX のみ）",
+  "zh_TW": "DX12 光線追蹤 — VKD3D_CONFIG=dxr（僅 RTX）",
+  "ko": "DX12 레이 트레이싱 — VKD3D_CONFIG=dxr (RTX 전용)"
  },
  "Принудительно DX11 — PROTON_NO_D3D12=1 (если DX12 не стартует)": {
   "en": "Force DX11 — PROTON_NO_D3D12=1 (if DX12 does not start)",
@@ -1449,7 +1711,9 @@
   "pl": "Wymuś DX11 — PROTON_NO_D3D12=1 (gdy DX12 nie startuje)",
   "uk": "Примусово DX11 — PROTON_NO_D3D12=1 (якщо DX12 не стартує)",
   "zh": "强制 DX11 — PROTON_NO_D3D12=1（DX12 无法启动时）",
-  "ja": "DX11 を強制 — PROTON_NO_D3D12=1（DX12 が起動しない場合）"
+  "ja": "DX11 を強制 — PROTON_NO_D3D12=1（DX12 が起動しない場合）",
+  "zh_TW": "強制 DX11 — PROTON_NO_D3D12=1（DX12 無法啟動時）",
+  "ko": "DX11 강제 — PROTON_NO_D3D12=1 (DX12가 시작되지 않을 때)"
  },
  "MangoHud (оверлей FPS)": {
   "en": "MangoHud (FPS overlay)",
@@ -1460,7 +1724,9 @@
   "pl": "MangoHud (nakładka FPS)",
   "uk": "MangoHud (оверлей FPS)",
   "zh": "MangoHud（FPS 叠加层）",
-  "ja": "MangoHud（FPS オーバーレイ）"
+  "ja": "MangoHud（FPS オーバーレイ）",
+  "zh_TW": "MangoHud（FPS 疊加層）",
+  "ko": "MangoHud (FPS 오버레이)"
  },
  "Скопировано ✓": {
   "en": "Copied ✓",
@@ -1471,7 +1737,9 @@
   "pl": "Skopiowano ✓",
   "uk": "Скопійовано ✓",
   "zh": "已复制 ✓",
-  "ja": "コピーしました ✓"
+  "ja": "コピーしました ✓",
+  "zh_TW": "已複製 ✓",
+  "ko": "복사됨 ✓"
  },
  "Видеокарты не найдены.\nУстановите пакет pciutils (lspci) и нажмите «Обновить».": {
   "en": "No graphics cards found.\nInstall the pciutils package (lspci) and press “Refresh”.",
@@ -1482,7 +1750,9 @@
   "pl": "Nie znaleziono kart graficznych.\nZainstaluj pakiet pciutils (lspci) i kliknij „Odśwież”.",
   "uk": "Відеокарти не знайдено.\nВстановіть пакет pciutils (lspci) і натисніть «Оновити».",
   "zh": "未找到显卡。\n请安装 pciutils（lspci）并点击“刷新”。",
-  "ja": "グラフィックカードが見つかりません。\npciutils（lspci）をインストールして「更新」を押してください。"
+  "ja": "グラフィックカードが見つかりません。\npciutils（lspci）をインストールして「更新」を押してください。",
+  "zh_TW": "未找到顯示卡。\n請安裝 pciutils（lspci）並點選“重新整理”。",
+  "ko": "그래픽 카드를 찾을 수 없습니다.\npciutils 패키지(lspci)를 설치하고 “새로 고침”을 누르세요."
  },
  "Ядро {} · сессия {}": {
   "en": "Kernel {} · session {}",
@@ -1493,7 +1763,9 @@
   "pl": "Jądro {} · sesja {}",
   "uk": "Ядро {} · сесія {}",
   "zh": "内核 {} · 会话 {}",
-  "ja": "カーネル {} · セッション {}"
+  "ja": "カーネル {} · セッション {}",
+  "zh_TW": "核心 {} · 會話 {}",
+  "ko": "커널 {} · 세션 {}"
  },
  "pg-gpu-sync не найден": {
   "en": "pg-gpu-sync not found",
@@ -1504,7 +1776,9 @@
   "pl": "Nie znaleziono pg-gpu-sync",
   "uk": "pg-gpu-sync не знайдено",
   "zh": "未找到 pg-gpu-sync",
-  "ja": "pg-gpu-sync が見つかりません"
+  "ja": "pg-gpu-sync が見つかりません",
+  "zh_TW": "未找到 pg-gpu-sync",
+  "ko": "pg-gpu-sync를 찾을 수 없음"
  },
  "Установите пакет pg-gpu-sync (sudo pacman -S pg-gpu-sync) и повторите.": {
   "en": "Install the pg-gpu-sync package (sudo pacman -S pg-gpu-sync) and try again.",
@@ -1515,7 +1789,9 @@
   "pl": "Zainstaluj pakiet pg-gpu-sync (sudo pacman -S pg-gpu-sync) i spróbuj ponownie.",
   "uk": "Встановіть пакет pg-gpu-sync (sudo pacman -S pg-gpu-sync) і повторіть.",
   "zh": "请安装 pg-gpu-sync（sudo pacman -S pg-gpu-sync）后重试。",
-  "ja": "pg-gpu-sync（sudo pacman -S pg-gpu-sync）をインストールして再試行してください。"
+  "ja": "pg-gpu-sync（sudo pacman -S pg-gpu-sync）をインストールして再試行してください。",
+  "zh_TW": "請安裝 pg-gpu-sync（sudo pacman -S pg-gpu-sync）後重試。",
+  "ko": "pg-gpu-sync 패키지를 설치한 뒤(sudo pacman -S pg-gpu-sync) 다시 시도하세요."
  },
  "Драйвер ядра: nouveau": {
   "en": "Kernel driver: nouveau",
@@ -1526,7 +1802,9 @@
   "pl": "Sterownik jądra: nouveau",
   "uk": "Драйвер ядра: nouveau",
   "zh": "内核驱动：nouveau",
-  "ja": "カーネルドライバー：nouveau"
+  "ja": "カーネルドライバー：nouveau",
+  "zh_TW": "核心驅動：nouveau",
+  "ko": "커널 드라이버: nouveau"
  },
  "Для этого поколения nouveau — штатный вариант.": {
   "en": "For this generation nouveau is the standard option.",
@@ -1537,7 +1815,9 @@
   "pl": "Dla tej generacji nouveau to standardowa opcja.",
   "uk": "Для цього покоління nouveau — штатний варіант.",
   "zh": "对于此代显卡，nouveau 是标准选项。",
-  "ja": "この世代では nouveau が標準です。"
+  "ja": "この世代では nouveau が標準です。",
+  "zh_TW": "對於此代顯示卡，nouveau 是標準選項。",
+  "ko": "이 세대에는 nouveau가 표준 선택지입니다."
  },
  "Карта работает на nouveau, а не на драйвере NVIDIA": {
   "en": "The card runs on nouveau, not on the NVIDIA driver",
@@ -1548,7 +1828,9 @@
   "pl": "Karta działa na nouveau, a nie na sterowniku NVIDIA",
   "uk": "Карта працює на nouveau, а не на драйвері NVIDIA",
   "zh": "显卡在使用 nouveau，而非 NVIDIA 驱动",
-  "ja": "カードは NVIDIA ドライバーではなく nouveau で動作しています"
+  "ja": "カードは NVIDIA ドライバーではなく nouveau で動作しています",
+  "zh_TW": "顯示卡在使用 nouveau，而非 NVIDIA 驅動",
+  "ko": "카드가 NVIDIA 드라이버가 아니라 nouveau로 작동합니다"
  },
  "Под nouveau нет NVAPI и DLSS, а DX12 (VKD3D-Proton) работает ограниченно или не запускается. Для вашей карты нужен {}.": {
   "en": "Under nouveau there is no NVAPI and DLSS, and DX12 (VKD3D-Proton) works poorly or does not start. Your card needs {}.",
@@ -1559,7 +1841,9 @@
   "pl": "Pod nouveau nie ma NVAPI ani DLSS, a DX12 (VKD3D-Proton) działa ograniczenie lub wcale. Twoja karta wymaga {}.",
   "uk": "Під nouveau немає NVAPI і DLSS, а DX12 (VKD3D-Proton) працює обмежено або не запускається. Для вашої карти потрібен {}.",
   "zh": "在 nouveau 下没有 NVAPI 和 DLSS，DX12（VKD3D-Proton）受限或无法启动。您的显卡需要 {}。",
-  "ja": "nouveau では NVAPI と DLSS がなく、DX12（VKD3D-Proton）は制限付きか起動しません。お使いのカードには {} が必要です。"
+  "ja": "nouveau では NVAPI と DLSS がなく、DX12（VKD3D-Proton）は制限付きか起動しません。お使いのカードには {} が必要です。",
+  "zh_TW": "在 nouveau 下沒有 NVAPI 和 DLSS，DX12（VKD3D-Proton）受限或無法啟動。您的顯示卡需要 {}。",
+  "ko": "nouveau에서는 NVAPI와 DLSS가 없고, DX12(VKD3D-Proton)는 잘 작동하지 않거나 시작되지 않습니다. 이 카드에는 {}이(가) 필요합니다."
  },
  "Драйвер ядра не загружен": {
   "en": "Kernel driver is not loaded",
@@ -1570,7 +1854,9 @@
   "pl": "Sterownik jądra nie jest załadowany",
   "uk": "Драйвер ядра не завантажено",
   "zh": "内核驱动未加载",
-  "ja": "カーネルドライバーが読み込まれていません"
+  "ja": "カーネルドライバーが読み込まれていません",
+  "zh_TW": "核心驅動未載入",
+  "ko": "커널 드라이버가 로드되지 않았습니다"
  },
  "Видеокарта не привязана ни к одному драйверу — игры уйдут на программный рендер.": {
   "en": "The graphics card is not bound to any driver — games will fall back to software rendering.",
@@ -1581,7 +1867,9 @@
   "pl": "Karta nie jest powiązana z żadnym sterownikiem — gry przejdą na renderowanie programowe.",
   "uk": "Відеокарта не прив’язана до жодного драйвера — ігри підуть на програмний рендер.",
   "zh": "显卡未绑定任何驱动 — 游戏将使用软件渲染。",
-  "ja": "カードがどのドライバーにも割り当てられていません — ゲームはソフトウェアレンダリングになります。"
+  "ja": "カードがどのドライバーにも割り当てられていません — ゲームはソフトウェアレンダリングになります。",
+  "zh_TW": "顯示卡未繫結任何驅動 — 遊戲將使用軟體渲染。",
+  "ko": "그래픽 카드가 어떤 드라이버에도 연결되지 않았습니다 — 게임이 소프트웨어 렌더링으로 실행됩니다."
  },
  "Драйвер ядра: {}": {
   "en": "Kernel driver: {}",
@@ -1592,7 +1880,9 @@
   "pl": "Sterownik jądra: {}",
   "uk": "Драйвер ядра: {}",
   "zh": "内核驱动：{}",
-  "ja": "カーネルドライバー：{}"
+  "ja": "カーネルドライバー：{}",
+  "zh_TW": "核心驅動：{}",
+  "ko": "커널 드라이버: {}"
  },
  "Нестандартный драйвер (например, vfio-pci для проброса в виртуальную машину).": {
   "en": "Non-standard driver (for example, vfio-pci for passthrough to a virtual machine).",
@@ -1603,7 +1893,9 @@
   "pl": "Niestandardowy sterownik (np. vfio-pci do przekazania do maszyny wirtualnej).",
   "uk": "Нестандартний драйвер (наприклад, vfio-pci для прокидання у віртуальну машину).",
   "zh": "非标准驱动（例如用于虚拟机直通的 vfio-pci）。",
-  "ja": "非標準ドライバー（例：仮想マシンへのパススルー用 vfio-pci）。"
+  "ja": "非標準ドライバー（例：仮想マシンへのパススルー用 vfio-pci）。",
+  "zh_TW": "非標準驅動（例如用於虛擬機器直通的 vfio-pci）。",
+  "ko": "비표준 드라이버 (예: 가상 머신 패스스루용 vfio-pci)."
  },
  "{} несовместимы с {}: ветки взаимоисключающие": {
   "en": "{} are incompatible with {}: the branches are mutually exclusive",
@@ -1614,7 +1906,9 @@
   "pl": "{} są niezgodne z {}: gałęzie się wykluczają",
   "uk": "{} несумісні з {}: гілки взаємовиключні",
   "zh": "{} 与 {} 不兼容：分支互斥",
-  "ja": "{} は {} と互換性がありません：ブランチは排他的です"
+  "ja": "{} は {} と互換性がありません：ブランチは排他的です",
+  "zh_TW": "{} 與 {} 不相容：分支互斥",
+  "ko": "{}은(는) {}와(과) 호환되지 않습니다: 두 브랜치는 서로 배타적입니다"
  },
  "Установлены драйверы, которые эта карта не поддерживает": {
   "en": "Drivers that this card does not support are installed",
@@ -1625,7 +1919,9 @@
   "pl": "Zainstalowano sterowniki, których ta karta nie obsługuje",
   "uk": "Встановлено драйвери, які ця карта не підтримує",
   "zh": "安装了此显卡不支持的驱动",
-  "ja": "このカードがサポートしないドライバーがインストールされています"
+  "ja": "このカードがサポートしないドライバーがインストールされています",
+  "zh_TW": "安裝了此顯示卡不支援的驅動",
+  "ko": "이 카드가 지원하지 않는 드라이버가 설치되어 있습니다"
  },
  "Нет заголовков для ядра {}": {
   "en": "No headers for kernel {}",
@@ -1636,7 +1932,9 @@
   "pl": "Brak nagłówków dla jądra {}",
   "uk": "Немає заголовків для ядра {}",
   "zh": "缺少内核 {} 的头文件",
-  "ja": "カーネル {} のヘッダーがありません"
+  "ja": "カーネル {} のヘッダーがありません",
+  "zh_TW": "缺少核心 {} 的標頭檔案",
+  "ko": "커널 {}용 헤더 없음"
  },
  "DKMS не может собрать модуль без {}. После установки пересоберите DKMS.": {
   "en": "DKMS cannot build the module without {}. Rebuild DKMS after installing.",
@@ -1647,7 +1945,9 @@
   "pl": "DKMS nie zbuduje modułu bez {}. Po instalacji przebuduj DKMS.",
   "uk": "DKMS не може зібрати модуль без {}. Після встановлення перезберіть DKMS.",
   "zh": "没有 {}，DKMS 无法构建模块。安装后请重新构建 DKMS。",
-  "ja": "{} がないと DKMS はモジュールをビルドできません。インストール後に DKMS を再構築してください。"
+  "ja": "{} がないと DKMS はモジュールをビルドできません。インストール後に DKMS を再構築してください。",
+  "zh_TW": "沒有 {}，DKMS 無法構建模組。安裝後請重新構建 DKMS。",
+  "ko": "DKMS는 {} 없이 모듈을 빌드할 수 없습니다. 설치 후 DKMS를 다시 빌드하세요."
  },
  "DKMS-модуль не собран для ядра {}": {
   "en": "DKMS module is not built for kernel {}",
@@ -1658,7 +1958,9 @@
   "pl": "Moduł DKMS nie jest zbudowany dla jądra {}",
   "uk": "DKMS-модуль не зібрано для ядра {}",
   "zh": "未为内核 {} 构建 DKMS 模块",
-  "ja": "カーネル {} 用の DKMS モジュールがビルドされていません"
+  "ja": "カーネル {} 用の DKMS モジュールがビルドされていません",
+  "zh_TW": "未為核心 {} 構建 DKMS 模組",
+  "ko": "커널 {}용 DKMS 모듈이 빌드되지 않았습니다"
  },
  "Драйвер установлен, но модуль ядра отсутствует — после перезагрузки карта останется без драйвера.": {
   "en": "The driver is installed, but the kernel module is missing — after reboot the card will be left without a driver.",
@@ -1669,7 +1971,9 @@
   "pl": "Sterownik jest zainstalowany, ale brakuje modułu jądra — po restarcie karta zostanie bez sterownika.",
   "uk": "Драйвер встановлено, але модуль ядра відсутній — після перезавантаження карта залишиться без драйвера.",
   "zh": "驱动已安装，但缺少内核模块 — 重启后显卡将没有驱动。",
-  "ja": "ドライバーはインストール済みですがカーネルモジュールがありません — 再起動後カードはドライバーなしになります。"
+  "ja": "ドライバーはインストール済みですがカーネルモジュールがありません — 再起動後カードはドライバーなしになります。",
+  "zh_TW": "驅動已安裝，但缺少核心模組 — 重啟後顯示卡將沒有驅動。",
+  "ko": "드라이버는 설치되었지만 커널 모듈이 없습니다 — 재부팅 후 카드에 드라이버가 없게 됩니다."
  },
  " — без него игры не увидят Vulkan.": {
   "en": " — without it games will not see Vulkan.",
@@ -1680,7 +1984,9 @@
   "pl": " — bez niego gry nie zobaczą Vulkan.",
   "uk": " — без нього ігри не побачать Vulkan.",
   "zh": "— 没有它游戏将看不到 Vulkan。",
-  "ja": " — これがないとゲームは Vulkan を認識しません。"
+  "ja": " — これがないとゲームは Vulkan を認識しません。",
+  "zh_TW": "— 沒有它遊戲將看不到 Vulkan。",
+  "ko": " — 이것이 없으면 게임에서 Vulkan을 인식하지 못합니다."
  },
  "Установить vulkan-tools": {
   "en": "Install vulkan-tools",
@@ -1691,7 +1997,9 @@
   "pl": "Zainstaluj vulkan-tools",
   "uk": "Встановити vulkan-tools",
   "zh": "安装 vulkan-tools",
-  "ja": "vulkan-tools をインストール"
+  "ja": "vulkan-tools をインストール",
+  "zh_TW": "安裝 vulkan-tools",
+  "ko": "vulkan-tools 설치"
  },
  "Vulkan не видит эту видеокарту": {
   "en": "Vulkan does not see this graphics card",
@@ -1702,7 +2010,9 @@
   "pl": "Vulkan nie widzi tej karty graficznej",
   "uk": "Vulkan не бачить цю відеокарту",
   "zh": "Vulkan 看不到此显卡",
-  "ja": "Vulkan がこのカードを認識していません"
+  "ja": "Vulkan がこのカードを認識していません",
+  "zh_TW": "Vulkan 看不到此顯示卡",
+  "ko": "Vulkan이 이 그래픽 카드를 인식하지 못합니다"
  },
  "Без Vulkan игры пишут «DX12 не поддерживается» или падают при старте. Частые причины: драйвер не загружен, нет nvidia_icd.json, переменная VK_ICD_FILENAMES скрывает драйвер NVIDIA.": {
   "en": "Without Vulkan games say “DX12 is not supported” or crash at start. Common causes: the driver is not loaded, no nvidia_icd.json, the VK_ICD_FILENAMES variable hides the NVIDIA driver.",
@@ -1713,7 +2023,9 @@
   "pl": "Bez Vulkan gry piszą „DX12 nieobsługiwany” lub padają przy starcie. Częste przyczyny: sterownik nie załadowany, brak nvidia_icd.json, zmienna VK_ICD_FILENAMES ukrywa sterownik NVIDIA.",
   "uk": "Без Vulkan ігри пишуть «DX12 не підтримується» або падають під час запуску. Часті причини: драйвер не завантажено, немає nvidia_icd.json, змінна VK_ICD_FILENAMES приховує драйвер NVIDIA.",
   "zh": "没有 Vulkan，游戏会提示“不支持 DX12”或启动即崩溃。常见原因：驱动未加载、缺少 nvidia_icd.json、变量 VK_ICD_FILENAMES 隐藏了 NVIDIA 驱动。",
-  "ja": "Vulkan がないとゲームは「DX12 非対応」と表示するか起動時に落ちます。主な原因：ドライバー未読み込み、nvidia_icd.json がない、VK_ICD_FILENAMES が NVIDIA ドライバーを隠している。"
+  "ja": "Vulkan がないとゲームは「DX12 非対応」と表示するか起動時に落ちます。主な原因：ドライバー未読み込み、nvidia_icd.json がない、VK_ICD_FILENAMES が NVIDIA ドライバーを隠している。",
+  "zh_TW": "沒有 Vulkan，遊戲會提示“不支援 DX12”或啟動即崩潰。常見原因：驅動未載入、缺少 nvidia_icd.json、變數 VK_ICD_FILENAMES 隱藏了 NVIDIA 驅動。",
+  "ko": "Vulkan이 없으면 게임이 “DX12가 지원되지 않습니다”라고 하거나 시작 시 충돌합니다. 흔한 원인: 드라이버가 로드되지 않음, nvidia_icd.json 없음, VK_ICD_FILENAMES 변수가 NVIDIA 드라이버를 가림."
  },
  "Нет 32-битных библиотек ({})": {
   "en": "No 32-bit libraries ({})",
@@ -1724,7 +2036,9 @@
   "pl": "Brak bibliotek 32-bitowych ({})",
   "uk": "Немає 32-бітних бібліотек ({})",
   "zh": "缺少 32 位库（{}）",
-  "ja": "32 ビットライブラリがありません（{}）"
+  "ja": "32 ビットライブラリがありません（{}）",
+  "zh_TW": "缺少 32 位庫（{}）",
+  "ko": "32비트 라이브러리 없음 ({})"
  },
  "Нужны Steam, Wine и 32-битным играм (в т.ч. DX9/DX11-играм).": {
   "en": "Needed by Steam, Wine and 32-bit games (including DX9/DX11 games).",
@@ -1735,7 +2049,9 @@
   "pl": "Potrzebne Steam, Wine i grom 32-bitowym (w tym DX9/DX11).",
   "uk": "Потрібні Steam, Wine і 32-бітним іграм (зокрема DX9/DX11).",
   "zh": "Steam、Wine 和 32 位游戏（包括 DX9/DX11 游戏）需要。",
-  "ja": "Steam・Wine・32 ビットゲーム（DX9/DX11 ゲームを含む）に必要です。"
+  "ja": "Steam・Wine・32 ビットゲーム（DX9/DX11 ゲームを含む）に必要です。",
+  "zh_TW": "Steam、Wine 和 32 位遊戲（包括 DX9/DX11 遊戲）需要。",
+  "ko": "Steam, Wine 및 32비트 게임(DX9/DX11 게임 포함)에 필요합니다."
  },
  "32-битные библиотеки драйвера установлены": {
   "en": "32-bit driver libraries are installed",
@@ -1746,7 +2062,9 @@
   "pl": "32-bitowe biblioteki sterownika są zainstalowane",
   "uk": "32-бітні бібліотеки драйвера встановлено",
   "zh": "32 位驱动库已安装",
-  "ja": "32 ビットドライバーライブラリはインストール済み"
+  "ja": "32 ビットドライバーライブラリはインストール済み",
+  "zh_TW": "32 位驅動庫已安裝",
+  "ko": "32비트 드라이버 라이브러리가 설치되어 있습니다"
  },
  "Установить nvidia-prime": {
   "en": "Install nvidia-prime",
@@ -1757,7 +2075,9 @@
   "pl": "Zainstaluj nvidia-prime",
   "uk": "Встановити nvidia-prime",
   "zh": "安装 nvidia-prime",
-  "ja": "nvidia-prime をインストール"
+  "ja": "nvidia-prime をインストール",
+  "zh_TW": "安裝 nvidia-prime",
+  "ko": "nvidia-prime 설치"
  },
  "Открытый драйвер Mesa/ядра — всё штатно.": {
   "en": "Open Mesa/kernel driver — everything is standard.",
@@ -1768,7 +2088,9 @@
   "pl": "Otwarty sterownik Mesa/jądra — wszystko standardowo.",
   "uk": "Відкритий драйвер Mesa/ядра — усе штатно.",
   "zh": "开源 Mesa/内核驱动 — 一切正常。",
-  "ja": "オープンな Mesa/カーネルドライバー — すべて標準どおりです。"
+  "ja": "オープンな Mesa/カーネルドライバー — すべて標準どおりです。",
+  "zh_TW": "開源 Mesa/核心驅動 — 一切正常。",
+  "ko": "오픈 Mesa/커널 드라이버 — 모두 표준입니다."
  },
  "Ожидался {}.": {
   "en": "Expected {}.",
@@ -1779,7 +2101,9 @@
   "pl": "Oczekiwano {}.",
   "uk": "Очікувався {}.",
   "zh": "应为 {}。",
-  "ja": "想定：{}。"
+  "ja": "想定：{}。",
+  "zh_TW": "應為 {}。",
+  "ko": "{}이(가) 필요합니다."
  },
  "Не хватает пакетов Vulkan/Mesa": {
   "en": "Vulkan/Mesa packages are missing",
@@ -1790,7 +2114,9 @@
   "pl": "Brakuje pakietów Vulkan/Mesa",
   "uk": "Бракує пакетів Vulkan/Mesa",
   "zh": "缺少 Vulkan/Mesa 软件包",
-  "ja": "Vulkan/Mesa パッケージが不足しています"
+  "ja": "Vulkan/Mesa パッケージが不足しています",
+  "zh_TW": "缺少 Vulkan/Mesa 軟體包",
+  "ko": "Vulkan/Mesa 패키지가 없습니다"
  },
  "Пакеты Vulkan/Mesa установлены": {
   "en": "Vulkan/Mesa packages are installed",
@@ -1801,7 +2127,9 @@
   "pl": "Pakiety Vulkan/Mesa są zainstalowane",
   "uk": "Пакети Vulkan/Mesa встановлено",
   "zh": "Vulkan/Mesa 软件包已安装",
-  "ja": "Vulkan/Mesa パッケージはインストール済み"
+  "ja": "Vulkan/Mesa パッケージはインストール済み",
+  "zh_TW": "Vulkan/Mesa 軟體包已安裝",
+  "ko": "Vulkan/Mesa 패키지가 설치되어 있습니다"
  },
  "Проверьте установку vulkan-radeon / vulkan-intel.": {
   "en": "Check the vulkan-radeon / vulkan-intel installation.",
@@ -1812,7 +2140,9 @@
   "pl": "Sprawdź instalację vulkan-radeon / vulkan-intel.",
   "uk": "Перевірте встановлення vulkan-radeon / vulkan-intel.",
   "zh": "请检查 vulkan-radeon / vulkan-intel 的安装。",
-  "ja": "vulkan-radeon / vulkan-intel のインストールを確認してください。"
+  "ja": "vulkan-radeon / vulkan-intel のインストールを確認してください。",
+  "zh_TW": "請檢查 vulkan-radeon / vulkan-intel 的安裝。",
+  "ko": "vulkan-radeon / vulkan-intel 설치를 확인하세요."
  },
  "  чип {}": {
   "en": "  chip {}",
@@ -1823,7 +2153,9 @@
   "pl": "  układ {}",
   "uk": "  чип {}",
   "zh": "  芯片 {}",
-  "ja": "  チップ {}"
+  "ja": "  チップ {}",
+  "zh_TW": "  晶片 {}",
+  "ko": "  칩 {}"
  },
  "не определено (будет nouveau)": {
   "en": "unknown (nouveau will be used)",
@@ -1834,7 +2166,9 @@
   "pl": "nieznany (będzie nouveau)",
   "uk": "не визначено (буде nouveau)",
   "zh": "未知（将使用 nouveau）",
-  "ja": "不明（nouveau を使用）"
+  "ja": "不明（nouveau を使用）",
+  "zh_TW": "未知（將使用 nouveau）",
+  "ko": "알 수 없음 (nouveau 사용)"
  },
  "Дополнительная": {
   "en": "Secondary",
@@ -1845,7 +2179,9 @@
   "pl": "Dodatkowa",
   "uk": "Додаткова",
   "zh": "副显卡",
-  "ja": "セカンダリ"
+  "ja": "セカンダリ",
+  "zh_TW": "副顯示卡",
+  "ko": "보조"
  },
  "— драйверов NVIDIA нет": {
   "en": "— no NVIDIA drivers",
@@ -1856,7 +2192,9 @@
   "pl": "— brak sterowników NVIDIA",
   "uk": "— драйверів NVIDIA немає",
   "zh": "— 无 NVIDIA 驱动",
-  "ja": "— NVIDIA ドライバーなし"
+  "ja": "— NVIDIA ドライバーなし",
+  "zh_TW": "— 無 NVIDIA 驅動",
+  "ko": "— NVIDIA 드라이버 없음"
  },
  "Версия модуля ядра": {
   "en": "Kernel module version",
@@ -1867,7 +2205,9 @@
   "pl": "Wersja modułu jądra",
   "uk": "Версія модуля ядра",
   "zh": "内核模块版本",
-  "ja": "カーネルモジュールのバージョン"
+  "ja": "カーネルモジュールのバージョン",
+  "zh_TW": "核心模組版本",
+  "ko": "커널 모듈 버전"
  },
  "GTX 10xx: если игра не стартует на DX12 — переключите её на DX11 в настройках или включите «Принудительно DX11». DLSS и RT на Pascal недоступны (нет RTX-ядер).": {
   "en": "GTX 10xx: if a game does not start on DX12, switch it to DX11 in settings or enable “Force DX11”. DLSS and RT are not available on Pascal (no RTX cores).",
@@ -1878,7 +2218,9 @@
   "pl": "GTX 10xx: jeśli gra nie startuje na DX12, przełącz ją na DX11 w ustawieniach lub włącz „Wymuś DX11”. DLSS i RT są niedostępne na Pascal (brak rdzeni RTX).",
   "uk": "GTX 10xx: якщо гра не стартує на DX12 — перемкніть її на DX11 у налаштуваннях або увімкніть «Примусово DX11». DLSS і RT на Pascal недоступні (немає RTX-ядер).",
   "zh": "GTX 10xx：如果游戏在 DX12 下无法启动，请在设置中切换到 DX11 或启用“强制 DX11”。Pascal 不支持 DLSS 和光追（没有 RTX 核心）。",
-  "ja": "GTX 10xx：ゲームが DX12 で起動しない場合は設定で DX11 に切り替えるか「DX11 を強制」を有効にしてください。Pascal では DLSS と RT は使えません（RTX コアなし）。"
+  "ja": "GTX 10xx：ゲームが DX12 で起動しない場合は設定で DX11 に切り替えるか「DX11 を強制」を有効にしてください。Pascal では DLSS と RT は使えません（RTX コアなし）。",
+  "zh_TW": "GTX 10xx：如果遊戲在 DX12 下無法啟動，請在設定中切換到 DX11 或啟用“強制 DX11”。Pascal 不支援 DLSS 和光追（沒有 RTX 核心）。",
+  "ko": "GTX 10xx: 게임이 DX12에서 시작되지 않으면 설정에서 DX11로 바꾸거나 “DX11 강제”를 켜세요. Pascal에서는 DLSS와 RT를 사용할 수 없습니다 (RTX 코어 없음)."
  },
  "Maxwell: DX12 только ограниченно; при вылетах используйте «Принудительно DX11».": {
   "en": "Maxwell: DX12 is limited; on crashes use “Force DX11”.",
@@ -1889,7 +2231,9 @@
   "pl": "Maxwell: DX12 tylko ograniczony; przy awariach użyj „Wymuś DX11”.",
   "uk": "Maxwell: DX12 лише обмежено; при вильотах використовуйте «Примусово DX11».",
   "zh": "Maxwell：DX12 受限；崩溃时请使用“强制 DX11”。",
-  "ja": "Maxwell：DX12 は制限付き。クラッシュする場合は「DX11 を強制」を使ってください。"
+  "ja": "Maxwell：DX12 は制限付き。クラッシュする場合は「DX11 を強制」を使ってください。",
+  "zh_TW": "Maxwell：DX12 受限；崩潰時請使用“強制 DX11”。",
+  "ko": "Maxwell: DX12가 제한적입니다. 충돌하면 “DX11 강제”를 사용하세요."
  },
  "Kepler: DX12 невозможен. Для DX9–11 нужен старый DXVK ≤ 1.10.3 (Proton ≤ 6.x / Proton-GE 6.x).": {
   "en": "Kepler: DX12 is impossible. DX9–11 need the old DXVK ≤ 1.10.3 (Proton ≤ 6.x / Proton-GE 6.x).",
@@ -1900,7 +2244,9 @@
   "pl": "Kepler: DX12 niemożliwy. DX9–11 wymagają starego DXVK ≤ 1.10.3 (Proton ≤ 6.x / Proton-GE 6.x).",
   "uk": "Kepler: DX12 неможливий. Для DX9–11 потрібен старий DXVK ≤ 1.10.3 (Proton ≤ 6.x / Proton-GE 6.x).",
   "zh": "Kepler：无法使用 DX12。DX9–11 需要旧版 DXVK ≤ 1.10.3（Proton ≤ 6.x / Proton-GE 6.x）。",
-  "ja": "Kepler：DX12 は不可。DX9–11 には旧 DXVK ≤ 1.10.3（Proton ≤ 6.x / Proton-GE 6.x）が必要です。"
+  "ja": "Kepler：DX12 は不可。DX9–11 には旧 DXVK ≤ 1.10.3（Proton ≤ 6.x / Proton-GE 6.x）が必要です。",
+  "zh_TW": "Kepler：無法使用 DX12。DX9–11 需要舊版 DXVK ≤ 1.10.3（Proton ≤ 6.x / Proton-GE 6.x）。",
+  "ko": "Kepler: DX12는 불가능합니다. DX9–11에는 구형 DXVK ≤ 1.10.3(Proton ≤ 6.x / Proton-GE 6.x)이 필요합니다."
  },
  "Fermi: Vulkan отсутствует, Proton/DXVK работать не будут. Подойдут лишь OpenGL-игры и родной Linux.": {
   "en": "Fermi: no Vulkan, Proton/DXVK will not work. Only OpenGL games and native Linux games are suitable.",
@@ -1911,7 +2257,9 @@
   "pl": "Fermi: brak Vulkan, Proton/DXVK nie zadziałają. Pasują tylko gry OpenGL i natywne linuksowe.",
   "uk": "Fermi: Vulkan відсутній, Proton/DXVK не працюватимуть. Підійдуть лише OpenGL-ігри та рідні для Linux.",
   "zh": "Fermi：没有 Vulkan，Proton/DXVK 无法使用。只能玩 OpenGL 游戏和原生 Linux 游戏。",
-  "ja": "Fermi：Vulkan がなく Proton/DXVK は動きません。OpenGL ゲームと Linux ネイティブゲームのみ対応。"
+  "ja": "Fermi：Vulkan がなく Proton/DXVK は動きません。OpenGL ゲームと Linux ネイティブゲームのみ対応。",
+  "zh_TW": "Fermi：沒有 Vulkan，Proton/DXVK 無法使用。只能玩 OpenGL 遊戲和原生 Linux 遊戲。",
+  "ko": "Fermi: Vulkan이 없어 Proton/DXVK가 작동하지 않습니다. OpenGL 게임과 Linux 네이티브 게임만 적합합니다."
  },
  "Авторизация отклонена или pkexec недоступен (нужен polkit).": {
   "en": "Authorization was rejected or pkexec is unavailable (polkit is required).",
@@ -1922,7 +2270,9 @@
   "pl": "Autoryzacja odrzucona lub pkexec niedostępny (wymagany polkit).",
   "uk": "Авторизацію відхилено або pkexec недоступний (потрібен polkit).",
   "zh": "授权被拒绝或 pkexec 不可用（需要 polkit）。",
-  "ja": "認証が拒否されたか pkexec が使えません（polkit が必要）。"
+  "ja": "認証が拒否されたか pkexec が使えません（polkit が必要）。",
+  "zh_TW": "授權被拒絕或 pkexec 不可用（需要 polkit）。",
+  "ko": "인증이 거부되었거나 pkexec를 사용할 수 없습니다 (polkit 필요)."
  },
  "Завершено с кодом {}. Подробности — в журнале выше.": {
   "en": "Finished with code {}. Details are in the log above.",
@@ -1933,7 +2283,9 @@
   "pl": "Zakończono z kodem {}. Szczegóły w dzienniku powyżej.",
   "uk": "Завершено з кодом {}. Подробиці — у журналі вище.",
   "zh": "以代码 {} 结束。详情见上方日志。",
-  "ja": "コード {} で終了しました。詳細は上のログを参照してください。"
+  "ja": "コード {} で終了しました。詳細は上のログを参照してください。",
+  "zh_TW": "以程式碼 {} 結束。詳情見上方日誌。",
+  "ko": "코드 {}(으)로 끝났습니다. 자세한 내용은 위의 로그에 있습니다."
  },
  "Проблем: {}   ·   предупреждений: {}": {
   "en": "Problems: {}   ·   warnings: {}",
@@ -1944,7 +2296,9 @@
   "pl": "Problemy: {}   ·   ostrzeżenia: {}",
   "uk": "Проблем: {}   ·   попереджень: {}",
   "zh": "问题：{}   ·   警告：{}",
-  "ja": "問題：{}   ·   警告：{}"
+  "ja": "問題：{}   ·   警告：{}",
+  "zh_TW": "問題：{}   ·   警告：{}",
+  "ko": "문제: {}   ·   경고: {}"
  },
  "Всё в порядке": {
   "en": "Everything is fine",
@@ -1955,7 +2309,9 @@
   "pl": "Wszystko w porządku",
   "uk": "Усе гаразд",
   "zh": "一切正常",
-  "ja": "問題ありません"
+  "ja": "問題ありません",
+  "zh_TW": "一切正常",
+  "ko": "모두 정상입니다"
  },
  "pg-gpu-sync не установлен — кнопки ниже недоступны": {
   "en": "pg-gpu-sync is not installed — the buttons below are unavailable",
@@ -1966,7 +2322,9 @@
   "pl": "pg-gpu-sync nie jest zainstalowany — przyciski poniżej są niedostępne",
   "uk": "pg-gpu-sync не встановлено — кнопки нижче недоступні",
   "zh": "未安装 pg-gpu-sync — 下方按钮不可用",
-  "ja": "pg-gpu-sync がインストールされていません — 下のボタンは使えません"
+  "ja": "pg-gpu-sync がインストールされていません — 下のボタンは使えません",
+  "zh_TW": "未安裝 pg-gpu-sync — 下方按鈕不可用",
+  "ko": "pg-gpu-sync가 설치되지 않았습니다 — 아래 버튼을 사용할 수 없습니다"
  },
  "Драйвер недоступен": {
   "en": "Driver is unavailable",
@@ -1977,7 +2335,9 @@
   "pl": "Sterownik niedostępny",
   "uk": "Драйвер недоступний",
   "zh": "驱动不可用",
-  "ja": "ドライバーは利用できません"
+  "ja": "ドライバーは利用できません",
+  "zh_TW": "驅動不可用",
+  "ko": "드라이버를 사용할 수 없음"
  },
  "{}: {}.\nДобавьте пакеты в репозиторий или положите их в {}/.": {
   "en": "{}: {}.\nAdd the packages to the repository or put them into {}/.",
@@ -1988,7 +2348,9 @@
   "pl": "{}: {}.\nDodaj pakiety do repozytorium lub umieść je w {}/.",
   "uk": "{}: {}.\nДодайте пакети в репозиторій або покладіть їх у {}/.",
   "zh": "{}：{}。\n请把软件包加入仓库或放到 {}/ 中。",
-  "ja": "{}：{}。\nパッケージをリポジトリに追加するか {}/ に置いてください。"
+  "ja": "{}：{}。\nパッケージをリポジトリに追加するか {}/ に置いてください。",
+  "zh_TW": "{}：{}。\n請把軟體包加入倉庫或放到 {}/ 中。",
+  "ko": "{}: {}.\n패키지를 저장소에 추가하거나 {}/에 넣으세요."
  },
  "\npg-gpu-sync не найден": {
   "en": "\npg-gpu-sync not found",
@@ -1999,7 +2361,9 @@
   "pl": "\nNie znaleziono pg-gpu-sync",
   "uk": "\npg-gpu-sync не знайдено",
   "zh": "\n未找到 pg-gpu-sync",
-  "ja": "\npg-gpu-sync が見つかりません"
+  "ja": "\npg-gpu-sync が見つかりません",
+  "zh_TW": "\n未找到 pg-gpu-sync",
+  "ko": "\npg-gpu-sync를 찾을 수 없음"
  },
  "совместимый аналог": {
   "en": "a compatible equivalent",
@@ -2010,7 +2374,9 @@
   "pl": "zgodny odpowiednik",
   "uk": "сумісний аналог",
   "zh": "兼容的替代包",
-  "ja": "互換パッケージ"
+  "ja": "互換パッケージ",
+  "zh_TW": "相容的替代包",
+  "ko": "호환되는 대체 장치"
  },
  " (nvidia-open на Pascal/Maxwell/Volta вызывает kernel panic).": {
   "en": " (nvidia-open on Pascal/Maxwell/Volta causes a kernel panic).",
@@ -2021,7 +2387,9 @@
   "pl": " (nvidia-open na Pascal/Maxwell/Volta powoduje kernel panic).",
   "uk": " (nvidia-open на Pascal/Maxwell/Volta викликає kernel panic).",
   "zh": "（在 Pascal/Maxwell/Volta 上使用 nvidia-open 会导致 kernel panic）。",
-  "ja": "（Pascal/Maxwell/Volta で nvidia-open を使うとカーネルパニックになります）。"
+  "ja": "（Pascal/Maxwell/Volta で nvidia-open を使うとカーネルパニックになります）。",
+  "zh_TW": "（在 Pascal/Maxwell/Volta 上使用 nvidia-open 會導致 kernel panic）。",
+  "ko": " (Pascal/Maxwell/Volta에서 nvidia-open을 사용하면 커널 패닉이 발생합니다)."
  },
  "Установить {}": {
   "en": "Install {}",
@@ -2032,7 +2400,9 @@
   "pl": "Zainstaluj {}",
   "uk": "Встановити {}",
   "zh": "安装 {}",
-  "ja": "{} をインストール"
+  "ja": "{} をインストール",
+  "zh_TW": "安裝 {}",
+  "ko": "{} 설치"
  },
  "Установить ": {
   "en": "Install ",
@@ -2043,7 +2413,9 @@
   "pl": "Zainstaluj ",
   "uk": "Встановити ",
   "zh": "安装 ",
-  "ja": "インストール："
+  "ja": "インストール：",
+  "zh_TW": "安裝 ",
+  "ko": "설치 "
  },
  "Vulkan {} (драйвер {})": {
   "en": "Vulkan {} (driver {})",
@@ -2054,7 +2426,9 @@
   "pl": "Vulkan {} (sterownik {})",
   "uk": "Vulkan {} (драйвер {})",
   "zh": "Vulkan {}（驱动 {}）",
-  "ja": "Vulkan {}（ドライバー {}）"
+  "ja": "Vulkan {}（ドライバー {}）",
+  "zh_TW": "Vulkan {}（驅動 {}）",
+  "ko": "Vulkan {} (드라이버 {})"
  },
  "Этого достаточно для DXVK 2.x и VKD3D-Proton (DX12).": {
   "en": "This is enough for DXVK 2.x and VKD3D-Proton (DX12).",
@@ -2065,7 +2439,9 @@
   "pl": "To wystarcza dla DXVK 2.x i VKD3D-Proton (DX12).",
   "uk": "Цього достатньо для DXVK 2.x і VKD3D-Proton (DX12).",
   "zh": "足以运行 DXVK 2.x 和 VKD3D-Proton（DX12）。",
-  "ja": "DXVK 2.x と VKD3D-Proton（DX12）には十分です。"
+  "ja": "DXVK 2.x と VKD3D-Proton（DX12）には十分です。",
+  "zh_TW": "足以執行 DXVK 2.x 和 VKD3D-Proton（DX12）。",
+  "ko": "DXVK 2.x와 VKD3D-Proton(DX12)에 충분합니다."
  },
  "Достаточно для DX12 через VKD3D-Proton.": {
   "en": "Enough for DX12 via VKD3D-Proton.",
@@ -2076,7 +2452,9 @@
   "pl": "Wystarczy dla DX12 przez VKD3D-Proton.",
   "uk": "Достатньо для DX12 через VKD3D-Proton.",
   "zh": "足以通过 VKD3D-Proton 运行 DX12。",
-  "ja": "VKD3D-Proton 経由の DX12 に十分です。"
+  "ja": "VKD3D-Proton 経由の DX12 に十分です。",
+  "zh_TW": "足以通過 VKD3D-Proton 執行 DX12。",
+  "ko": "VKD3D-Proton으로 DX12를 쓰기에 충분합니다."
  },
  "Для DX12 нужен Vulkan 1.3.": {
   "en": "DX12 requires Vulkan 1.3.",
@@ -2087,7 +2465,9 @@
   "pl": "DX12 wymaga Vulkan 1.3.",
   "uk": "Для DX12 потрібен Vulkan 1.3.",
   "zh": "DX12 需要 Vulkan 1.3。",
-  "ja": "DX12 には Vulkan 1.3 が必要です。"
+  "ja": "DX12 には Vulkan 1.3 が必要です。",
+  "zh_TW": "DX12 需要 Vulkan 1.3。",
+  "ko": "DX12에는 Vulkan 1.3이 필요합니다."
  },
  "Драйвер не подходит": {
   "en": "Driver is not suitable",
@@ -2098,7 +2478,9 @@
   "pl": "Sterownik nie pasuje",
   "uk": "Драйвер не підходить",
   "zh": "驱动不适用",
-  "ja": "ドライバーが適合しません"
+  "ja": "ドライバーが適合しません",
+  "zh_TW": "驅動不適用",
+  "ko": "드라이버가 적합하지 않음"
  },
  "{} не рекомендован для {}. Возможны чёрный экран и kernel panic.\nВсё равно установить?": {
   "en": "{} is not recommended for {}. Black screen and kernel panic are possible.\nInstall anyway?",
@@ -2109,7 +2491,9 @@
   "pl": "{} nie jest zalecany dla {}. Możliwy czarny ekran i kernel panic.\nZainstalować mimo to?",
   "uk": "{} не рекомендовано для {}. Можливі чорний екран і kernel panic.\nВсе одно встановити?",
   "zh": "不建议为 {1} 使用 {0}。可能出现黑屏和 kernel panic。\n仍要安装吗？",
-  "ja": "{} は {} には推奨されません。黒画面やカーネルパニックの恐れがあります。\nそれでもインストールしますか？"
+  "ja": "{} は {} には推奨されません。黒画面やカーネルパニックの恐れがあります。\nそれでもインストールしますか？",
+  "zh_TW": "不建議為 {1} 使用 {0}。可能出現黑屏和 kernel panic。\n仍要安裝嗎？",
+  "ko": "{}은(는) {}에 권장되지 않습니다. 검은 화면과 커널 패닉이 발생할 수 있습니다.\n그래도 설치할까요?"
  },
  "Переключение на nouveau": {
   "en": "Switching to nouveau",
@@ -2120,7 +2504,9 @@
   "pl": "Przełączanie na nouveau",
   "uk": "Перехід на nouveau",
   "zh": "切换到 nouveau",
-  "ja": "nouveau への切り替え"
+  "ja": "nouveau への切り替え",
+  "zh_TW": "切換到 nouveau",
+  "ko": "nouveau로 전환하는 중"
  },
  "Предел драйвера 470: DX12 недоступен, DX9–11 — только со старым DXVK ≤ 1.10.3.": {
   "en": "Driver 470 limit: DX12 unavailable, DX9–11 only with old DXVK ≤ 1.10.3.",
@@ -2131,7 +2517,9 @@
   "pl": "Limit sterownika 470: brak DX12, DX9–11 tylko ze starym DXVK ≤ 1.10.3.",
   "uk": "Межа драйвера 470: DX12 недоступний, DX9–11 — лише зі старим DXVK ≤ 1.10.3.",
   "zh": "470 驱动的限制：无 DX12，DX9–11 仅能用旧版 DXVK ≤ 1.10.3。",
-  "ja": "ドライバー 470 の限界：DX12 不可、DX9–11 は旧 DXVK ≤ 1.10.3 のみ。"
+  "ja": "ドライバー 470 の限界：DX12 不可、DX9–11 は旧 DXVK ≤ 1.10.3 のみ。",
+  "zh_TW": "470 驅動的限制：無 DX12，DX9–11 僅能用舊版 DXVK ≤ 1.10.3。",
+  "ko": "드라이버 470 한계: DX12 사용 불가, DX9–11은 구형 DXVK ≤ 1.10.3에서만."
  },
  "Vulkan {} — ниже 1.3": {
   "en": "Vulkan {} — below 1.3",
@@ -2142,7 +2530,9 @@
   "pl": "Vulkan {} — poniżej 1.3",
   "uk": "Vulkan {} — нижче 1.3",
   "zh": "Vulkan {} — 低于 1.3",
-  "ja": "Vulkan {} — 1.3 未満"
+  "ja": "Vulkan {} — 1.3 未満",
+  "zh_TW": "Vulkan {} — 低於 1.3",
+  "ko": "Vulkan {} — 1.3 미만"
  },
  "Для VKD3D-Proton нужен Vulkan 1.3: обновите драйвер своей ветки.": {
   "en": "VKD3D-Proton needs Vulkan 1.3: update the driver of your branch.",
@@ -2153,7 +2543,9 @@
   "pl": "VKD3D-Proton wymaga Vulkan 1.3: zaktualizuj sterownik swojej gałęzi.",
   "uk": "Для VKD3D-Proton потрібен Vulkan 1.3: оновіть драйвер своєї гілки.",
   "zh": "VKD3D-Proton 需要 Vulkan 1.3：请更新你所在分支的驱动。",
-  "ja": "VKD3D-Proton には Vulkan 1.3 が必要です：お使いのブランチのドライバーを更新してください。"
+  "ja": "VKD3D-Proton には Vulkan 1.3 が必要です：お使いのブランチのドライバーを更新してください。",
+  "zh_TW": "VKD3D-Proton 需要 Vulkan 1.3：請更新你所在分支的驅動。",
+  "ko": "VKD3D-Proton에는 Vulkan 1.3이 필요합니다: 사용 중인 브랜치의 드라이버를 업데이트하세요."
  },
  "Установка pg-gpu-sync": {
   "en": "Installing pg-gpu-sync",
@@ -2164,7 +2556,9 @@
   "pl": "Instalacja pg-gpu-sync",
   "uk": "Встановлення pg-gpu-sync",
   "zh": "正在安装 pg-gpu-sync",
-  "ja": "pg-gpu-sync をインストール中"
+  "ja": "pg-gpu-sync をインストール中",
+  "zh_TW": "正在安裝 pg-gpu-sync",
+  "ko": "pg-gpu-sync 설치 중"
  },
  "Установка {}": {
   "en": "Installing {}",
@@ -2175,7 +2569,9 @@
   "pl": "Instalacja {}",
   "uk": "Встановлення {}",
   "zh": "正在安装 {}",
-  "ja": "{} をインストール中"
+  "ja": "{} をインストール中",
+  "zh_TW": "正在安裝 {}",
+  "ko": "{} 설치 중"
  },
  " или ": {
   "en": " or ",
@@ -2186,6 +2582,8 @@
   "pl": " lub ",
   "uk": " або ",
   "zh": " 或 ",
-  "ja": " または "
+  "ja": " または ",
+  "zh_TW": " 或 ",
+  "ko": " 또는 "
  }
 }

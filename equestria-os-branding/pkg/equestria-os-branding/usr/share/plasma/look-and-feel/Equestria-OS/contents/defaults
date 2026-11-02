@@ -1,3 +1,15 @@
-[Wallpaper]
-Image=file:///usr/share/wallpapers/EquestriaOS/default.png
-Plugin=org.kde.image
+# Equestria OS — дневная глобальная тема.
+# Здесь только то, что меняется утром и вечером: цвета, курсор, заставка.
+# Иконки, стиль окон, шрифты и обои сюда НЕ входят: глобальную тему KDE
+# переприменяет при каждой смене дня и ночи, и всё, что здесь записано,
+# перезаписало бы выбор пользователя. Их умолчания — в /etc/xdg (см. PKGBUILD).
+
+[kdeglobals][General]
+ColorScheme=BreezeLight
+
+[kcminputrc][Mouse]
+cursorTheme=Vimix-white-cursors
+
+[ksplashrc][KSplash]
+Engine=KSplashQML
+Theme=Equestria-OS

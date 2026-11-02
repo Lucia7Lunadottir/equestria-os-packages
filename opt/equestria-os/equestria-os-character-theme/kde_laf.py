@@ -6,7 +6,8 @@
 KDE сам переключает пару по времени суток: переключатель записывает их в
 kdeglobals [KDE] DefaultLightLookAndFeel / DefaultDarkLookAndFeel.
 
-В теме только цвета, курсор и заставка. Иконки, шрифты, стиль окон и обои
+В теме только цвета, курсор, заставка и Plasma-стиль панели (EquestriaPanel-Light/
+-Dark: цвет панели днём и ночью задаёт equestria-os-task-panel-changer). Иконки, шрифты, стиль окон и обои
 сюда не входят: тему KDE переприменяет утром и вечером, и всё записанное
 здесь перебивало бы выбор пользователя.
 
@@ -32,6 +33,11 @@ VARIANTS = {  # вариант -> (базовая схема Breeze, курсо�
     "Light": ("BreezeLight.colors", "Vimix-white-cursors", ""),
     "Dark": ("BreezeDark.colors", "Vimix-cursors", "-Dark"),
 }
+# Plasma-стиль панели для каждой половины пары. Свой цвет панели в них пишет
+# equestria-os-task-panel-changer (в ~/.local); базовые версии без своего фона
+# (выглядят как Breeze) ставит этот пакет — см. panel_styles(). Ссылаться на
+# несуществующий стиль нельзя: Plasma тогда ломает цвета экрана блокировки.
+PANEL_STYLES = {"Light": "EquestriaPanel-Light", "Dark": "EquestriaPanel-Dark"}
 SYSTEM_COLORS = Path("/usr/share/color-schemes")
 SPLASH = "Equestria-OS"
 
@@ -127,6 +133,7 @@ def color_scheme(base_text: str, accent_hex: str, name: str) -> str:
 def _defaults(variant: str, scheme: str) -> str:
     return (f"[kdeglobals][General]\nColorScheme={scheme}\n\n"
             f"[kcminputrc][Mouse]\ncursorTheme={VARIANTS[variant][1]}\n\n"
+            f"[plasmarc][Theme]\nname={PANEL_STYLES[variant]}\n\n"
             f"[ksplashrc][KSplash]\nEngine=KSplashQML\nTheme={SPLASH}\n")
 
 
@@ -175,6 +182,26 @@ def build(dest_share: Path, characters: list, icons: Path | None = None,
                 (pkg / "contents" / "previews").mkdir(exist_ok=True)
                 shutil.copyfile(icon, pkg / "contents" / "previews" / "preview.png")
             made.append(laf_id(cid, variant))
+    return made
+
+
+def panel_styles(dest_share: Path) -> list[str]:
+    """Базовые Plasma-стили панели (только metadata: всё берётся из Breeze).
+    Ставятся пакетом в /usr/share, чтобы глобальные темы всегда ссылались на
+    существующий стиль. X-Plasma-API — как у Breeze: с другим ключом Plasma
+    перестаёт брать набор цветов Complementary (экран блокировки, окно выхода)."""
+    made = []
+    for variant, style_id in PANEL_STYLES.items():
+        pkg = Path(dest_share) / "plasma" / "desktoptheme" / style_id
+        pkg.mkdir(parents=True, exist_ok=True)
+        meta = {
+            "KPlugin": {"Id": style_id, "Name": f"Equestria Panel ({'day' if variant == 'Light' else 'night'})",
+                        "Authors": [{"Name": "Equestria OS"}], "Version": "2.0"},
+            "X-Plasma-API": "5.0",
+            "fallbackPackage": "default",
+        }
+        (pkg / "metadata.json").write_text(json.dumps(meta, ensure_ascii=False, indent=4) + "\n", encoding="utf-8")
+        made.append(style_id)
     return made
 
 
@@ -244,7 +271,11 @@ def main() -> None:
     ap.add_argument("--dest", required=True, help="каталог share (например $pkgdir/usr/share)")
     ap.add_argument("--characters", required=True, help="characters.json")
     ap.add_argument("--icons", help="каталог, от которого отсчитываются IconPath")
+    ap.add_argument("--panel-styles", action="store_true", help="ещё и базовые стили панели (для пакета)")
     a = ap.parse_args()
+    if a.panel_styles:
+        for i in panel_styles(Path(a.dest)):
+            print(i)
     chars = json.loads(Path(a.characters).read_text(encoding="utf-8")).get("Characters", [])
     for i in build(Path(a.dest), chars, Path(a.icons) if a.icons else None):
         print(i)

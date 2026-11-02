@@ -6,15 +6,20 @@ from PyQt6.QtWidgets import (QApplication, QDialog, QVBoxLayout,
                              QLabel, QLineEdit, QPushButton, QHBoxLayout)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import detect_language
 
 # Полностью отвязываемся от хардкода. Все пути строим относительно самого скрипта
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # --- Локализация ---
 def get_sys_lang():
-    lang = os.environ.get("LANG", "en_US").split('_')[0]
-    supported = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
-    return lang if lang in supported else "en"
+    return detect_language()
 
 def load_localization():
     csv_path = os.path.join(SYSTEM_PATH, "localization.csv")
@@ -107,6 +112,7 @@ class AskPassDialog(QDialog):
 def main():
     prompt_text = sys.argv[1] if len(sys.argv) > 1 else "Enter Git credentials:"
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
 
     # Иконка тоже ищется динамически (сначала в системе, если нет — берем стандартную)
     icon_path = "/usr/share/pixmaps/equestria-os-git-askpass.png"
@@ -118,7 +124,7 @@ def main():
     qss_path = os.path.join(SYSTEM_PATH, "style.qss")
     if os.path.exists(qss_path):
         with open(qss_path, "r", encoding="utf-8") as f:
-            app.setStyleSheet(f.read())
+            kit_qt.app_style(f.read())
 
     dialog = AskPassDialog(prompt_text)
     if dialog.exec():

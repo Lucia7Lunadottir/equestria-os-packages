@@ -1,39 +1,67 @@
-# equstria-os-task-panel-changer — команды и действия GUI
+# equestria-os-task-panel-changer — как устроено (2.0, переписано 2026-11-02)
 
-Самый «инвазивный» модуль настроек внешнего вида: он напрямую переписывает конфиг Plasma и на время работы **перезапускает `plasmashell`**. `pkexec` не используется нигде — все файлы в домашнем каталоге пользователя, root не нужен.
+Главное правило: с Plasma только через её официальные интерфейсы. Никаких копий
+файлов конфигурации, `kquitapp6`, `rm -rf` кешей, подмены родных пакетов KDE.
+Root не нужен: всё в домашнем каталоге.
 
-## Ключевые файлы
+## Модули
 
-* `~/.config/plasma-org.kde.plasma.desktop-appletsrc` — сам конфиг панелей Plasma (`PLASMA_CONFIG`), который и редактируется. Это INI-подобный файл, в который Plasma сама сохраняет расположение панелей, виджетов и их настройки — обычно правится только через GUI Plasma, здесь редактируется программно напрямую.
-* `~/.local/share/EquestriaOS/PanelBackup/` — бэкапы (`save_panel.sh`/`restore_panel.sh`).
-* `~/.local/share/plasma/desktoptheme/EquestriaPanel/` — сгенерированная на лету кастомная Plasma-тема для живой настройки цвета/прозрачности панели.
+| Файл | Что делает |
+|---|---|
+| `main.py` | окно: связывает интерфейс с модулями; `install_excepthook()` — ошибка показывается окном и пишется в `~/.cache/equestria-os-task-panel-changer/error.log`, а не роняет программу молча |
+| `presets.py` | `Preset`, `PresetStore`: системные `presets.json`, свои `~/.local/share/EquestriaOS/PanelStyles/presets.json`, снятые раскладки `layouts/<id>.json` |
+| `preset_applier.py` | применение по шагам: стиль панели → вид рабочего стола (если меняется) → раскладка |
+| `panel_style.py` | цвет/прозрачность панели: Plasma-стили `EquestriaPanel-Light` и `-Dark` |
+| `panel_layout.py` | раскладка в формате KDE, поправки (ярлыки, монитор памяти), скрипт Plasma, перевод старых `.bak` |
+| `desktop_icons.py` | значки рабочего стола (вид «Папка» / «Рабочий стол») |
+| `plasma.py` | D-Bus plasmashell (QtDBus), `kreadconfig6`/`kwriteconfig6`, день/ночь, перезапуск оболочки через systemd |
+| `localization.py` | строки из `localization.csv` (10 языков) |
 
-## Применение пресета раскладки (`_apply_preset_layout()`, `main.py:763-838`)
+## Цвет панели: день и ночь
 
-1. **Синхронно** останавливает оболочку: `kquitapp6 plasmashell` (`main.py:779`) + пауза 1.5 сек. `kquitapp6` — официальная утилита KDE для корректного завершения запущенного KDE-приложения по его D-Bus-имени (мягче, чем `killall`/`kill`, — даёт приложению шанс сохранить состояние перед выходом); именно поэтому и нужна пауза после — дать Plasma время реально дописать файл конфига на диск, прежде чем его редактировать.
-2. Если у пресета есть готовый снятый файл раскладки — переносит пользовательские закреплённые ярлыки из старого конфига в новый (`preserve_user_launchers`), чинит виджет системного монитора, если пресет захватил его пустым (`repair_sysmon_in_file`), копирует файл поверх `PLASMA_CONFIG`.
-   Если вместо файла есть JS-«скрипт» (старый формат пресетов) — апгрейдит виджет монитора, ревалидирует ярлыки под текущую систему, локализует подписи, дописывает перенос текущих закреплений.
-3. Пишет JS во временный файл и перезапускает: `nohup plasmashell &>/dev/null & disown; sleep 4; qdbus6 org.kde.plasmashell /PlasmaShell evaluateScript "$(cat <tmp_script>)"` (`main.py:808`). Разбор синтаксиса:
-   * `nohup <cmd> &` — запустить в фоне (`&`) и отвязать от сигнала `SIGHUP`, который иначе получил бы процесс при закрытии родительского терминала/сессии (`nohup` = «no hang up»);
-   * `&>/dev/null` — перенаправить и stdout, и stderr в «пустоту» (не засорять вывод);
-   * `disown` — дополнительно убрать процесс из таблицы фоновых заданий текущего shell (чтобы shell не пытался ждать его завершения);
-   * `sleep 4` — дать Plasma Shell время полностью подняться и создать свой D-Bus объект `/PlasmaShell`, прежде чем пытаться вызвать его метод — без паузы `qdbus` может обратиться к ещё не готовому сервису и получить ошибку;
-   * `qdbus6 org.kde.plasmashell /PlasmaShell evaluateScript "$(cat <файл>)"` — команда подстановки `$(cat <файл>)` читает содержимое JS-скрипта и подставляет его текстом прямо в аргумент `qdbus`; `evaluateScript` — метод собственного JavaScript-движка Plasma Shell (тот же API, которым пользуется сама Plasma для внутренней настройки рабочего стола), внутри скрипта доступны функции вроде `panels()` — получить список всех панелей — и `.height =` — присвоить свойство панели напрямую.
+* Два Plasma-стиля в `~/.local/share/plasma/desktoptheme/`: в каждом только `metadata.json` и
+  `widgets/panel-background.svg`. **Файла `colors` нет** — текст и всплывающие окна берут цвета
+  из цветовой схемы персонажа.
+* `metadata.json`: обязательно `"X-Plasma-API": "5.0"` и `"fallbackPackage": "default"`. С ключом
+  `X-Plasma-API-Minimum-Version` Plasma не берёт набор цветов Complementary — экран блокировки
+  осветляется, текст в окне выхода тёмный (найдено 2026-11-02, Plasma 6.8).
+* Переключает стили сама KDE: глобальные темы персонажей (`kde_laf.py` в
+  equestria-os-character-theme) содержат `[plasmarc][Theme] name=EquestriaPanel-Light|-Dark` —
+  так же Breeze указывает `name=default`. Базовые версии стилей (без своего фона, выглядят как Breeze)
+  ставит пакет character-theme в `/usr/share`: глобальная тема **не должна** ссылаться на
+  несуществующий стиль — Plasma тогда тоже ломает Complementary.
+* Применение сразу: `plasma-apply-desktoptheme <стиль для текущего времени суток>`. Если этот стиль
+  уже активен, сначала на миг `default` — иначе Plasma не перерисует панель с новым SVG.
+* `LegacyThemeCleanup` при запуске убирает следы старых версий (только свои): заглушку
+  `desktoptheme/default` («Equestria Fallback»), старый стиль `EquestriaPanel` с файлом `colors`,
+  схему `color-schemes/EquestriaPanel.colors`.
 
-## Живая настройка внешнего вида (цвет/прозрачность/скругления панели) — `_do_apply_panel_appearance()` (`main.py:665-...`)
+## Раскладка панелей
 
-**Без перезапуска plasmashell**:
-* Генерирует полноценную Plasma color scheme — файл в формате `.ini` с секциями вроде `[Colors:Window]`, `[Colors:View]` и т.п., каждая с RGB-триплетами (`BackgroundNormal=`, `ForegroundNormal=` и т.д.) — это тот же формат, которым описаны системные темы `Breeze Dark`/`Breeze Light`, здесь сгенерированный программно под выбранный акцентный цвет.
-* `generate_panel_svg()` — рисует SVG-фон панели под заданный hex-цвет/прозрачность (Plasma-темы используют масштабируемую векторную графику для фонов панелей, чтобы они одинаково выглядели на любом разрешении экрана).
-* Применяет через `qdbus6 org.kde.plasmashell ... evaluateScript` (тот же механизм, что и выше, но без перезапуска — просто просит Plasma перечитать тему панели, которая уже лежит на диске под новым содержимым).
+* Формат — тот же, что отдаёт `org.kde.PlasmaShell.dumpCurrentLayoutJS` (им KDE делает раскладки
+  глобальных тем): панели с `location/alignment/lengthMode/floating/hiding/height` (в gridUnit)
+  и виджетами с конфигом по группам (`"/General": {...}`).
+* «📸 Снять текущие панели» = `dumpCurrentLayoutJS` → `layouts/<id>.json`. Без перезапуска.
+* Применение = скрипт Desktop Scripting API через `evaluateScript`: старые панели удаляются,
+  новые создаются `new Panel` / `addWidget` / `writeConfig`. Рабочий стол и обои не трогаются.
+* Перед применением: закреплённые ярлыки пользователя переносятся в панель задач (ярлыки
+  удалённых программ отбрасываются); виджет памяти получает сенсоры и заголовок `Title`/`Title[xx]`
+  (тот же блок, что пишет `fix_sysmon_title.sh`, чтобы он не перезапускал оболочку при входе).
+* Старые снимки `layouts/*.bak` (копия всего конфига Plasma + `_shellrc`) один раз переводятся
+  в `.json` (`LegacySnapshotConverter`), оригиналы переезжают в `layouts/legacy-backup/`.
 
-## Резервное копирование конфига (`save_panel.sh`/`restore_panel.sh`)
+## Значки рабочего стола
 
-* **`save_panel.sh`** — `cp` текущего `plasma-org.kde.plasma.desktop-appletsrc` в `~/.local/share/EquestriaOS/PanelBackup/panel_<timestamp>.bak` и в `latest.bak`.
-* **`restore_panel.sh`** — `kquitapp6 plasmashell` → `sleep 1` → `cp` `latest.bak` обратно поверх конфига → `nohup plasmashell &>/dev/null & disown`.
+У Plasma нет D-Bus-метода смены вида рабочего стола. Если вид нужно сменить, `ShellRestart`:
+`systemctl --user stop plasma-plasmashell.service` → `kwriteconfig6 ... --key plugin` →
+`systemctl --user start ...` → ждёт появления plasmashell на D-Bus. Если менять нечего —
+перезапуска нет.
+
+## Режим правки KDE
+
+D-Bus: `evaluateScript("lockCorona(false);")` и свойство `editMode = true`.
 
 ## Прочее
 
-* `find_qdbus()` (`plasma_utils.py:10-31`) перебирает `qdbus6` → `qdbus-qt6` → `qdbus`, берёт первый найденный — защита от переименования бинаря между версиями KDE/дистрибутивов, та же логика, что в character-theme.
-* `set_desktop_icons_state()` (`plasma_utils.py:389-...`) включает/выключает виджет иконок рабочего стола, редактируя containment (внутреннее для Plasma понятие — «контейнер» виджетов, которым и является сам рабочий стол или панель) прямо в файле конфига.
-* Все операции временно **убивают и перезапускают `plasmashell`** — на пару секунд рабочий стол и панель мигают/пропадают, это ожидаемое поведение при таком способе применения настроек, не баг.
+* `fix_sysmon_title.sh` (автозапуск при входе) — старая одноразовая миграция заголовка виджета памяти.
+* `save_panel.sh` / `restore_panel.sh` — консольное резервное копирование конфига панелей, к окну не относятся.

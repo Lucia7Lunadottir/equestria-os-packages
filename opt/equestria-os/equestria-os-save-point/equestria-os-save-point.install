@@ -1,11 +1,30 @@
+_root_note() {
+    local fs
+    fs=$(findmnt -no FSTYPE / 2>/dev/null)
+    [[ "$fs" == "btrfs" ]] && return
+    echo ":: Equestria Save Point работает только на Btrfs (корень системы: ${fs:-?})."
+    echo "   Поддержка ext4 и других файловых систем удалена из-за нестабильности бэкапов;"
+    echo "   хук pacman на этой системе ничего не делает."
+}
+
+_legacy_repo_note() {
+    [[ -d /var/lib/equestria-save-point/restic-repo ]] || return
+    echo ":: Найден старый репозиторий restic: /var/lib/equestria-save-point/restic-repo"
+    echo "   Приложение его больше не использует. Освободить место:"
+    echo "   sudo rm -rf /var/lib/equestria-save-point/restic-repo /var/lib/equestria-save-point/repo.key"
+}
+
 post_install() {
     systemctl daemon-reload
     systemctl enable --now equestria-save-point-daily.timer
+    _root_note
 }
 
 post_upgrade() {
     systemctl daemon-reload
     systemctl enable --now equestria-save-point-daily.timer
+    _root_note
+    _legacy_repo_note
 }
 
 pre_remove() {

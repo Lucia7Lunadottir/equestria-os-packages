@@ -1,32 +1,37 @@
-key,en,ru,de,fr,es,pt,pl,uk,zh,ja
-ui.title,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme
-ui.subtitle,Select character,Выберите персонажа,Charakter auswählen,Sélectionnez un personnage,Seleccionar personaje,Selecionar personagem,Wybierz postać,Виберіть персонажа,选择角色,キャラクターを選択
-ui.active_none,Active: —,Активен: —,Aktiv: —,Actif : —,Activo: —,Ativo: —,Aktywny: —,Активний: —,当前活动: —,アクティブ: —
-ui.active_char,Active: {0},Активен: {0},Aktiv: {0},Actif : {0},Activo: {0},Ativo: {0},Aktywny: {0},Активний: {0},当前活动: {0},アクティブ: {0}
-ui.btn_edit,Edit,Изменить,Bearbeiten,Éditer,Editar,Editar,Edytuj,Змінити,编辑,編集
-ui.btn_duplicate,Duplicate,Дублировать,Duplizieren,Dupliquer,Duplicar,Duplicar,Duplikuj,Дублювати,复制,複製
-ui.btn_create_new,Create New,Создать,Neu erstellen,Créer nouveau,Crear nuevo,Criar novo,Utwórz nowy,Створити,新建,新規作成
-ui.btn_open_terminal,Open Terminal,Открыть терминал,Terminal öffnen,Ouvrir le terminal,Abrir terminal,Abrir terminal,Otwórz terminal,Відкрити термінал,打开终端,ターミナルを開く
-ui.editor_title,Theme Editor,Редактор темы,Theme-Editor,Éditeur de thème,Editor de temas,Editor de temas,Edytor motywów,Редактор теми,主题编辑器,テーマエディター
-ui.fld_id,Character ID,ID Персонажа,Charakter-ID,ID du personnage,ID de personaje,ID do personagem,ID postaci,ID персонажа,角色 ID,キャラクター ID
-ui.fld_name,Display Name,Имя,Anzeigename,Nom d'affichage,Nombre para mostrar,Nome de exibição,Nazwa wyświetlana,Ім'я,显示名称,表示名
-ui.fld_wallpaper,Wallpaper Path,Путь к обоям,Hintergrundpfad,Chemin du fond d'écran,Ruta del fondo,Caminho do papel de parede,Ścieżka tapety,Шлях до шпалер,壁纸路径,壁紙のパス
-ui.fld_icon,Cutiemark Path,Путь к метке,Cutiemark-Pfad,Chemin de la Cutiemark,Ruta de la Cutiemark,Caminho da Cutiemark,Ścieżka znaczka,Шлях до мітки,可爱标志路径,キューティーマークのパス
-ui.lbl_ui_colors,UI Colors (Hex),Цвета UI (Hex),UI-Farben (Hex),Couleurs UI (Hex),Colores de UI (Hex),Cores da UI (Hex),Kolory UI (Hex),Кольори UI (Hex),UI 颜色 (Hex),UI カラー (Hex)
-ui.lbl_konsole_colors,Konsole Colors (RGB),Цвета Konsole (RGB),Konsole-Farben (RGB),Couleurs Konsole (RGB),Colores de Konsole (RGB),Cores do Konsole (RGB),Kolory Konsole (RGB),Кольори Konsole (RGB),Konsole 颜色 (RGB),Konsole カラー (RGB)
-ui.btn_delete,Delete,Удалить,Löschen,Supprimer,Eliminar,Excluir,Usuń,Видалити,删除,削除
-ui.btn_cancel,Cancel,Отмена,Abbrechen,Annuler,Cancelar,Cancelar,Anuluj,Скасувати,取消,キャンセル
-ui.btn_save,Save,Сохранить,Speichern,Enregistrer,Guardar,Salvar,Zapisz,Зберегти,保存,保存
-ui.cp_title,Pick Color,Выбор цвета,Farbe wählen,Choisir la couleur,Elegir color,Escolher cor,Wybierz kolor,Вибір кольору,选择颜色,色を選択
-ui.btn_apply,Apply,Применить,Anwenden,Appliquer,Aplicar,Aplicar,Zastosuj,Застосувати,应用,適用
-ui.delete_title,Delete Theme?,Удалить тему?,Theme löschen?,Supprimer le thème ?,¿Eliminar tema?,Excluir tema?,Usunąć motyw?,Видалити тему?,删除主题？,テーマを削除しますか？
-ui.delete_msg,Are you sure you want to delete '{0}'?,Вы уверены что хотите удалить '{0}'?,Sind Sie sicher dass Sie '{0}' löschen möchten?,Voulez-vous vraiment supprimer '{0}' ?,¿Seguro que quieres eliminar '{0}'?,Tem certeza que deseja excluir '{0}'?,Czy na pewno chcesz usunąć '{0}'?,Ви впевнені що хочете видалити '{0}'?,确定要删除 '{0}' 吗？,本当に '{0}' を削除しますか？
-ui.btn_yes_delete,Yes Delete,Да удалить,Ja löschen,Oui supprimer,Sí eliminar,Sim excluir,Tak usuń,Так видалити,确认删除,はい削除します
-ui.btn_open_folder,Open Folder,Открыть папку,Ordner öffnen,Ouvrir le dossier,Abrir carpeta,Abrir pasta,Otwórz folder,Відкрити папку,打开文件夹,フォルダーを開く
-ui.btn_restore,Restore Defaults,Восстановить по умолчанию,Standard wiederherstellen,Restaurer par défaut,Restaurar predeterminados,Restaurar padrões,Przywróć domyślne,Відновити за замовчуванням,恢复默认,デフォルトに戻す
-ui.btn_light_mode,☀️ Light Theme,☀️ Светлая тема,☀️ Helles Design,☀️ Thème Clair,☀️ Tema Claro,☀️ Tema Claro,☀️ Jasny Motyw,☀️ Світла тема,☀️ 浅色主题,☀️ ライトテーマ
-ui.btn_dark_mode,🌙 Dark Theme,🌙 Тёмная тема,🌙 Dunkles Design,🌙 Thème Sombre,🌙 Tema Oscuro,🌙 Tema Escuro,🌙 Ciemny Motyw,🌙 Темна тема,🌙 深色主题,🌙 ダークテーマ
-ui.btn_import,Import Theme,Импорт темы,Thema importieren,Importer un thème,Importar tema,Importar tema,Importuj motyw,Імпорт теми,导入主题,テーマをインポート
-ui.btn_export,Export,Экспорт,Exportieren,Exporter,Exportar,Exportar,Eksportuj,Експорт,导出,エクスポート
-ui.import_done,Theme «{0}» imported,Тема «{0}» импортирована,Thema „{0}“ importiert,Thème « {0} » importé,Tema «{0}» importado,Tema «{0}» importado,Motyw „{0}” zaimportowany,Тему «{0}» імпортовано,主题“{0}”已导入,テーマ「{0}」をインポートしました
-ui.import_error,Failed to import theme,Не удалось импортировать тему,Thema konnte nicht importiert werden,Échec de l'importation du thème,No se pudo importar el tema,Falha ao importar o tema,Nie udało się zaimportować motywu,Не вдалося імпортувати тему,无法导入主题,テーマをインポートできませんでした
+key,en,ru,de,fr,es,pt,pl,uk,zh,zh_TW,ja,ko
+ui.title,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS Character Theme,✨ Equestria OS 캐릭터 테마
+ui.subtitle,Select character,Выберите персонажа,Charakter auswählen,Sélectionnez un personnage,Seleccionar personaje,Selecionar personagem,Wybierz postać,Виберіть персонажа,选择角色,選擇角色,キャラクターを選択,캐릭터 선택
+ui.active_none,Active: —,Активен: —,Aktiv: —,Actif : —,Activo: —,Ativo: —,Aktywny: —,Активний: —,当前活动: —,當前活動: —,アクティブ: —,활성: —
+ui.active_char,Active: {0},Активен: {0},Aktiv: {0},Actif : {0},Activo: {0},Ativo: {0},Aktywny: {0},Активний: {0},当前活动: {0},當前活動: {0},アクティブ: {0},활성: {0}
+ui.btn_edit,Edit,Изменить,Bearbeiten,Éditer,Editar,Editar,Edytuj,Змінити,编辑,編輯,編集,편집
+ui.btn_duplicate,Duplicate,Дублировать,Duplizieren,Dupliquer,Duplicar,Duplicar,Duplikuj,Дублювати,复制,複製,複製,복제
+ui.btn_create_new,Create New,Создать,Neu erstellen,Créer nouveau,Crear nuevo,Criar novo,Utwórz nowy,Створити,新建,新建,新規作成,새로 만들기
+ui.btn_open_terminal,Open Terminal,Открыть терминал,Terminal öffnen,Ouvrir le terminal,Abrir terminal,Abrir terminal,Otwórz terminal,Відкрити термінал,打开终端,開啟終端,ターミナルを開く,터미널 열기
+ui.editor_title,Theme Editor,Редактор темы,Theme-Editor,Éditeur de thème,Editor de temas,Editor de temas,Edytor motywów,Редактор теми,主题编辑器,主題編輯器,テーマエディター,테마 편집기
+ui.fld_id,Character ID,ID Персонажа,Charakter-ID,ID du personnage,ID de personaje,ID do personagem,ID postaci,ID персонажа,角色 ID,角色 ID,キャラクター ID,캐릭터 ID
+ui.fld_name,Display Name,Имя,Anzeigename,Nom d'affichage,Nombre para mostrar,Nome de exibição,Nazwa wyświetlana,Ім'я,显示名称,顯示名稱,表示名,표시 이름
+ui.fld_wallpaper,Wallpaper Path,Путь к обоям,Hintergrundpfad,Chemin du fond d'écran,Ruta del fondo,Caminho do papel de parede,Ścieżka tapety,Шлях до шпалер,壁纸路径,桌布路徑,壁紙のパス,배경 화면 경로
+ui.fld_icon,Cutiemark Path,Путь к метке,Cutiemark-Pfad,Chemin de la Cutiemark,Ruta de la Cutiemark,Caminho da Cutiemark,Ścieżka znaczka,Шлях до мітки,可爱标志路径,可愛標誌路徑,キューティーマークのパス,큐티마크 경로
+ui.lbl_ui_colors,UI Colors (Hex),Цвета UI (Hex),UI-Farben (Hex),Couleurs UI (Hex),Colores de UI (Hex),Cores da UI (Hex),Kolory UI (Hex),Кольори UI (Hex),UI 颜色 (Hex),UI 顏色 (Hex),UI カラー (Hex),UI 색상 (16진수)
+ui.lbl_konsole_colors,Konsole Colors (RGB),Цвета Konsole (RGB),Konsole-Farben (RGB),Couleurs Konsole (RGB),Colores de Konsole (RGB),Cores do Konsole (RGB),Kolory Konsole (RGB),Кольори Konsole (RGB),Konsole 颜色 (RGB),Konsole 顏色 (RGB),Konsole カラー (RGB),Konsole 색상 (RGB)
+ui.btn_delete,Delete,Удалить,Löschen,Supprimer,Eliminar,Excluir,Usuń,Видалити,删除,刪除,削除,삭제
+ui.btn_cancel,Cancel,Отмена,Abbrechen,Annuler,Cancelar,Cancelar,Anuluj,Скасувати,取消,取消,キャンセル,취소
+ui.btn_save,Save,Сохранить,Speichern,Enregistrer,Guardar,Salvar,Zapisz,Зберегти,保存,儲存,保存,저장
+ui.cp_title,Pick Color,Выбор цвета,Farbe wählen,Choisir la couleur,Elegir color,Escolher cor,Wybierz kolor,Вибір кольору,选择颜色,選擇顏色,色を選択,색 선택
+ui.btn_apply,Apply,Применить,Anwenden,Appliquer,Aplicar,Aplicar,Zastosuj,Застосувати,应用,應用,適用,적용
+ui.delete_title,Delete Theme?,Удалить тему?,Theme löschen?,Supprimer le thème ?,¿Eliminar tema?,Excluir tema?,Usunąć motyw?,Видалити тему?,删除主题？,刪除主題？,テーマを削除しますか？,테마를 삭제할까요?
+ui.delete_msg,Are you sure you want to delete '{0}'?,Вы уверены что хотите удалить '{0}'?,Sind Sie sicher dass Sie '{0}' löschen möchten?,Voulez-vous vraiment supprimer '{0}' ?,¿Seguro que quieres eliminar '{0}'?,Tem certeza que deseja excluir '{0}'?,Czy na pewno chcesz usunąć '{0}'?,Ви впевнені що хочете видалити '{0}'?,确定要删除 '{0}' 吗？,確定要刪除 '{0}' 嗎？,本当に '{0}' を削除しますか？,'{0}'을(를) 삭제하시겠습니까?
+ui.btn_yes_delete,Yes Delete,Да удалить,Ja löschen,Oui supprimer,Sí eliminar,Sim excluir,Tak usuń,Так видалити,确认删除,確認刪除,はい削除します,"예, 삭제"
+ui.btn_open_folder,Open Folder,Открыть папку,Ordner öffnen,Ouvrir le dossier,Abrir carpeta,Abrir pasta,Otwórz folder,Відкрити папку,打开文件夹,開啟資料夾,フォルダーを開く,폴더 열기
+ui.btn_restore,Restore Defaults,Восстановить по умолчанию,Standard wiederherstellen,Restaurer par défaut,Restaurar predeterminados,Restaurar padrões,Przywróć domyślne,Відновити за замовчуванням,恢复默认,恢復預設,デフォルトに戻す,기본값 복원
+ui.btn_import,Import Theme,Импорт темы,Thema importieren,Importer un thème,Importar tema,Importar tema,Importuj motyw,Імпорт теми,导入主题,匯入主題,テーマをインポート,테마 가져오기
+ui.btn_export,Export,Экспорт,Exportieren,Exporter,Exportar,Exportar,Eksportuj,Експорт,导出,匯出,エクスポート,내보내기
+ui.import_done,Theme «{0}» imported,Тема «{0}» импортирована,Thema „{0}“ importiert,Thème « {0} » importé,Tema «{0}» importado,Tema «{0}» importado,Motyw „{0}” zaimportowany,Тему «{0}» імпортовано,主题“{0}”已导入,主題“{0}”已匯入,テーマ「{0}」をインポートしました,테마 «{0}»을(를) 가져왔습니다
+ui.import_error,Failed to import theme,Не удалось импортировать тему,Thema konnte nicht importiert werden,Échec de l'importation du thème,No se pudo importar el tema,Falha ao importar o tema,Nie udało się zaimportować motywu,Не вдалося імпортувати тему,无法导入主题,無法匯入主題,テーマをインポートできませんでした,테마를 가져오지 못했습니다
+ui.mode_label,Mode:,Режим:,Modus:,Mode :,Modo:,Modo:,Tryb:,Режим:,模式：,模式：,モード:,모드:
+ui.mode_auto,◐ Auto,◐ Авто,◐ Auto,◐ Auto,◐ Auto,◐ Auto,◐ Auto,◐ Авто,◐ 自动,◐ 自動,◐ 自動,◐ 자동
+ui.mode_light,☼ Light,☼ Светлая,☼ Hell,☼ Clair,☼ Claro,☼ Claro,☼ Jasny,☼ Світла,☼ 浅色,☼ 淺色,☼ ライト,☼ 밝게
+ui.mode_dark,☾ Dark,☾ Тёмная,☾ Dunkel,☾ Sombre,☾ Oscuro,☾ Escuro,☾ Ciemny,☾ Темна,☾ 深色,☾ 深色,☾ ダーク,☾ 어둡게
+ui.mode_auto_tip,"Light by day, dark at night — on the KDE schedule","Днём светлая, ночью тёмная — по расписанию KDE","Tagsüber hell, nachts dunkel — nach dem KDE-Zeitplan","Clair le jour, sombre la nuit — selon le planning de KDE","Claro de día, oscuro de noche — según el horario de KDE","Claro de dia, escuro à noite — conforme o horário do KDE","Jasny w dzień, ciemny w nocy — według harmonogramu KDE","Удень світла, вночі темна — за розкладом KDE",白天浅色，夜间深色——按 KDE 日程切换,白天淺色，夜間深色——按 KDE 日程切換,昼はライト、夜はダーク — KDE のスケジュールに従います,"낮에는 밝게, 밤에는 어둡게 — KDE 일정에 따라"
+ui.mode_light_tip,Always light; automatic switching is turned off,"Всегда светлая, автоматическая смена выключена","Immer hell, automatischer Wechsel ist aus","Toujours clair, le changement automatique est désactivé",Siempre claro; el cambio automático se desactiva,Sempre claro; a troca automática é desativada,"Zawsze jasny, automatyczna zmiana wyłączona","Завжди світла, автоматичну зміну вимкнено",始终浅色，自动切换关闭,始終淺色，自動切換關閉,常にライト。自動切り替えはオフになります,항상 밝게. 자동 전환이 꺼집니다
+ui.mode_dark_tip,Always dark; automatic switching is turned off,"Всегда тёмная, автоматическая смена выключена","Immer dunkel, automatischer Wechsel ist aus","Toujours sombre, le changement automatique est désactivé",Siempre oscuro; el cambio automático se desactiva,Sempre escuro; a troca automática é desativada,"Zawsze ciemny, automatyczna zmiana wyłączona","Завжди темна, автоматичну зміну вимкнено",始终深色，自动切换关闭,始終深色，自動切換關閉,常にダーク。自動切り替えはオフになります,항상 어둡게. 자동 전환이 꺼집니다

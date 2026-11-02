@@ -1,0 +1,12 @@
+[kdeglobals][General]
+ColorScheme=EquestriaApplejackLight
+
+[kcminputrc][Mouse]
+cursorTheme=Vimix-white-cursors
+
+[plasmarc][Theme]
+name=EquestriaPanel-Light
+
+[ksplashrc][KSplash]
+Engine=KSplashQML
+Theme=Equestria-OS

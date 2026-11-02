@@ -17,6 +17,7 @@ except ImportError:  # запуск из исходников, пакет equest
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import detect_language
 
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
@@ -233,19 +234,14 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
                 self.locales[key] = {lang: text for lang, text in row.items() if lang != "key"}
 
     def detect_language(self):
-        lang = os.environ.get("LANG", "en")
-        for l in ["ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]:
-            if lang.startswith(l):
-                self.current_lang = l
-                return
-        self.current_lang = "en"
+        self.current_lang = detect_language()
 
     def t_str(self, key):
         return self.locales.get(key, {}).get(self.current_lang, key)
 
     def setup_lang_selector(self):
         # Компактный выпадающий список языков вместо ряда кнопок
-        codes = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
+        codes = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "zh_TW", "ja", "ko"]
         self.lang_combo = QComboBox()
         self.lang_combo.setObjectName("LangCombo")
         for code in codes:

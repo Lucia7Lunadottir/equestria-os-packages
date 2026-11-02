@@ -72,7 +72,7 @@
   "desc.displaylink": "Pilotes pour stations d'accueil USB DisplayLink et moniteurs externes",
   "ui.update_all": "Mettre à jour le système",
   "ui.update_title": "Mise à jour système",
-  "ui.update_desc": "Voulez-vous vraiment mettre à jour tous les paquets du système (Pacman, AUR, Flatpak, Snap) ?",
+  "ui.update_desc": "Voulez-vous vraiment mettre à jour tous les paquets du système (Pacman, AUR, Flatpak, Snap, DEB/RPM) ?",
   "ui.cancel": "Annuler",
   "ui.confirm": "Mettre à jour",
   "ui.install": "Installer",
@@ -107,6 +107,8 @@
   "ui.flatpak_not_installed_title": "Flatpak n'est pas installé",
   "ui.flatpak_not_installed_desc": "Installez Flatpak pour accéder à des milliers d'applications Flathub.",
   "ui.flatpak_install_btn": "Installer Flatpak",
+  "ui.flatpak_ref_not_found_title": "Application introuvable",
+  "ui.flatpak_ref_not_found_body": "« {name} » n'est pas encore dans le catalogue Flatpak local. Vérifiez que le support Flatpak est activé et que le catalogue est à jour, puis réessayez le lien.",
   "ui.source_updates": "Mises à jour",
   "ui.integrity_check": "Vérifier les fichiers système",
   "ui.cache_clean": "Nettoyer le cache des paquets",
@@ -161,8 +163,8 @@
   "install.retrying": "Nouvelle tentative",
   "install.title_init_db": "Initialisation de la base de paquets…",
   "ui.update_no_sources": "Aucune source de mise à jour n'est activée. Activez-en au moins une dans les Paramètres.",
-  "ui.flatpak_ref_not_found_title": "Application introuvable",
-  "ui.flatpak_ref_not_found_body": "« {name} » n'est pas encore dans le catalogue Flatpak local. Vérifiez que le support Flatpak est activé et que le catalogue est à jour, puis réessayez le lien.",
   "install.input_placeholder": "Saisissez votre réponse (ex. 1) puis appuyez sur Entrée",
-  "install.btn_send": "Envoyer"
+  "install.btn_send": "Envoyer",
+  "settings.upd_foreign": "Mettre à jour les applications des paquets DEB et RPM",
+  "ui.foreign_desc": "Application d'un paquet DEB/RPM · installée {0}"
 }

@@ -3,9 +3,7 @@ from datetime import datetime
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QComboBox
 from PyQt6.QtGui import QIcon, QFontDatabase, QFont
 from PyQt6.QtCore import Qt, pyqtSignal
-from backend import (SnapshotData, detect_backend,
-                     TimeshiftBackend, ResticBackend, BtrfsBackend,
-                     RESTIC_REPO)
+from backend import SnapshotData, detect_backend, detect_root_fstype, BtrfsBackend
 from ui_pkg import Ui_SavePoint, SnapshotRow, SettingsDialog, ProgressDialog
 from screenshot import init_screenshots, take_screenshot, find_screenshot
 from hooks import check_hooks_installed, build_hook_apply_script
@@ -16,9 +14,10 @@ except ImportError:  # запуск из исходников, пакет equest
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import detect_language
 from equestria_kit.widgets import font_families
 
-SUPPORTED_LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
+SUPPORTED_LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "zh_TW", "ja", "ko"]
 CONFIG_DIR      = os.path.expanduser("~/.config/equestria-save-point")
 CONFIG_FILE     = os.path.join(CONFIG_DIR, "config.json")
 
@@ -63,28 +62,16 @@ class main_app(QMainWindow, Ui_SavePoint):
         init_screenshots()
 
         self.langs = self._load_locales()
-        self.current_lang = "en"
-        for _var in ("LANGUAGE", "LANG", "LC_ALL", "LC_MESSAGES"):
-            _val = (os.getenv(_var) or "")[:2]
-            if _val in self.langs:
-                self.current_lang = _val
-                break
+        _code = detect_language()
+        self.current_lang = _code if _code in self.langs else "en"
 
         # Config
         cfg = self._load_config()
         self.spin_keep_last.setValue(cfg.get("keep_last", DEFAULT_KEEP_LAST))
-        self._repo_path = cfg.get("repo_path", RESTIC_REPO)
 
-        # Backend
-        backend_type = detect_backend()
-        if backend_type == "btrfs":
-            self.backend = BtrfsBackend()
-        elif backend_type == "restic":
-            self.backend = ResticBackend(repo=self._repo_path)
-        elif backend_type == "timeshift":
-            self.backend = TimeshiftBackend()
-        else:
-            self.backend = None
+        # Backend: only Btrfs is supported ('unsupported' = ext4 and others)
+        self._backend_type = detect_backend()
+        self.backend = BtrfsBackend() if self._backend_type == "btrfs" else None
 
         self._snap_rows: dict[str, SnapshotRow] = {}
         self.load_finished.connect(self.on_load_finished)
@@ -103,12 +90,9 @@ class main_app(QMainWindow, Ui_SavePoint):
         except (OSError, json.JSONDecodeError):
             return {}
 
-    def _save_config(self, repo_path=None):
+    def _save_config(self):
         os.makedirs(CONFIG_DIR, exist_ok=True)
-        data = {
-            "keep_last": self.spin_keep_last.value(),
-            "repo_path": repo_path or getattr(self, "_repo_path", RESTIC_REPO),
-        }
+        data = {"keep_last": self.spin_keep_last.value()}
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
@@ -179,11 +163,11 @@ class main_app(QMainWindow, Ui_SavePoint):
         self.btn_delete.setText(self.t("btn.delete"))
         self._rerender_rows()
 
-        if self.modal_overlay.isVisible() and self._modal_mode == "setup":
-            self.modal_title.setText(self.t("setup.title"))
-            self.modal_text.setText(self.t("setup.desc"))
-            self.btn_confirm_ok.setText(self.t("setup.btn"))
-            self.set_status_key("setup.status")
+        if self.modal_overlay.isVisible() and self._modal_mode == "unsupported":
+            self.modal_title.setText(self.t("unsupported.title"))
+            self.modal_text.setText(self._unsupported_text())
+            self.btn_confirm_ok.setText(self.t("btn.close"))
+            self._refresh_status()
         else:
             self.modal_title.setText(self.t("modal.title"))
             self._refresh_status()
@@ -191,9 +175,8 @@ class main_app(QMainWindow, Ui_SavePoint):
     # ── Modal ─────────────────────────────────────────────────────────────────
 
     def _on_modal_ok(self):
-        if self._modal_mode == "setup":
+        if self._modal_mode == "unsupported":
             self.modal_overlay.hide()
-            self._run_restic_init()
         else:
             self.execute_restore()
 
@@ -216,10 +199,8 @@ class main_app(QMainWindow, Ui_SavePoint):
 
         def _fetch():
             if self.backend is None:
-                self.load_finished.emit([], "__NO_BACKEND__")
-                return
-            if isinstance(self.backend, ResticBackend) and not self.backend.is_initialized():
-                self.load_finished.emit([], "__RESTIC_SETUP__")
+                self.load_finished.emit(
+                    [], "__UNSUPPORTED__" if self._backend_type == "unsupported" else "__NO_BACKEND__")
                 return
             snapshots, error = self.backend.list_snapshots()
             self.load_finished.emit(snapshots, error)
@@ -235,18 +216,21 @@ class main_app(QMainWindow, Ui_SavePoint):
         self.btn_delete.setEnabled(False)
         self._snap_rows = {}
 
-        if error == "__RESTIC_SETUP__":
+        if error == "__UNSUPPORTED__":
+            # ext4 and other filesystems: support removed, explain once per refresh
+            self.btn_create.setEnabled(False)
+            self.set_status_key("err.unsupported_fs", detect_root_fstype())
             self._show_modal(
-                "setup",
-                self.t("setup.title"),
-                self.t("setup.desc"),
-                self.t("setup.btn"),
+                "unsupported",
+                self.t("unsupported.title"),
+                self._unsupported_text(),
+                self.t("btn.close"),
                 show_cancel=False,
             )
-            self.set_status_key("setup.status")
             return
 
         if error == "__NO_BACKEND__":
+            self.btn_create.setEnabled(False)
             self.set_status_key("err.no_backend")
             return
 
@@ -307,7 +291,6 @@ class main_app(QMainWindow, Ui_SavePoint):
             "M": ("tag.monthly",   "#b89020"),
             "B": ("tag.boot",      "#c06030"),
             "O": ("tag.ondemand",  "#2e8c50"),
-            "R": ("tag.restic",    "#1e7a8a"),
             "S": ("tag.snapshot",  "#1a6a5a"),
             "P": ("tag.protected", "@yellow%65@"),
         }
@@ -371,59 +354,16 @@ class main_app(QMainWindow, Ui_SavePoint):
     # ── Settings / hooks ──────────────────────────────────────────────────────
 
     def open_settings_dialog(self):
-        from PyQt6.QtWidgets import QMessageBox
         hook_pacman, hook_flatpak = check_hooks_installed()
-        is_btrfs = isinstance(self.backend, BtrfsBackend)
-        dlg = SettingsDialog(self, self.t, hook_pacman, hook_flatpak,
-                             self._repo_path,
-                             show_repo_section=not is_btrfs)
+        dlg = SettingsDialog(self, self.t, hook_pacman, hook_flatpak)
         if not dlg.exec():
             return
+        self._apply_hook_settings(dlg.check_pacman.isChecked(), dlg.check_flatpak.isChecked())
 
-        new_repo = dlg.edit_repo_path.text().strip() or self._repo_path
-
-        # User clicked "Delete repository"
-        if dlg._delete_repo:
-            old = shlex.quote(new_repo)
-            cmd = (f"pkexec rm -rf {old}"
-                   "\necho\necho '--- Done. Press Enter to close ---'\nread")
-            launch_terminal(cmd)
-            return
-
-        # If path changed and old repo still exists, offer to move it
-        move_old = None
-        if new_repo != self._repo_path and os.path.isdir(self._repo_path):
-            box = QMessageBox(self)
-            box.setWindowTitle(self.t("settings.repo_path"))
-            box.setText(self.t("settings.move_confirm").format(
-                self._repo_path, new_repo))
-            btn_move = box.addButton(
-                self.t("settings.btn_move"), QMessageBox.ButtonRole.AcceptRole)
-            box.addButton(
-                self.t("settings.btn_keep"), QMessageBox.ButtonRole.RejectRole)
-            box.exec()
-            if box.clickedButton() == btn_move:
-                move_old = self._repo_path
-
-        self._apply_hook_settings(
-            dlg.check_pacman.isChecked(),
-            dlg.check_flatpak.isChecked(),
-            new_repo,
-            move_old_repo=move_old,
-        )
-
-    def _apply_hook_settings(self, hook_pacman: bool, hook_flatpak: bool,
-                              repo_path: str, move_old_repo: str = None):
+    def _apply_hook_settings(self, hook_pacman: bool, hook_flatpak: bool):
         keep = self.spin_keep_last.value()
-        script = build_hook_apply_script(
-            hook_pacman, hook_flatpak, repo_path, move_old_repo, keep, RESTIC_REPO
-        )
-
-        # Update in-process state & user config
-        self._repo_path = repo_path
-        if isinstance(self.backend, ResticBackend):
-            self.backend = ResticBackend(repo=repo_path)
-        self._save_config(repo_path=repo_path)
+        script = build_hook_apply_script(hook_pacman, hook_flatpak, keep)
+        self._save_config()
 
         cmd = (f"pkexec bash -c {shlex.quote(script)}"
                "\necho\necho '--- Done. Press Enter to close ---'\nread")
@@ -503,12 +443,8 @@ class main_app(QMainWindow, Ui_SavePoint):
         dlg.exec()
         self.load_snapshots()
 
-    def _run_restic_init(self):
-        inner = self.backend.init_cmd()
-        dlg = ProgressDialog(self, self.t("setup.title"), self.t)
-        dlg.run("pkexec", ["bash", "-c", inner])
-        dlg.exec()
-        self.load_snapshots()
+    def _unsupported_text(self) -> str:
+        return self.t("unsupported.desc").format(detect_root_fstype())
 
 
 if __name__ == "__main__":

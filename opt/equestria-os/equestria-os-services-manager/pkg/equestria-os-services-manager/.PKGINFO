@@ -3,13 +3,14 @@
 pkgname = equestria-os-services-manager
 pkgbase = equestria-os-services-manager
 xdata = pkgtype=pkg
-pkgver = 2.2.0-4
+pkgver = 2.2.0-6
 pkgdesc = Official Equestria OS Service Manager (Enable, Disable, Start, Stop)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1783782420
+builddate = 1793646731
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 3506534
+size = 3509813
 arch = any
 license = GPL
+depend = equestria-qt-kit>=1.1
 depend = polkit
 depend = python-pyqt6

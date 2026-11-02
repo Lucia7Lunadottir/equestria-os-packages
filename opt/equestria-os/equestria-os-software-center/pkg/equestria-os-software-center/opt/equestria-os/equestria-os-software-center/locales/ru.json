@@ -72,7 +72,7 @@
   "desc.displaylink": "Драйверы для USB док-станций DisplayLink и внешних мониторов",
   "ui.update_all": "Обновить систему",
   "ui.update_title": "Обновление системы",
-  "ui.update_desc": "Вы уверены, что хотите обновить все системные пакеты (Pacman, AUR, Flatpak, Snap)?",
+  "ui.update_desc": "Вы уверены, что хотите обновить все системные пакеты (Pacman, AUR, Flatpak, Snap, DEB/RPM)?",
   "ui.cancel": "Отмена",
   "ui.confirm": "Обновить",
   "ui.install": "Установить",
@@ -164,5 +164,7 @@
   "install.title_init_db": "Инициализация базы пакетов…",
   "ui.update_no_sources": "Ни один источник обновлений не включён. Включите хотя бы один в Настройках.",
   "install.input_placeholder": "Введите ответ (например, 1) и нажмите Enter",
-  "install.btn_send": "Отправить"
+  "install.btn_send": "Отправить",
+  "settings.upd_foreign": "Обновлять программы из пакетов DEB и RPM",
+  "ui.foreign_desc": "Программа из пакета DEB/RPM · установлена {0}"
 }

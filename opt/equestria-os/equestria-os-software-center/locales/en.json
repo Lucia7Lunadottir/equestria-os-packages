@@ -72,7 +72,7 @@
   "desc.displaylink": "Drivers for DisplayLink USB docking stations and external monitors",
   "ui.update_all": "Update System",
   "ui.update_title": "System Update",
-  "ui.update_desc": "Are you sure you want to update all system packages (Pacman, AUR, Flatpak, Snap)?",
+  "ui.update_desc": "Are you sure you want to update all system packages (Pacman, AUR, Flatpak, Snap, DEB/RPM)?",
   "ui.cancel": "Cancel",
   "ui.confirm": "Update",
   "ui.install": "Install",
@@ -164,5 +164,7 @@
   "install.title_init_db": "Initializing package database…",
   "ui.update_no_sources": "No update sources are enabled. Enable at least one in Settings.",
   "install.input_placeholder": "Type your answer here (e.g. 1) and press Enter",
-  "install.btn_send": "Send"
+  "install.btn_send": "Send",
+  "settings.upd_foreign": "Update apps from DEB and RPM packages",
+  "ui.foreign_desc": "App from a DEB/RPM package · installed {0}"
 }

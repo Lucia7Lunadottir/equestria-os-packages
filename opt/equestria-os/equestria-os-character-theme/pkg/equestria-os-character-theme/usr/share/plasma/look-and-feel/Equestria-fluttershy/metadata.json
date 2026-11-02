@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Id": "Equestria-fluttershy",
+        "Name": "Equestria — Fluttershy",
+        "Name[ru]": "Equestria — Fluttershy",
+        "Description": "Fluttershy: day",
+        "Description[ru]": "Fluttershy: день",
+        "Icon": "preferences-desktop-theme-global",
+        "Authors": [
+            {
+                "Name": "Equestria OS"
+            }
+        ],
+        "Version": "2.0"
+    }
+}

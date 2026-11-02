@@ -72,7 +72,7 @@
   "desc.displaylink": "Treiber für DisplayLink USB-Dockingstationen und externe Monitore",
   "ui.update_all": "System aktualisieren",
   "ui.update_title": "Systemupdate",
-  "ui.update_desc": "Sind Sie sicher, dass Sie alle Systempakete (Pacman, AUR, Flatpak, Snap) aktualisieren möchten?",
+  "ui.update_desc": "Sind Sie sicher, dass Sie alle Systempakete (Pacman, AUR, Flatpak, Snap, DEB/RPM) aktualisieren möchten?",
   "ui.cancel": "Abbrechen",
   "ui.confirm": "Aktualisieren",
   "ui.install": "Installieren",
@@ -107,6 +107,8 @@
   "ui.flatpak_not_installed_title": "Flatpak ist nicht installiert",
   "ui.flatpak_not_installed_desc": "Installieren Sie Flatpak, um auf tausende Flathub-Anwendungen zuzugreifen.",
   "ui.flatpak_install_btn": "Flatpak installieren",
+  "ui.flatpak_ref_not_found_title": "Anwendung nicht gefunden",
+  "ui.flatpak_ref_not_found_body": "„{name}“ ist noch nicht im lokalen Flatpak-Katalog. Stellen Sie sicher, dass Flatpak aktiviert und der Katalog aktuell ist, und versuchen Sie den Link erneut.",
   "ui.source_updates": "Updates",
   "ui.integrity_check": "Systemdateien prüfen",
   "ui.cache_clean": "Paket-Cache leeren",
@@ -161,8 +163,8 @@
   "install.retrying": "Erneuter Versuch",
   "install.title_init_db": "Paketdatenbank wird initialisiert…",
   "ui.update_no_sources": "Keine Update-Quelle ist aktiviert. Aktivieren Sie mindestens eine in den Einstellungen.",
-  "ui.flatpak_ref_not_found_title": "Anwendung nicht gefunden",
-  "ui.flatpak_ref_not_found_body": "„{name}“ ist noch nicht im lokalen Flatpak-Katalog. Stellen Sie sicher, dass Flatpak aktiviert und der Katalog aktuell ist, und versuchen Sie den Link erneut.",
   "install.input_placeholder": "Antwort eingeben (z. B. 1) und Enter drücken",
-  "install.btn_send": "Senden"
+  "install.btn_send": "Senden",
+  "settings.upd_foreign": "Programme aus DEB- und RPM-Paketen aktualisieren",
+  "ui.foreign_desc": "Programm aus einem DEB/RPM-Paket · installiert {0}"
 }

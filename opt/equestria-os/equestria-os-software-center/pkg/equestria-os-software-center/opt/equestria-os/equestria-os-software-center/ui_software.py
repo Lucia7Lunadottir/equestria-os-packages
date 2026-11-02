@@ -448,9 +448,10 @@ class AppDetailWidget(QWidget):
         self.combo_source_selector.clear()
 
         # Задаем приоритет и красивые названия
-        source_labels = {"pacman": "Pacman (System)", "flatpak": "Flatpak (Flathub)", "aur": "AUR (Community)"}
+        source_labels = {"pacman": "Pacman (System)", "flatpak": "Flatpak (Flathub)", "aur": "AUR (Community)",
+                         "foreign": "DEB/RPM"}
 
-        for src in ["pacman", "flatpak", "aur"]:
+        for src in ["pacman", "flatpak", "aur", "foreign"]:
             if src in alts_dict:
                 self.combo_source_selector.addItem(source_labels[src], src)
                 if src == default_source:

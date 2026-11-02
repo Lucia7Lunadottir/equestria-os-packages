@@ -2,7 +2,12 @@
 """Equestria OS foreign package bridge — installs .deb/.rpm without pacman or AUR tools.
 
 Extracts files only; never runs embedded maintainer scripts/scriptlets.
-Tracks installed files in its own manifest so packages can be cleanly removed.
+Tracks installed files in its own manifest so packages can be cleanly removed,
+and records where updates come from (pkgmeta.detect_source) so the installer
+window can check the vendor's repository later. Installing a newer version of
+an already installed package replaces it: files the new version no longer ships
+are removed, and the old manifest (even one written under a different name by
+older installer versions) is dropped.
 """
 import json
 import os
@@ -14,6 +19,8 @@ import subprocess
 import sys
 import tempfile
 from datetime import datetime, timezone
+
+import pkgmeta
 
 MANIFEST_DIR = "/var/lib/equestria-installer/foreign"
 PACMAN_SYNC_DIR = "/var/lib/pacman/sync"
@@ -242,7 +249,10 @@ def build_dependency_plan(targets, extracted_root):
         if os.path.isfile(local) and not os.path.islink(local):
             needed |= elf_needed_libs(local)
 
-    missing = sorted(needed - cached_library_names())
+    # Библиотеки, которые пакет привозит сам (свои копии рядом с программой,
+    # например libffmpeg.so у Electron-приложений), недостающими не считаются
+    shipped = {os.path.basename(t) for t in targets}
+    missing = sorted(needed - cached_library_names() - shipped)
     plan = {"missing": {}, "unresolved": [], "file_db_stale": False}
     if not missing:
         return plan
@@ -338,22 +348,49 @@ def _extract_rpm(path: str, dest_dir: str, preserve_perms: bool = True):
     return pkg_name, pkg_version, targets
 
 
-def install_deb(path: str, approved_deps=None):
-    pkg_name, pkg_version, targets = _extract_deb(path, "/")
-    log(f"Package: {pkg_name} {pkg_version}")
-    log(f"Extracted {len(targets)} files.")
-    apply_dependency_selection(approved_deps)
-    write_manifest(pkg_name, pkg_version, "deb", targets)
-    log(f"Installed {pkg_name} {pkg_version} ({len(targets)} files)")
+def load_manifests() -> list[dict]:
+    if not os.path.isdir(MANIFEST_DIR):
+        return []
+    out = []
+    for entry in sorted(os.listdir(MANIFEST_DIR)):
+        try:
+            with open(os.path.join(MANIFEST_DIR, entry)) as f:
+                m = json.load(f)
+            m["_file"] = entry
+            out.append(m)
+        except (OSError, ValueError):
+            continue
+    return out
 
 
-def install_rpm(path: str, approved_deps=None):
-    pkg_name, pkg_version, targets = _extract_rpm(path, "/")
-    log(f"Package: {pkg_name} {pkg_version}")
+def previous_installs(name: str, files: list) -> list[dict]:
+    """Записи об этой же программе: то же имя или больше половины тех же файлов
+    (старые версии установщика называли RPM по имени файла, а не пакета)."""
+    new = set(files)
+    found = []
+    for m in load_manifests():
+        old = set(m.get("files", []))
+        if m.get("name") == name or (old and len(old & new) * 2 > len(old)):
+            found.append(m)
+    return found
+
+
+def install_package(path: str, approved_deps=None):
+    info = pkgmeta.read_package(path)
+    extract = _extract_deb if info.format == "deb" else _extract_rpm
+    _name, _version, targets = extract(path, "/")
+    log(f"Package: {info.name} {info.version}")
     log(f"Extracted {len(targets)} files.")
     apply_dependency_selection(approved_deps)
-    write_manifest(pkg_name, pkg_version, "rpm", targets)
-    log(f"Installed {pkg_name} {pkg_version} ({len(targets)} files)")
+    # Обновление: убрать файлы, которых в новой версии больше нет, и старые записи
+    for old in previous_installs(info.name, targets):
+        stale = set(old.get("files", [])) - set(targets)
+        remove_files(stale)
+        if old["_file"] != f"{info.name}.json":
+            os.remove(os.path.join(MANIFEST_DIR, old["_file"]))
+        log(f"Replaced previous install: {old.get('name')} {old.get('version')} ({len(stale)} stale files removed)")
+    write_manifest(info.name, info.version, info.format, targets, info.source(targets))
+    log(f"Installed {info.name} {info.version} ({len(targets)} files)")
 
 
 def plan_package(path: str):
@@ -364,11 +401,13 @@ def plan_package(path: str):
     nothing is downloaded or installed here."""
     with tempfile.TemporaryDirectory(prefix="equestria-plan-") as tmp:
         if path.endswith(".deb"):
-            pkg_name, pkg_version, targets = _extract_deb(path, tmp)
+            _n, _v, targets = _extract_deb(path, tmp)
         elif path.endswith(".rpm"):
-            pkg_name, pkg_version, targets = _extract_rpm(path, tmp, preserve_perms=False)
+            _n, _v, targets = _extract_rpm(path, tmp, preserve_perms=False)
         else:
             raise BridgeError(f"unsupported package type: {path}")
+        info = pkgmeta.read_package(path)
+        pkg_name, pkg_version = info.name, info.version
 
         log(f"Package: {pkg_name} {pkg_version} ({len(targets)} files)")
         plan = build_dependency_plan(targets, tmp)
@@ -379,13 +418,14 @@ def plan_package(path: str):
     print("PLAN_JSON:" + json.dumps(plan), flush=True)
 
 
-def write_manifest(name, version, fmt, files):
+def write_manifest(name, version, fmt, files, source=None):
     os.makedirs(MANIFEST_DIR, exist_ok=True, mode=0o755)
     manifest = {
         "name": name,
         "version": version,
         "format": fmt,
         "installed_at": datetime.now(timezone.utc).isoformat(),
+        "source": source,
         "files": sorted(set(files)),
     }
     manifest_path = os.path.join(MANIFEST_DIR, f"{name}.json")
@@ -422,26 +462,27 @@ def uninstall(name: str):
     with open(manifest_path) as f:
         manifest = json.load(f)
 
-    removed = 0
-    for target in manifest["files"]:
-        try:
-            os.remove(target)
-            removed += 1
-        except FileNotFoundError:
-            pass
-        except IsADirectoryError:
-            pass
-
-    for target in sorted(manifest["files"], key=len, reverse=True):
-        parent = os.path.dirname(target)
-        try:
-            os.rmdir(parent)
-        except OSError:
-            pass
-
+    removed = remove_files(manifest["files"])
     os.remove(manifest_path)
     update_app_database()
     log(f"Removed {name} ({removed} files)")
+
+
+def remove_files(files) -> int:
+    """Удалить файлы и ставшие пустыми папки. Возвращает число удалённых файлов."""
+    removed = 0
+    for target in files:
+        try:
+            os.remove(target)
+            removed += 1
+        except (FileNotFoundError, IsADirectoryError):
+            pass
+    for target in sorted(files, key=len, reverse=True):
+        try:
+            os.rmdir(os.path.dirname(target))
+        except OSError:
+            pass
+    return removed
 
 
 def list_installed():
@@ -467,12 +508,9 @@ def main():
         if command == "install" and len(sys.argv) in (3, 4):
             path = sys.argv[2]
             approved_deps = [d for d in sys.argv[3].split(",") if d] if len(sys.argv) == 4 else []
-            if path.endswith(".deb"):
-                install_deb(path, approved_deps)
-            elif path.endswith(".rpm"):
-                install_rpm(path, approved_deps)
-            else:
+            if not path.endswith((".deb", ".rpm")):
                 raise BridgeError(f"unsupported package type: {path}")
+            install_package(path, approved_deps)
         elif command == "plan" and len(sys.argv) == 3:
             plan_package(sys.argv[2])
         elif command == "sync-file-db":
@@ -485,7 +523,7 @@ def main():
         else:
             print(USAGE, file=sys.stderr)
             return 1
-    except BridgeError as e:
+    except (BridgeError, ValueError, OSError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
 

@@ -72,7 +72,7 @@
   "desc.displaylink": "用于DisplayLink USB扩展坞和外部显示器的驱动程序",
   "ui.update_all": "更新系统",
   "ui.update_title": "系统更新",
-  "ui.update_desc": "您确定要更新所有系统包 (Pacman, AUR, Flatpak, Snap) 吗？",
+  "ui.update_desc": "您确定要更新所有系统包 (Pacman, AUR, Flatpak, Snap, DEB/RPM) 吗？",
   "ui.cancel": "取消",
   "ui.confirm": "更新",
   "ui.install": "安装",
@@ -107,6 +107,8 @@
   "ui.flatpak_not_installed_title": "未安装Flatpak",
   "ui.flatpak_not_installed_desc": "安装Flatpak以访问数千个Flathub应用程序。",
   "ui.flatpak_install_btn": "安装Flatpak",
+  "ui.flatpak_ref_not_found_title": "未找到应用",
+  "ui.flatpak_ref_not_found_body": "本地 Flatpak 目录中还没有“{name}”。请确认已启用 Flatpak 支持且目录已更新，然后重新尝试该链接。",
   "ui.source_updates": "更新",
   "ui.integrity_check": "检查系统文件",
   "ui.cache_clean": "清理包缓存",
@@ -161,8 +163,8 @@
   "install.retrying": "正在重试",
   "install.title_init_db": "正在初始化软件包数据库…",
   "ui.update_no_sources": "未启用任何更新源。请在设置中至少启用一个。",
-  "ui.flatpak_ref_not_found_title": "未找到应用",
-  "ui.flatpak_ref_not_found_body": "本地 Flatpak 目录中还没有“{name}”。请确认已启用 Flatpak 支持且目录已更新，然后重新尝试该链接。",
   "install.input_placeholder": "请输入答案（例如 1）并按回车",
-  "install.btn_send": "发送"
+  "install.btn_send": "发送",
+  "settings.upd_foreign": "更新来自 DEB 和 RPM 软件包的程序",
+  "ui.foreign_desc": "来自 DEB/RPM 软件包的程序 · 已安装 {0}"
 }

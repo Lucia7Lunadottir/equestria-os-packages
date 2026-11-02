@@ -4,11 +4,11 @@ import os
 import subprocess
 
 # Указываем правильный путь из твоего PKGBUILD
-APP_DIR = "/opt/equestria-os/equestria-save-point"
+APP_DIR = "/opt/equestria-os/equestria-os-save-point"
 sys.path.append(APP_DIR)
 
 try:
-    from backend import detect_backend, BtrfsBackend, ResticBackend, TimeshiftBackend, RESTIC_REPO
+    from backend import detect_backend, BtrfsBackend
 except ImportError:
     print(f"Ошибка: Не удалось найти модули Equestria Save Point в {APP_DIR}")
     sys.exit(1)
@@ -19,23 +19,14 @@ def main():
         sys.exit(1)
 
     backend_type = detect_backend()
-    if backend_type == "none":
-        print("Ошибка: Не найдена поддерживаемая файловая система или бэкенд (btrfs/restic).")
+    if backend_type == "unsupported":
+        print("Ошибка: точки сохранения работают только на Btrfs. Поддержка ext4 и других "
+              "файловых систем удалена из-за нестабильности резервных копий.")
         sys.exit(1)
-
-    repo_path = RESTIC_REPO
-    repo_cfg = "/var/lib/equestria-save-point/repo-path"
-    if os.path.exists(repo_cfg):
-        with open(repo_cfg) as f:
-            p = f.read().strip()
-            if p: repo_path = p
-
-    if backend_type == "btrfs":
-        backend = BtrfsBackend()
-    elif backend_type == "restic":
-        backend = ResticBackend(repo=repo_path)
-    elif backend_type == "timeshift":
-        backend = TimeshiftBackend()
+    if backend_type == "none":
+        print("Ошибка: не найден btrfs-progs (установите пакет btrfs-progs).")
+        sys.exit(1)
+    backend = BtrfsBackend()
 
     snapshots, err = backend.list_snapshots()
     if err or not snapshots:
@@ -56,7 +47,7 @@ def main():
         snap_to_restore = snapshots[0]
     elif target == "day":
         for s in snapshots:
-            if s.tags == "D":
+            if s.protected:
                 snap_to_restore = s
                 break
     else:
@@ -75,8 +66,7 @@ def main():
     try:
         subprocess.run(["bash", "-c", cmd], check=True)
         print("\n✅ Восстановление успешно инициировано.")
-        if backend_type == "btrfs":
-            print("ВНИМАНИЕ: Для применения изменений Btrfs необходимо перезагрузить систему!")
+        print("ВНИМАНИЕ: Для применения изменений Btrfs необходимо перезагрузить систему!")
     except subprocess.CalledProcessError as e:
         print(f"\n❌ Ошибка при восстановлении: {e}")
         sys.exit(1)

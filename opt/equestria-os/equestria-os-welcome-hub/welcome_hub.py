@@ -9,6 +9,7 @@ except ImportError:  # запуск из исходников, пакет equest
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import normalize
 from equestria_kit.widgets import font_families
 
 class Item:
@@ -36,27 +37,27 @@ class main_app(QMainWindow, Ui_WelcomeHub):
             kit_qt.style(self, open(os.path.join(self.base_path, "style.qss")).read())
 
         self.strings = {
-            "cat.system": {"en":"🛠️ System", "ru":"🛠️ Система", "de":"🛠️ System", "fr":"🛠️ Système", "es":"🛠️ Sistema", "pt":"🛠️ Sistema", "pl":"🛠️ System", "uk":"🛠️ Система", "zh":"🛠️ 系统", "ja":"🛠️ システム"},
-            "cat.music": {"en":"🎵 Music", "ru":"🎵 Музыка", "de":"🎵 Musik", "fr":"🎵 Musique", "es":"🎵 Música", "pt":"🎵 Música", "pl":"🎵 Muzyka", "uk":"🎵 Музика", "zh":"🎵 音乐", "ja":"🎵 音楽"},
-            "cat.games": {"en":"🎮 Games", "ru":"🎮 Игры", "de":"🎮 Spiele", "fr":"🎮 Jeux", "es":"🎮 Juegos", "pt":"🎮 Jogos", "pl":"🎮 Gry", "uk":"🎮 Ігри", "zh":"🎮 游戏", "ja":"🎮 ゲーム"},
-            "cat.social": {"en":"🐴 Pony Social", "ru":"🐴 Пони-соцсети", "de":"🐴 Pony Soziales", "fr":"🐴 Social Pony", "es":"🐴 Social Pony", "pt":"🐴 Social Pony", "pl":"🐴 Kucyk Social", "uk":"🐴 Поні-соцмережі", "zh":"🐴 小马社区", "ja":"🐴 ポニーSNS"},
-            "cat.support": {"en":"🆘 Support", "ru":"🆘 Поддержка", "de":"🆘 Support", "fr":"🆘 Aide", "es":"🆘 Soporte", "pt":"🆘 Suporte", "pl":"🆘 Wsparcie", "uk":"🆘 Підтримка", "zh":"🆘 支持", "ja":"🆘 サポート"},
-            "ui.autostart": {"en":"Launch on startup", "ru":"Запускать при старте", "de":"Beim Start ausführen", "fr":"Lancer au démarrage", "es":"Iniciar al arrancar", "pt":"Iniciar na inicialização", "pl":"Uruchom przy starcie", "uk":"Запускати при старті", "zh":"开机启动", "ja":"起動時に実行"},
-            "app.theme": {"en":"Equestria OS Theme Switcher", "ru":"Переключатель тем Equestria OS", "de":"Equestria-OS-Theme-Wechsler", "fr":"Sélecteur de thèmes Equestria OS", "es":"Selector de temas de Equestria OS", "pt":"Seletor de temas Equestria OS", "pl":"Przełącznik motywów Equestria OS", "uk":"Перемикач тем Equestria OS", "zh":"Equestria OS主题切换器", "ja":"Equestria OSテーマスイッチャー"},
-            "app.tutorial": {"en":"Equestria OS Tour", "ru":"Тур по Equestria OS", "de":"Equestria OS Tour", "fr":"Visite guided Equestria OS", "es":"Tour de Equestria OS", "pt":"Tour do Equestria OS", "pl":"Wycieczka po Equestria OS", "uk":"Тур по Equestria OS", "zh":"Equestria OS 导览", "ja":"Equestria OS ツアー"},
-            "app.panel": {"en":"Equestria OS Task Panel Changer", "ru":"Настройка панели задач Equestria OS", "de":"Equestria OS Taskleisten-Konfigurator", "fr":"Gestionnaire de barre des tâches Equestria OS", "es":"Configurador de barra de tareas Equestria OS", "pt":"Configurador de barra de tarefas Equestria OS", "pl":"Konfigurator paska zadań Equestria OS", "uk":"Налаштування панели завдань Equestria OS", "zh":"Equestria OS任务栏配置器", "ja":"Equestria OSタスクバー設定"},
-            "app.net": {"en":"Equestria Net — Social Network", "ru":"Equestria Net — соцсеть", "de":"Equestria Net — Soziales Netzwerk", "fr":"Equestria Net — Réseau social", "es":"Equestria Net — Red social", "pt":"Equestria Net — Rede social", "pl":"Equestria Net — Sieć społecznościowa", "uk":"Equestria Net — соцмережа", "zh":"Equestria Net — 社交网络", "ja":"Equestria Net — SNS"},
-            "app.store": {"en":"Equestria OS App Store", "ru":"Магазин Equestria OS", "de":"Equestria OS App Store", "fr":"Boutique Equestria OS", "es":"Tienda Equestria OS", "pt":"Loja Equestria OS", "pl":"Sklep Equestria OS", "uk":"Магазин Equestria OS", "zh":"Equestria OS 应用商店", "ja":"Equestria OS アプリストア"},
-            "app.pkgs": {"en":"Equestria OS Packages", "ru":"Пакеты Equestria OS", "de":"Equestria OS Pakete", "fr":"Paquets Equestria OS", "es":"Paquetes de Equestria OS", "pt":"Pacotes do Equestria OS", "pl":"Pakiety Equestria OS", "uk":"Пакети Equestria OS", "zh":"Equestria OS软件包", "ja":"Equestria OSパッケージ"}
+            "cat.system": {"en":"🛠️ System", "ru":"🛠️ Система", "de":"🛠️ System", "fr":"🛠️ Système", "es":"🛠️ Sistema", "pt":"🛠️ Sistema", "pl":"🛠️ System", "uk":"🛠️ Система", "zh":"🛠️ 系统", "ja":"🛠️ システム", "zh_TW": "🛠️ 系統", "ko": "🛠️ 시스템"},
+            "cat.music": {"en":"🎵 Music", "ru":"🎵 Музыка", "de":"🎵 Musik", "fr":"🎵 Musique", "es":"🎵 Música", "pt":"🎵 Música", "pl":"🎵 Muzyka", "uk":"🎵 Музика", "zh":"🎵 音乐", "ja":"🎵 音楽", "zh_TW": "🎵 音樂", "ko": "🎵 음악"},
+            "cat.games": {"en":"🎮 Games", "ru":"🎮 Игры", "de":"🎮 Spiele", "fr":"🎮 Jeux", "es":"🎮 Juegos", "pt":"🎮 Jogos", "pl":"🎮 Gry", "uk":"🎮 Ігри", "zh":"🎮 游戏", "ja":"🎮 ゲーム", "zh_TW": "🎮 遊戲", "ko": "🎮 게임"},
+            "cat.social": {"en":"🐴 Pony Social", "ru":"🐴 Пони-соцсети", "de":"🐴 Pony Soziales", "fr":"🐴 Social Pony", "es":"🐴 Social Pony", "pt":"🐴 Social Pony", "pl":"🐴 Kucyk Social", "uk":"🐴 Поні-соцмережі", "zh":"🐴 小马社区", "ja":"🐴 ポニーSNS", "zh_TW": "🐴 小馬社群", "ko": "🐴 포니 소셜"},
+            "cat.support": {"en":"🆘 Support", "ru":"🆘 Поддержка", "de":"🆘 Support", "fr":"🆘 Aide", "es":"🆘 Soporte", "pt":"🆘 Suporte", "pl":"🆘 Wsparcie", "uk":"🆘 Підтримка", "zh":"🆘 支持", "ja":"🆘 サポート", "zh_TW": "🆘 支援", "ko": "🆘 지원"},
+            "ui.autostart": {"en":"Launch on startup", "ru":"Запускать при старте", "de":"Beim Start ausführen", "fr":"Lancer au démarrage", "es":"Iniciar al arrancar", "pt":"Iniciar na inicialização", "pl":"Uruchom przy starcie", "uk":"Запускати при старті", "zh":"开机启动", "ja":"起動時に実行", "zh_TW": "開機啟動", "ko": "시작 시 실행"},
+            "app.theme": {"en":"Equestria OS Theme Switcher", "ru":"Переключатель тем Equestria OS", "de":"Equestria-OS-Theme-Wechsler", "fr":"Sélecteur de thèmes Equestria OS", "es":"Selector de temas de Equestria OS", "pt":"Seletor de temas Equestria OS", "pl":"Przełącznik motywów Equestria OS", "uk":"Перемикач тем Equestria OS", "zh":"Equestria OS主题切换器", "ja":"Equestria OSテーマスイッチャー", "zh_TW": "Equestria OS主題切換器", "ko": "Equestria OS 테마 전환기"},
+            "app.tutorial": {"en":"Equestria OS Tour", "ru":"Тур по Equestria OS", "de":"Equestria OS Tour", "fr":"Visite guided Equestria OS", "es":"Tour de Equestria OS", "pt":"Tour do Equestria OS", "pl":"Wycieczka po Equestria OS", "uk":"Тур по Equestria OS", "zh":"Equestria OS 导览", "ja":"Equestria OS ツアー", "zh_TW": "Equestria OS 導覽", "ko": "Equestria OS 둘러보기"},
+            "app.panel": {"en":"Equestria OS Task Panel Changer", "ru":"Настройка панели задач Equestria OS", "de":"Equestria OS Taskleisten-Konfigurator", "fr":"Gestionnaire de barre des tâches Equestria OS", "es":"Configurador de barra de tareas Equestria OS", "pt":"Configurador de barra de tarefas Equestria OS", "pl":"Konfigurator paska zadań Equestria OS", "uk":"Налаштування панели завдань Equestria OS", "zh":"Equestria OS任务栏配置器", "ja":"Equestria OSタスクバー設定", "zh_TW": "Equestria OS工作列配置器", "ko": "Equestria OS 작업 표시줄 변경기"},
+            "app.net": {"en":"Equestria Net — Social Network", "ru":"Equestria Net — соцсеть", "de":"Equestria Net — Soziales Netzwerk", "fr":"Equestria Net — Réseau social", "es":"Equestria Net — Red social", "pt":"Equestria Net — Rede social", "pl":"Equestria Net — Sieć społecznościowa", "uk":"Equestria Net — соцмережа", "zh":"Equestria Net — 社交网络", "ja":"Equestria Net — SNS", "zh_TW": "Equestria Net — 社交網路", "ko": "Equestria Net — 소셜 네트워크"},
+            "app.store": {"en":"Equestria OS App Store", "ru":"Магазин Equestria OS", "de":"Equestria OS App Store", "fr":"Boutique Equestria OS", "es":"Tienda Equestria OS", "pt":"Loja Equestria OS", "pl":"Sklep Equestria OS", "uk":"Магазин Equestria OS", "zh":"Equestria OS 应用商店", "ja":"Equestria OS アプリストア", "zh_TW": "Equestria OS 應用商店", "ko": "Equestria OS 앱 스토어"},
+            "app.pkgs": {"en":"Equestria OS Packages", "ru":"Пакеты Equestria OS", "de":"Equestria OS Pakete", "fr":"Paquets Equestria OS", "es":"Paquetes de Equestria OS", "pt":"Pacotes do Equestria OS", "pl":"Pakiety Equestria OS", "uk":"Пакети Equestria OS", "zh":"Equestria OS软件包", "ja":"Equestria OSパッケージ", "zh_TW": "Equestria OS軟體包", "ko": "Equestria OS 패키지"}
         }
 
-        # --- УМНОЕ ОПРЕДЕЛЕНИЕ ЯЗЫКА (ПРИОРИТЕТ 10 ЛОКАЛЕЙ) ---
-        self.langs = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
+        # --- УМНОЕ ОПРЕДЕЛЕНИЕ ЯЗЫКА (ПРИОРИТЕТ 12 ЛОКАЛЕЙ) ---
+        self.langs = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "zh_TW", "ja", "ko"]
         self.current_lang = "en"
 
         detected_lang = None
         for lang in QLocale.system().uiLanguages():
-            clean_lang = lang.split('-')[0].split('_')[0].lower()
+            clean_lang = normalize(lang)
             if clean_lang in self.langs:
                 detected_lang = clean_lang
                 break
@@ -67,7 +68,7 @@ class main_app(QMainWindow, Ui_WelcomeHub):
                 if val:
                     parts = val.split(':') if var == 'LANGUAGE' else [val]
                     for part in parts:
-                        clean_lang = part.split('.')[0].split('_')[0].lower()
+                        clean_lang = normalize(part)
                         if clean_lang in self.langs:
                             detected_lang = clean_lang
                             break

@@ -2,6 +2,12 @@ import os
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
 from PyQt6.QtGui import QPainter, QColor, QPixmap, QPainterPath
 from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, pyqtProperty, QRectF, QSize, QPoint
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 
 class HelpPopup(QLabel):
@@ -21,11 +27,11 @@ class HelpPopup(QLabel):
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.setWordWrap(True)
         self.setMaximumWidth(self._MAX_WIDTH)
-        self.setStyleSheet(
+        kit_qt.style(self, 
             "QLabel {"
-            "background-color: rgb(25, 20, 40);"
-            "color: rgb(210, 200, 235);"
-            "border: 1px solid rgb(110, 90, 160);"
+            "background-color: @base@;"
+            "color: @text@;"
+            "border: 1px solid @accent%55@;"
             "border-radius: 6px;"
             "padding: 6px 10px;"
             "}"
@@ -56,11 +62,11 @@ class HelpButton(QWidget):
     ховера не бывает)."""
 
     _SIZE = 18
-    _BG = QColor(45, 40, 70)
-    _BG_HOVER = QColor(90, 65, 140)
-    _BORDER = QColor(100, 85, 150)
-    _BORDER_HOVER = QColor(160, 120, 220)
-    _TEXT = QColor(190, 170, 230)
+    _BG = kit_qt.theme_color("surface1")
+    _BG_HOVER = kit_qt.theme_color("accent%75")
+    _BORDER = kit_qt.theme_color("subtext")
+    _BORDER_HOVER = kit_qt.theme_color("accent")
+    _TEXT = kit_qt.theme_color("accent_hover")
     _TEXT_HOVER = QColor(230, 220, 255)
 
     def __init__(self, help_text="", parent=None):
@@ -111,24 +117,12 @@ class HelpButton(QWidget):
         p.drawText(rect, Qt.AlignmentFlag.AlignCenter, "?")
         p.end()
 
-PANEL_LAYOUTS = {
-    "sunset":    [{"pos": "bottom", "w": 0.62, "h": 0.28, "float": True}],
-    "twilight":  [{"pos": "bottom", "w": 1.0,  "h": 0.22, "float": False}],
-    "rainbow":   [{"pos": "top",    "w": 1.0,  "h": 0.16, "float": False},
-                  {"pos": "bottom", "w": 0.45, "h": 0.26, "float": True}],
-    "rarity":    [{"pos": "top",    "w": 1.0,  "h": 0.14, "float": False},
-                  {"pos": "bottom", "w": 0.38, "h": 0.30, "float": True}],
-    "applejack": [{"pos": "bottom", "w": 1.0,  "h": 0.26, "float": False}],
-    "fluttershy":[{"pos": "bottom", "w": 0.70, "h": 0.22, "float": True}],
-    "pinkie":    [{"pos": "bottom", "w": 1.0,  "h": 0.24, "float": False}],
-}
-
 class SafeCheckBox(QWidget):
     """Красивый анимированный Toggle-переключатель с текстом справа."""
     toggled = pyqtSignal(bool)
 
-    _COLOR_ON  = QColor(120, 80, 200)
-    _COLOR_OFF = QColor(55, 48, 80)
+    _COLOR_ON  = kit_qt.theme_color("accent")
+    _COLOR_OFF = kit_qt.theme_color("surface2")
     _COLOR_KNOB = QColor(230, 220, 255)
 
     _TRACK_W = 38
@@ -214,22 +208,27 @@ class SafeCheckBox(QWidget):
         p.drawEllipse(QRectF(lp + self._knob_x, track_y + (self._TRACK_H - self._KNOB_D) / 2, self._KNOB_D, self._KNOB_D))
 
         if self._label:
-            p.setPen(QColor(200, 190, 230))
+            p.setPen(kit_qt.theme_color("accent_hover"))
             p.drawText(int(lp + self._TRACK_W + 6), 0, self.width() - int(lp + self._TRACK_W + 6), h,
                        Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, self._label)
         p.end()
 
 class PanelPreviewWidget(QWidget):
-    def __init__(self, preset_id, panel_color="#1e1e2e", panel_opacity=90, parent=None):
+    """Мини-схема раскладки: экран и панели на нём (по данным пресета)."""
+
+    def __init__(self, panels=None, panel_color="#313060", panel_opacity=90, parent=None):
         super().__init__(parent)
-        self.preset_id = preset_id
+        self.panels = panels or []
         self.panel_color = panel_color
         self.panel_opacity = panel_opacity
-        self.layout_configs = PANEL_LAYOUTS.get(preset_id, [])
 
     def set_appearance(self, color, opacity):
         self.panel_color = color
         self.panel_opacity = opacity
+        self.update()
+
+    def set_panels(self, panels):
+        self.panels = panels or []
         self.update()
 
     def paintEvent(self, event):
@@ -242,22 +241,30 @@ class PanelPreviewWidget(QWidget):
         painter.setClipPath(clip_path)
 
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor(44, 42, 68))
+        painter.setBrush(kit_qt.theme_color("surface1"))
         painter.drawRect(0, 0, w, h)
 
-        for cfg in self.layout_configs:
-            pw, ph = int(w * cfg["w"]), int(h * cfg["h"])
-            x = (w - pw) // 2
-            y = h - ph if cfg["pos"] == "bottom" else 0
-            color = QColor(self.panel_color)
-            color.setAlphaF(max(self.panel_opacity / 100.0, 0.70))
-            painter.setBrush(color)
-            radius = 5 if cfg.get("float") else 0
+        color = QColor(self.panel_color)
+        color.setAlphaF(max(self.panel_opacity / 100.0, 0.70))
+        painter.setBrush(color)
+        for p in self.panels:
+            vertical = p.get("location") in ("left", "right")
+            along, across = (h, w) if vertical else (w, h)
+            # толщина: высота в gridUnit → доля схемы (панель 2.5 gridUnit ≈ четверть)
+            thick = max(3, int(across * min(0.34, float(p.get("height", 2.5)) * 0.1)))
+            length = along if p.get("lengthMode", "fill") == "fill" else int(along * 0.55)
+            gap = 2 if p.get("floating") else 0
+            align = p.get("alignment", "center")
+            start = {"left": gap, "right": along - length - gap}.get(align, (along - length) // 2)
+            near = p.get("location") in ("top", "left")
+            edge = gap if near else across - thick - gap
+            x, y, pw, ph = (edge, start, thick, length) if vertical else (start, edge, length, thick)
+            radius = 4 if p.get("floating") else 0
             painter.drawRoundedRect(x, y, pw, ph, radius, radius)
         painter.end()
 
 class PresetCard(QPushButton):
-    def __init__(self, preset_id, char_name, desc_text, icon_path, parent=None):
+    def __init__(self, preset_id, char_name, desc_text, icon_path, panels=None, parent=None):
         super().__init__(parent)
         self.preset_id = preset_id
         self.setMinimumSize(170, 230)
@@ -288,7 +295,7 @@ class PresetCard(QPushButton):
         desc_lbl.setWordWrap(True)
         desc_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 
-        self.preview_widget = PanelPreviewWidget(preset_id)
+        self.preview_widget = PanelPreviewWidget(panels)
         self.preview_widget.setFixedSize(96, 34)
         self.preview_widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 

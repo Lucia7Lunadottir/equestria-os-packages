@@ -3,9 +3,10 @@
 # Called by: pacman hook (runs as root) or flatpak wrapper (via pkexec)
 # Usage: pacman-snapshot.sh [tag]
 #
-# Auto-detects the backend:
-#   Btrfs root + btrfs-progs  →  btrfs subvolume snapshot (native CoW)
-#   Otherwise                 →  restic (must be initialised)
+# Works only on a Btrfs root (btrfs subvolume snapshot, native CoW).
+# Support for ext4 and other filesystems (restic backups) was removed:
+# backing up the whole root before every transaction slowed installs down
+# and restores were unreliable. On those systems the script does nothing.
 
 KEEP_FILE="/var/lib/equestria-save-point/hook-config"
 TAG="${1:-auto}"
@@ -158,137 +159,8 @@ if [[ "$_fstype" == "btrfs" ]] && command -v btrfs &>/dev/null; then
     exit 0
 fi
 
-# ── Restic path ───────────────────────────────────────────────────────────────
-REPO="/var/lib/equestria-save-point/restic-repo"
-KEY="/var/lib/equestria-save-point/repo.key"
-REPO_PATH_FILE="/var/lib/equestria-save-point/repo-path"
-
-# Allow the GUI to override the repository location
-if [[ -f "$REPO_PATH_FILE" ]]; then
-    _override=$(cat "$REPO_PATH_FILE" 2>/dev/null | tr -d '\n')
-    [[ -n "$_override" ]] && REPO="$_override"
-fi
-
-# Exit gracefully if repository is not yet initialised
-if [[ ! -f "$KEY" ]]; then
-    echo ":: Save Point: repository key not found. Skipping restore point."
-    exit 0
-fi
-if [[ ! -d "$REPO" ]]; then
-    echo ":: Save Point: repository not found at $REPO (disk not mounted?). Skipping restore point."
-    exit 0
-fi
-
-# ── Restic daily protected path (TAG="D") ────────────────────────────────────
-if [[ "$TAG" == "D" ]]; then
-    _today=$(date +%Y-%m-%d)
-    _snap_ts=$(date +%Y-%m-%d_%H-%M-%S)
-
-    # Idempotent: only create if no daily-protected snapshot exists for today
-    _existing=$(restic -r "$REPO" --password-file "$KEY" \
-        snapshots --tag daily-protected --json --quiet 2>/dev/null \
-        | python3 -c "
-import sys, json
-try:
-    snaps = json.load(sys.stdin)
-    print(any(s.get('time','')[:10] == '$_today' for s in snaps))
-except Exception:
-    print(False)
-" 2>/dev/null)
-
-    if [[ "$_existing" == "True" ]]; then
-        echo ":: Save Point: daily snapshot already exists for $_today, skipping."
-    else
-        echo ":: Save Point: creating daily protected snapshot..."
-        _take_screenshot "$_snap_ts"
-        if restic -r "$REPO" --password-file "$KEY" \
-            backup / \
-            --exclude=/proc      \
-            --exclude=/sys       \
-            --exclude=/dev       \
-            --exclude=/run       \
-            --exclude=/tmp       \
-            --exclude=/var/run   \
-            --exclude=/var/tmp   \
-            --exclude=/var/cache/pacman/pkg \
-            --exclude=/root/.cache          \
-            --exclude=/home                 \
-            --exclude=/mnt                  \
-            --exclude=/media                \
-            --exclude=/lost+found           \
-            --exclude="$REPO"               \
-            --tag daily-protected \
-            --compression auto    \
-            --quiet 2>/dev/null; then
-            echo ":: Save Point: daily snapshot created successfully."
-        else
-            echo ":: Save Point: WARNING — could not create daily snapshot. Continuing."
-        fi
-    fi
-
-    # Keep only 7 daily-protected snapshots — delete the oldest if more exist
-    restic -r "$REPO" --password-file "$KEY" \
-        snapshots --tag daily-protected --json --quiet 2>/dev/null \
-        | python3 -c "
-import sys, json, subprocess
-try:
-    snaps = sorted(json.load(sys.stdin), key=lambda s: s.get('time',''))
-    to_del = snaps[:-7] if len(snaps) > 7 else []
-    for s in to_del:
-        subprocess.run(
-            ['restic', '-r', '$REPO', '--password-file', '$KEY',
-             'forget', s['id'], '--prune', '--quiet'],
-            capture_output=True)
-except Exception:
-    pass
-" 2>/dev/null
-
-    # Корректируем права после работы ежедневного бэкапа
-    chown -R root:wheel "/var/lib/equestria-save-point" 2>/dev/null
-    chmod 750 "/var/lib/equestria-save-point" 2>/dev/null
-    chmod 640 "$KEY" 2>/dev/null
-    chmod -R g+rX "$REPO" 2>/dev/null
-    exit 0
-fi
-
-# ── Restic regular snapshot path ─────────────────────────────────────────────
-_snap_ts=$(date +%Y-%m-%d_%H-%M-%S)
-echo ":: Save Point: creating restore point before package operation..."
-_take_screenshot "$_snap_ts"
-
-if restic -r "$REPO" --password-file "$KEY" \
-    backup / \
-    --exclude=/proc      \
-    --exclude=/sys       \
-    --exclude=/dev       \
-    --exclude=/run       \
-    --exclude=/tmp       \
-    --exclude=/var/run   \
-    --exclude=/var/tmp   \
-    --exclude=/var/cache/pacman/pkg \
-    --exclude=/root/.cache          \
-    --exclude=/home                 \
-    --exclude=/mnt                  \
-    --exclude=/media                \
-    --exclude=/lost+found           \
-    --exclude="$REPO"               \
-    --tag "$TAG"         \
-    --compression auto   \
-    --quiet 2>/dev/null; then
-    echo ":: Save Point: restore point created successfully."
-else
-    echo ":: Save Point: WARNING — could not create restore point. Installation will continue."
-fi
-
-# Prune regular snapshots; always preserve daily-protected ones
-restic -r "$REPO" --password-file "$KEY" \
-    forget --keep-last "$KEEP" --keep-tag daily-protected --prune \
-    --quiet 2>/dev/null
-
-# Корректируем права после работы обычного бэкапа, чтобы юзер видел список
-chown -R root:wheel "/var/lib/equestria-save-point" 2>/dev/null
-chmod 750 "/var/lib/equestria-save-point" 2>/dev/null
-chmod 640 "$KEY" 2>/dev/null
-chmod -R g+rX "$REPO" 2>/dev/null
-
+# ── Not Btrfs: nothing to do ──────────────────────────────────────────────────
+# ext4 and other filesystems are no longer supported (restic backups were slow
+# and restores unreliable). Never block the package transaction.
+echo ":: Save Point: root is ${_fstype:-unknown}, not Btrfs — restore points are not supported, skipping."
 exit 0

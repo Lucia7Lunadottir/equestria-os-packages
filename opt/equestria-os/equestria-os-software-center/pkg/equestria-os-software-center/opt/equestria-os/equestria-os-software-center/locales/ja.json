@@ -72,7 +72,7 @@
   "desc.displaylink": "DisplayLink USBドッキングステーションおよび外部モニターのドライバー",
   "ui.update_all": "システム更新",
   "ui.update_title": "システム更新",
-  "ui.update_desc": "すべてのシステムパッケージ (Pacman, AUR, Flatpak, Snap) を更新してもよろしいですか？",
+  "ui.update_desc": "すべてのシステムパッケージ (Pacman, AUR, Flatpak, Snap, DEB/RPM) を更新してもよろしいですか？",
   "ui.cancel": "キャンセル",
   "ui.confirm": "更新",
   "ui.install": "インストール",
@@ -107,6 +107,8 @@
   "ui.flatpak_not_installed_title": "Flatpakがインストールされていません",
   "ui.flatpak_not_installed_desc": "Flatpakをインストールして、何千ものFlathubアプリにアクセスしてください。",
   "ui.flatpak_install_btn": "Flatpakをインストール",
+  "ui.flatpak_ref_not_found_title": "アプリが見つかりません",
+  "ui.flatpak_ref_not_found_body": "「{name}」はまだローカルの Flatpak カタログにありません。Flatpak サポートが有効でカタログが最新であることを確認してから、リンクをもう一度お試しください。",
   "ui.source_updates": "アップデート",
   "ui.integrity_check": "システムファイルを確認",
   "ui.cache_clean": "パッケージキャッシュを削除",
@@ -161,8 +163,8 @@
   "install.retrying": "再試行しています",
   "install.title_init_db": "パッケージデータベースを初期化しています…",
   "ui.update_no_sources": "有効な更新元がありません。設定で少なくとも1つ有効にしてください。",
-  "ui.flatpak_ref_not_found_title": "アプリが見つかりません",
-  "ui.flatpak_ref_not_found_body": "「{name}」はまだローカルの Flatpak カタログにありません。Flatpak サポートが有効でカタログが最新であることを確認してから、リンクをもう一度お試しください。",
   "install.input_placeholder": "回答を入力（例：1）して Enter を押してください",
-  "install.btn_send": "送信"
+  "install.btn_send": "送信",
+  "settings.upd_foreign": "DEB・RPM パッケージのアプリを更新",
+  "ui.foreign_desc": "DEB/RPM パッケージのアプリ · インストール済み {0}"
 }

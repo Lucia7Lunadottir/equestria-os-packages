@@ -1,0 +1,12 @@
+[kdeglobals][General]
+ColorScheme=EquestriaTwilightDark
+
+[kcminputrc][Mouse]
+cursorTheme=Vimix-cursors
+
+[plasmarc][Theme]
+name=EquestriaPanel-Dark
+
+[ksplashrc][KSplash]
+Engine=KSplashQML
+Theme=Equestria-OS

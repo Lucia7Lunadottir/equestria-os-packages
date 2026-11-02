@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-software-center
 pkgver=1.8.0
-pkgrel=11
+pkgrel=14
 pkgdesc="Software Center for Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('equestria-qt-kit' 'pacman' 'pacman-contrib' 'yay' 'polkit' 'python-pyqt6' 'fakeroot')
+depends=('equestria-qt-kit>=1.1' 'equestria-installer>=2.0.0-3' 'pacman' 'pacman-contrib' 'yay' 'polkit' 'python-pyqt6' 'fakeroot')
 install=equestria-os-software-center.install
 
 package() {

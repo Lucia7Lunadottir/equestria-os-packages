@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Локализация Equestria-приложений на 10 языков.
+Локализация Equestria-приложений на 12 языков.
 
 В коде строки пишутся по-русски и оборачиваются в tr():
     tr("Обновить")            → "Refresh" / "Aktualisieren" / ...
@@ -19,15 +19,34 @@ import json
 import os
 from pathlib import Path
 
-LANGS = ("en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja")
+# zh — упрощённый китайский, zh_TW — традиционный (Тайвань, Гонконг, Макао)
+LANGS = ("en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "zh_TW", "ja", "ko")
 SOURCE_LANG = "ru"
+# Названия языков — на самих языках, их не переводят
+LANGUAGE_NAMES = {
+    "en": "English", "ru": "Русский", "de": "Deutsch", "fr": "Français", "es": "Español",
+    "pt": "Português", "pl": "Polski", "uk": "Українська", "zh": "简体中文", "zh_TW": "繁體中文",
+    "ja": "日本語", "ko": "한국어",
+}
+_TRADITIONAL = ("zh_tw", "zh_hk", "zh_mo", "zh_hant", "zh-tw", "zh-hk", "zh-mo", "zh-hant")
+
+
+def normalize(locale_name: str) -> str:
+    """«zh_TW.UTF-8», «zh-Hant-HK», «ko_KR» … → код из LANGS («» — язык не поддерживается).
+    Просто взять первые две буквы нельзя: zh_TW превратился бы в упрощённый китайский."""
+    name = (locale_name or "").split(":")[0].split(".")[0].split("@")[0].strip().lower()
+    if name.startswith(_TRADITIONAL):
+        return "zh_TW"
+    code = name[:2]
+    return code if code in LANGS else ""
 
 
 def detect_language() -> str:
     for env in ("EQUESTRIA_LANG", "LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
-        code = (os.environ.get(env) or "").split(":")[0][:2].lower()
-        if code in LANGS:
-            return code
+        for part in (os.environ.get(env) or "").split(":"):
+            code = normalize(part)
+            if code:
+                return code
     return "en"
 
 
@@ -54,7 +73,9 @@ class Catalog:
         if self.lang != SOURCE_LANG:
             row = self.entries.get(text)
             if isinstance(row, dict):
-                out = row.get(self.lang) or row.get("en") or text
+                # традиционного китайского нет — лучше упрощённый, чем английский
+                fallback = row.get("zh") if self.lang == "zh_TW" else None
+                out = row.get(self.lang) or fallback or row.get("en") or text
         if args or kwargs:
             try:
                 return out.format(*args, **kwargs)

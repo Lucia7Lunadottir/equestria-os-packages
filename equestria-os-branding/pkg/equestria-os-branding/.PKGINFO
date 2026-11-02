@@ -3,12 +3,16 @@
 pkgname = equestria-os-branding
 pkgbase = equestria-os-branding
 xdata = pkgtype=pkg
-pkgver = 1.4.5-4
-pkgdesc = Official Equestria OS Visual Style (SDDM, GRUB, Plasma Splash, and Cutiemarks)
+pkgver = 1.5.0-1
+pkgdesc = Official Equestria OS Visual Style (SDDM, GRUB, Plasma day/night global themes, cursors, KDE defaults)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1792179071
+builddate = 1793646479
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 37199119
+size = 31190007
 arch = any
 license = custom
 provides = equestria-os-branding
+backup = etc/xdg/kdeglobals
+backup = etc/xdg/kcminputrc
+backup = etc/xdg/ksplashrc
+backup = etc/sddm.conf.d/10-equestria-os.conf

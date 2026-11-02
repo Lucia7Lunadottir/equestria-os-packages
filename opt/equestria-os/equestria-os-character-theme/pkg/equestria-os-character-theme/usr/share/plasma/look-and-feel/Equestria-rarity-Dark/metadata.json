@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Id": "Equestria-rarity-Dark",
+        "Name": "Equestria — Rarity (Dark)",
+        "Name[ru]": "Equestria — Rarity (ночь)",
+        "Description": "Rarity: night",
+        "Description[ru]": "Rarity: ночь",
+        "Icon": "preferences-desktop-theme-global",
+        "Authors": [
+            {
+                "Name": "Equestria OS"
+            }
+        ],
+        "Version": "2.0"
+    }
+}

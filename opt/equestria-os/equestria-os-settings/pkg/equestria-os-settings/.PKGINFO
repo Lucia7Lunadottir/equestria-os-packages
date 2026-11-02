@@ -3,15 +3,15 @@
 pkgname = equestria-os-settings
 pkgbase = equestria-os-settings
 xdata = pkgtype=pkg
-pkgver = 1.8.0-2
+pkgver = 1.8.0-4
 pkgdesc = Unified settings panel for Equestria OS — all system tools in one place
 url = https://github.com/Lucia7Lunadottir
-builddate = 1793034831
+builddate = 1793646737
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 1253086
+size = 1325857
 arch = any
 license = GPL
-depend = equestria-qt-kit
+depend = equestria-qt-kit>=1.1
 depend = equestria-gpu
 depend = python-pyqt6
 optdepend = equestria-os-disk-manager: disk management module

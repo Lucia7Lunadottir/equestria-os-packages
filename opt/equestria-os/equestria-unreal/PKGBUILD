@@ -1,0 +1,27 @@
+# Maintainer: Equestria OS Team
+pkgname=equestria-unreal
+pkgver=1.0
+pkgrel=4
+pkgdesc="Unreal Engine launcher: engines, projects, Epic store builds, Fab plugin (PyQt6)"
+arch=('any')
+url="https://github.com/Lucia7Lunadottir"
+license=('custom')
+depends=('python' 'python-pyqt6' 'python-pyqt6-webengine' 'equestria-qt-kit>=1.1' 'git' 'openssl')
+optdepends=('libsecret: перенос входа Epic из Chromium-браузеров (secret-tool)'
+            'kwallet: перенос входа Epic из Chromium-браузеров в KDE (kwallet-query)')
+
+package() {
+    local _lib="$pkgdir/opt/equestria-os/equestria-unreal"
+
+    install -Dm644 "$startdir/equestria_unreal.py" "$_lib/equestria_unreal.py"
+    # equestria_ue/ целиком (вместе с ui/ и i18n.json), без кеша байткода
+    cd "$startdir"
+    find equestria_ue -type f ! -path '*/__pycache__/*' -exec install -Dm644 {} "$_lib/{}" \;
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-unreal" << 'WRAPPER'
+#!/bin/bash
+exec python3 /opt/equestria-os/equestria-unreal/equestria_unreal.py "$@"
+WRAPPER
+
+    install -Dm644 "$startdir/equestria-unreal.desktop" "$pkgdir/usr/share/applications/equestria-unreal.desktop"
+}

@@ -9,20 +9,28 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 
 from ui_relocator import Ui_Relocator
 import core, privilege
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import detect_language
+from equestria_kit.widgets import font_families
 
-LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
+LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "zh_TW", "ja", "ko"]
 
 STRINGS = {
-    "title":            {"en": "Relocate Files",            "ru": "Переместить файлы",          "de": "Dateien verschieben",        "fr": "Déplacer des fichiers",          "es": "Mover archivos",             "pt": "Mover arquivos",             "pl": "Przenieś pliki",             "uk": "Перемістити файли",          "zh": "移动文件",       "ja": "ファイルを移動"},
-    "sources":          {"en": "Source(s)",                 "ru": "Источник(и)",                 "de": "Quelle(n)",                  "fr": "Source(s)",                      "es": "Origen(es)",                 "pt": "Origem(ns)",                 "pl": "Źródło(-a)",                 "uk": "Джерело(-а)",                "zh": "来源",           "ja": "移動元"},
-    "destination":      {"en": "Destination",               "ru": "Назначение",                  "de": "Ziel",                       "fr": "Destination",                    "es": "Destino",                    "pt": "Destino",                    "pl": "Cel",                        "uk": "Призначення",                "zh": "目标",           "ja": "移動先"},
-    "add_source":       {"en": "+ Add Source",              "ru": "+ Добавить источник",          "de": "+ Quelle hinzufügen",         "fr": "+ Ajouter source",               "es": "+ Añadir origen",            "pt": "+ Adicionar origem",         "pl": "+ Dodaj źródło",             "uk": "+ Додати джерело",           "zh": "+ 添加来源",     "ja": "+ 追加"},
-    "browse_file":      {"en": "File…",                     "ru": "Файл…",                       "de": "Datei…",                     "fr": "Fichier…",                       "es": "Archivo…",                   "pt": "Arquivo…",                   "pl": "Plik…",                      "uk": "Файл…",                      "zh": "文件…",          "ja": "ファイル…"},
-    "browse_folder":    {"en": "Folder…",                   "ru": "Папка…",                      "de": "Ordner…",                    "fr": "Dossier…",                       "es": "Carpeta…",                   "pt": "Pasta…",                     "pl": "Folder…",                    "uk": "Тека…",                      "zh": "文件夹…",        "ja": "フォルダ…"},
-    "browse":           {"en": "Browse…",                   "ru": "Обзор…",                      "de": "Durchsuchen…",               "fr": "Parcourir…",                     "es": "Examinar…",                  "pt": "Procurar…",                  "pl": "Przeglądaj…",                "uk": "Огляд…",                     "zh": "浏览…",          "ja": "参照…"},
-    "relocate":         {"en": "Relocate",                  "ru": "Переместить",                 "de": "Verschieben",                "fr": "Déplacer",                       "es": "Mover",                      "pt": "Mover",                      "pl": "Przenieś",                   "uk": "Перемістити",                "zh": "移动",           "ja": "移動"},
-    "ph_source":        {"en": "Select file or folder…",   "ru": "Выберите файл или папку…",    "de": "Datei oder Ordner wählen…",  "fr": "Fichier ou dossier…",            "es": "Archivo o carpeta…",         "pt": "Arquivo ou pasta…",          "pl": "Plik lub folder…",           "uk": "Файл або тека…",             "zh": "选择文件或文件夹…","ja": "ファイルまたはフォルダ…"},
-    "ph_dest":          {"en": "Select destination folder…","ru": "Выберите папку назначения…",  "de": "Zielordner wählen…",         "fr": "Dossier de destination…",        "es": "Carpeta de destino…",        "pt": "Pasta de destino…",          "pl": "Folder docelowy…",           "uk": "Тека призначення…",          "zh": "选择目标文件夹…","ja": "移動先フォルダ…"},
+    "title":            {"en": "Relocate Files",            "ru": "Переместить файлы",          "de": "Dateien verschieben",        "fr": "Déplacer des fichiers",          "es": "Mover archivos",             "pt": "Mover arquivos",             "pl": "Przenieś pliki",             "uk": "Перемістити файли",          "zh": "移动文件",       "ja": "ファイルを移動", "zh_TW": "移動檔案", "ko": "파일 옮기기"},
+    "sources":          {"en": "Source(s)",                 "ru": "Источник(и)",                 "de": "Quelle(n)",                  "fr": "Source(s)",                      "es": "Origen(es)",                 "pt": "Origem(ns)",                 "pl": "Źródło(-a)",                 "uk": "Джерело(-а)",                "zh": "来源",           "ja": "移動元", "zh_TW": "來源", "ko": "소스"},
+    "destination":      {"en": "Destination",               "ru": "Назначение",                  "de": "Ziel",                       "fr": "Destination",                    "es": "Destino",                    "pt": "Destino",                    "pl": "Cel",                        "uk": "Призначення",                "zh": "目标",           "ja": "移動先", "zh_TW": "目標", "ko": "대상"},
+    "add_source":       {"en": "+ Add Source",              "ru": "+ Добавить источник",          "de": "+ Quelle hinzufügen",         "fr": "+ Ajouter source",               "es": "+ Añadir origen",            "pt": "+ Adicionar origem",         "pl": "+ Dodaj źródło",             "uk": "+ Додати джерело",           "zh": "+ 添加来源",     "ja": "+ 追加", "zh_TW": "+ 新增來源", "ko": "+ 소스 추가"},
+    "browse_file":      {"en": "File…",                     "ru": "Файл…",                       "de": "Datei…",                     "fr": "Fichier…",                       "es": "Archivo…",                   "pt": "Arquivo…",                   "pl": "Plik…",                      "uk": "Файл…",                      "zh": "文件…",          "ja": "ファイル…", "zh_TW": "檔案…", "ko": "파일…"},
+    "browse_folder":    {"en": "Folder…",                   "ru": "Папка…",                      "de": "Ordner…",                    "fr": "Dossier…",                       "es": "Carpeta…",                   "pt": "Pasta…",                     "pl": "Folder…",                    "uk": "Тека…",                      "zh": "文件夹…",        "ja": "フォルダ…", "zh_TW": "資料夾…", "ko": "폴더…"},
+    "browse":           {"en": "Browse…",                   "ru": "Обзор…",                      "de": "Durchsuchen…",               "fr": "Parcourir…",                     "es": "Examinar…",                  "pt": "Procurar…",                  "pl": "Przeglądaj…",                "uk": "Огляд…",                     "zh": "浏览…",          "ja": "参照…", "zh_TW": "瀏覽…", "ko": "찾아보기…"},
+    "relocate":         {"en": "Relocate",                  "ru": "Переместить",                 "de": "Verschieben",                "fr": "Déplacer",                       "es": "Mover",                      "pt": "Mover",                      "pl": "Przenieś",                   "uk": "Перемістити",                "zh": "移动",           "ja": "移動", "zh_TW": "移動", "ko": "옮기기"},
+    "ph_source":        {"en": "Select file or folder…",   "ru": "Выберите файл или папку…",    "de": "Datei oder Ordner wählen…",  "fr": "Fichier ou dossier…",            "es": "Archivo o carpeta…",         "pt": "Arquivo ou pasta…",          "pl": "Plik lub folder…",           "uk": "Файл або тека…",             "zh": "选择文件或文件夹…","ja": "ファイルまたはフォルダ…", "zh_TW": "選擇檔案或資料夾…", "ko": "파일 또는 폴더 선택…"},
+    "ph_dest":          {"en": "Select destination folder…","ru": "Выберите папку назначения…",  "de": "Zielordner wählen…",         "fr": "Dossier de destination…",        "es": "Carpeta de destino…",        "pt": "Pasta de destino…",          "pl": "Folder docelowy…",           "uk": "Тека призначення…",          "zh": "选择目标文件夹…","ja": "移動先フォルダ…", "zh_TW": "選擇目標資料夾…", "ko": "대상 폴더 선택…"},
     "ntfs_warn":        {"en": "⚠  Symlinks are not supported on NTFS. The file will be moved without a symlink.",
                          "ru": "⚠  Символические ссылки не поддерживаются на NTFS. Файл будет перемещён без ссылки.",
                          "de": "⚠  Symlinks werden auf NTFS nicht unterstützt. Die Datei wird ohne Symlink verschoben.",
@@ -32,9 +40,9 @@ STRINGS = {
                          "pl": "⚠  Dowiązania symboliczne nie są obsługiwane na NTFS. Plik zostanie przeniesiony bez dowiązania.",
                          "uk": "⚠  Символічні посилання не підтримуються на NTFS. Файл буде переміщено без посилання.",
                          "zh": "⚠  NTFS 不支持符号链接。文件将在没有符号链接的情况下移动。",
-                         "ja": "⚠  NTFSではシンボリックリンクがサポートされていません。リンクなしで移動されます。"},
-    "err_no_source":    {"en": "Please specify at least one source.",       "ru": "Укажите хотя бы один источник.",             "de": "Bitte mindestens eine Quelle angeben.",      "fr": "Veuillez spécifier au moins une source.",        "es": "Especifique al menos un origen.",        "pt": "Especifique pelo menos uma origem.",     "pl": "Podaj co najmniej jedno źródło.",        "uk": "Вкажіть принаймні одне джерело.",        "zh": "请至少指定一个来源。",   "ja": "移動元を1つ以上指定してください。"},
-    "err_no_dest":      {"en": "Please specify a destination folder.",      "ru": "Укажите папку назначения.",                  "de": "Bitte Zielordner angeben.",                  "fr": "Veuillez spécifier un dossier de destination.",  "es": "Especifique una carpeta de destino.",    "pt": "Especifique uma pasta de destino.",      "pl": "Podaj folder docelowy.",                 "uk": "Вкажіть теку призначення.",              "zh": "请指定目标文件夹。",     "ja": "移動先フォルダを指定してください。"},
+                         "ja": "⚠  NTFSではシンボリックリンクがサポートされていません。リンクなしで移動されます。", "zh_TW": "⚠  NTFS 不支援符號連結。檔案將在沒有符號連結的情況下移動。", "ko": "⚠  NTFS에서는 심볼릭 링크가 지원되지 않습니다. 파일은 심볼릭 링크 없이 옮겨집니다."},
+    "err_no_source":    {"en": "Please specify at least one source.",       "ru": "Укажите хотя бы один источник.",             "de": "Bitte mindestens eine Quelle angeben.",      "fr": "Veuillez spécifier au moins une source.",        "es": "Especifique al menos un origen.",        "pt": "Especifique pelo menos uma origem.",     "pl": "Podaj co najmniej jedno źródło.",        "uk": "Вкажіть принаймні одне джерело.",        "zh": "请至少指定一个来源。",   "ja": "移動元を1つ以上指定してください。", "zh_TW": "請至少指定一個來源。", "ko": "소스를 하나 이상 지정하세요."},
+    "err_no_dest":      {"en": "Please specify a destination folder.",      "ru": "Укажите папку назначения.",                  "de": "Bitte Zielordner angeben.",                  "fr": "Veuillez spécifier un dossier de destination.",  "es": "Especifique una carpeta de destino.",    "pt": "Especifique uma pasta de destino.",      "pl": "Podaj folder docelowy.",                 "uk": "Вкажіть теку призначення.",              "zh": "请指定目标文件夹。",     "ja": "移動先フォルダを指定してください。", "zh_TW": "請指定目標資料夾。", "ko": "대상 폴더를 지정하세요."},
     "err_no_elevator":  {"en": "Root privileges required but no elevation tool (pkexec/kdesu) was found.",
                          "ru": "Требуются права root, но инструмент повышения прав (pkexec/kdesu) не найден.",
                          "de": "Root-Rechte erforderlich, aber kein Elevation-Tool (pkexec/kdesu) gefunden.",
@@ -44,9 +52,9 @@ STRINGS = {
                          "pl": "Wymagane uprawnienia root, ale nie znaleziono narzędzia do podniesienia uprawnień (pkexec/kdesu).",
                          "uk": "Потрібні права root, але інструмент підвищення прав (pkexec/kdesu) не знайдено.",
                          "zh": "需要root权限但未找到权限提升工具(pkexec/kdesu)。",
-                         "ja": "root権限が必要ですが、昇格ツール(pkexec/kdesu)が見つかりません。"},
-    "working":          {"en": "Working…",      "ru": "Выполняется…",   "de": "Wird ausgeführt…",   "fr": "En cours…",      "es": "Procesando…",    "pt": "Processando…",   "pl": "Przetwarzanie…", "uk": "Виконується…",   "zh": "处理中…",    "ja": "処理中…"},
-    "elev_title":       {"en": "Privilege Required",        "ru": "Требуются права",        "de": "Rechte erforderlich",        "fr": "Privilèges requis",          "es": "Se requieren privilegios",   "pt": "Privilégios necessários",    "pl": "Wymagane uprawnienia",       "uk": "Потрібні права",             "zh": "需要权限",       "ja": "権限が必要"},
+                         "ja": "root権限が必要ですが、昇格ツール(pkexec/kdesu)が見つかりません。", "zh_TW": "需要root許可權但未找到許可權提升工具(pkexec/kdesu)。", "ko": "root 권한이 필요하지만 권한 상승 도구(pkexec/kdesu)를 찾을 수 없습니다."},
+    "working":          {"en": "Working…",      "ru": "Выполняется…",   "de": "Wird ausgeführt…",   "fr": "En cours…",      "es": "Procesando…",    "pt": "Processando…",   "pl": "Przetwarzanie…", "uk": "Виконується…",   "zh": "处理中…",    "ja": "処理中…", "zh_TW": "處理中…", "ko": "작업 중…"},
+    "elev_title":       {"en": "Privilege Required",        "ru": "Требуются права",        "de": "Rechte erforderlich",        "fr": "Privilèges requis",          "es": "Se requieren privilegios",   "pt": "Privilégios necessários",    "pl": "Wymagane uprawnienia",       "uk": "Потрібні права",             "zh": "需要权限",       "ja": "権限が必要", "zh_TW": "需要許可權", "ko": "권한 필요"},
     "elev_msg":         {"en": "Some paths require administrator privileges.\nThe application will be relaunched with elevated permissions.",
                          "ru": "Для некоторых путей требуются права администратора.\nПриложение будет перезапущено с повышенными правами.",
                          "de": "Einige Pfade erfordern Administratorrechte.\nDie Anwendung wird mit erhöhten Rechten neu gestartet.",
@@ -56,10 +64,10 @@ STRINGS = {
                          "pl": "Niektóre ścieżki wymagają uprawnień administratora.\nAplikacja zostanie ponownie uruchomiona z podwyższonymi uprawnieniami.",
                          "uk": "Деякі шляхи потребують прав адміністратора.\nДодаток буде перезапущено з підвищеними правами.",
                          "zh": "某些路径需要管理员权限。\n应用程序将以提升的权限重新启动。",
-                         "ja": "一部のパスには管理者権限が必要です。\nアプリケーションは昇格した権限で再起動されます。"},
-    "dlg_file":         {"en": "Select File",       "ru": "Выберите файл",      "de": "Datei wählen",       "fr": "Sélectionner fichier",   "es": "Seleccionar archivo",    "pt": "Selecionar arquivo",     "pl": "Wybierz plik",           "uk": "Виберіть файл",          "zh": "选择文件",       "ja": "ファイルを選択"},
-    "dlg_folder":       {"en": "Select Folder",     "ru": "Выберите папку",     "de": "Ordner wählen",      "fr": "Sélectionner dossier",   "es": "Seleccionar carpeta",    "pt": "Selecionar pasta",       "pl": "Wybierz folder",         "uk": "Виберіть теку",          "zh": "选择文件夹",     "ja": "フォルダを選択"},
-    "dlg_dest":         {"en": "Select Destination","ru": "Выберите назначение","de": "Ziel wählen",        "fr": "Sélectionner destination","es": "Seleccionar destino",   "pt": "Selecionar destino",     "pl": "Wybierz cel",            "uk": "Виберіть призначення",   "zh": "选择目标",       "ja": "移動先を選択"},
+                         "ja": "一部のパスには管理者権限が必要です。\nアプリケーションは昇格した権限で再起動されます。", "zh_TW": "某些路徑需要管理員許可權。\n應用程式將以提升的許可權重新啟動。", "ko": "일부 경로에는 관리자 권한이 필요합니다.\n애플리케이션이 상승된 권한으로 다시 실행됩니다."},
+    "dlg_file":         {"en": "Select File",       "ru": "Выберите файл",      "de": "Datei wählen",       "fr": "Sélectionner fichier",   "es": "Seleccionar archivo",    "pt": "Selecionar arquivo",     "pl": "Wybierz plik",           "uk": "Виберіть файл",          "zh": "选择文件",       "ja": "ファイルを選択", "zh_TW": "選擇檔案", "ko": "파일 선택"},
+    "dlg_folder":       {"en": "Select Folder",     "ru": "Выберите папку",     "de": "Ordner wählen",      "fr": "Sélectionner dossier",   "es": "Seleccionar carpeta",    "pt": "Selecionar pasta",       "pl": "Wybierz folder",         "uk": "Виберіть теку",          "zh": "选择文件夹",     "ja": "フォルダを選択", "zh_TW": "選擇資料夾", "ko": "폴더 선택"},
+    "dlg_dest":         {"en": "Select Destination","ru": "Выберите назначение","de": "Ziel wählen",        "fr": "Sélectionner destination","es": "Seleccionar destino",   "pt": "Selecionar destino",     "pl": "Wybierz cel",            "uk": "Виберіть призначення",   "zh": "选择目标",       "ja": "移動先を選択", "zh_TW": "選擇目標", "ko": "대상 선택"},
     "success":          {"en": "Moved {n} item(s) to {dest}. Created {s} symlink(s).",
                          "ru": "Перемещено {n} элемент(ов) в {dest}. Создано {s} ссылок.",
                          "de": "{n} Element(e) nach {dest} verschoben. {s} Symlink(s) erstellt.",
@@ -69,7 +77,7 @@ STRINGS = {
                          "pl": "Przeniesiono {n} element(ów) do {dest}. Utworzono {s} dowiązanie(-a).",
                          "uk": "Переміщено {n} елемент(ів) до {dest}. Створено {s} посилань.",
                          "zh": "已将 {n} 个项目移动到 {dest}，创建了 {s} 个符号链接。",
-                         "ja": "{n}個を{dest}に移動しました。シンボリックリンク{s}個を作成しました。"},
+                         "ja": "{n}個を{dest}に移動しました。シンボリックリンク{s}個を作成しました。", "zh_TW": "已將 {n} 個專案移動到 {dest}，建立了 {s} 個符號連結。", "ko": "항목 {n}개를 {dest}(으)로 옮겼습니다. 심볼릭 링크 {s}개를 만들었습니다."},
 }
 
 
@@ -119,7 +127,7 @@ class RelocatorApp(QMainWindow, Ui_Relocator):
         self._source_rows = []  # list of (container, line_edit, remove_btn, file_btn, folder_btn)
 
         # Language detection
-        self.current_lang = os.getenv("LANG", "en")[:2]
+        self.current_lang = detect_language()
         if self.current_lang not in LANGS:
             self.current_lang = "en"
 
@@ -128,15 +136,14 @@ class RelocatorApp(QMainWindow, Ui_Relocator):
         # Load custom font
         font_path = os.path.join(base_path, "equestria_cyrillic.ttf")
         if os.path.exists(font_path):
-            fid = QFontDatabase.addApplicationFont(font_path)
-            families = QFontDatabase.applicationFontFamilies(fid)
+            families = font_families(font_path)
             if families:
                 self.app_title.setFont(QFont(families[0], 22, QFont.Weight.Bold))
 
         # Load stylesheet
         qss_path = os.path.join(base_path, "style.qss")
         if os.path.exists(qss_path):
-            self.setStyleSheet(open(qss_path).read())
+            kit_qt.style(self, open(qss_path).read())
 
         # Load window icon
         icon_path = os.path.join(base_path, "equestria-os-relocator.png")

@@ -1,50 +1,50 @@
 /* Базовый фон */
 QWidget#root {
-    background-color: rgb(30, 30, 46); color: rgb(205, 214, 244); font-size: 14px;
+    background-color: @base@; color: @text@; font-size: 14px;
 }
 
 /* Шапка */
 QFrame#Header {
-    background-color: rgb(24, 24, 37); border-bottom: 1px solid rgb(49, 50, 68);
+    background-color: @mantle@; border-bottom: 1px solid @surface0@;
 }
 QLabel#TitleLabel {
-    color: rgb(203, 166, 247); font-weight: bold; font-size: 18px;
+    color: @accent@; font-weight: bold; font-size: 18px;
 }
 
 /* Панели */
 QLabel#SectionTitle {
-    color: rgb(166, 227, 161); font-weight: bold; margin-bottom: 8px;
+    color: @green@; font-weight: bold; margin-bottom: 8px;
 }
 
 QLineEdit#SearchField {
-    background-color: rgb(49, 50, 68); border: 1px solid rgb(69, 71, 90);
-    border-radius: 6px; color: rgb(205, 214, 244); padding: 6px 10px;
+    background-color: @surface0@; border: 1px solid @surface1@;
+    border-radius: 6px; color: @text@; padding: 6px 10px;
 }
-QLineEdit#SearchField:focus { border: 1px solid rgb(203, 166, 247); }
+QLineEdit#SearchField:focus { border: 1px solid @accent@; }
 
 /* Списки */
 QScrollArea#CountryList, QScrollArea#MirrorsScroll {
-    background-color: rgb(24, 24, 37); border-radius: 8px; border: 1px solid rgb(49, 50, 68);
+    background-color: @mantle@; border-radius: 8px; border: 1px solid @surface0@;
 }
-QWidget#ScrollContent { background-color: rgb(24, 24, 37); }
+QWidget#ScrollContent { background-color: @mantle@; }
 
 /* Строка страны */
 QFrame#CountryRow {
-    border-bottom: 1px solid rgb(49, 50, 68); background-color: transparent;
+    border-bottom: 1px solid @surface0@; background-color: transparent;
 }
-QFrame#CountryRow:hover { background-color: rgb(49, 50, 68); }
+QFrame#CountryRow:hover { background-color: @surface0@; }
 
-QLabel#CountryName { color: rgb(205, 214, 244); }
-QLabel#CountryCode { color: rgb(137, 180, 250); font-weight: bold; }
-QLabel#CountryMirrors { color: rgb(108, 112, 134); }
+QLabel#CountryName { color: @text@; }
+QLabel#CountryCode { color: @accent2@; font-weight: bold; }
+QLabel#CountryMirrors { color: @subtext@; }
 
 
 /* ========================================================= */
 /* ФИКС: Стилизация текстовой галочки (вместо QCheckBox)     */
 /* ========================================================= */
 QPushButton#CountryToggle {
-    background-color: rgb(30, 30, 46);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @base@;
+    border: 1px solid @surface1@;
     border-radius: 4px;
     color: transparent; /* Скрываем текст ✔, когда выключено */
     font-family: sans-serif;
@@ -53,51 +53,51 @@ QPushButton#CountryToggle {
     padding-bottom: 2px;
 }
 QPushButton#CountryToggle:checked {
-    background-color: rgb(166, 227, 161);
-    border: 1px solid rgb(166, 227, 161);
-    color: rgb(30, 30, 46); /* Тёмная галочка на светло-зелёном фоне */
+    background-color: @green@;
+    border: 1px solid @green@;
+    color: @on_green@; /* Тёмная галочка на светло-зелёном фоне */
 }
 
 
 /* Статус и счетчики */
-QLabel#SelectedCount { color: rgb(166, 227, 161); font-weight: bold; margin-top: 6px; }
-QLabel#CurrentMirrors { color: rgb(137, 180, 250); font-size: 12px; }
-QLabel#StatusLabel { color: rgb(249, 226, 175); font-size: 13px; padding: 6px 16px; }
+QLabel#SelectedCount { color: @green@; font-weight: bold; margin-top: 6px; }
+QLabel#CurrentMirrors { color: @accent2@; font-size: 12px; }
+QLabel#StatusLabel { color: @yellow@; font-size: 13px; padding: 6px 16px; }
 
 /* Подвал и Кнопки */
 QFrame#Footer {
-    background-color: rgb(24, 24, 37); border-top: 1px solid rgb(49, 50, 68);
+    background-color: @mantle@; border-top: 1px solid @surface0@;
 }
 QPushButton#PrimaryBtn {
-    background-color: rgb(166, 227, 161); color: rgb(30, 30, 46);
-    border-radius: 6px; padding: 8px 20px; font-weight: bold; font-size: 14px; border: 1px solid rgb(166, 227, 161);
+    background-color: @green@; color: @on_green@;
+    border-radius: 6px; padding: 8px 20px; font-weight: bold; font-size: 14px; border: 1px solid @green@;
 }
-QPushButton#PrimaryBtn:hover { background-color: rgb(148, 226, 213); border: 1px solid rgb(148, 226, 213); }
-QPushButton#PrimaryBtn:disabled { background-color: rgb(69, 71, 90); color: rgb(108, 112, 134); border: 1px solid rgb(69, 71, 90); }
+QPushButton#PrimaryBtn:hover { background-color: @accent2@; border: 1px solid @accent2@; }
+QPushButton#PrimaryBtn:disabled { background-color: @surface1@; color: @subtext@; border: 1px solid @surface1@; }
 
 QPushButton#SecondaryBtn {
-    background-color: rgb(49, 50, 68); color: rgb(205, 214, 244);
-    border-radius: 6px; padding: 8px 20px; font-weight: bold; font-size: 14px; border: 1px solid rgb(49, 50, 68);
+    background-color: @surface0@; color: @text@;
+    border-radius: 6px; padding: 8px 20px; font-weight: bold; font-size: 14px; border: 1px solid @surface0@;
 }
-QPushButton#SecondaryBtn:hover { background-color: rgb(69, 71, 90); border: 1px solid rgb(69, 71, 90); }
+QPushButton#SecondaryBtn:hover { background-color: @surface1@; border: 1px solid @surface1@; }
 
 /* Окно загрузки */
-QFrame#LoadingOverlay { background-color: rgba(30, 30, 46, 220); }
-QLabel#LoadingText { color: rgb(203, 166, 247); font-size: 18px; font-weight: bold; }
+QFrame#LoadingOverlay { background-color: @base/220@; }
+QLabel#LoadingText { color: @accent@; font-size: 18px; font-weight: bold; }
 
 /* Чекбокс автообновления */
 QCheckBox#AutoCheckbox {
-    color: rgb(205, 214, 244);
+    color: @text@;
     font-size: 13px;
     spacing: 6px;
 }
 QCheckBox#AutoCheckbox::indicator {
     width: 16px; height: 16px;
     border-radius: 4px;
-    border: 1px solid rgb(69, 71, 90);
-    background-color: rgb(30, 30, 46);
+    border: 1px solid @surface1@;
+    background-color: @base@;
 }
 QCheckBox#AutoCheckbox::indicator:checked {
-    background-color: rgb(166, 227, 161);
-    border: 1px solid rgb(166, 227, 161);
+    background-color: @green@;
+    border: 1px solid @green@;
 }

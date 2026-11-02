@@ -393,6 +393,28 @@ class AURUpgradableLoader(SafeThread):
         self.finished.emit(pkgs)
 
 
+class ForeignUpdatesLoader(SafeThread):
+    """Обновления программ из пакетов DEB/RPM (их ставит equestria-installer, pacman о них
+    не знает): `equestria-installer --list-foreign-updates` сверяет версии с репозиториями
+    производителей. Итог — список {"name", "installed", "latest"}."""
+    loaded = pyqtSignal(list)
+
+    def run(self):
+        items = []
+        if shutil.which("equestria-installer"):
+            try:
+                res = subprocess.run(["equestria-installer", "--list-foreign-updates"],
+                                     capture_output=True, text=True, timeout=120)
+                for line in res.stdout.splitlines():
+                    try:
+                        items.append(json.loads(line))
+                    except ValueError:
+                        continue
+            except (OSError, subprocess.SubprocessError):
+                pass
+        self.loaded.emit(items)
+
+
 class PacmanInfoLoader(SafeThread):
     """Fetches a single package description via `pacman -Si`.
 

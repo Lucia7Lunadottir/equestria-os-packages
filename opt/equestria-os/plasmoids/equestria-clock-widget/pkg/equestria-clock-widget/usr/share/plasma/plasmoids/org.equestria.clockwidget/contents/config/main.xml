@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0">
+  <group name="General">
+    <entry name="showSeconds" type="Bool"><default>false</default></entry>
+    <entry name="showDate" type="Bool"><default>true</default></entry>
+    <!-- short — как в стране пользователя (26.10.2026), weekday — «пн, 26 окт.», iso — 2026-10-26 -->
+    <entry name="dateFormat" type="String"><default>short</default></entry>
+    <entry name="showWeekNumbers" type="Bool"><default>false</default></entry>
+    <!-- дополнительные часы: часовые пояса IANA, например Asia/Tokyo -->
+    <entry name="timeZones" type="StringList"><default></default></entry>
+    <entry name="calendarCommand" type="String"><default>equestria-calendar</default></entry>
+    <entry name="clockCommand" type="String"><default>equestria-clock</default></entry>
+  </group>
+</kcfg>

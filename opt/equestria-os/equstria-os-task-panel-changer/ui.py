@@ -207,20 +207,6 @@ class Ui_MainWindow:
         self.chk_ed_hide_icons = SafeCheckBox()
         _, self.lbl_ed_hide_icons_row, self.help_ed_hide_icons = add_row("Desktop Icons:", self.chk_ed_hide_icons, has_help=True)
 
-        theme_w = QWidget()
-        theme_lo = QHBoxLayout(theme_w)
-        theme_lo.setContentsMargins(0, 0, 0, 0)
-        theme_lo.setSpacing(6)
-        self.btn_ed_theme_dark = QPushButton("🌙 Dark")
-        self.btn_ed_theme_dark.setProperty("cssClass", "theme-btn")
-        self.btn_ed_theme_dark.setProperty("active", "true")
-        self.btn_ed_theme_light = QPushButton("☀️ Light")
-        self.btn_ed_theme_light.setProperty("cssClass", "theme-btn")
-        self.btn_ed_theme_light.setProperty("active", "false")
-        theme_lo.addWidget(self.btn_ed_theme_dark)
-        theme_lo.addWidget(self.btn_ed_theme_light)
-        _, self.lbl_ed_theme_row, self.help_ed_theme = add_row("Panel Theme:", theme_w, has_help=True)
-
         self.btn_ed_open_kde = QPushButton("🛠 Enter KDE Panel Edit Mode")
         self.btn_ed_open_kde.setProperty("cssClass", "action-btn")
         kit_qt.style(self.btn_ed_open_kde, """

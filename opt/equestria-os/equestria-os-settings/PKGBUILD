@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-settings
 pkgver=1.8.0
-pkgrel=2
+pkgrel=4
 pkgdesc="Unified settings panel for Equestria OS — all system tools in one place"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('equestria-qt-kit' 'equestria-gpu' 'python-pyqt6')
+depends=('equestria-qt-kit>=1.1' 'equestria-gpu' 'python-pyqt6')
 install=equestria-os-settings.install
 optdepends=(
     'equestria-os-disk-manager: disk management module'

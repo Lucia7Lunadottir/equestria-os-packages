@@ -1,0 +1,22 @@
+{
+  "title": "🐴  Equestria OS — 映象管理器",
+  "select_countries": "選擇要搜尋映象的國家：",
+  "search_placeholder": "🔍 搜尋國家...",
+  "selected_count": "已選國家：{0}",
+  "current_mirrors": "當前映象：",
+  "loading": "載入中...",
+  "auto_update": "自動更新映象（每週）",
+  "btn_restore": "恢復備份",
+  "btn_apply": "✓ 應用",
+  "wait": "⏳ 請稍候...",
+  "loading_countries": "⏳ 正在載入國家列表...",
+  "ranking": "⏳ 正在對映象排名（可能需要幾分鐘）...",
+  "restoring": "⏳ 正在恢復備份...",
+  "no_mirrors": "未配置映象。",
+  "unexpected_json": "意外的 JSON 格式。",
+  "loaded_n_countries": "已載入 {0} 個國家。",
+  "mirrors_updated": "✓ 映象更新成功！",
+  "backup_restored": "✓ 備份已恢復。",
+  "parse_error": "完成（無法解析後端響應）。",
+  "mirrors_count": "{0} 個映象"
+}

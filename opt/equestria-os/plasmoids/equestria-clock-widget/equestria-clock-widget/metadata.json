@@ -30,7 +30,11 @@
         "Description[pl]": "Godzina i data na panelu z kalendarzem, wydarzeniami Equestria Calendar i zegarami innych stref — jak w Windows",
         "Description[uk]": "Час і дата на панелі з календарем, подіями Equestria Calendar і годинниками інших поясів — як у Windows",
         "Description[zh]": "面板上的时间和日期，带日历、Equestria Calendar 事件以及其他时区的时钟——就像 Windows",
-        "Description[ja]": "パネルに時刻と日付。カレンダー、Equestria Calendar の予定、ほかのタイムゾーンの時計付き — Windows のように"
+        "Description[ja]": "パネルに時刻と日付。カレンダー、Equestria Calendar の予定、ほかのタイムゾーンの時計付き — Windows のように",
+        "Name[zh_TW]": "Equestria 時鐘",
+        "Name[ko]": "Equestria 시계",
+        "Description[zh_TW]": "面板上的時間和日期，帶日曆、Equestria Calendar 事件以及其他時區的時鐘——就像 Windows",
+        "Description[ko]": "패널에 시간과 날짜 표시. 캘린더, Equestria Calendar 일정, 다른 시간대 시계 포함 — Windows처럼"
     },
     "X-Plasma-API-Minimum-Version": "6.0"
 }

@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS
 pkgname=equestria-clock-widget
 pkgver=2.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Clock widget for the Plasma panel: calendar, Equestria Calendar events and world clocks, like in Windows"
 arch=('any')
 license=('GPL-2.0-or-later')

@@ -13,6 +13,7 @@ except ImportError:  # запуск из исходников, пакет equest
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import detect_language
 
 class LocalizationDialog(QDialog):
     def __init__(self, parent, t_func):
@@ -71,6 +72,8 @@ class DesktopEditorApp(QWidget):
         self.lang_combo = None
         
         self.load_translations()
+        code = detect_language()
+        self.current_lang = code if code in self.translations else "en"
         self.initUI()
         self.retranslate_ui()
 

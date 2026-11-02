@@ -23,9 +23,10 @@ except ImportError:  # запуск из исходников, пакет equest
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import detect_language
 from equestria_kit.widgets import font_families
 
-SUPPORTED_LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
+SUPPORTED_LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "zh_TW", "ja", "ko"]
 
 CATEGORIES_ORDER = ["system", "software", "appearance"]
 CATEGORY_KEYS = {
@@ -351,11 +352,8 @@ class SettingsWindow(QMainWindow):
         return langs
 
     def _detect_lang(self) -> str:
-        for env in ("LANGUAGE", "LANG", "LC_ALL", "LC_MESSAGES"):
-            code = (os.getenv(env) or "")[:2]
-            if code in self.langs:
-                return code
-        return "en"
+        code = detect_language()
+        return code if code in self.langs else "en"
 
     def t(self, key: str) -> str:
         return (

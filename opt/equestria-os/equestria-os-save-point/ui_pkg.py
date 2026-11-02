@@ -1,10 +1,9 @@
 import os
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QScrollArea, QFrame, QSpinBox,
-                             QDialog, QCheckBox, QLineEdit,
-                             QFileDialog, QMessageBox,
+                             QDialog, QCheckBox,
                              QPlainTextEdit, QProgressBar)
-from PyQt6.QtGui import QPixmap, QFont
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt, QProcess
 try:
     import equestria_kit  # noqa: F401
@@ -157,12 +156,9 @@ class SettingsDialog(QDialog):
     Opened via the ⚙ button in the main window.
     """
 
-    def __init__(self, parent, t, hook_pacman: bool, hook_flatpak: bool,
-                 repo_path: str = "", title_font: QFont | None = None,
-                 show_repo_section: bool = True):
+    def __init__(self, parent, t, hook_pacman: bool, hook_flatpak: bool):
         super().__init__(parent)
         self._t = t
-        self._delete_repo = False
         self.setWindowTitle(t("settings.title"))
         self.setMinimumWidth(560)
         self.setObjectName("SettingsDialog")
@@ -181,55 +177,6 @@ class SettingsDialog(QDialog):
         line.setFrameShape(QFrame.Shape.HLine)
         line.setObjectName("SettingsSep")
         layout.addWidget(line)
-
-        # ── Repository path ───────────────────────────────────────────────────
-        repo_box = QFrame()
-        repo_box.setObjectName("HookBox")
-        repo_layout = QVBoxLayout(repo_box)
-        repo_layout.setContentsMargins(14, 12, 14, 12)
-        repo_layout.setSpacing(8)
-
-        lbl_repo = QLabel(t("settings.repo_path"))
-        lbl_repo.setObjectName("HookCheck")
-        repo_layout.addWidget(lbl_repo)
-
-        path_edit_layout = QHBoxLayout()
-        path_edit_layout.setSpacing(8)
-
-        self.edit_repo_path = QLineEdit(repo_path)
-        self.edit_repo_path.setObjectName("RepoEdit")
-        self.edit_repo_path.setMinimumHeight(32)
-        path_edit_layout.addWidget(self.edit_repo_path)
-
-        btn_browse = QPushButton(t("settings.browse"))
-        btn_browse.setObjectName("ModalCancelBtn") # Стиль нейтральной кнопки
-        btn_browse.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_browse.setMinimumHeight(32)
-        btn_browse.setFixedWidth(100)
-        btn_browse.clicked.connect(self._on_browse_repo)
-        path_edit_layout.addWidget(btn_browse)
-
-        repo_layout.addLayout(path_edit_layout)
-
-        repo_btn_row = QHBoxLayout()
-        repo_btn_row.addStretch()
-
-        btn_delete_repo = QPushButton(t("settings.delete_repo"))
-        btn_delete_repo.setObjectName("DeleteRepoBtn")
-        btn_delete_repo.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_delete_repo.setFixedHeight(30)
-        btn_delete_repo.clicked.connect(self._on_delete_repo)
-        repo_btn_row.addWidget(btn_delete_repo)
-
-        repo_layout.addLayout(repo_btn_row)
-
-        lbl_repo_note = QLabel(t("settings.repo_note"))
-        lbl_repo_note.setObjectName("HookNote")
-        lbl_repo_note.setWordWrap(True)
-        repo_layout.addWidget(lbl_repo_note)
-
-        repo_box.setVisible(show_repo_section)
-        layout.addWidget(repo_box)
 
         # ── Pacman hook ───────────────────────────────────────────────────────
         pacman_box = QFrame()
@@ -290,31 +237,6 @@ class SettingsDialog(QDialog):
         btn_row.addWidget(self.btn_cancel)
         btn_row.addWidget(self.btn_apply)
         layout.addLayout(btn_row)
-
-    def _on_browse_repo(self):
-        directory = QFileDialog.getExistingDirectory(
-            self,
-            self._t("settings.repo_path"),
-            self.edit_repo_path.text() or os.path.expanduser("~")
-        )
-        if directory:
-            self.edit_repo_path.setText(directory)
-
-    def _on_delete_repo(self):
-        path = self.edit_repo_path.text().strip()
-        if not path:
-            return
-        msg = self._t("settings.delete_confirm").format(path)
-        reply = QMessageBox.question(
-            self,
-            self._t("settings.delete_repo"),
-            msg,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
-        )
-        if reply == QMessageBox.StandardButton.Yes:
-            self._delete_repo = True
-            self.accept()
 
 
 class ProgressDialog(QDialog):

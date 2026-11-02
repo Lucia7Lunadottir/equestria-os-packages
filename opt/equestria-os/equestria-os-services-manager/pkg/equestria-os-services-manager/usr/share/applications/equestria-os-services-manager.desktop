@@ -10,6 +10,8 @@ Name[pl]=Usługi Equestria OS
 Name[uk]=Сервіси Equestria OS
 Name[zh]=Equestria OS 服务
 Name[ja]=Equestria OS サービス
+Name[zh_TW]=Equestria OS 服務
+Name[ko]=Equestria OS 서비스
 
 Comment=Enable, disable, start and stop system services
 Comment[en]=Enable, disable, start and stop system services
@@ -22,6 +24,8 @@ Comment[pl]=Włączanie, wyłączanie, uruchamianie i zatrzymywanie usług syste
 Comment[uk]=Увімкнення, вимкнення, запуск і зупинка системних сервісів
 Comment[zh]=启用、禁用、启动和停止系统服务
 Comment[ja]=システムサービスの有効化・無効化・起動・停止
+Comment[zh_TW]=啟用、停用、啟動和停止系統服務
+Comment[ko]=시스템 서비스 켜기, 끄기, 시작, 중지
 
 Exec=equestria-os-services-manager
 Icon=equestria-os-services-manager

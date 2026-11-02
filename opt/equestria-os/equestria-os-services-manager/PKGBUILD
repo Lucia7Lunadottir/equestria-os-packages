@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-services-manager
 pkgver=2.2.0
-pkgrel=5
+pkgrel=6
 pkgdesc="Official Equestria OS Service Manager (Enable, Disable, Start, Stop)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('equestria-qt-kit' 'polkit' 'python-pyqt6')
+depends=('equestria-qt-kit>=1.1' 'polkit' 'python-pyqt6')
 
 package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"

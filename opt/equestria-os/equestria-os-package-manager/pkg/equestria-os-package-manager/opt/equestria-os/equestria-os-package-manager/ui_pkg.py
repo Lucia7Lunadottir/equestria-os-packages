@@ -5,6 +5,12 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PyQt6.QtCore import (Qt, pyqtSignal, pyqtProperty, QPropertyAnimation,
                           QEasingCurve, QSize, QRectF)
 from PyQt6.QtGui import QPainter, QColor, QIcon
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
 
 
 class SwitchToggle(QAbstractButton):
@@ -87,7 +93,7 @@ class SwitchRow(QWidget):
         self.switch = SwitchToggle(self)
         self.label = QLabel("", self)
         self.label.setWordWrap(True)
-        self.label.setStyleSheet("color: rgb(210, 200, 230); font-size: 13px; background: transparent;")
+        kit_qt.style(self.label, "color: @text@; font-size: 13px; background: transparent;")
         self.label.setCursor(Qt.CursorShape.PointingHandCursor)
         lay.addWidget(self.switch, 0, Qt.AlignmentFlag.AlignTop)
         lay.addWidget(self.label, 1)
@@ -138,17 +144,17 @@ class PackageRow(QFrame):
 
         info_layout = QVBoxLayout()
         self.lbl_name = QLabel(pkg_data.name)
-        self.lbl_name.setStyleSheet("color: white; font-weight: bold; font-size: 15px; background: transparent;")
+        kit_qt.style(self.lbl_name, "color: white; font-weight: bold; font-size: 15px; background: transparent;")
 
         info_text = f"{pkg_data.category} ({pkg_data.source})"
         if getattr(pkg_data, "size_text", ""):
             info_text += f" • {pkg_data.size_text}"
         self.lbl_info = QLabel(info_text)
-        self.lbl_info.setStyleSheet("color: rgb(180, 170, 200); font-size: 12px; background: transparent;")
+        kit_qt.style(self.lbl_info, "color: @subtext@; font-size: 12px; background: transparent;")
 
         desc = pkg_data.description
         self.lbl_desc = QLabel(desc if len(desc) <= 90 else desc[:87] + "...")
-        self.lbl_desc.setStyleSheet("color: rgb(150, 140, 175); font-size: 11px; background: transparent;")
+        kit_qt.style(self.lbl_desc, "color: @subtext@; font-size: 11px; background: transparent;")
         if desc:
             self.lbl_desc.setToolTip(desc)
         else:
@@ -209,7 +215,7 @@ class Ui_PackageManager:
         # reads as "broken" rather than "loading".
         self.loading_lbl = QLabel("Loading...")
         self.loading_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.loading_lbl.setStyleSheet("color: rgb(180, 170, 200); font-size: 14px; padding: 30px;")
+        kit_qt.style(self.loading_lbl, "color: @subtext@; font-size: 14px; padding: 30px;")
         self.main_layout.addWidget(self.loading_lbl)
 
         self.scroll_area = QScrollArea()
@@ -235,7 +241,7 @@ class Ui_PackageManager:
         self.btn_prev_page.setFixedWidth(120)
 
         self.lbl_page_info = QLabel("Page 1 / 1")
-        self.lbl_page_info.setStyleSheet("color: rgb(180, 170, 200); font-weight: bold;")
+        kit_qt.style(self.lbl_page_info, "color: @subtext@; font-weight: bold;")
         self.lbl_page_info.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.btn_next_page = QPushButton("Next ➡")
@@ -267,11 +273,11 @@ class Ui_PackageManager:
         m_layout.setContentsMargins(30, 30, 30, 30)
 
         self.modal_title = QLabel("✨ Confirmation")
-        self.modal_title.setStyleSheet("color: white; font-size: 22px; font-weight: bold; background: transparent;")
+        kit_qt.style(self.modal_title, "color: white; font-size: 22px; font-weight: bold; background: transparent;")
         self.modal_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.modal_text = QLabel("Confirm?")
-        self.modal_text.setStyleSheet("color: rgb(210, 200, 230); font-size: 15px; background: transparent;")
+        kit_qt.style(self.modal_text, "color: @text@; font-size: 15px; background: transparent;")
         self.modal_text.setWordWrap(True)
         self.modal_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -280,7 +286,7 @@ class Ui_PackageManager:
         self.chk_delete_data.hide()
 
         self.modal_paths = QLabel("")
-        self.modal_paths.setStyleSheet("color: rgb(150, 140, 175); font-size: 12px; background: transparent;")
+        kit_qt.style(self.modal_paths, "color: @subtext@; font-size: 12px; background: transparent;")
         self.modal_paths.setWordWrap(True)
         self.modal_paths.hide()
 

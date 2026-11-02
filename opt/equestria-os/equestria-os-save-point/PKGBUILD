@@ -1,17 +1,16 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-save-point
-pkgver=1.4.0
+pkgver=1.5.0
 pkgrel=3
-pkgdesc="Equestria OS Save Point — system snapshot manager (Btrfs/Restic/Timeshift)"
+# Только Btrfs: поддержка ext4 и других ФС (restic/timeshift) удалена из-за нестабильности бэкапов
+pkgdesc="Equestria OS Save Point — Btrfs system snapshot manager (Btrfs only)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('equestria-qt-kit' 'restic' 'python-pyqt6')
+depends=('equestria-qt-kit>=1.1' 'btrfs-progs' 'python-pyqt6')
 install='equestria-os-save-point.install'
 optdepends=(
-    'btrfs-progs: native Btrfs CoW snapshot backend'
-    'timeshift: rsync-mode fallback backend'
     'spectacle: desktop screenshots on KDE'
     'grim: desktop screenshots on Wayland'
     'scrot: desktop screenshots on X11'
@@ -35,10 +34,11 @@ package() {
     install -m644 "$startdir/equestria_cyrillic.ttf" "$_optdir/equestria_cyrillic.ttf"
     install -m644 "$startdir/equestria-os-save-point.png" "$_optdir/equestria-os-save-point.png"
 
-    install -m755 "$startdir/auto-restore.py" "$_optdir/auto-restore.py"
     install -m755 "$startdir/restore-system.py" "$_optdir/restore-system.py"
     install -m755 "$startdir/pacman-snapshot.sh" "$_optdir/pacman-snapshot.sh"
     install -m755 "$startdir/flatpak-hook.sh" "$_optdir/flatpak-hook.sh"
+    # Копия хука — из неё настройки приложения включают хук обратно
+    install -m644 "$startdir/equestria-save-point.hook" "$_optdir/equestria-save-point.hook"
     install -m755 "$startdir/start.sh" "$_optdir/start.sh"
 
     # Копируем папки локализации и иконок
@@ -71,12 +71,10 @@ EOF
     install -d "$pkgdir/usr/bin"
     ln -s "//opt/equestria-os/equestria-os-save-point/restore-system.py" "$pkgdir/usr/bin/restore-system"
 
-    # 8. Разворачиваем Systemd таймеры и службы авто-восстановления
+    # 8. Ежедневный снимок (systemd-таймер). Автоматического отката при неудачной загрузке
+    #    больше нет (с 1.5.0-3): он восстанавливал последний снимок без спроса и принудительно
+    #    перезагружал — и однажды сломал пакеты KDE. Восстановление — только вручную.
     install -d "$pkgdir/usr/lib/systemd/system/"
     install -Dm644 "$startdir/equestria-save-point-daily.timer" "$pkgdir/usr/lib/systemd/system/equestria-save-point-daily.timer"
     install -Dm644 "$startdir/equestria-save-point-daily.service" "$pkgdir/usr/lib/systemd/system/equestria-save-point-daily.service"
-    install -Dm644 "$startdir/equestria-auto-restore.service" "$pkgdir/usr/lib/systemd/system/equestria-auto-restore.service"
-
-    install -d "$pkgdir/usr/lib/systemd/system/graphical.target.d/"
-    install -Dm644 "$startdir/auto-restore-trigger.conf" "$pkgdir/usr/lib/systemd/system/graphical.target.d/auto-restore.conf"
 }

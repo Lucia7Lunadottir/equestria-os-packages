@@ -11,6 +11,8 @@ Name[pl]=Konfigurator paska zadań Equestria OS
 Name[uk]=Налаштування панелі завдань Equestria OS
 Name[zh]=Equestria OS任务栏配置器
 Name[ja]=Equestria OSタスクバー設定
+Name[zh_TW]=Equestria OS工作列配置器
+Name[ko]=Equestria OS 작업 표시줄 변경기
 
 Comment=Manage task panel styles and layouts in Equestria OS
 Comment[en]=Manage task panel styles and layouts in Equestria OS
@@ -23,6 +25,8 @@ Comment[pl]=Zarządzaj stylami i układami paska zadań w Equestria OS
 Comment[uk]=Керування стилями та розташуванням панелі завдань у Equestria OS
 Comment[zh]=在Equestria OS中管理任务栏样式和布局
 Comment[ja]=Equestria OSでタスクバーのスタイルとレイアウトを管理する
+Comment[zh_TW]=在Equestria OS中管理工作列樣式和佈局
+Comment[ko]=Equestria OS에서 작업 표시줄 스타일과 레이아웃 관리
 
 Exec=equestria-os-task-panel-changer
 Icon=equestria-os-logo

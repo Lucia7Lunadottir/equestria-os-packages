@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Unreal Launcher
+Comment=Unreal Engine launcher: engines, projects and Fab
+Comment[ru]=Лаунчер Unreal Engine: движки, проекты и Fab
+Comment[de]=Unreal-Engine-Launcher: Engines, Projekte und Fab
+Comment[fr]=Lanceur Unreal Engine : moteurs, projets et Fab
+Comment[es]=Lanzador de Unreal Engine: motores, proyectos y Fab
+Comment[pt]=Lançador do Unreal Engine: motores, projetos e Fab
+Comment[pl]=Launcher Unreal Engine: silniki, projekty i Fab
+Comment[uk]=Лаунчер Unreal Engine: рушії, проєкти та Fab
+Comment[zh]=Unreal Engine 启动器：引擎、项目与 Fab
+Comment[ja]=Unreal Engine ランチャー：エンジン、プロジェクト、Fab
+Comment[zh_TW]=Unreal Engine 啟動器：引擎、專案與 Fab
+Comment[ko]=Unreal Engine 런처: 엔진, 프로젝트, Fab
+Exec=equestria-unreal
+Icon=applications-games
+Categories=Development;IDE;Qt;
+Keywords=Unreal;UE5;Epic;Fab;
+Terminal=false
+StartupWMClass=equestria-unreal

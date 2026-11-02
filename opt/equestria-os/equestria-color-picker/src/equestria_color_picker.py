@@ -1,0 +1,1 @@
+/mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/opt/equestria-os/equestria-color-picker/equestria_color_picker.py

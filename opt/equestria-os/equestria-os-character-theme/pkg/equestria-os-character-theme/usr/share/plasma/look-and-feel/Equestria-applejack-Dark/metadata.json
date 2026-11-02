@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Id": "Equestria-applejack-Dark",
+        "Name": "Equestria — Applejack (Dark)",
+        "Name[ru]": "Equestria — Applejack (ночь)",
+        "Description": "Applejack: night",
+        "Description[ru]": "Applejack: ночь",
+        "Icon": "preferences-desktop-theme-global",
+        "Authors": [
+            {
+                "Name": "Equestria OS"
+            }
+        ],
+        "Version": "2.0"
+    }
+}

@@ -15,6 +15,7 @@ except ImportError:  # запуск из исходников, пакет equest
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import normalize
 from equestria_kit.widgets import font_families
 
 class RoundedImageLabel(QLabel):
@@ -152,8 +153,8 @@ class TutorialApp(QMainWindow):
         # Он возвращает список вида ['ru-RU', 'ru', 'en-US'] или ['zh-Hans-CN', 'zh']
         ui_langs = QLocale.system().uiLanguages()
         for lang in ui_langs:
-            # Очищаем от региональных тегов (из "zh-Hans-CN" или "en_US" делаем "zh" или "en")
-            clean_lang = lang.split('-')[0].split('_')[0].lower()
+            # Код из LANGS общей библиотеки: "zh-Hans-CN" → "zh", "zh-Hant-TW" → "zh_TW", "en_US" → "en"
+            clean_lang = normalize(lang)
             if clean_lang in self.langs:
                 detected_lang = clean_lang
                 break
@@ -166,7 +167,7 @@ class TutorialApp(QMainWindow):
                     # Переменная LANGUAGE может содержать список через двоеточие: "uk_UA:uk:en"
                     parts = val.split(':') if var == 'LANGUAGE' else [val]
                     for part in parts:
-                        clean_lang = part.split('.')[0].split('_')[0].lower()
+                        clean_lang = normalize(part)
                         if clean_lang in self.langs:
                             detected_lang = clean_lang
                             break

@@ -12,15 +12,14 @@ except ImportError:  # запуск из исходников, пакет equest
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import detect_language
 
 # Полностью отвязываемся от хардкода. Все пути строим относительно самого скрипта
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # --- Локализация ---
 def get_sys_lang():
-    lang = os.environ.get("LANG", "en_US").split('_')[0]
-    supported = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
-    return lang if lang in supported else "en"
+    return detect_language()
 
 def load_localization():
     csv_path = os.path.join(SYSTEM_PATH, "localization.csv")

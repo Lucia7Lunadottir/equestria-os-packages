@@ -72,7 +72,7 @@
   "desc.displaylink": "Драйвери для USB док-станцій DisplayLink та зовнішніх моніторів",
   "ui.update_all": "Оновити систему",
   "ui.update_title": "Оновлення системи",
-  "ui.update_desc": "Ви впевнені, що хочете оновити всі системні пакети (Pacman, AUR, Flatpak, Snap)?",
+  "ui.update_desc": "Ви впевнені, що хочете оновити всі системні пакети (Pacman, AUR, Flatpak, Snap, DEB/RPM)?",
   "ui.cancel": "Скасувати",
   "ui.confirm": "Оновити",
   "ui.install": "Встановити",
@@ -107,6 +107,8 @@
   "ui.flatpak_not_installed_title": "Flatpak не встановлено",
   "ui.flatpak_not_installed_desc": "Встановіть Flatpak, щоб отримати доступ до тисяч додатків Flathub.",
   "ui.flatpak_install_btn": "Встановити Flatpak",
+  "ui.flatpak_ref_not_found_title": "Застосунок не знайдено",
+  "ui.flatpak_ref_not_found_body": "«{name}» ще немає в локальному каталозі Flatpak. Переконайтеся, що підтримку Flatpak увімкнено, а каталог оновлено, і спробуйте посилання ще раз.",
   "ui.source_updates": "Оновлення",
   "ui.integrity_check": "Перевірка системних файлів",
   "ui.cache_clean": "Очищення кешу пакетів",
@@ -161,8 +163,8 @@
   "install.retrying": "Повторна спроба",
   "install.title_init_db": "Ініціалізація бази пакунків…",
   "ui.update_no_sources": "Жодне джерело оновлень не увімкнено. Увімкніть хоча б одне в Налаштуваннях.",
-  "ui.flatpak_ref_not_found_title": "Застосунок не знайдено",
-  "ui.flatpak_ref_not_found_body": "«{name}» ще немає в локальному каталозі Flatpak. Переконайтеся, що підтримку Flatpak увімкнено, а каталог оновлено, і спробуйте посилання ще раз.",
   "install.input_placeholder": "Введіть відповідь (наприклад, 1) і натисніть Enter",
-  "install.btn_send": "Надіслати"
+  "install.btn_send": "Надіслати",
+  "settings.upd_foreign": "Оновлювати програми з пакунків DEB і RPM",
+  "ui.foreign_desc": "Програма з пакунка DEB/RPM · встановлена {0}"
 }

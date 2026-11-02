@@ -11,6 +11,8 @@ Name[pl]=Przełącznik motywów Equestria OS
 Name[uk]=Перемикач тем Equestria OS
 Name[zh]=Equestria OS主题切换器
 Name[ja]=Equestria OSテーマスイッチャー
+Name[zh_TW]=Equestria OS主題切換器
+Name[ko]=Equestria OS 테마 전환기
 
 Comment=Switch EG character themes in Equestria OS
 Comment[en]=Switch EG character themes in Equestria OS
@@ -23,6 +25,8 @@ Comment[pl]=Przełączaj motywy postaci EG w Equestria OS
 Comment[uk]=Перемикання тем персонажів EG у Equestria OS
 Comment[zh]=在EquestriaOS中切换EG角色主题
 Comment[ja]=EquestriaOSでEGキャラクターテーマを切り替える
+Comment[zh_TW]=在EquestriaOS中切換EG角色主題
+Comment[ko]=Equestria OS에서 EG 캐릭터 테마 전환
 
 Exec=equestria-os-character-theme
 Icon=equestria-os-logo

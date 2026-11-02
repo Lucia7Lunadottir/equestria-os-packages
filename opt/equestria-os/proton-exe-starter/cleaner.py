@@ -21,6 +21,7 @@ except ImportError:  # запуск из исходников, пакет equest
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import detect_language
 
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
@@ -54,12 +55,7 @@ def _load_localization():
 
 def _detect_language():
     global _lang
-    lang = os.environ.get("LANG", "en")
-    for code in ("ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"):
-        if lang.startswith(code):
-            _lang = code
-            return
-    _lang = "en"
+    _lang = detect_language()
 
 
 def t(key: str) -> str:

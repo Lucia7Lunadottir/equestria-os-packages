@@ -1,44 +1,44 @@
 QWidget {
-    background-color: rgb(30, 30, 46);
-    color: rgb(205, 214, 244);
+    background-color: @base@;
+    color: @text@;
     font-family: "Noto Sans", sans-serif;
 }
 
 /* Верхняя панель */
 QWidget#TopBar {
-    background-color: rgb(24, 24, 37);
-    border-bottom: 1px solid rgb(49, 50, 68);
+    background-color: @mantle@;
+    border-bottom: 1px solid @surface0@;
 }
 QLabel#LogoLabel {
-    color: rgb(245, 194, 231);
+    color: @accent@;
 }
 
 /* Выпадающий список языков.
    Важно: без правил ::drop-down/::down-arrow — иначе Qt перестаёт
    рисовать нативную стрелку. */
 QComboBox#LangCombo {
-    background-color: rgb(49, 50, 68);
-    color: rgb(220, 220, 255);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @surface1@;
     border-radius: 4px;
     padding: 3px 8px;
     font-size: 11px;
     min-width: 46px;
 }
 QComboBox#LangCombo:hover {
-    border: 1px solid rgb(245, 194, 231);
+    border: 1px solid @accent@;
 }
 QComboBox QAbstractItemView {
-    background-color: rgb(49, 50, 68);
-    color: rgb(220, 220, 255);
-    selection-background-color: rgb(108, 112, 134);
-    border: 1px solid rgb(69, 71, 90);
+    background-color: @surface0@;
+    color: @text@;
+    selection-background-color: @surface2@;
+    border: 1px solid @surface1@;
     outline: none;
 }
 
 /* Слайды */
 QLabel#SlideTitle {
-    color: rgb(203, 166, 247);
+    color: @accent@;
     font-size: 32px;
     font-weight: bold;
 }
@@ -50,8 +50,8 @@ QTextBrowser#SlideText {
 
 /* Синие кнопки внутри слайда */
 QPushButton#ActionBtn {
-    background-color: rgb(137, 180, 250);
-    color: rgb(24, 24, 37);
+    background-color: @accent2@;
+    color: @mantle@;
     font-size: 15px;
     font-weight: bold;
     padding: 10px 20px;
@@ -60,65 +60,65 @@ QPushButton#ActionBtn {
     border: none;
 }
 QPushButton#ActionBtn:hover {
-    background-color: rgb(180, 190, 254);
+    background-color: @accent@;
 }
 
 /* Нижняя панель навигации */
 QWidget#BottomBar {
-    background-color: rgb(24, 24, 37);
-    border-top: 1px solid rgb(49, 50, 68);
+    background-color: @mantle@;
+    border-top: 1px solid @surface0@;
 }
 
 QPushButton#NavBtnPrev {
     background-color: transparent;
-    color: rgb(166, 173, 200);
+    color: @subtext@;
     font-size: 15px;
     font-weight: bold;
     border: none;
     padding: 8px 16px;
 }
 QPushButton#NavBtnPrev:hover {
-    color: rgb(205, 214, 244);
+    color: @text@;
 }
 
 QPushButton#NavBtnNext {
-    background-color: rgb(166, 227, 161);
-    color: rgb(24, 24, 37);
+    background-color: @green@;
+    color: @mantle@;
     font-size: 15px;
     font-weight: bold;
     border-radius: 8px;
     padding: 8px 24px;
 }
 QPushButton#NavBtnNext:hover {
-    background-color: rgb(148, 226, 213);
+    background-color: @accent2@;
 }
 
 QPushButton#NavBtnFinish {
-    background-color: rgb(245, 194, 231);
-    color: rgb(24, 24, 37);
+    background-color: @accent@;
+    color: @mantle@;
     font-size: 15px;
     font-weight: bold;
     border-radius: 8px;
     padding: 8px 24px;
 }
 QPushButton#NavBtnFinish:hover {
-    background-color: rgb(255, 210, 245);
+    background-color: @accent_hover@;
 }
 
 /* Скроллбар */
 QScrollBar:vertical {
-    background: rgb(30, 30, 46);
+    background: @base@;
     width: 6px;
     margin: 0px;
     border-radius: 3px;
 }
 QScrollBar::handle:vertical {
-    background: rgb(69, 71, 90);
+    background: @surface1@;
     min-height: 20px;
     border-radius: 3px;
 }
 QScrollBar::handle:vertical:hover {
-    background: rgb(108, 112, 134);
+    background: @surface2@;
 }
 QScrollBar::add-line:vertical,
 QScrollBar::sub-line:vertical {
@@ -131,30 +131,30 @@ QScrollBar::sub-page:vertical {
 
 /* Чекбокс автостарта */
 QCheckBox#AutostartCheckbox {
-    color: rgb(166, 173, 200);
+    color: @subtext@;
     font-size: 13px;
     spacing: 6px;
 }
 QCheckBox#AutostartCheckbox:hover {
-    color: rgb(205, 214, 244);
+    color: @text@;
 }
 QCheckBox#AutostartCheckbox::indicator {
     width: 18px;
     height: 18px;
-    image: url({{BASE_PATH}}/assets/cb_unchecked.svg);
+    image: url(@icon:cb_unchecked@);
 }
 QCheckBox#AutostartCheckbox::indicator:hover {
-    image: url({{BASE_PATH}}/assets/cb_unchecked_hover.svg);
+    image: url(@icon:cb_unchecked_hover@);
 }
 QCheckBox#AutostartCheckbox::indicator:checked {
-    image: url({{BASE_PATH}}/assets/cb_checked.svg);
+    image: url(@icon:cb_checked@);
 }
 
 /* Точки прогресса */
 QLabel#ProgressDot {
-    color: rgb(69, 71, 90);
+    color: @surface1@;
     font-size: 20px;
 }
 QLabel#ProgressDot[active="true"] {
-    color: rgb(245, 194, 231);
+    color: @accent@;
 }

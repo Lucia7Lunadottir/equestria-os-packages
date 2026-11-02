@@ -10,6 +10,8 @@ Name[pl]=Centrum powitalne Equestria OS
 Name[uk]=Ласкаво просимо до Equestria OS
 Name[zh]=Equestria OS欢迎中心
 Name[ja]=Equestria OSウェルカムハブ
+Name[zh_TW]=Equestria OS歡迎中心
+Name[ko]=Equestria OS 환영 허브
 
 Comment=Welcome screen and quick settings for Equestria OS
 Comment[en]=Welcome screen and quick settings for Equestria OS
@@ -22,6 +24,8 @@ Comment[pl]=Ekran powitalny i szybkie ustawienia Equestria OS
 Comment[uk]=Екран вітання та швидкі налаштування Equestria OS
 Comment[zh]=Equestria OS的欢迎界面和快速设置
 Comment[ja]=Equestria OSのウェルカム画面とクイック設定
+Comment[zh_TW]=Equestria OS的歡迎介面和快速設定
+Comment[ko]=Equestria OS 환영 화면과 빠른 설정
 
 Exec=equestria-welcome
 Icon=equestria-os-welcome-hub

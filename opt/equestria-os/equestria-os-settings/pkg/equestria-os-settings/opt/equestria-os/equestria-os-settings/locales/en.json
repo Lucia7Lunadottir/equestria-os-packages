@@ -51,7 +51,7 @@
   "pkg.disk_manager.name": "Disk Manager",
   "pkg.disk_manager.desc": "Mount points, fstab and disk partitions",
   "pkg.save_point.name": "Save Point",
-  "pkg.save_point.desc": "System snapshots and backups via Timeshift",
+  "pkg.save_point.desc": "Btrfs system snapshots",
   "pkg.services.name": "Services Manager",
   "pkg.services.desc": "Start, stop and manage systemd services",
   "pkg.swap_manager.name": "Swap Manager",

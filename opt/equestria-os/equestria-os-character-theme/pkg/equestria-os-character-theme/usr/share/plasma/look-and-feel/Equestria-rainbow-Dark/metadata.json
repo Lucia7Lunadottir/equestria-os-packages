@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Id": "Equestria-rainbow-Dark",
+        "Name": "Equestria — Rainbow Dash (Dark)",
+        "Name[ru]": "Equestria — Rainbow Dash (ночь)",
+        "Description": "Rainbow Dash: night",
+        "Description[ru]": "Rainbow Dash: ночь",
+        "Icon": "preferences-desktop-theme-global",
+        "Authors": [
+            {
+                "Name": "Equestria OS"
+            }
+        ],
+        "Version": "2.0"
+    }
+}

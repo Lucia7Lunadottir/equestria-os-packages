@@ -1,28 +1,28 @@
 /* Базовый фон */
-QWidget#root { background-color: rgb(26, 24, 41); }
+QWidget#root { background-color: @base@; }
 
 QLabel#TitleLabel {
     font-size: 26px; color: rgb(240, 240, 240); font-weight: bold; margin-bottom: 20px;
 }
 
 QLineEdit#SearchField, QComboBox#CategoryDropdown {
-    border-radius: 8px; background-color: rgb(40, 35, 60); color: white;
-    padding: 8px 12px; border: 1px solid rgb(120, 90, 180);
+    border-radius: 8px; background-color: @surface0@; color: white;
+    padding: 8px 12px; border: 1px solid @accent%80@;
 }
 
 QComboBox QAbstractItemView {
-    background-color: rgb(40, 35, 60); color: white;
-    selection-background-color: rgb(60, 50, 90); border: 1px solid rgb(120, 90, 180);
+    background-color: @surface0@; color: white;
+    selection-background-color: @surface1@; border: 1px solid @accent%80@;
     outline: none;
 }
 
 QScrollArea#PackageList {
-    background-color: rgb(30, 28, 48); border-radius: 12px; border: 1px solid rgb(50, 45, 75);
+    background-color: @surface0%30@; border-radius: 12px; border: 1px solid @surface1@;
 }
-#ScrollContent { background-color: rgb(30, 28, 48); }
+#ScrollContent { background-color: @surface0%30@; }
 
-QFrame#PackageRow { border-bottom: 1px solid rgb(50, 45, 70); background-color: transparent; }
-QFrame#PackageRow:hover { background-color: rgb(60, 50, 90); }
+QFrame#PackageRow { border-bottom: 1px solid @surface1@; background-color: transparent; }
+QFrame#PackageRow:hover { background-color: @surface1@; }
 
 
 /* =========================================
@@ -31,53 +31,53 @@ QFrame#PackageRow:hover { background-color: rgb(60, 50, 90); }
 
 /* Главная кнопка удаления в списке */
 QPushButton#ListDeleteBtn {
-    background-color: rgb(100, 50, 140); color: white;
+    background-color: @accent%70@; color: white;
     border-radius: 6px; padding: 6px 15px; font-weight: bold;
-    border: 1px solid rgb(100, 50, 140);
+    border: 1px solid @accent%70@;
 }
 QPushButton#ListDeleteBtn:hover {
-    background-color: rgb(140, 70, 190); border: 1px solid rgb(140, 70, 190);
+    background-color: @accent@; border: 1px solid @accent@;
 }
 
 /* Кнопка удаления внутри модального окна */
 QPushButton#ModalDeleteBtn {
-    background-color: rgb(100, 50, 140); color: white;
+    background-color: @accent%70@; color: white;
     border-radius: 8px; padding: 10px 15px; font-weight: bold;
-    border: 1px solid rgb(100, 50, 140);
+    border: 1px solid @accent%70@;
 }
 QPushButton#ModalDeleteBtn:hover {
-    background-color: rgb(140, 70, 190); border: 1px solid rgb(140, 70, 190);
+    background-color: @accent@; border: 1px solid @accent@;
 }
 
 /* Кнопка отмены внутри модального окна */
 QPushButton#ModalCancelBtn {
-    background-color: rgb(80, 75, 100); color: white;
+    background-color: @surface2@; color: white;
     border-radius: 8px; padding: 10px 15px; font-weight: bold;
-    border: 1px solid rgb(80, 75, 100);
+    border: 1px solid @surface2@;
 }
 QPushButton#ModalCancelBtn:hover {
-    background-color: rgb(110, 105, 130); border: 1px solid rgb(110, 105, 130);
+    background-color: @surface2@; border: 1px solid @surface2@;
 }
 
 /* Выпадающий список языков.
    Важно: без правил ::drop-down/::down-arrow — иначе Qt перестаёт
    рисовать нативную стрелку. */
 QComboBox#LangCombo {
-    background-color: rgb(40, 35, 60); color: rgb(220, 220, 255);
-    border: 1px solid rgb(69, 71, 90); border-radius: 4px; padding: 2px 8px;
+    background-color: @surface0@; color: @text@;
+    border: 1px solid @surface1@; border-radius: 4px; padding: 2px 8px;
     min-width: 48px;
 }
 QComboBox#LangCombo:hover {
-    background-color: rgb(49, 50, 68); border: 1px solid rgb(120, 90, 180);
+    background-color: @surface0@; border: 1px solid @accent%80@;
 }
 
 /* =========================================
  *  МОДАЛЬНОЕ ОКНО И ПЕРЕКРЫТИЕ
  *  ========================================= */
 QFrame#ModalOverlay {
-    background-color: rgba(15, 12, 25, 220); /* Черное перекрытие */
+    background-color: @crust/220@; /* Черное перекрытие */
 }
 
 #ModalBox {
-background-color: rgb(35, 30, 50); border: 2px solid rgb(120, 90, 180); border-radius: 12px;
+background-color: @surface0%55@; border: 2px solid @accent%80@; border-radius: 12px;
 }

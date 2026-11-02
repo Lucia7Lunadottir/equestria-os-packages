@@ -72,7 +72,7 @@
   "desc.displaylink": "Drivers para estações de acoplamento USB DisplayLink e monitores externos",
   "ui.update_all": "Atualizar sistema",
   "ui.update_title": "Atualização do sistema",
-  "ui.update_desc": "Tem certeza de que deseja atualizar todos os pacotes do sistema (Pacman, AUR, Flatpak, Snap)?",
+  "ui.update_desc": "Tem certeza de que deseja atualizar todos os pacotes do sistema (Pacman, AUR, Flatpak, Snap, DEB/RPM)?",
   "ui.cancel": "Cancelar",
   "ui.confirm": "Atualizar",
   "ui.install": "Instalar",
@@ -107,6 +107,8 @@
   "ui.flatpak_not_installed_title": "Flatpak não está instalado",
   "ui.flatpak_not_installed_desc": "Instale o Flatpak para acessar milhares de aplicativos do Flathub.",
   "ui.flatpak_install_btn": "Instalar Flatpak",
+  "ui.flatpak_ref_not_found_title": "Aplicação não encontrada",
+  "ui.flatpak_ref_not_found_body": "“{name}” ainda não está no catálogo local do Flatpak. Certifique-se de que o suporte a Flatpak está ativado e o catálogo atualizado, depois tente o link novamente.",
   "ui.source_updates": "Atualizações",
   "ui.integrity_check": "Verificar ficheiros do sistema",
   "ui.cache_clean": "Limpar cache de pacotes",
@@ -161,8 +163,8 @@
   "install.retrying": "A tentar novamente",
   "install.title_init_db": "A inicializar a base de dados de pacotes…",
   "ui.update_no_sources": "Nenhuma fonte de atualização está ativada. Ative pelo menos uma nas Definições.",
-  "ui.flatpak_ref_not_found_title": "Aplicação não encontrada",
-  "ui.flatpak_ref_not_found_body": "“{name}” ainda não está no catálogo local do Flatpak. Certifique-se de que o suporte a Flatpak está ativado e o catálogo atualizado, depois tente o link novamente.",
   "install.input_placeholder": "Digite sua resposta (ex.: 1) e pressione Enter",
-  "install.btn_send": "Enviar"
+  "install.btn_send": "Enviar",
+  "settings.upd_foreign": "Atualizar aplicativos de pacotes DEB e RPM",
+  "ui.foreign_desc": "Aplicativo de pacote DEB/RPM · instalado {0}"
 }

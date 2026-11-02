@@ -11,6 +11,8 @@ Name[pl]=Edytor plików .desktop
 Name[pt]=Editor de arquivos .desktop
 Name[uk]=Редактор .desktop файлів
 Name[zh]=Desktop 文件编辑器
+Name[zh_TW]=Desktop 檔案編輯器
+Name[ko]=바탕 화면 파일 편집기
 Comment=Create and edit .desktop shortcut files
 Comment[ru]=Создание и редактирование файлов ярлыков .desktop
 Comment[de]=Erstellen und Bearbeiten von .desktop-Verknüpfungsdateien
@@ -21,6 +23,8 @@ Comment[pl]=Tworzenie i edycja plików skrótów .desktop
 Comment[pt]=Criar e editar arquivos de atalho .desktop
 Comment[uk]=Створення та редагування файлів ярликів .desktop
 Comment[zh]=创建和编辑 .desktop 快捷方式文件
+Comment[zh_TW]=建立和編輯 .desktop 快捷方式檔案
+Comment[ko]=.desktop 바로 가기 파일 만들기 및 편집
 # Важно: Укажи полный абсолютный путь к твоему скрипту!
 Exec=/ПРОПИШИ/ЗДЕСЬ/ПОЛНЫЙ/ПУТЬ/desktop_editor_ui.py
 # Укажи полный абсолютный путь к иконке

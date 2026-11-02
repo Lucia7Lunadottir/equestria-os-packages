@@ -12,27 +12,35 @@ from PyQt6.QtGui import QFontDatabase
 
 # Используем твои наработки
 import privilege
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import detect_language
+from equestria_kit.widgets import font_families
 
-LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "ja"]
+LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "zh_TW", "ja", "ko"]
 STRINGS = {
-    "title":      {"en": "Equestria OS: Bulk Renamer", "ru": "Equestria OS: Массовое переименование"},
-    "dir_label":  {"en": "Target Directory",          "ru": "Целевая папка"},
-    "filter":     {"en": "Filter (only files containing)", "ru": "Фильтр (только файлы содержащие)"},
-    "find":       {"en": "Find text",                 "ru": "Найти текст"},
-    "replace":    {"en": "Replace with",              "ru": "Заменить на"},
-    "prefix":     {"en": "Add Prefix",                "ru": "Добавить префикс"},
-    "suffix":     {"en": "Add Suffix",                "ru": "Добавить суффикс"},
-    "numbers":    {"en": "Numbering (Start at)",      "ru": "Нумерация (начиная с)"},
-    "preview":    {"en": "Preview",                   "ru": "Предпросмотр"},
-    "apply":      {"en": "Rename All",                "ru": "Переименовать всё"},
-    "browse":     {"en": "Browse",                    "ru": "Обзор"},
-    "success":    {"en": "Successfully renamed {n} files!", "ru": "Успешно переименовано {n} файлов!"},
-    "undo":       {"en": "Undo",                      "ru": "Отменить"},
-    "history":    {"en": "History",                   "ru": "История"},
-    "undo_ok":    {"en": "Reverted {n} files.",       "ru": "Отменено {n} файлов."},
-    "undo_empty": {"en": "Nothing to undo.",          "ru": "Нечего отменять."},
-    "hist_title": {"en": "Rename History",            "ru": "История переименований"},
-    "hist_empty": {"en": "History is empty.",         "ru": "История пуста."},
+    "title":      {"en": "Equestria OS: Bulk Renamer", "ru": "Equestria OS: Массовое переименование", "de": "Equestria OS: Massen-Umbenennung", "fr": "Equestria OS : renommage en masse", "es": "Equestria OS: renombrado masivo", "pt": "Equestria OS: renomeação em massa", "pl": "Equestria OS: masowa zmiana nazw", "uk": "Equestria OS: масове перейменування", "zh": "Equestria OS：批量重命名", "zh_TW": "Equestria OS：批次重新命名", "ja": "Equestria OS：一括リネーム", "ko": "Equestria OS: 일괄 이름 변경"},
+    "dir_label":  {"en": "Target Directory",          "ru": "Целевая папка", "de": "Zielverzeichnis", "fr": "Dossier cible", "es": "Carpeta de destino", "pt": "Pasta de destino", "pl": "Katalog docelowy", "uk": "Цільова тека", "zh": "目标目录", "zh_TW": "目標目錄", "ja": "対象ディレクトリ", "ko": "대상 디렉터리"},
+    "filter":     {"en": "Filter (only files containing)", "ru": "Фильтр (только файлы содержащие)", "de": "Filter (nur Dateien, die enthalten)", "fr": "Filtre (seulement les fichiers contenant)", "es": "Filtro (solo archivos que contengan)", "pt": "Filtro (apenas arquivos que contêm)", "pl": "Filtr (tylko pliki zawierające)", "uk": "Фільтр (лише файли, що містять)", "zh": "筛选（仅包含该文本的文件）", "zh_TW": "篩選（僅包含該文本的檔案）", "ja": "フィルター（含むファイルのみ）", "ko": "필터 (이 텍스트를 포함하는 파일만)"},
+    "find":       {"en": "Find text",                 "ru": "Найти текст", "de": "Text suchen", "fr": "Texte à rechercher", "es": "Texto a buscar", "pt": "Texto a procurar", "pl": "Szukany tekst", "uk": "Знайти текст", "zh": "查找文本", "zh_TW": "查詢文本", "ja": "検索する文字列", "ko": "찾을 텍스트"},
+    "replace":    {"en": "Replace with",              "ru": "Заменить на", "de": "Ersetzen durch", "fr": "Remplacer par", "es": "Reemplazar por", "pt": "Substituir por", "pl": "Zamień na", "uk": "Замінити на", "zh": "替换为", "zh_TW": "替換為", "ja": "置換後", "ko": "바꿀 내용"},
+    "prefix":     {"en": "Add Prefix",                "ru": "Добавить префикс", "de": "Präfix hinzufügen", "fr": "Ajouter un préfixe", "es": "Añadir prefijo", "pt": "Adicionar prefixo", "pl": "Dodaj przedrostek", "uk": "Додати префікс", "zh": "添加前缀", "zh_TW": "新增字首", "ja": "接頭辞を追加", "ko": "접두사 추가"},
+    "suffix":     {"en": "Add Suffix",                "ru": "Добавить суффикс", "de": "Suffix hinzufügen", "fr": "Ajouter un suffixe", "es": "Añadir sufijo", "pt": "Adicionar sufixo", "pl": "Dodaj przyrostek", "uk": "Додати суфікс", "zh": "添加后缀", "zh_TW": "新增字尾", "ja": "接尾辞を追加", "ko": "접미사 추가"},
+    "numbers":    {"en": "Numbering (Start at)",      "ru": "Нумерация (начиная с)", "de": "Nummerierung (Start bei)", "fr": "Numérotation (à partir de)", "es": "Numeración (empezar en)", "pt": "Numeração (começar em)", "pl": "Numeracja (od)", "uk": "Нумерація (почати з)", "zh": "编号（起始值）", "zh_TW": "編號（起始值）", "ja": "番号付け（開始番号）", "ko": "번호 매기기 (시작 번호)"},
+    "preview":    {"en": "Preview",                   "ru": "Предпросмотр", "de": "Vorschau", "fr": "Aperçu", "es": "Vista previa", "pt": "Pré-visualizar", "pl": "Podgląd", "uk": "Попередній перегляд", "zh": "预览", "zh_TW": "預覽", "ja": "プレビュー", "ko": "미리 보기"},
+    "apply":      {"en": "Rename All",                "ru": "Переименовать всё", "de": "Alle umbenennen", "fr": "Tout renommer", "es": "Renombrar todo", "pt": "Renomear tudo", "pl": "Zmień nazwy wszystkich", "uk": "Перейменувати все", "zh": "全部重命名", "zh_TW": "全部重新命名", "ja": "すべてリネーム", "ko": "모두 이름 바꾸기"},
+    "browse":     {"en": "Browse",                    "ru": "Обзор", "de": "Durchsuchen", "fr": "Parcourir", "es": "Examinar", "pt": "Procurar", "pl": "Przeglądaj", "uk": "Огляд", "zh": "浏览", "zh_TW": "瀏覽", "ja": "参照", "ko": "찾아보기"},
+    "success":    {"en": "Successfully renamed {n} files!", "ru": "Успешно переименовано {n} файлов!", "de": "{n} Dateien erfolgreich umbenannt!", "fr": "{n} fichiers renommés avec succès !", "es": "¡Se renombraron {n} archivos correctamente!", "pt": "{n} arquivos renomeados com sucesso!", "pl": "Pomyślnie zmieniono nazwy {n} plików!", "uk": "Успішно перейменовано файлів: {n}!", "zh": "已成功重命名 {n} 个文件！", "zh_TW": "已成功重新命名 {n} 個檔案！", "ja": "{n} 個のファイルをリネームしました！", "ko": "파일 {n}개의 이름을 바꿨습니다!"},
+    "undo":       {"en": "Undo",                      "ru": "Отменить", "de": "Rückgängig", "fr": "Annuler", "es": "Deshacer", "pt": "Desfazer", "pl": "Cofnij", "uk": "Скасувати", "zh": "撤销", "zh_TW": "撤銷", "ja": "元に戻す", "ko": "실행 취소"},
+    "history":    {"en": "History",                   "ru": "История", "de": "Verlauf", "fr": "Historique", "es": "Historial", "pt": "Histórico", "pl": "Historia", "uk": "Історія", "zh": "历史", "zh_TW": "歷史", "ja": "履歴", "ko": "기록"},
+    "undo_ok":    {"en": "Reverted {n} files.",       "ru": "Отменено {n} файлов.", "de": "{n} Dateien zurückgesetzt.", "fr": "{n} fichiers restaurés.", "es": "Se revirtieron {n} archivos.", "pt": "{n} arquivos revertidos.", "pl": "Przywrócono {n} plików.", "uk": "Відновлено файлів: {n}.", "zh": "已还原 {n} 个文件。", "zh_TW": "已還原 {n} 個檔案。", "ja": "{n} 個のファイルを元に戻しました。", "ko": "파일 {n}개를 되돌렸습니다."},
+    "undo_empty": {"en": "Nothing to undo.",          "ru": "Нечего отменять.", "de": "Nichts rückgängig zu machen.", "fr": "Rien à annuler.", "es": "Nada que deshacer.", "pt": "Nada para desfazer.", "pl": "Nie ma czego cofać.", "uk": "Нічого скасовувати.", "zh": "没有可撤销的操作。", "zh_TW": "沒有可撤銷的操作。", "ja": "元に戻す操作はありません。", "ko": "되돌릴 작업이 없습니다."},
+    "hist_title": {"en": "Rename History",            "ru": "История переименований", "de": "Umbenennungsverlauf", "fr": "Historique des renommages", "es": "Historial de renombrados", "pt": "Histórico de renomeações", "pl": "Historia zmian nazw", "uk": "Історія перейменувань", "zh": "重命名历史", "zh_TW": "重新命名歷史", "ja": "リネーム履歴", "ko": "이름 변경 기록"},
+    "hist_empty": {"en": "History is empty.",         "ru": "История пуста.", "de": "Der Verlauf ist leer.", "fr": "L'historique est vide.", "es": "El historial está vacío.", "pt": "O histórico está vazio.", "pl": "Historia jest pusta.", "uk": "Історія порожня.", "zh": "历史为空。", "zh_TW": "歷史為空。", "ja": "履歴は空です。", "ko": "기록이 비어 있습니다."},
 }
 
 
@@ -99,7 +107,7 @@ class HistoryDialog(QDialog):
 class RenamerApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.current_lang = os.getenv("LANG", "en")[:2]
+        self.current_lang = detect_language()
         if self.current_lang not in LANGS:
             self.current_lang = "en"
 
@@ -120,16 +128,15 @@ class RenamerApp(QMainWindow):
         title_font = "sans-serif"
         f_path = os.path.join(base_path, "equestria_cyrillic.ttf")
         if os.path.exists(f_path):
-            fid = QFontDatabase.addApplicationFont(f_path)
-            families = QFontDatabase.applicationFontFamilies(fid)
+            families = font_families(f_path)
             if families:
                 title_font = families[0]
 
         qss_path = os.path.join(base_path, "style.qss")
         if os.path.exists(qss_path):
             qss = open(qss_path).read().replace("{{TITLE_FONT}}", f'"{title_font}"')
-            qss += "\nQListWidget { background-color: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 5px; }"
-            self.setStyleSheet(qss)
+            qss += "\nQListWidget { background-color: @base@; border: 1px solid @surface0@; border-radius: 8px; padding: 5px; }"
+            kit_qt.style(self, qss)
 
         central = QWidget()
         central.setObjectName("CentralBg")
@@ -373,6 +380,7 @@ class RenamerApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     app.setDesktopFileName("equestria-os-rename-helper")
     win = RenamerApp()
     win.show()

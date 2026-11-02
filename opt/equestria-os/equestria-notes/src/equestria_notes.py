@@ -1,0 +1,1 @@
+/mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/opt/equestria-os/equestria-notes/equestria_notes.py

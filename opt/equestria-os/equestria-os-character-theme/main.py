@@ -17,6 +17,7 @@ try:
 except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import detect_language
 from equestria_kit.widgets import font_families
 
 from ui import Ui_MainWindow, APP_STYLE, ModeSwitch
@@ -154,8 +155,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         return langs.get(self.current_lang, langs.get("en", key))
 
     def detect_system_language(self):
-        sys_lang = os.environ.get("LANG", "en")
-        sys_code = sys_lang[:2].lower() if len(sys_lang) >= 2 else "en"
+        sys_code = detect_language()
         self.current_lang = sys_code if sys_code in self.available_langs else (self.available_langs[0] if self.available_langs else "en")
 
 

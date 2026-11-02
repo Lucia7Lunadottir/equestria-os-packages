@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Id": "Equestria-sunset",
+        "Name": "Equestria — Sunset Shimmer",
+        "Name[ru]": "Equestria — Sunset Shimmer",
+        "Description": "Sunset Shimmer: day",
+        "Description[ru]": "Sunset Shimmer: день",
+        "Icon": "preferences-desktop-theme-global",
+        "Authors": [
+            {
+                "Name": "Equestria OS"
+            }
+        ],
+        "Version": "2.0"
+    }
+}

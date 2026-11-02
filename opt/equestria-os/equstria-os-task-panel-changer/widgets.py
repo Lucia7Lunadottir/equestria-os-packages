@@ -117,18 +117,6 @@ class HelpButton(QWidget):
         p.drawText(rect, Qt.AlignmentFlag.AlignCenter, "?")
         p.end()
 
-PANEL_LAYOUTS = {
-    "sunset":    [{"pos": "bottom", "w": 0.62, "h": 0.28, "float": True}],
-    "twilight":  [{"pos": "bottom", "w": 1.0,  "h": 0.22, "float": False}],
-    "rainbow":   [{"pos": "top",    "w": 1.0,  "h": 0.16, "float": False},
-                  {"pos": "bottom", "w": 0.45, "h": 0.26, "float": True}],
-    "rarity":    [{"pos": "top",    "w": 1.0,  "h": 0.14, "float": False},
-                  {"pos": "bottom", "w": 0.38, "h": 0.30, "float": True}],
-    "applejack": [{"pos": "bottom", "w": 1.0,  "h": 0.26, "float": False}],
-    "fluttershy":[{"pos": "bottom", "w": 0.70, "h": 0.22, "float": True}],
-    "pinkie":    [{"pos": "bottom", "w": 1.0,  "h": 0.24, "float": False}],
-}
-
 class SafeCheckBox(QWidget):
     """Красивый анимированный Toggle-переключатель с текстом справа."""
     toggled = pyqtSignal(bool)
@@ -226,16 +214,21 @@ class SafeCheckBox(QWidget):
         p.end()
 
 class PanelPreviewWidget(QWidget):
-    def __init__(self, preset_id, panel_color="@base@", panel_opacity=90, parent=None):
+    """Мини-схема раскладки: экран и панели на нём (по данным пресета)."""
+
+    def __init__(self, panels=None, panel_color="#313060", panel_opacity=90, parent=None):
         super().__init__(parent)
-        self.preset_id = preset_id
+        self.panels = panels or []
         self.panel_color = panel_color
         self.panel_opacity = panel_opacity
-        self.layout_configs = PANEL_LAYOUTS.get(preset_id, [])
 
     def set_appearance(self, color, opacity):
         self.panel_color = color
         self.panel_opacity = opacity
+        self.update()
+
+    def set_panels(self, panels):
+        self.panels = panels or []
         self.update()
 
     def paintEvent(self, event):
@@ -251,19 +244,27 @@ class PanelPreviewWidget(QWidget):
         painter.setBrush(kit_qt.theme_color("surface1"))
         painter.drawRect(0, 0, w, h)
 
-        for cfg in self.layout_configs:
-            pw, ph = int(w * cfg["w"]), int(h * cfg["h"])
-            x = (w - pw) // 2
-            y = h - ph if cfg["pos"] == "bottom" else 0
-            color = QColor(self.panel_color)
-            color.setAlphaF(max(self.panel_opacity / 100.0, 0.70))
-            painter.setBrush(color)
-            radius = 5 if cfg.get("float") else 0
+        color = QColor(self.panel_color)
+        color.setAlphaF(max(self.panel_opacity / 100.0, 0.70))
+        painter.setBrush(color)
+        for p in self.panels:
+            vertical = p.get("location") in ("left", "right")
+            along, across = (h, w) if vertical else (w, h)
+            # толщина: высота в gridUnit → доля схемы (панель 2.5 gridUnit ≈ четверть)
+            thick = max(3, int(across * min(0.34, float(p.get("height", 2.5)) * 0.1)))
+            length = along if p.get("lengthMode", "fill") == "fill" else int(along * 0.55)
+            gap = 2 if p.get("floating") else 0
+            align = p.get("alignment", "center")
+            start = {"left": gap, "right": along - length - gap}.get(align, (along - length) // 2)
+            near = p.get("location") in ("top", "left")
+            edge = gap if near else across - thick - gap
+            x, y, pw, ph = (edge, start, thick, length) if vertical else (start, edge, length, thick)
+            radius = 4 if p.get("floating") else 0
             painter.drawRoundedRect(x, y, pw, ph, radius, radius)
         painter.end()
 
 class PresetCard(QPushButton):
-    def __init__(self, preset_id, char_name, desc_text, icon_path, parent=None):
+    def __init__(self, preset_id, char_name, desc_text, icon_path, panels=None, parent=None):
         super().__init__(parent)
         self.preset_id = preset_id
         self.setMinimumSize(170, 230)
@@ -294,7 +295,7 @@ class PresetCard(QPushButton):
         desc_lbl.setWordWrap(True)
         desc_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 
-        self.preview_widget = PanelPreviewWidget(preset_id)
+        self.preview_widget = PanelPreviewWidget(panels)
         self.preview_widget.setFixedSize(96, 34)
         self.preview_widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 

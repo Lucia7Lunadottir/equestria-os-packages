@@ -9,6 +9,14 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QGraphicsDropShadowEffect, QSizePolicy, QCheckBox, QComboBox)
 from PyQt6.QtGui import QFontDatabase, QFont, QPixmap, QPainter, QPainterPath, QColor, QIcon
 from PyQt6.QtCore import Qt, QLocale
+try:
+    import equestria_kit  # noqa: F401
+except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
+    import os as _os, sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from equestria_kit import qt as kit_qt
+from equestria_kit.i18n import normalize
+from equestria_kit.widgets import font_families
 
 class RoundedImageLabel(QLabel):
     """QLabel с закруглёнными краями, масштабирует изображение динамически."""
@@ -66,8 +74,7 @@ class TutorialApp(QMainWindow):
         self.custom_font_family = "sans-serif"
         font_path = os.path.join(self.base_path, "equestria_cyrillic.ttf")
         if os.path.exists(font_path):
-            font_id = QFontDatabase.addApplicationFont(font_path)
-            families = QFontDatabase.applicationFontFamilies(font_id)
+            families = font_families(font_path)
             if families:
                 self.custom_font_family = families[0]
 
@@ -146,8 +153,8 @@ class TutorialApp(QMainWindow):
         # Он возвращает список вида ['ru-RU', 'ru', 'en-US'] или ['zh-Hans-CN', 'zh']
         ui_langs = QLocale.system().uiLanguages()
         for lang in ui_langs:
-            # Очищаем от региональных тегов (из "zh-Hans-CN" или "en_US" делаем "zh" или "en")
-            clean_lang = lang.split('-')[0].split('_')[0].lower()
+            # Код из LANGS общей библиотеки: "zh-Hans-CN" → "zh", "zh-Hant-TW" → "zh_TW", "en_US" → "en"
+            clean_lang = normalize(lang)
             if clean_lang in self.langs:
                 detected_lang = clean_lang
                 break
@@ -160,7 +167,7 @@ class TutorialApp(QMainWindow):
                     # Переменная LANGUAGE может содержать список через двоеточие: "uk_UA:uk:en"
                     parts = val.split(':') if var == 'LANGUAGE' else [val]
                     for part in parts:
-                        clean_lang = part.split('.')[0].split('_')[0].lower()
+                        clean_lang = normalize(part)
                         if clean_lang in self.langs:
                             detected_lang = clean_lang
                             break
@@ -285,7 +292,7 @@ class TutorialApp(QMainWindow):
             shadow = QGraphicsDropShadowEffect()
             shadow.setBlurRadius(24)
             shadow.setOffset(0, 6)
-            shadow.setColor(QColor(0, 0, 0, 100))
+            shadow.setColor(kit_qt.theme_color("crust", 100))
             img_label.setGraphicsEffect(shadow)
 
             wrapper = QWidget()
@@ -470,10 +477,11 @@ class TutorialApp(QMainWindow):
         if self.custom_font_family != "sans-serif":
             f = self.custom_font_family
             css += f'\nQLabel#LogoLabel {{ font-family: "{f}"; font-size: 16px; font-weight: bold; }}'
-        self.setStyleSheet(css)
+        kit_qt.style(self, css)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     app.setDesktopFileName("equestria-os-tutorial")
     window = TutorialApp()
     window.showMaximized()

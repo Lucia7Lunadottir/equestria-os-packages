@@ -186,9 +186,13 @@ class SettingsDialog(QDialog):
         # Native Toggle: Update Flatpak
         row_upd_flat, self.chk_upd_flatpak = self._create_toggle_row(self.t("settings.upd_flatpak"), self.settings.get("update_flatpak", True))
 
+        # Native Toggle: Update DEB/RPM apps (equestria-installer)
+        row_upd_foreign, self.chk_upd_foreign = self._create_toggle_row(self.t("settings.upd_foreign"), self.settings.get("update_foreign", True))
+
         upd_layout.addWidget(row_upd_pac)
         upd_layout.addWidget(row_upd_aur)
         upd_layout.addWidget(row_upd_flat)
+        upd_layout.addWidget(row_upd_foreign)
         layout.addWidget(upd_group)
 
         layout.addStretch()
@@ -254,6 +258,7 @@ class SettingsDialog(QDialog):
         self.settings["update_pacman"] = self.chk_upd_pacman.isChecked()
         self.settings["update_aur"] = self.chk_upd_aur.isChecked()
         self.settings["update_flatpak"] = self.chk_upd_flatpak.isChecked()
+        self.settings["update_foreign"] = self.chk_upd_foreign.isChecked()
 
         self.on_save(self.settings)
         self.accept()

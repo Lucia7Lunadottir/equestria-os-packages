@@ -1,5 +1,5 @@
 QWidget#root {
-    background-color: @crust@;
+    background-color: @base@;   /* как у остальных приложений Equestria (@crust@ — слишком тёмный) */
 }
 
 /* Make stacked widget pages transparent so #root background shows through */

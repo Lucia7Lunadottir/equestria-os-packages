@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-rename-helper
 pkgver=1.0.0
-pkgrel=5
+pkgrel=6
 pkgdesc="Bulk file renaming utility with Find and Replace"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('equestria-qt-kit' 'python-pyqt6')
+depends=('equestria-qt-kit>=1.1' 'python-pyqt6')
 
 package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
