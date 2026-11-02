@@ -3,12 +3,12 @@
 pkgname = equestria-calc
 pkgbase = equestria-calc
 xdata = pkgtype=pkg
-pkgver = 1.0-2
+pkgver = 1.0-3
 pkgdesc = Calculator (PyQt6)
 url = 
-builddate = 1793646646
+builddate = 1793660134
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-size = 64930
+size = 67681
 arch = any
 license = custom
 depend = python-pyqt6

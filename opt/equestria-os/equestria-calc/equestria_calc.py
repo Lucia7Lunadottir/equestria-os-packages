@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import (QAction, QColor, QFontDatabase, QGuiApplication,
+from PyQt6.QtGui import (QAction, QColor, QFontDatabase, QGuiApplication, QIcon,
                          QKeySequence, QPalette)
 from PyQt6.QtWidgets import (QApplication, QComboBox, QGridLayout, QHBoxLayout,
                              QLabel, QLineEdit, QListWidget, QListWidgetItem,
@@ -1023,6 +1023,10 @@ class MainWindow(QMainWindow):
 def main() -> int:
     app = QApplication(sys.argv)
     app.setApplicationName("Equestria Calc")
+    # Без этого окно на Wayland получает имя интерпретатора (python3), и панель задач
+    # показывает его как чужое приложение без нашего ярлыка и значка
+    app.setDesktopFileName("equestria-calc")
+    app.setWindowIcon(QIcon.fromTheme("equestria-calc", QIcon.fromTheme("accessories-calculator")))
     app.setStyle("Fusion")
     try:
         cfg = json.loads(CONFIG.read_text(encoding="utf-8"))

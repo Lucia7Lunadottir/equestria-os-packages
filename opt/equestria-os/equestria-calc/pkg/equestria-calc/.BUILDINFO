@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-calc
 pkgbase = equestria-calc
-pkgver = 1.0-2
+pkgver = 1.0-3
 pkgarch = any
-pkgbuild_sha256sum = b58bd394237cad93f52e85d317c768e72dc53ec64bcd6752a7f8c7aa2a73341c
+pkgbuild_sha256sum = 7666e34afbe96f38a5c3305a9654ffd1c6d4b103f6f718c7cbff2ef7e0039f4a
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1793646646
+builddate = 1793660134
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/opt/equestria-os/equestria-calc
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/opt/equestria-os/equestria-calc
 buildtool = makepkg
