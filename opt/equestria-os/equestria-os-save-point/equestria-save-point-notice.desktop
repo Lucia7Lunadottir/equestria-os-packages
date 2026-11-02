@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Save Point notice
+Exec=/usr/bin/python3 /opt/equestria-os/equestria-os-save-point/rollback.py notice
+NoDisplay=true
+X-KDE-autostart-phase=2

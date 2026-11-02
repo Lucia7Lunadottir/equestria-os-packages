@@ -38,5 +38,7 @@
   "ui.pruning": "오래된 스냅샷 정리 중",
   "unsupported.title": "✨ Btrfs 전용",
   "unsupported.desc": "저장 지점은 Btrfs 파일 시스템에서만 작동합니다.\n\n백업이 불안정해서 ext4와 다른 파일 시스템 지원을 제거했습니다: 설치할 때마다 시스템 전체를 복사하느라 pacman이 크게 느려졌고, 복원도 신뢰할 수 없었습니다.\n\n루트 파일 시스템: {0}.",
-  "err.unsupported_fs": "지원되지 않음: 루트가 {0}입니다. 저장 지점은 Btrfs에서만 작동합니다"
+  "err.unsupported_fs": "지원되지 않음: 루트가 {0}입니다. 저장 지점은 Btrfs에서만 작동합니다",
+  "rollback.notice_title": "시스템이 복원되었습니다",
+  "rollback.notice_body": "Equestria OS가 {n}번 연속으로 로그인 화면까지 부팅하지 못해서 Save Point가 {date}의 복원 지점으로 시스템을 되돌렸습니다.\n\n이전 상태는 삭제되지 않았습니다. 시스템 옆에 \"…_old_…\"로 디스크에 보관되어 있습니다. 더 이상 필요 없으면 삭제할 수 있습니다."
 }

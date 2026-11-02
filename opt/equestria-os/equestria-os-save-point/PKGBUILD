@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-save-point
-pkgver=1.5.0
-pkgrel=3
+pkgver=1.6.0
+pkgrel=1
 # Только Btrfs: поддержка ext4 и других ФС (restic/timeshift) удалена из-за нестабильности бэкапов
 pkgdesc="Equestria OS Save Point — Btrfs system snapshot manager (Btrfs only)"
 arch=('any')
@@ -35,6 +35,8 @@ package() {
     install -m644 "$startdir/equestria-os-save-point.png" "$_optdir/equestria-os-save-point.png"
 
     install -m755 "$startdir/restore-system.py" "$_optdir/restore-system.py"
+    install -m755 "$startdir/rollback.py" "$_optdir/rollback.py"
+    install -m644 "$startdir/COMMANDS.md" "$_optdir/COMMANDS.md"
     install -m755 "$startdir/pacman-snapshot.sh" "$_optdir/pacman-snapshot.sh"
     install -m755 "$startdir/flatpak-hook.sh" "$_optdir/flatpak-hook.sh"
     # Копия хука — из неё настройки приложения включают хук обратно
@@ -71,10 +73,17 @@ EOF
     install -d "$pkgdir/usr/bin"
     ln -s "//opt/equestria-os/equestria-os-save-point/restore-system.py" "$pkgdir/usr/bin/restore-system"
 
-    # 8. Ежедневный снимок (systemd-таймер). Автоматического отката при неудачной загрузке
-    #    больше нет (с 1.5.0-3): он восстанавливал последний снимок без спроса и принудительно
-    #    перезагружал — и однажды сломал пакеты KDE. Восстановление — только вручную.
+    # 8. Ежедневный снимок (systemd-таймер)
     install -d "$pkgdir/usr/lib/systemd/system/"
     install -Dm644 "$startdir/equestria-save-point-daily.timer" "$pkgdir/usr/lib/systemd/system/equestria-save-point-daily.timer"
     install -Dm644 "$startdir/equestria-save-point-daily.service" "$pkgdir/usr/lib/systemd/system/equestria-save-point-daily.service"
+
+    # 9. Автооткат, только когда система не загружается (с 1.6.0): 3 загрузки подряд не дошли
+    #    до экрана входа → откат к точке после последней удачной загрузки (rollback.py).
+    #    Прежний автооткат (до 1.5.0-3) срабатывал на любой сбой graphical.target и откатывал
+    #    к самой новой точке — однажды это сломало пакеты KDE.
+    install -Dm644 "$startdir/equestria-boot-guard.service" "$pkgdir/usr/lib/systemd/system/equestria-boot-guard.service"
+    install -Dm644 "$startdir/equestria-boot-ok.service" "$pkgdir/usr/lib/systemd/system/equestria-boot-ok.service"
+    install -Dm644 "$startdir/equestria-boot-ok.timer" "$pkgdir/usr/lib/systemd/system/equestria-boot-ok.timer"
+    install -Dm644 "$startdir/equestria-save-point-notice.desktop" "$pkgdir/etc/xdg/autostart/equestria-save-point-notice.desktop"
 }

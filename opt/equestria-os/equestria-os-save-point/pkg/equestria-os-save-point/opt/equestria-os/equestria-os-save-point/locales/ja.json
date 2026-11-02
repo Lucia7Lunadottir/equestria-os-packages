@@ -38,5 +38,7 @@
   "ui.pruning": "古いスナップショットを整理中",
   "unsupported.title": "✨ Btrfs のみ",
   "unsupported.desc": "セーブポイントは Btrfs ファイルシステムでのみ動作します。\n\nバックアップが不安定なため、ext4 などのファイルシステムのサポートは削除されました。インストールのたびにシステム全体をコピーすると pacman が大幅に遅くなり、復元も信頼できませんでした。\n\nルートファイルシステム：{0}。",
-  "err.unsupported_fs": "非対応：ルートは {0} です。Save Point は Btrfs でのみ動作します"
+  "err.unsupported_fs": "非対応：ルートは {0} です。Save Point は Btrfs でのみ動作します",
+  "rollback.notice_title": "システムを復元しました",
+  "rollback.notice_body": "Equestria OS が {n} 回続けてログイン画面まで起動できなかったため、Save Point が {date} の復元ポイントにシステムを戻しました。\n\n以前の状態は削除されていません。「…_old_…」としてシステムの隣に保存されています。不要になったら削除できます。"
 }

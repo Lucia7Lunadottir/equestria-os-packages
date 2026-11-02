@@ -38,5 +38,7 @@
   "ui.pruning": "Limpiando snapshots antiguos",
   "unsupported.title": "✨ Solo Btrfs",
   "unsupported.desc": "Los puntos de guardado solo funcionan en el sistema de archivos Btrfs.\n\nSe eliminó la compatibilidad con ext4 y otros sistemas de archivos por la inestabilidad de las copias de seguridad: copiar todo el sistema antes de cada instalación ralentizaba mucho pacman y la restauración no era fiable.\n\nSu sistema de archivos raíz: {0}.",
-  "err.unsupported_fs": "No compatible: la raíz es {0}, Save Point solo funciona en Btrfs"
+  "err.unsupported_fs": "No compatible: la raíz es {0}, Save Point solo funciona en Btrfs",
+  "rollback.notice_title": "El sistema se ha restaurado",
+  "rollback.notice_body": "Equestria OS no pudo llegar a la pantalla de inicio de sesión {n} veces seguidas, así que Save Point devolvió el sistema al punto de restauración del {date}.\n\nEl estado anterior no se ha borrado: se guarda en el disco junto al sistema como «…_old_…». Puede eliminarlo si ya no lo necesita."
 }

@@ -38,5 +38,7 @@
   "ui.pruning": "Czyszczenie starych migawek",
   "unsupported.title": "✨ Tylko Btrfs",
   "unsupported.desc": "Punkty zapisu działają tylko w systemie plików Btrfs.\n\nObsługa ext4 i innych systemów plików została usunięta z powodu niestabilnych kopii zapasowych: kopiowanie całego systemu przed każdą instalacją mocno spowalniało pacmana, a przywracanie było zawodne.\n\nTwój główny system plików: {0}.",
-  "err.unsupported_fs": "Nieobsługiwane: katalog główny to {0}, Save Point działa tylko w Btrfs"
+  "err.unsupported_fs": "Nieobsługiwane: katalog główny to {0}, Save Point działa tylko w Btrfs",
+  "rollback.notice_title": "System został przywrócony",
+  "rollback.notice_body": "Equestria OS {n} razy z rzędu nie dotarł do ekranu logowania, więc Save Point przywrócił system do punktu przywracania z {date}.\n\nPoprzedni stan nie został usunięty: leży na dysku obok systemu jako „…_old_…”. Jeśli nie jest już potrzebny, można go usunąć."
 }

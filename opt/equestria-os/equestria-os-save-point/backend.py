@@ -127,28 +127,11 @@ class BtrfsBackend:
         )
 
     def restore_cmd(self, snap_id: str) -> str:
-        snap_rel = self.snap_dir.lstrip("/")
-        if snap_id.startswith("daily/"):
-            snap_rel_full = snap_rel + "/" + snap_id
-        else:
-            snap_rel_full = snap_rel + "/" + snap_id
-        return (
-            f"set -e; "
-            f"DEV=$(df --output=source / | tail -1); "
-            f"MNT=$(mktemp -d); "
-            f"mount -o subvol=/ \"$DEV\" \"$MNT\"; "
-            f"SUBVOL=$(findmnt -n -o FSROOT /); "
-            f"SUBVOL=${{SUBVOL#/}}; "
-            f"SNAP_PATH=\"$MNT/$SUBVOL/{snap_rel_full}\"; "
-            f"NEW=\"$MNT/${{SUBVOL}}_restore_$(date +%Y%m%d%H%M%S)\"; "
-            f"btrfs subvolume snapshot \"$SNAP_PATH\" \"$NEW\"; "
-            f"OLD=\"$MNT/${{SUBVOL}}_old_$(date +%Y%m%d%H%M%S)\"; "
-            f"mv \"$MNT/$SUBVOL\" \"$OLD\"; "
-            f"mv \"$NEW\" \"$MNT/$SUBVOL\"; "
-            f"umount \"$MNT\"; rmdir \"$MNT\"; "
-            f"echo '✓ Restore prepared. Reboot to apply changes.'; "
-            f"echo 'The old root is kept as ${{SUBVOL}}_old_* — delete after reboot if no longer needed.'"
-        )
+        # Вся работа — в rollback.py (та же логика, что у автоотката): копия точки встаёт
+        # на место корня, старый корень остаётся как <subvol>_old_<время>, а сами точки
+        # сохранения переезжают в новый корень, а не пропадают вместе со старым.
+        script = os.path.join(os.path.dirname(os.path.realpath(__file__)), "rollback.py")
+        return f"python3 {shlex.quote(script)} restore {shlex.quote(snap_id)}"
 
     def build_prune_cmd(self, snapshots: list, keep_last: int) -> str:
         to_delete = snapshots[max(0, keep_last - 1):]

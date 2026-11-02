@@ -82,8 +82,8 @@
   "ui.page_info": "第 {0} / {1} 頁 ({2})",
   "ui.prev_page": "⬅ 上一頁",
   "ui.next_page": "下一頁 ➡",
-  "ui.essentials_header": "🌟 基本",
-  "ui.store_header": "📦 應用商店",
+  "ui.essentials_header": "推薦",
+  "ui.store_header": "應用程式商店",
   "ui.search_all": "🔍 搜尋所有應用",
   "ui.source_all": "全部",
   "ui.source_pacman": "Pacman",
@@ -166,5 +166,15 @@
   "install.input_placeholder": "請輸入答案（例如 1）並按回車",
   "install.btn_send": "傳送",
   "settings.upd_foreign": "更新來自 DEB 和 RPM 軟體包的程式",
-  "ui.foreign_desc": "來自 DEB/RPM 軟體包的程式 · 已安裝 {0}"
+  "ui.foreign_desc": "來自 DEB/RPM 軟體包的程式 · 已安裝 {0}",
+  "ui.nav_all_apps": "所有應用程式",
+  "ui.maintenance": "維護",
+  "ui.settings_btn": "設定",
+  "ui.storecat.all": "全部",
+  "ui.storecat.software": "軟體",
+  "ui.storecat.games": "遊戲",
+  "ui.storecat.internet": "網際網路",
+  "ui.storecat.media": "媒體",
+  "ui.storecat.graphics": "圖形",
+  "ui.storecat.drivers": "驅動程式"
 }

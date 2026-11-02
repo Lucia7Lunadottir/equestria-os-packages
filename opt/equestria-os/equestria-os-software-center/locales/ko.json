@@ -82,8 +82,8 @@
   "ui.page_info": "페이지 {0} / {1} ({2})",
   "ui.prev_page": "⬅ 이전",
   "ui.next_page": "다음 ➡",
-  "ui.essentials_header": "🌟 필수 앱",
-  "ui.store_header": "📦 앱 스토어",
+  "ui.essentials_header": "추천",
+  "ui.store_header": "스토어",
   "ui.search_all": "🔍 모든 앱 검색",
   "ui.source_all": "전체",
   "ui.source_pacman": "Pacman",
@@ -166,5 +166,15 @@
   "install.input_placeholder": "여기에 답을 입력하고(예: 1) Enter를 누르세요",
   "install.btn_send": "보내기",
   "settings.upd_foreign": "DEB 및 RPM 패키지의 프로그램 업데이트",
-  "ui.foreign_desc": "DEB/RPM 패키지의 프로그램 · 설치됨 {0}"
+  "ui.foreign_desc": "DEB/RPM 패키지의 프로그램 · 설치됨 {0}",
+  "ui.nav_all_apps": "모든 앱",
+  "ui.maintenance": "유지 관리",
+  "ui.settings_btn": "설정",
+  "ui.storecat.all": "전체",
+  "ui.storecat.software": "소프트웨어",
+  "ui.storecat.games": "게임",
+  "ui.storecat.internet": "인터넷",
+  "ui.storecat.media": "미디어",
+  "ui.storecat.graphics": "그래픽",
+  "ui.storecat.drivers": "드라이버"
 }

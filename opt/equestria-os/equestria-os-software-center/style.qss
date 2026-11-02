@@ -55,29 +55,37 @@ QListWidget#CategoryList::item:selected {
 
 QPushButton#NavBtn {
     background-color: @surface0@;
-    color: white;
+    color: @text@;
     border-radius: 8px;
-    padding: 10px;
-    text-align: left;
+    padding: 8px 10px;
     border: 1px solid @surface1@;
+}
+QPushButton#NavBtn::menu-indicator { width: 0; image: none; }
+
+QMenu {
+    background-color: @mantle@;
+    border: 1px solid @surface1@;
+    border-radius: 8px;
+    padding: 4px;
+}
+QMenu::item { padding: 8px 18px; border-radius: 6px; }
+QMenu::item:selected { background-color: @surface1@; }
+QMenu::item:disabled { color: @surface2@; }
+
+QLabel#AppName { font-weight: bold; font-size: 15px; background: transparent; }
+QLabel#AppDesc { color: @subtext@; font-size: 13px; background: transparent; }
+QLabel#InstalledBadge {
+    background-color: @green/40@;
+    color: @green@;
+    border-radius: 10px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: bold;
 }
 
 QPushButton#NavBtn:hover {
     background-color: @surface1@;
     border: 1px solid @accent2@;
-}
-
-QPushButton#IntegrityBtn {
-    background-color: @accent2@;
-    color: @on_accent2@;
-    border-radius: 10px;
-    font-weight: bold;
-    font-size: 14px;
-    border: none;
-}
-
-QPushButton#IntegrityBtn:hover {
-    background-color: @accent2@;
 }
 
 /* Диалог выбора режима очистки кэша: системный QMessageBox светлый,
@@ -89,37 +97,6 @@ QMessageBox {
 QMessageBox QLabel {
     color: @text@;
     font-size: 13px;
-}
-
-QPushButton#CacheCleanBtn {
-    background-color: @yellow@;
-    color: @on_yellow@;
-    border-radius: 10px;
-    font-weight: bold;
-    font-size: 14px;
-    border: none;
-}
-
-QPushButton#CacheCleanBtn:hover {
-    background-color: @yellow@;
-}
-
-/* Кнопка ручного обновления базы pacman — полноразмерная, в одном ряду
-   с Check System Files / Clean Package Cache / Update System */
-QPushButton#RefreshDbBtn {
-    background-color: @accent@;
-    color: @on_accent@;
-    border-radius: 10px;
-    font-weight: bold;
-    font-size: 14px;
-    border: none;
-}
-QPushButton#RefreshDbBtn:hover {
-    background-color: @accent_hover@;
-}
-QPushButton#RefreshDbBtn:disabled {
-    background-color: @surface1@;
-    color: @subtext@;
 }
 
 /* Баннер «база устарела» / индикатор хода обновления над списком App Store */
@@ -143,9 +120,19 @@ QProgressBar#DbRefreshProgress::chunk {
     border-radius: 3px;
 }
 
+/* Кнопка «Очистить» в диалогах (очистка кэша, починка базы) */
+QPushButton#CacheCleanBtn {
+    background-color: @yellow@;
+    color: @on_yellow@;
+    border-radius: 10px;
+    font-weight: bold;
+    border: none;
+    padding: 8px 16px;
+}
+
 QPushButton#UpdateAllBtn {
-    background-color: @green@;
-    color: @on_green@;
+    background-color: @accent@;
+    color: @on_accent@;
     border-radius: 10px;
     font-weight: bold;
     font-size: 15px;
@@ -153,7 +140,7 @@ QPushButton#UpdateAllBtn {
 }
 
 QPushButton#UpdateAllBtn:hover {
-    background-color: @accent2@;
+    background-color: @accent_hover@;
 }
 
 QFrame#RightPanel {
@@ -176,7 +163,7 @@ QLineEdit#SearchField, QComboBox#CategoryDropdown, QPlainTextEdit#SearchField {
     border: 1px solid @surface0@;
     border-radius: 8px;
     padding: 8px 12px;
-    color: white;
+    color: @text@;
 }
 
 QLineEdit#SearchField:focus, QPlainTextEdit#SearchField:focus {
@@ -205,7 +192,7 @@ QComboBox#CategoryDropdown::down-arrow, QComboBox#SettingsDropdown::down-arrow {
 
 QComboBox QAbstractItemView {
     background-color: @crust@;
-    color: white;
+    color: @text@;
     selection-background-color: @surface0@;
     border: 1px solid @surface0@;
     outline: none;
@@ -216,20 +203,20 @@ QComboBox QAbstractItemView {
    theme's selection-background-color above. */
 QComboBox QAbstractItemView::item {
     background-color: transparent;
-    color: white;
+    color: @text@;
     padding: 6px 10px;
     border: none;
 }
 
 QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:selected {
     background-color: @surface0@;
-    color: white;
+    color: @text@;
 }
 
 QFrame#AppRow, QFrame#PackageRow {
     background-color: @surface0/76@;
     border-radius: 10px;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
     border: 1px solid transparent;
 }
 
@@ -282,7 +269,7 @@ QPushButton#LangBtn {
 
 QPushButton#LangBtn:hover {
     background-color: @surface0@;
-    color: white;
+    color: @text@;
 }
 
 QPushButton#LangBtn[active="true"] {
@@ -455,13 +442,13 @@ QComboBox#SettingsDropdown {
     border: 1px solid @surface0@;
     border-radius: 6px;
     padding: 4px 8px;
-    color: white;
+    color: @text@;
     min-height: 25px;
 }
 
 QComboBox#SettingsDropdown QAbstractItemView {
     background-color: @crust@;
-    color: white;
+    color: @text@;
     selection-background-color: @surface0@;
     border: 1px solid @surface0@;
 }
@@ -482,7 +469,7 @@ QPushButton#SettingsSaveBtn:hover {
 
 QPushButton#SettingsCancelBtn {
     background-color: @surface0@;
-    color: white;
+    color: @text@;
     border-radius: 6px;
     padding: 6px 14px;
     font-weight: bold;

@@ -20,3 +20,7 @@
 
 # Вложенные git-репозитории (не сабмодули)
 imagefinish/src/Linux-Photoshop
+
+# Кэш Python — создаётся сам при запуске, хранить не нужно
+__pycache__/
+*.pyc

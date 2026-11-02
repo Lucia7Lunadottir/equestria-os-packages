@@ -14,19 +14,23 @@ _legacy_repo_note() {
     echo "   sudo rm -rf /var/lib/equestria-save-point/restic-repo /var/lib/equestria-save-point/repo.key"
 }
 
+_units="equestria-save-point-daily.timer equestria-boot-guard.service equestria-boot-ok.timer"
+
 post_install() {
     systemctl daemon-reload
+    systemctl enable equestria-boot-guard.service equestria-boot-ok.timer
     systemctl enable --now equestria-save-point-daily.timer
     _root_note
 }
 
 post_upgrade() {
     systemctl daemon-reload
+    systemctl enable equestria-boot-guard.service equestria-boot-ok.timer
     systemctl enable --now equestria-save-point-daily.timer
     _root_note
     _legacy_repo_note
 }
 
 pre_remove() {
-    systemctl disable --now equestria-save-point-daily.timer
+    systemctl disable --now $_units
 }

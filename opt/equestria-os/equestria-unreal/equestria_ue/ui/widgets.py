@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 
-from PyQt6.QtCore import QRectF, QUrl, Qt
+from PyQt6.QtCore import QRectF, QTimer, QUrl, Qt
 from PyQt6.QtGui import QColor, QDesktopServices, QFont, QIcon, QLinearGradient, QPainter, QPixmap
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QScrollArea, QWidget
 
 from equestria_ue.projects import Project
-from equestria_ue.kit import kit_qt
+from equestria_ue.kit import kit_qt, tr
 
 
 def chip(text: str, lvl: str = "") -> QLabel:
@@ -23,6 +23,19 @@ def small_btn(text: str, tip: str = "", name: str = "small") -> QPushButton:
     if tip:
         b.setToolTip(tip)
     return b
+
+
+def show_launching(btn: QPushButton, ms: int = 8000) -> None:
+    """Редактор открывается долго: кнопка на это время пишет «Запускается…» и не нажимается,
+    чтобы было видно, что нажатие сработало."""
+    text, enabled = btn.text(), btn.isEnabled()
+    btn.setText(tr("Запускается…"))
+    btn.setEnabled(False)
+
+    def restore():
+        btn.setText(text)
+        btn.setEnabled(enabled)
+    QTimer.singleShot(ms, btn, restore)
 
 
 def card_frame(name: str = "card"):

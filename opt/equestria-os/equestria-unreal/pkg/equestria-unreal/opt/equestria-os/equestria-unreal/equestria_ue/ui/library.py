@@ -9,10 +9,10 @@ from PyQt6.QtWidgets import QComboBox, QFileDialog, QHBoxLayout, QLabel, QLineEd
 from equestria_ue.engines import Engine
 from equestria_ue.jobs import Job
 from equestria_ue.kit import tr
-from equestria_ue.launcher import launch_editor
+from equestria_ue.launcher import RunningEditors, already_open_message, launch_editor
 from equestria_ue.projects import Project, resolve_engine, set_association
 from equestria_ue.steps import project_steps
-from equestria_ue.ui.widgets import card_frame, make_icon, open_folder, small_btn, title_row
+from equestria_ue.ui.widgets import card_frame, make_icon, open_folder, show_launching, small_btn, title_row
 from equestria_ue.ui.vram_check import confirm_launch
 
 
@@ -148,11 +148,16 @@ class ProjectsPage(QWidget):
             QMessageBox.information(self, tr("Нет движка"), tr("Сначала установите Unreal Engine на вкладке «Каталог»."))
             self.win.go("catalog")
             return
+        if RunningEditors.is_open(pr.path):
+            QMessageBox.information(self, tr("Проект уже открыт"), already_open_message(pr.path))
+            return
         if not confirm_launch(self):
             return
         err = launch_editor(self.win.cfg, eng, pr.path)
         if err:
             QMessageBox.warning(self, tr("Не удалось запустить"), err)
+        else:
+            show_launching(self.go)
 
     def _more(self) -> None:
         pr = self.current()

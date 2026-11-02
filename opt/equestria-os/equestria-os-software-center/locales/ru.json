@@ -82,8 +82,8 @@
   "ui.page_info": "Страница {0} / {1} ({2})",
   "ui.prev_page": "⬅ Назад",
   "ui.next_page": "Далее ➡",
-  "ui.essentials_header": "🌟 Основные",
-  "ui.store_header": "📦 Магазин",
+  "ui.essentials_header": "Рекомендуемые",
+  "ui.store_header": "Магазин",
   "ui.search_all": "🔍 Поиск всех приложений",
   "ui.source_all": "Все",
   "ui.source_pacman": "Pacman",
@@ -166,5 +166,15 @@
   "install.input_placeholder": "Введите ответ (например, 1) и нажмите Enter",
   "install.btn_send": "Отправить",
   "settings.upd_foreign": "Обновлять программы из пакетов DEB и RPM",
-  "ui.foreign_desc": "Программа из пакета DEB/RPM · установлена {0}"
+  "ui.foreign_desc": "Программа из пакета DEB/RPM · установлена {0}",
+  "ui.nav_all_apps": "Все программы",
+  "ui.maintenance": "Обслуживание",
+  "ui.settings_btn": "Настройки",
+  "ui.storecat.all": "Все",
+  "ui.storecat.software": "Программы",
+  "ui.storecat.games": "Игры",
+  "ui.storecat.internet": "Интернет",
+  "ui.storecat.media": "Мультимедиа",
+  "ui.storecat.graphics": "Графика",
+  "ui.storecat.drivers": "Драйверы"
 }

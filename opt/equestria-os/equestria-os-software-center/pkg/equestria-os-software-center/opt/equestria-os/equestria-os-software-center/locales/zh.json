@@ -82,8 +82,8 @@
   "ui.page_info": "第 {0} / {1} 页 ({2})",
   "ui.prev_page": "⬅ 上一页",
   "ui.next_page": "下一页 ➡",
-  "ui.essentials_header": "🌟 基本",
-  "ui.store_header": "📦 应用商店",
+  "ui.essentials_header": "推荐",
+  "ui.store_header": "应用商店",
   "ui.search_all": "🔍 搜索所有应用",
   "ui.source_all": "全部",
   "ui.source_pacman": "Pacman",
@@ -166,5 +166,15 @@
   "install.input_placeholder": "请输入答案（例如 1）并按回车",
   "install.btn_send": "发送",
   "settings.upd_foreign": "更新来自 DEB 和 RPM 软件包的程序",
-  "ui.foreign_desc": "来自 DEB/RPM 软件包的程序 · 已安装 {0}"
+  "ui.foreign_desc": "来自 DEB/RPM 软件包的程序 · 已安装 {0}",
+  "ui.nav_all_apps": "所有应用",
+  "ui.maintenance": "维护",
+  "ui.settings_btn": "设置",
+  "ui.storecat.all": "全部",
+  "ui.storecat.software": "软件",
+  "ui.storecat.games": "游戏",
+  "ui.storecat.internet": "互联网",
+  "ui.storecat.media": "媒体",
+  "ui.storecat.graphics": "图形",
+  "ui.storecat.drivers": "驱动程序"
 }

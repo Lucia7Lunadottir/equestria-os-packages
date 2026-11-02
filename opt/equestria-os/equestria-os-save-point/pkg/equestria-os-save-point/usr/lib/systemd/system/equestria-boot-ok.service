@@ -1,0 +1,7 @@
+[Unit]
+Description=Equestria Save Point: the login screen works, boot succeeded
+After=display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/equestria-os/equestria-os-save-point/rollback.py boot-ok

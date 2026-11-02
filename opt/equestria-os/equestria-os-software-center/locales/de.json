@@ -82,8 +82,8 @@
   "ui.page_info": "Seite {0} / {1} ({2})",
   "ui.prev_page": "⬅ Zurück",
   "ui.next_page": "Weiter ➡",
-  "ui.essentials_header": "🌟 Essentials",
-  "ui.store_header": "📦 App Store",
+  "ui.essentials_header": "Empfohlen",
+  "ui.store_header": "App-Store",
   "ui.search_all": "🔍 Alle Apps suchen",
   "ui.source_all": "Alle",
   "ui.source_pacman": "Pacman",
@@ -166,5 +166,15 @@
   "install.input_placeholder": "Antwort eingeben (z. B. 1) und Enter drücken",
   "install.btn_send": "Senden",
   "settings.upd_foreign": "Programme aus DEB- und RPM-Paketen aktualisieren",
-  "ui.foreign_desc": "Programm aus einem DEB/RPM-Paket · installiert {0}"
+  "ui.foreign_desc": "Programm aus einem DEB/RPM-Paket · installiert {0}",
+  "ui.nav_all_apps": "Alle Programme",
+  "ui.maintenance": "Wartung",
+  "ui.settings_btn": "Einstellungen",
+  "ui.storecat.all": "Alle",
+  "ui.storecat.software": "Programme",
+  "ui.storecat.games": "Spiele",
+  "ui.storecat.internet": "Internet",
+  "ui.storecat.media": "Medien",
+  "ui.storecat.graphics": "Grafik",
+  "ui.storecat.drivers": "Treiber"
 }

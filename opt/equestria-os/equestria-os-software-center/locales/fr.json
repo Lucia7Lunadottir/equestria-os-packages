@@ -82,8 +82,8 @@
   "ui.page_info": "Page {0} / {1} ({2})",
   "ui.prev_page": "⬅ Précédent",
   "ui.next_page": "Suivant ➡",
-  "ui.essentials_header": "🌟 Essentiels",
-  "ui.store_header": "📦 App Store",
+  "ui.essentials_header": "Recommandées",
+  "ui.store_header": "Boutique",
   "ui.search_all": "🔍 Rechercher toutes les apps",
   "ui.source_all": "Tout",
   "ui.source_pacman": "Pacman",
@@ -166,5 +166,15 @@
   "install.input_placeholder": "Saisissez votre réponse (ex. 1) puis appuyez sur Entrée",
   "install.btn_send": "Envoyer",
   "settings.upd_foreign": "Mettre à jour les applications des paquets DEB et RPM",
-  "ui.foreign_desc": "Application d'un paquet DEB/RPM · installée {0}"
+  "ui.foreign_desc": "Application d'un paquet DEB/RPM · installée {0}",
+  "ui.nav_all_apps": "Toutes les applications",
+  "ui.maintenance": "Maintenance",
+  "ui.settings_btn": "Paramètres",
+  "ui.storecat.all": "Toutes",
+  "ui.storecat.software": "Logiciels",
+  "ui.storecat.games": "Jeux",
+  "ui.storecat.internet": "Internet",
+  "ui.storecat.media": "Multimédia",
+  "ui.storecat.graphics": "Graphisme",
+  "ui.storecat.drivers": "Pilotes"
 }

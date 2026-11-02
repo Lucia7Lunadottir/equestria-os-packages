@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS Team
 pkgname=equestria-unreal
 pkgver=1.0
-pkgrel=4
+pkgrel=5
 pkgdesc="Unreal Engine launcher: engines, projects, Epic store builds, Fab plugin (PyQt6)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"

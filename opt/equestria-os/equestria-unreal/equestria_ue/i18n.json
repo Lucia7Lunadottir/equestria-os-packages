@@ -3404,5 +3404,44 @@
   "zh_TW": "不使用光線追蹤時，Lumen 以軟體方式執行：專案檔案不會改變，著色器會重新編譯一次。內建瀏覽器的加速已關閉，因為在 Linux 上它的 GPU 程序會反覆崩潰。",
   "ja": "レイトレーシングなしでは Lumen はソフトウェアで動作します。プロジェクトファイルは変更されず、シェーダーが一度だけ再コンパイルされます。Linux では内蔵ブラウザーの GPU プロセスがクラッシュを繰り返すため、そのアクセラレーションはオフです。",
   "ko": "레이 트레이싱 없이 Lumen은 소프트웨어로 작동합니다: 프로젝트 파일은 바뀌지 않고 셰이더가 한 번 다시 컴파일됩니다. Linux에서는 내장 브라우저의 GPU 프로세스가 계속 충돌하므로 가속을 껐습니다."
+ },
+ "Запускается…": {
+  "en": "Starting…",
+  "de": "Wird gestartet…",
+  "fr": "Démarrage…",
+  "es": "Iniciando…",
+  "pt": "Iniciando…",
+  "pl": "Uruchamianie…",
+  "uk": "Запускається…",
+  "zh": "正在启动…",
+  "ja": "起動中…",
+  "zh_TW": "正在啟動…",
+  "ko": "시작하는 중…"
+ },
+ "Проект уже открыт": {
+  "en": "Project is already open",
+  "de": "Projekt ist bereits geöffnet",
+  "fr": "Le projet est déjà ouvert",
+  "es": "El proyecto ya está abierto",
+  "pt": "O projeto já está aberto",
+  "pl": "Projekt jest już otwarty",
+  "uk": "Проєкт уже відкрито",
+  "zh": "项目已打开",
+  "ja": "プロジェクトはすでに開いています",
+  "zh_TW": "專案已開啟",
+  "ko": "프로젝트가 이미 열려 있습니다"
+ },
+ "Проект «{}» уже открыт в Unreal Engine. Второй редактор с тем же проектом запускать нельзя: они перезаписывают файлы друг друга.": {
+  "en": "Project “{}” is already open in Unreal Engine. A second editor with the same project can't be started: they would overwrite each other's files.",
+  "de": "Das Projekt „{}“ ist bereits in Unreal Engine geöffnet. Ein zweiter Editor mit demselben Projekt kann nicht gestartet werden: Sie würden gegenseitig ihre Dateien überschreiben.",
+  "fr": "Le projet « {} » est déjà ouvert dans Unreal Engine. Impossible de lancer un second éditeur sur le même projet : ils écraseraient mutuellement leurs fichiers.",
+  "es": "El proyecto «{}» ya está abierto en Unreal Engine. No se puede iniciar un segundo editor con el mismo proyecto: se sobrescribirían los archivos.",
+  "pt": "O projeto “{}” já está aberto no Unreal Engine. Não é possível iniciar um segundo editor com o mesmo projeto: um sobrescreveria os arquivos do outro.",
+  "pl": "Projekt „{}” jest już otwarty w Unreal Engine. Nie można uruchomić drugiego edytora z tym samym projektem: nadpisywałyby sobie nawzajem pliki.",
+  "uk": "Проєкт «{}» уже відкрито в Unreal Engine. Другий редактор із тим самим проєктом запускати не можна: вони перезаписують файли одне одного.",
+  "zh": "项目“{}”已在 Unreal Engine 中打开。不能用同一个项目再启动第二个编辑器：它们会相互覆盖文件。",
+  "ja": "プロジェクト「{}」はすでに Unreal Engine で開いています。同じプロジェクトで 2 つ目のエディターは起動できません。互いのファイルを上書きしてしまいます。",
+  "zh_TW": "專案「{}」已在 Unreal Engine 中開啟。不能用同一個專案再啟動第二個編輯器：它們會互相覆寫檔案。",
+  "ko": "프로젝트 \"{}\"이(가) 이미 Unreal Engine에서 열려 있습니다. 같은 프로젝트로 두 번째 편집기를 실행할 수 없습니다. 서로의 파일을 덮어쓰게 됩니다."
  }
 }

@@ -1,11 +1,11 @@
 format = 2
 pkgname = equestria-unreal
 pkgbase = equestria-unreal
-pkgver = 1.0-4
+pkgver = 1.0-5
 pkgarch = any
-pkgbuild_sha256sum = 91a2012bd5b5e68e4403b9dde7d59f80e3ba7aacca07e53d088789c8ba74ab4f
+pkgbuild_sha256sum = 98a3d6a80b2d301a33eae9ca50a6744853676072e34b011dd504d0b6897b7e2e
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
-builddate = 1793658143
+builddate = 1793659763
 builddir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/opt/equestria-os/equestria-unreal
 startdir = /mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/opt/equestria-os/equestria-unreal
 buildtool = makepkg

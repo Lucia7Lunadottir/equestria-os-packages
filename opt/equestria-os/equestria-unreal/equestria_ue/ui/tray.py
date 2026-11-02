@@ -5,7 +5,7 @@ from PyQt6.QtGui import QAction, QColor, QFont, QIcon, QPainter, QPixmap
 from PyQt6.QtWidgets import QMenu, QMessageBox, QSystemTrayIcon
 
 from equestria_ue.kit import tr
-from equestria_ue.launcher import launch_editor
+from equestria_ue.launcher import RunningEditors, already_open_message, launch_editor
 from equestria_ue.projects import resolve_engine
 from equestria_ue.ui.vram_check import confirm_launch
 
@@ -99,6 +99,10 @@ class LauncherTray(QObject):
         if not eng:
             self.win.show_window()
             QMessageBox.information(self.win, tr("Нет движка"), tr("Сначала установите Unreal Engine на вкладке «Каталог»."))
+            return
+        if RunningEditors.is_open(pr.path):
+            self.win.show_window()
+            QMessageBox.information(self.win, tr("Проект уже открыт"), already_open_message(pr.path))
             return
         if not confirm_launch(self.win):
             return

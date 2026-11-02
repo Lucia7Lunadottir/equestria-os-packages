@@ -38,5 +38,7 @@
   "ui.pruning": "Pruning old snapshots",
   "unsupported.title": "✨ Btrfs only",
   "unsupported.desc": "Save points work only on the Btrfs filesystem.\n\nSupport for ext4 and other filesystems was removed because the backups were unstable: copying the whole system before every installation slowed pacman down a lot, and restores were unreliable.\n\nYour root filesystem: {0}.",
-  "err.unsupported_fs": "Not supported: root is {0}, Save Point works only on Btrfs"
+  "err.unsupported_fs": "Not supported: root is {0}, Save Point works only on Btrfs",
+  "rollback.notice_title": "The system was restored",
+  "rollback.notice_body": "Equestria OS failed to reach the login screen {n} times in a row, so Save Point returned the system to the restore point from {date}.\n\nThe previous state was not deleted: it is kept on the disk next to the system as “…_old_…”. You can delete it if you no longer need it."
 }

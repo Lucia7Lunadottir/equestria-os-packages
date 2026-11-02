@@ -120,10 +120,52 @@ def editor_command(cfg: Config, eng: Engine, uproject: str, ddc_mode: str) -> li
     return cmd + DdcPolicy(cfg, eng).args(ddc_mode)
 
 
+class RunningEditors:
+    """Какие проекты сейчас открыты в редакторе — по командным строкам процессов
+    UnrealEditor в /proc. Видит и редакторы, запущенные до старта лаунчера."""
+
+    EDITOR_NAMES = ("UnrealEditor", "UE4Editor")
+
+    @classmethod
+    def projects(cls) -> set[Path]:
+        found = set()
+        for pid in os.listdir("/proc"):
+            if not pid.isdigit():
+                continue
+            try:
+                args = Path(f"/proc/{pid}/cmdline").read_bytes().split(b"\0")
+            except OSError:
+                continue
+            if not args or Path(os.fsdecode(args[0])).name not in cls.EDITOR_NAMES:
+                continue
+            for a in args[1:]:
+                a = os.fsdecode(a)
+                if a.lower().endswith(".uproject"):
+                    path = Path(a)
+                    if not path.is_absolute():   # запущен из терминала с относительным путём
+                        try:
+                            path = Path(os.readlink(f"/proc/{pid}/cwd")) / path
+                        except OSError:
+                            continue
+                    found.add(path.resolve())
+        return found
+
+    @classmethod
+    def is_open(cls, uproject: str) -> bool:
+        return bool(uproject) and Path(uproject).resolve() in cls.projects()
+
+
+def already_open_message(uproject: str) -> str:
+    return tr("Проект «{}» уже открыт в Unreal Engine. Второй редактор с тем же проектом "
+              "запускать нельзя: они перезаписывают файлы друг друга.", Path(uproject).stem)
+
+
 def launch_editor(cfg: Config, eng: Engine, uproject: str = "") -> str:
     """Запускает редактор отдельным процессом. Возвращает текст ошибки или ''."""
     if not eng.built:
         return tr("Редактор этого движка ещё не собран.")
+    if RunningEditors.is_open(uproject):
+        return already_open_message(uproject)
     mode = DdcPolicy(cfg, eng).resolve()
     try:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)

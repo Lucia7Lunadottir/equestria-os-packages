@@ -82,8 +82,8 @@
   "ui.page_info": "ページ {0} / {1} ({2})",
   "ui.prev_page": "⬅ 前へ",
   "ui.next_page": "次へ ➡",
-  "ui.essentials_header": "🌟 必須",
-  "ui.store_header": "📦 アプリストア",
+  "ui.essentials_header": "おすすめ",
+  "ui.store_header": "ストア",
   "ui.search_all": "🔍 すべてのアプリを検索",
   "ui.source_all": "すべて",
   "ui.source_pacman": "Pacman",
@@ -166,5 +166,15 @@
   "install.input_placeholder": "回答を入力（例：1）して Enter を押してください",
   "install.btn_send": "送信",
   "settings.upd_foreign": "DEB・RPM パッケージのアプリを更新",
-  "ui.foreign_desc": "DEB/RPM パッケージのアプリ · インストール済み {0}"
+  "ui.foreign_desc": "DEB/RPM パッケージのアプリ · インストール済み {0}",
+  "ui.nav_all_apps": "すべてのアプリ",
+  "ui.maintenance": "メンテナンス",
+  "ui.settings_btn": "設定",
+  "ui.storecat.all": "すべて",
+  "ui.storecat.software": "ソフトウェア",
+  "ui.storecat.games": "ゲーム",
+  "ui.storecat.internet": "インターネット",
+  "ui.storecat.media": "メディア",
+  "ui.storecat.graphics": "グラフィックス",
+  "ui.storecat.drivers": "ドライバー"
 }

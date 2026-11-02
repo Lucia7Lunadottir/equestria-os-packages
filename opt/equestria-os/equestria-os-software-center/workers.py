@@ -398,10 +398,13 @@ class ForeignUpdatesLoader(SafeThread):
     не знает): `equestria-installer --list-foreign-updates` сверяет версии с репозиториями
     производителей. Итог — список {"name", "installed", "latest"}."""
     loaded = pyqtSignal(list)
+    # Старый установщик (1.x) не знает этого ключа и вместо ответа открывает своё окно,
+    # поэтому спрашиваем только тот, у которого есть модуль режима без окна.
+    CLI_MODULE = "/usr/lib/equestria-installer/foreign_cli.py"
 
     def run(self):
         items = []
-        if shutil.which("equestria-installer"):
+        if shutil.which("equestria-installer") and os.path.exists(self.CLI_MODULE):
             try:
                 res = subprocess.run(["equestria-installer", "--list-foreign-updates"],
                                      capture_output=True, text=True, timeout=120)

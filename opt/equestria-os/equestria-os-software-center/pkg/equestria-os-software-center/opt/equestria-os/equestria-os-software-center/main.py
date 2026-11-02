@@ -475,6 +475,8 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             )
             item.setData(Qt.ItemDataRole.UserRole, c)
             self.cat_list.addItem(item)
+        if self.stacked_widget.currentIndex() == 0:
+            self.cat_list.setCurrentRow(0)
         self.render_essentials("All")
 
     def render_essentials(self, filter_cat_key="All"):
@@ -485,13 +487,10 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         for app in self.essentials_data:
             if filter_cat_key == "All" or app.category_key == filter_cat_key:
                 app.display_desc = self.t(app.desc_key)
-                row = EssentialAppRow(app, self.toggle_essential)
-                if app.is_installed:
-                    row.checkbox.blockSignals(True)
-                    row.checkbox.setChecked(True)
-                    row.checkbox.blockSignals(False)
-                    row.checkbox.setEnabled(False)
-                    row.lbl_name.setText(f"{app.display_name} ({self.t('ui.installed')})")
+                row = EssentialAppRow(app, self.toggle_essential, self.t("ui.installed"))
+                row.checkbox.blockSignals(True)
+                row.checkbox.setChecked(app.package_name in self.selected_essentials)
+                row.checkbox.blockSignals(False)
                 self.layout_essentials.addWidget(row)
 
     def toggle_essential(self, app_data, is_checked):
@@ -513,61 +512,24 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     # -------------------------------------------------------------------------
 
     def setup_logic(self):
-        self.btn_switch_store.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
         self.cat_list.itemClicked.connect(self.on_cat_clicked)
+        self.store_nav.itemClicked.connect(self.on_store_nav_clicked)
         self.search_store.textChanged.connect(self._on_search_changed)
         self.combo_store.currentIndexChanged.connect(self.filter_store)
         self.combo_source.currentIndexChanged.connect(self._on_source_changed)
         self.btn_prev_page.clicked.connect(self.go_prev_page)
         self.btn_next_page.clicked.connect(self.go_next_page)
         self.btn_update_sys.clicked.connect(self.execute_system_update)
-        self.btn_integrity_check.clicked.connect(self.execute_integrity_check)
-        self.btn_cache_clean.clicked.connect(self.execute_cache_clean)
+        self.btn_integrity_check.triggered.connect(self.execute_integrity_check)
+        self.btn_cache_clean.triggered.connect(self.execute_cache_clean)
         self.btn_install_essentials.clicked.connect(self.install_selected_essentials)
-        self.btn_refresh_db.clicked.connect(self.refresh_pacman_db)
+        self.btn_refresh_db.triggered.connect(self.refresh_pacman_db)
         self.btn_refresh_db_banner.clicked.connect(self.refresh_pacman_db)
 
-        # FIXED: Create an elegant Dropdown selection for the left sidebar area
-        self.lang_dropdown = QComboBox()
-        self.lang_dropdown.setObjectName("CategoryDropdown") # Inherits default styling framework cleanly
-        for lang in self.langs:
-            self.lang_dropdown.addItem(lang.upper(), lang)
-        
-        # Set accurate visual marker mapping current system state index
-        idx = self.lang_dropdown.findData(self.current_lang)
-        if idx != -1:
-            self.lang_dropdown.setCurrentIndex(idx)
-        self.lang_dropdown.currentIndexChanged.connect(self._on_main_lang_dropdown_changed)
-        
-        # Insert dropdown into the layout container grid panel
-        self.lang_layout.addWidget(self.lang_dropdown, 0, 0)
-
-        # FIXED: Cleanly inject settings action trigger directly into the navigation layout container
-        self._btn_settings = QPushButton("⚙  " + self.t("settings.title"))
-        self._btn_settings.setObjectName("NavBtn") # Matches visual alignment patterns perfectly
-        self._btn_settings.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._btn_settings.clicked.connect(self.open_settings_dialog)
-        
-        if hasattr(self, 'left_panel') and self.left_panel.layout() is not None:
-            # Structurally stacks the item right above system diagnostic button sets
-            self.left_panel.layout().insertWidget(self.left_panel.layout().count() - 3, self._btn_settings)
+        self.btn_settings.clicked.connect(self.open_settings_dialog)
 
         self.page_detail = AppDetailWidget(self._go_back_from_detail)
         self.stacked_widget.addWidget(self.page_detail)
-
-    def _on_main_lang_dropdown_changed(self):
-        """Monitors sidebar language selector transactions to sync UI localized fields."""
-        selected_lang = self.lang_dropdown.currentData()
-        if not selected_lang or selected_lang == self.current_lang:
-            return
-        self.current_lang = selected_lang
-        self._settings["language"] = self.current_lang
-        save_settings(self._settings)
-        self.load_localizations()
-        self.update_ui_texts()
-        self.load_essentials_csv()
-        if self.store_packages:
-            self.filter_store()
 
     def change_language(self):
         # Legacy stub preserved to avoid external reference disruptions
@@ -603,13 +565,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             self.load_essentials_csv()
             if self.store_packages:
                 self.filter_store()
-            
-            # FIXED: Synchronize main UI dropdown selection index seamlessly
-            self.lang_dropdown.blockSignals(True)
-            idx = self.lang_dropdown.findData(self.current_lang)
-            if idx != -1:
-                self.lang_dropdown.setCurrentIndex(idx)
-            self.lang_dropdown.blockSignals(False)
+
 
         # Source runtime validation tracking flags updates
         enable_aur = new_settings.get("enable_aur", True)
@@ -643,7 +599,9 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     def update_ui_texts(self):
         self.cat_header.setText(self.t("ui.essentials_header"))
         self.store_header.setText(self.t("ui.store_header"))
-        self.btn_switch_store.setText(self.t("ui.search_all"))
+        self.store_nav.item(0).setText(self.t("ui.nav_all_apps"))
+        self.store_nav.item(1).setText(self.t("ui.source_updates"))
+        self.btn_maintenance.setText(self.t("ui.maintenance"))
         self.btn_integrity_check.setText(self.t("ui.integrity_check"))
         self.apply_cache_btn_text()
         self.btn_update_sys.setText(self.t("ui.update_all"))
@@ -652,9 +610,10 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.btn_next_page.setText(self.t("ui.next_page"))
         self.store_loading_lbl.setText(self.t("ui.loading"))
         
-        # FIXED: Update internal configurations overlay button label smoothly
-        if hasattr(self, "_btn_settings"):
-            self._btn_settings.setText("⚙  " + self.t("settings.title"))
+        self.btn_settings.setText(self.t("ui.settings_btn"))
+        self.btn_settings.setToolTip(self.t("settings.title"))
+        for i in range(self.combo_store.count()):
+            self.combo_store.setItemText(i, self.t("ui.storecat." + self.combo_store.itemData(i).lower()))
 
         self.combo_source.blockSignals(True)
         self.combo_source.setItemText(0, self.t("ui.source_all"))
@@ -673,8 +632,16 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             self._check_db_staleness()
 
     def on_cat_clicked(self, item):
+        self.store_nav.clearSelection()
         self.stacked_widget.setCurrentIndex(0)
         self.render_essentials(item.data(Qt.ItemDataRole.UserRole))
+
+    def on_store_nav_clicked(self, item):
+        """«Все программы» / «Обновления»: магазин с нужным фильтром источника."""
+        self.cat_list.clearSelection()
+        self.stacked_widget.setCurrentIndex(1)
+        # индексы постоянных пунктов фильтра — см. _on_source_changed
+        self.combo_source.setCurrentIndex({"all": 0, "updates": 4}[item.data(Qt.ItemDataRole.UserRole)])
 
     # -------------------------------------------------------------------------
     # Store data loading
@@ -865,7 +832,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     def _filter_packages(self, packages, source="all"):
         query = self.search_store.text().lower().strip()
         query_norm = self._norm(query)
-        cat = self.combo_store.currentText()
+        cat = self.combo_store.currentData()
         self.filtered_store_packages = []
 
         for pkg in packages:
@@ -996,7 +963,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
     def _append_aur_to_all(self, aur_pkgs):
         if self._current_source != "all":
             return
-        cat = self.combo_store.currentText()
+        cat = self.combo_store.currentData()
         existing = {normalize_key(p.name) for p in self.filtered_store_packages}
         added = False
         for pkg in aur_pkgs:
@@ -1041,7 +1008,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
         if no_binary:
             lbl_title = QLabel(self.t("ui.flatpak_not_installed_title"))
-            kit_qt.style(lbl_title, "color: white; font-size: 18px; font-weight: bold; background: transparent;")
+            kit_qt.style(lbl_title, "color: @text@; font-size: 18px; font-weight: bold; background: transparent;")
             lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
             lbl_desc = QLabel(self.t("ui.flatpak_not_installed_desc"))
@@ -1061,7 +1028,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
             layout.addWidget(btn, alignment=Qt.AlignmentFlag.AlignCenter)
         else:
             lbl_title = QLabel(self.t("ui.flatpak_not_setup"))
-            kit_qt.style(lbl_title, "color: white; font-size: 18px; font-weight: bold; background: transparent;")
+            kit_qt.style(lbl_title, "color: @text@; font-size: 18px; font-weight: bold; background: transparent;")
             lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
             lbl_desc = QLabel(self.t("ui.flatpak_init_desc"))
@@ -1579,7 +1546,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         do_aur = self._settings.get("update_aur", True) and self._settings.get("enable_aur", True)
         do_flatpak = (self._settings.get("update_flatpak", True)
                       and self._settings.get("enable_flatpak", True))
-        do_foreign = self._settings.get("update_foreign", True) and bool(shutil.which("equestria-installer"))
+        do_foreign = self._settings.get("update_foreign", True) and os.path.exists(ForeignUpdatesLoader.CLI_MODULE)
 
         steps = []
         step_n = 0

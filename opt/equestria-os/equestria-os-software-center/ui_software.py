@@ -1,6 +1,6 @@
 import os
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                             QPushButton, QScrollArea, QFrame, QListWidget,
+                             QPushButton, QScrollArea, QFrame, QListWidget, QListWidgetItem, QMenu,
                              QStackedWidget, QLineEdit, QComboBox, QProgressBar,
                              QGridLayout, QSizePolicy)
 from PyQt6.QtCore import Qt, QEvent
@@ -168,36 +168,57 @@ class ScreenshotOverlay(QWidget):
 
 
 class EssentialAppRow(QFrame):
-    def __init__(self, app_data, on_toggle):
+    """Рекомендуемая программа: значок, название, описание; справа — отметка
+    «установить» или плашка «Установлено»."""
+
+    def __init__(self, app_data, on_toggle, installed_text=""):
         super().__init__()
         self.app_data = app_data
         self.setObjectName("AppRow")
-        self.setMinimumHeight(75)
+        self.setMinimumHeight(68)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(15, 10, 15, 10)
+        layout.setContentsMargins(14, 10, 14, 10)
+        layout.setSpacing(14)
+
+        icon = QLabel()
+        icon.setFixedSize(40, 40)
+        icon.setPixmap(QIcon.fromTheme(app_data.package_name,
+                                       QIcon.fromTheme("application-x-executable")).pixmap(40, 40))
+        layout.addWidget(icon)
+
+        text_layout = QVBoxLayout()
+        text_layout.setSpacing(2)
+        self.lbl_name = QLabel(app_data.display_name)
+        self.lbl_name.setObjectName("AppName")
+        self.lbl_desc = QLabel(getattr(app_data, 'display_desc', app_data.desc_key))
+        self.lbl_desc.setObjectName("AppDesc")
+        self.lbl_desc.setWordWrap(True)
+        text_layout.addWidget(self.lbl_name)
+        text_layout.addWidget(self.lbl_desc)
+        layout.addLayout(text_layout, 1)
 
         self.checkbox = QPushButton("✔")
         self.checkbox.setObjectName("AppToggle")
         self.checkbox.setCheckable(True)
-        self.checkbox.setFixedSize(24, 24)
+        self.checkbox.setFixedSize(26, 26)
         self.checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
         self.checkbox.toggled.connect(lambda checked: on_toggle(self.app_data, checked))
 
-        text_layout = QVBoxLayout()
-        self.lbl_name = QLabel(app_data.display_name)
-        kit_qt.style(self.lbl_name, "color: white; font-weight: bold; font-size: 16px; background: transparent;")
+        if getattr(app_data, "is_installed", False):
+            badge = QLabel(installed_text)
+            badge.setObjectName("InstalledBadge")
+            layout.addWidget(badge)
+            self.checkbox.hide()
+        else:
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
+            layout.addWidget(self.checkbox)
 
-        desc_text = getattr(app_data, 'display_desc', app_data.desc_key)
-        self.lbl_desc = QLabel(desc_text)
-        kit_qt.style(self.lbl_desc, "color: @text@; font-size: 13px; background: transparent;")
-
-        text_layout.addWidget(self.lbl_name)
-        text_layout.addWidget(self.lbl_desc)
-
-        layout.addWidget(self.checkbox)
-        layout.addLayout(text_layout)
-        layout.addStretch()
+    def mousePressEvent(self, event):
+        # щелчок по всей строке — то же, что по отметке
+        if self.checkbox.isVisible() and event.button() == Qt.MouseButton.LeftButton:
+            self.checkbox.toggle()
+        super().mousePressEvent(event)
 
 
 class StoreAppRow(QFrame):
@@ -228,8 +249,8 @@ class StoreAppRow(QFrame):
         layout.addWidget(self.icon_label)
 
         info_layout = QVBoxLayout()
-        self.lbl_name = QLabel(f"{pkg_data.name} <span style='color:gray; font-size:12px;'>v{pkg_data.version}</span>")
-        kit_qt.style(self.lbl_name, "color: white; font-weight: bold; font-size: 15px; background: transparent;")
+        self.lbl_name = QLabel(f"{pkg_data.name} <span style='font-weight:normal; font-size:12px;'>v{pkg_data.version}</span>")
+        self.lbl_name.setObjectName("AppName")
         self.lbl_desc = QLabel(pkg_data.desc[:80] + "..." if len(pkg_data.desc) > 80 else pkg_data.desc)
         kit_qt.style(self.lbl_desc, "color: @subtext@; font-size: 12px; background: transparent;")
         info_layout.addWidget(self.lbl_name)
@@ -282,9 +303,9 @@ class AppDetailWidget(QWidget):
     )
     _CSS_COMBO = (
         "QComboBox { background-color: @crust@; border: 1px solid @surface0@; "
-        "border-radius: 8px; padding: 6px 12px; color: white; }"
+        "border-radius: 8px; padding: 6px 12px; color: @text@; }"
         "QComboBox::drop-down { border: none; }"
-        "QComboBox QAbstractItemView { background-color: @crust@; color: white; "
+        "QComboBox QAbstractItemView { background-color: @crust@; color: @text@; "
         "selection-background-color: @surface0@; border: 1px solid @surface0@; }"
     )
 
@@ -323,7 +344,7 @@ class AppDetailWidget(QWidget):
         info_layout.setSpacing(3)
         self.lbl_app_name = QLabel()
         kit_qt.style(self.lbl_app_name, 
-            "color: white; font-size: 22px; font-weight: bold; background: transparent;"
+            "color: @text@; font-size: 22px; font-weight: bold; background: transparent;"
         )
         self.lbl_version = QLabel()
         kit_qt.style(self.lbl_version, "color: @subtext@; font-size: 14px; background: transparent;")
@@ -623,52 +644,48 @@ class Ui_SoftwareCenter:
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         left_layout.addWidget(self.title_label)
 
-        # Language grid
-        self.lang_container = QWidget()
-        self.lang_layout = QGridLayout(self.lang_container)
-        self.lang_layout.setSpacing(4)
-        self.lang_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.addWidget(self.lang_container)
+        # Магазин: все программы и обновления — тем же списком, что и категории
+        self.store_header = QLabel("App Store")
+        self.store_header.setObjectName("CategoryHeader")
+        left_layout.addWidget(self.store_header)
 
-        # Essentials categories
-        self.cat_header = QLabel("🌟 Essentials")
+        self.store_nav = QListWidget()
+        self.store_nav.setObjectName("CategoryList")
+        self.store_nav.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        for key in ("all", "updates"):
+            item = QListWidgetItem()
+            item.setData(Qt.ItemDataRole.UserRole, key)
+            self.store_nav.addItem(item)
+        self.store_nav.setFixedHeight(96)
+        left_layout.addWidget(self.store_nav)
+
+        # Рекомендуемые программы по категориям
+        self.cat_header = QLabel("Recommended")
         self.cat_header.setObjectName("CategoryHeader")
         left_layout.addWidget(self.cat_header)
 
         self.cat_list = QListWidget()
         self.cat_list.setObjectName("CategoryList")
-        self.cat_list.setMinimumHeight(80)
+        self.cat_list.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         left_layout.addWidget(self.cat_list, 1)
 
-        # App store nav
-        self.store_header = QLabel("📦 App Store")
-        self.store_header.setObjectName("CategoryHeader")
-        left_layout.addWidget(self.store_header)
-
-        self.btn_switch_store = QPushButton("🔍 Search All Apps")
-        self.btn_switch_store.setObjectName("NavBtn")
-        self.btn_switch_store.setCursor(Qt.CursorShape.PointingHandCursor)
-        left_layout.addWidget(self.btn_switch_store)
-
-        left_layout.addStretch()
-
-        self.btn_integrity_check = QPushButton("Check System Files")
-        self.btn_integrity_check.setObjectName("IntegrityBtn")
-        self.btn_integrity_check.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_integrity_check.setMinimumHeight(45)
-        left_layout.addWidget(self.btn_integrity_check)
-
-        self.btn_cache_clean = QPushButton("Clean Package Cache")
-        self.btn_cache_clean.setObjectName("CacheCleanBtn")
-        self.btn_cache_clean.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_cache_clean.setMinimumHeight(45)
-        left_layout.addWidget(self.btn_cache_clean)
-
-        self.btn_refresh_db = QPushButton("🔄 Refresh Package Database")
-        self.btn_refresh_db.setObjectName("RefreshDbBtn")
-        self.btn_refresh_db.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_refresh_db.setMinimumHeight(45)
-        left_layout.addWidget(self.btn_refresh_db)
+        # Редкие действия — в одном меню, чтобы не спорили с главной кнопкой
+        tools_row = QHBoxLayout()
+        tools_row.setSpacing(6)
+        self.btn_settings = QPushButton("Settings")
+        self.btn_settings.setObjectName("NavBtn")
+        self.btn_settings.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_maintenance = QPushButton("Maintenance")
+        self.btn_maintenance.setObjectName("NavBtn")
+        self.btn_maintenance.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.maintenance_menu = QMenu(self.btn_maintenance)
+        self.btn_refresh_db = self.maintenance_menu.addAction("Refresh Package Database")
+        self.btn_cache_clean = self.maintenance_menu.addAction("Clean Package Cache")
+        self.btn_integrity_check = self.maintenance_menu.addAction("Check System Files")
+        self.btn_maintenance.setMenu(self.maintenance_menu)
+        tools_row.addWidget(self.btn_settings, 1)
+        tools_row.addWidget(self.btn_maintenance, 1)
+        left_layout.addLayout(tools_row)
 
         self.btn_update_sys = QPushButton("Update System")
         self.btn_update_sys.setObjectName("UpdateAllBtn")
@@ -753,7 +770,9 @@ class Ui_SoftwareCenter:
         self.search_store.setPlaceholderText("Search...")
         self.combo_store = QComboBox()
         self.combo_store.setObjectName("CategoryDropdown")
-        self.combo_store.addItems(["All", "Software", "Games", "Internet", "Media", "Graphics", "Drivers"])
+        # данные пункта — категория пакета (по-английски), текст переводится в update_ui_texts
+        for cat in ("All", "Software", "Games", "Internet", "Media", "Graphics", "Drivers"):
+            self.combo_store.addItem(cat, cat)
         self.combo_source = QComboBox()
         self.combo_source.setObjectName("CategoryDropdown")
         self.combo_source.addItems(["All", "Pacman", "AUR", "Flatpak", "Updates"])

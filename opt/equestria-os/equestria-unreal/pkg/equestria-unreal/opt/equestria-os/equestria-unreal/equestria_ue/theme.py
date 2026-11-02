@@ -33,13 +33,20 @@ QPushButton:pressed { background: @surface2@; }
 QPushButton:disabled { color: @surface2@; background: @mantle@; }
 QPushButton#primary { background: @accent@; color: @on_accent@; }
 QPushButton#primary:hover { background: @accent_hover@; }
+QPushButton#primary:pressed { background: @accent%70@; }
 QPushButton#primary:disabled { background: @surface1@; color: @surface2@; }
 QPushButton#danger { background: @red@; color: @on_red@; }
+QPushButton#danger:hover { background: @red%85@; }
 QPushButton#small { padding: 6px 12px; font-size: 13px; border-radius: 9px; }
 QPushButton#nav { background: transparent; text-align: left; padding: 12px 16px; border-radius: 10px;
     font-size: 15px; color: @subtext@; }
 QPushButton#nav:hover { background: @mantle@; color: @text@; }
+QPushButton#nav:pressed { background: @surface1@; }
 QPushButton#nav:checked { background: @surface0@; color: @accent@; }
+/* нажатие видно у всех кнопок: заливка темнеет и надпись чуть опускается */
+QPushButton:pressed { padding-top: 10px; padding-bottom: 8px; }
+QPushButton#small:pressed { padding-top: 7px; padding-bottom: 5px; background: @surface2@; }
+QPushButton#danger:pressed { background: @red%70@; }
 
 QLineEdit, QComboBox { background: @mantle@; border: 2px solid transparent; border-radius: 9px; padding: 8px 12px;
     selection-background-color: @accent@; selection-color: @on_accent@; }

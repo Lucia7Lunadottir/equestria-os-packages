@@ -82,8 +82,8 @@
   "ui.page_info": "Strona {0} / {1} ({2})",
   "ui.prev_page": "⬅ Poprzednia",
   "ui.next_page": "Następna ➡",
-  "ui.essentials_header": "🌟 Niezbędne",
-  "ui.store_header": "📦 Sklep",
+  "ui.essentials_header": "Polecane",
+  "ui.store_header": "Sklep",
   "ui.search_all": "🔍 Szukaj wszystkich aplikacji",
   "ui.source_all": "Wszystkie",
   "ui.source_pacman": "Pacman",
@@ -166,5 +166,15 @@
   "install.input_placeholder": "Wpisz odpowiedź (np. 1) i naciśnij Enter",
   "install.btn_send": "Wyślij",
   "settings.upd_foreign": "Aktualizuj programy z pakietów DEB i RPM",
-  "ui.foreign_desc": "Program z pakietu DEB/RPM · zainstalowany {0}"
+  "ui.foreign_desc": "Program z pakietu DEB/RPM · zainstalowany {0}",
+  "ui.nav_all_apps": "Wszystkie programy",
+  "ui.maintenance": "Konserwacja",
+  "ui.settings_btn": "Ustawienia",
+  "ui.storecat.all": "Wszystkie",
+  "ui.storecat.software": "Programy",
+  "ui.storecat.games": "Gry",
+  "ui.storecat.internet": "Internet",
+  "ui.storecat.media": "Multimedia",
+  "ui.storecat.graphics": "Grafika",
+  "ui.storecat.drivers": "Sterowniki"
 }

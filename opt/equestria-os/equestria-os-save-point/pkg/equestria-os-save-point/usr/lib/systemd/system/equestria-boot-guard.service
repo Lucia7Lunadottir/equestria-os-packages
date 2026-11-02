@@ -1,0 +1,16 @@
+[Unit]
+Description=Equestria Save Point: roll back if the system repeatedly fails to boot
+Documentation=file:///opt/equestria-os/equestria-os-save-point/COMMANDS.md
+DefaultDependencies=no
+After=local-fs.target systemd-remount-fs.service
+Before=sysinit.target shutdown.target
+Conflicts=shutdown.target
+ConditionPathIsReadWrite=/var/lib
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/equestria-os/equestria-os-save-point/rollback.py boot-guard
+TimeoutStartSec=10min
+
+[Install]
+WantedBy=sysinit.target

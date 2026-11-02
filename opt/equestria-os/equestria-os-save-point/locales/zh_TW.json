@@ -38,5 +38,7 @@
   "ui.pruning": "清理舊快照",
   "unsupported.title": "✨ 僅支援 Btrfs",
   "unsupported.desc": "儲存點僅適用於 Btrfs 檔案系統。\n\n由於備份不穩定，已移除對 ext4 及其他檔案系統的支援：每次安裝前複製整個系統會使 pacman 大幅變慢，而且恢復也不可靠。\n\n您的根檔案系統：{0}。",
-  "err.unsupported_fs": "不支援：根分割槽為 {0}，Save Point 僅支援 Btrfs"
+  "err.unsupported_fs": "不支援：根分割槽為 {0}，Save Point 僅支援 Btrfs",
+  "rollback.notice_title": "系統已還原",
+  "rollback.notice_body": "Equestria OS 連續 {n} 次未能啟動到登入畫面，因此 Save Point 已將系統還原到 {date} 的還原點。\n\n先前的狀態沒有被刪除：它以「…_old_…」的名稱儲存在磁碟上系統旁邊。如果不再需要，可以將其刪除。"
 }
