@@ -4,6 +4,7 @@ steampipe-gui;SteamPipe GUI;cat.gamedev;desc.steampipe-gui
 rider;Rider;cat.gamedev;desc.rider
 code;Visual Studio Code;cat.gamedev;desc.code
 godot;Godot Engine;cat.gamedev;desc.godot
+equestria-unreal;Equestria Unreal;cat.gamedev;desc.equestria-unreal
 gitnuro-bin;Gitnuro;cat.gamedev;desc.gitnuro
 opensourcetree-git;OpenSourceTree;cat.gamedev;desc.opensourcetree
 krita;Krita;cat.creativity;desc.krita
