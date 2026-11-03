@@ -103,6 +103,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
 
         self.bind_events()
         self.load_characters()
+        self.refresh_stale_kde_themes()
         # Отмечаем активного персонажа сразу при запуске (НЕ применяя тему):
         # можно сразу редактировать, не кликая по карточке
         self.restore_active_character()
@@ -849,6 +850,20 @@ fi
         self.day_night.apply(dark if dark_now else light)
         r, g, b = kde_laf._rgb(character.AccentColor)
         self._recolor_panel_sysmon(r, g, b)
+
+    def refresh_stale_kde_themes(self):
+        """Пары тем в ~/.local от старых версий — пересобрать (см. kde_laf.StalePairRefresher).
+        Если устаревшей была активная тема — применить её заново, чтобы стиль
+        панели совпал с днём/ночью уже сейчас, а не со следующей автосмены."""
+        try:
+            rebuilt = kde_laf.StalePairRefresher(Path.home() / ".local" / "share", Path(USER_PATH)).refresh(
+                [asdict(c) for c in self.characters])
+        except OSError as e:
+            print(f"Не удалось обновить темы KDE: {e}")
+            return
+        current = self.day_night.current()
+        if current in rebuilt:
+            self.day_night.apply(current)
 
     def _recolor_panel_sysmon(self, r, g, b):
         """Красит график памяти в виджетах системного монитора на панелях

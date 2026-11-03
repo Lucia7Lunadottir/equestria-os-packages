@@ -152,6 +152,17 @@ class PanelStyleManager(QObject):
     def current_style_id() -> str:
         return STYLE_NIGHT if DayNight.is_dark_now() else STYLE_DAY
 
+    def sync_with_day_night(self) -> None:
+        """Включён наш стиль, но не той половины дня — включить нужный.
+
+        Так бывает, когда глобальная тема в ~/.local собрана старым
+        переключателем персонажей без [plasmarc][Theme]: KDE меняет день/ночь,
+        а стиль панели остаётся прежним. Чужой стиль (Breeze и т.п.) не трогаем."""
+        active = KdeConfig.read("plasmarc", ["Theme"], "name", "default")
+        target = self.current_style_id()
+        if active in (STYLE_DAY, STYLE_NIGHT) and active != target:
+            QProcess.startDetached("plasma-apply-desktoptheme", [target])
+
     def apply(self, color_day: str, color_night: str, opacity_percent: int) -> None:
         self.writer.write(color_day, color_night, opacity_percent)
         target = self.current_style_id()

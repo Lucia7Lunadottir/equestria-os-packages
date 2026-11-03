@@ -61,6 +61,7 @@ class TaskPanelApp(QMainWindow):
         self.applier.finished.connect(self._on_applied)
 
         LegacyThemeCleanup().run()  # следы старых версий, ломавшие экран блокировки
+        self.applier.style.sync_with_day_night()
         self.active_id = self._load_active()
         self.editing_id: str | None = None
         self.editor: EditorState | None = None

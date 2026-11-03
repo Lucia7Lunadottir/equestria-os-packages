@@ -185,6 +185,31 @@ def build(dest_share: Path, characters: list, icons: Path | None = None,
     return made
 
 
+class StalePairRefresher:
+    """Пересобирает пары в ~/.local, собранные старой версией переключателя.
+
+    Копия в ~/.local перекрывает тему из /usr/share с тем же id, поэтому после
+    обновления пакета KDE продолжает брать старый defaults. Так было с парами
+    до 2.1.0: без [plasmarc][Theme] автосмена дня и ночи не меняла стиль панели."""
+
+    def __init__(self, dest_share: Path, icons: Path | None = None, colors_dir: Path = SYSTEM_COLORS):
+        self.dest_share, self.icons, self.colors_dir = Path(dest_share), icons, colors_dir
+
+    def _is_stale(self, cid: str, variant: str) -> bool:
+        defaults = self.dest_share / "plasma" / "look-and-feel" / laf_id(cid, variant) / "contents" / "defaults"
+        try:
+            return defaults.read_text(encoding="utf-8") != _defaults(variant, scheme_name(cid, variant))
+        except OSError:
+            return False  # пары нет — собирать нечего, её соберёт применение персонажа
+
+    def refresh(self, characters: list) -> list[str]:
+        """Возвращает id пересобранных тем."""
+        stale = [ch for ch in characters
+                 if str(ch.get("Id") or "").strip()
+                 and any(self._is_stale(str(ch["Id"]).strip(), v) for v in VARIANTS)]
+        return build(self.dest_share, stale, self.icons, self.colors_dir) if stale else []
+
+
 def panel_styles(dest_share: Path) -> list[str]:
     """Базовые Plasma-стили панели (только metadata: всё берётся из Breeze).
     Ставятся пакетом в /usr/share, чтобы глобальные темы всегда ссылались на
@@ -236,9 +261,13 @@ class DayNight:
         return (self._read("DefaultLightLookAndFeel") or BREEZE_LIGHT,
                 self._read("DefaultDarkLookAndFeel") or BREEZE_DARK)
 
+    def current(self) -> str:
+        """Id применённой сейчас глобальной темы."""
+        return self._read("LookAndFeelPackage")
+
     def is_dark_now(self) -> bool:
         """Сейчас активна ночная половина пары (так же решает виджет KDE)."""
-        current = self._read("LookAndFeelPackage")
+        current = self.current()
         return bool(current) and (current == self.pair()[1] or current.endswith("-Dark")
                                   or current == BREEZE_DARK)
 
