@@ -523,7 +523,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.btn_integrity_check.triggered.connect(self.execute_integrity_check)
         self.btn_cache_clean.triggered.connect(self.execute_cache_clean)
         self.btn_install_essentials.clicked.connect(self.install_selected_essentials)
-        self.btn_refresh_db.triggered.connect(self.refresh_pacman_db)
+        self.btn_refresh_db.clicked.connect(self.refresh_pacman_db)
         self.btn_refresh_db_banner.clicked.connect(self.refresh_pacman_db)
 
         self.btn_settings.clicked.connect(self.open_settings_dialog)
@@ -624,8 +624,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.combo_source.blockSignals(False)
         self.update_install_button_text()
 
-        if not self._db_refresh_running:
-            self.btn_refresh_db.setText(self.t("ui.refresh_db_sidebar_btn"))
+        self.btn_refresh_db.setAccessibleName(self.t("ui.refresh_db_sidebar_btn"))
         self.btn_refresh_db.setToolTip(self.t("ui.refresh_db_tooltip"))
         self.btn_refresh_db_banner.setText(self.t("ui.refresh_db_btn"))
         if self.db_stale_banner.isVisible() and not self._db_refresh_running:

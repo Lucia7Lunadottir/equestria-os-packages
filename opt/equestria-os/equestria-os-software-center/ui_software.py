@@ -679,7 +679,6 @@ class Ui_SoftwareCenter:
         self.btn_maintenance.setObjectName("NavBtn")
         self.btn_maintenance.setCursor(Qt.CursorShape.PointingHandCursor)
         self.maintenance_menu = QMenu(self.btn_maintenance)
-        self.btn_refresh_db = self.maintenance_menu.addAction("Refresh Package Database")
         self.btn_cache_clean = self.maintenance_menu.addAction("Clean Package Cache")
         self.btn_integrity_check = self.maintenance_menu.addAction("Check System Files")
         self.btn_maintenance.setMenu(self.maintenance_menu)
@@ -691,7 +690,18 @@ class Ui_SoftwareCenter:
         self.btn_update_sys.setObjectName("UpdateAllBtn")
         self.btn_update_sys.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_update_sys.setMinimumHeight(45)
-        left_layout.addWidget(self.btn_update_sys)
+        # Обновление базы — рядом с главной кнопкой: вкладка «Обновления» и
+        # каталог видят только локальную базу pacman, и после неудачной
+        # загрузки страницы это первое, что нажимают
+        self.btn_refresh_db = QPushButton("🔄")
+        self.btn_refresh_db.setObjectName("RefreshDbBtn")
+        self.btn_refresh_db.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_refresh_db.setFixedSize(45, 45)
+        update_row = QHBoxLayout()
+        update_row.setSpacing(6)
+        update_row.addWidget(self.btn_update_sys, 1)
+        update_row.addWidget(self.btn_refresh_db)
+        left_layout.addLayout(update_row)
 
         main_layout.addWidget(self.left_panel)
 

@@ -143,6 +143,19 @@ QPushButton#UpdateAllBtn:hover {
     background-color: @accent_hover@;
 }
 
+QPushButton#RefreshDbBtn {
+    background-color: @surface0@;
+    color: @text@;
+    border-radius: 10px;
+    font-size: 18px;
+    border: 1px solid @surface1@;
+}
+QPushButton#RefreshDbBtn:hover {
+    background-color: @surface1@;
+    border: 1px solid @accent2@;
+}
+QPushButton#RefreshDbBtn:disabled { color: @surface2@; }
+
 QFrame#RightPanel {
     background-color: @surface0%30@;
     border-radius: 15px;
