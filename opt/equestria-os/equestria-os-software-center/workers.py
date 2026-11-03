@@ -393,6 +393,38 @@ class AURUpgradableLoader(SafeThread):
         self.finished.emit(pkgs)
 
 
+class RepoUpdatesLoader(SafeThread):
+    """Обновления официальных репозиториев через `checkupdates` (pacman-contrib).
+
+    `pacman -Qu` сравнивает установленное с ЛОКАЛЬНОЙ базой синхронизации,
+    поэтому вкладка «Обновления» врала, пока кто-нибудь не делал `pacman -Sy`.
+    checkupdates скачивает свежую базу во временный каталог — без root и не
+    трогая /var/lib/pacman/sync. Итог — {имя: (установленная, новая)};
+    None, если проверить не удалось (нет сети, нет checkupdates)."""
+    finished = pyqtSignal(object)
+
+    def run(self):
+        if not shutil.which("checkupdates"):
+            self.finished.emit(None)
+            return
+        try:
+            res = subprocess.run(["checkupdates", "--nocolor"],
+                                 capture_output=True, text=True, timeout=120)
+        except (OSError, subprocess.SubprocessError):
+            self.finished.emit(None)
+            return
+        # 0 — есть обновления, 2 — обновлений нет, остальное — ошибка
+        if res.returncode not in (0, 2):
+            self.finished.emit(None)
+            return
+        updates = {}
+        for line in res.stdout.splitlines():
+            parts = line.split()  # "имя старая -> новая"
+            if len(parts) >= 4 and parts[2] == "->":
+                updates[parts[0]] = (parts[1], parts[3])
+        self.finished.emit(updates)
+
+
 class ForeignUpdatesLoader(SafeThread):
     """Обновления программ из пакетов DEB/RPM (их ставит equestria-installer, pacman о них
     не знает): `equestria-installer --list-foreign-updates` сверяет версии с репозиториями

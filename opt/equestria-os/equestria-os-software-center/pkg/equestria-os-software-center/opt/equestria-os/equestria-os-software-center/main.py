@@ -20,7 +20,7 @@ from utils import (flathub_install_scope, FLATPAK_APPSTREAM, cleanup_screenshot_
                    parse_flatpakref_uri, FLATPAKREF_SCHEMES, normalize_key, merge_packages,
                    _GENERIC_PACMAN_DESC, guess_cat)
 from workers import (stop_all_threads, AppStoreLoader, FlatpakLoader, FlatpakRefResolveThread,
-                     AURSearchThread, AURPopularLoader, AURUpgradableLoader, ForeignUpdatesLoader,
+                     AURSearchThread, AURPopularLoader, AURUpgradableLoader, ForeignUpdatesLoader, RepoUpdatesLoader,
                      ScreenshotDownloadThread, LocalAppStreamLoader,
                      PacmanInfoLoader)
 from ui_software import Ui_SoftwareCenter, EssentialAppRow, StoreAppRow, AppDetailWidget
@@ -77,6 +77,12 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self.flatpak_upgradable = set()
         self.installed_packages = set()
         self.upgradable_packages = set()
+        # Обновления репозиториев по checkupdates: {имя: (установленная, новая)}.
+        # local_upgradable — то, что видит pacman -Qu по локальной базе; чего
+        # в нём нет, то без -Sy поставилось бы в старой версии (см. install_package)
+        self.repo_updates = {}
+        self.local_upgradable = set()
+        self.installed_versions = {}
         self.aur_installed = {}
         self.selected_essentials = set()
         self.github_apps = GithubAppRegistry()
@@ -251,6 +257,8 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
         self._aur_upgradable_loader.finished.connect(self._on_aur_upgradable_loaded)
         self._aur_upgradable_loader.start()
 
+        self._load_repo_updates()
+
         # Программы из DEB/RPM (equestria-installer): их обновления — в разделе «Обновления»
         self.foreign_updates: list = []
         self._load_foreign_updates()
@@ -312,10 +320,13 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
     def refresh_system_status(self):
         try:
-            res = subprocess.run(["pacman", "-Qq"], capture_output=True, text=True)
-            self.installed_packages = set(res.stdout.splitlines())
+            res = subprocess.run(["pacman", "-Q"], capture_output=True, text=True)
+            self.installed_versions = dict(line.split()[:2] for line in res.stdout.splitlines()
+                                           if len(line.split()) >= 2)
+            self.installed_packages = set(self.installed_versions)
             res_upd = subprocess.run(["pacman", "-Qu"], capture_output=True, text=True)
-            self.upgradable_packages = {line.split()[0] for line in res_upd.stdout.splitlines() if line}
+            self.local_upgradable = {line.split()[0] for line in res_upd.stdout.splitlines() if line}
+            self.upgradable_packages = self.local_upgradable | self._pending_repo_updates()
 
             res_foreign = subprocess.run(["pacman", "-Qm"], capture_output=True, text=True)
             self.aur_installed = {}
@@ -346,6 +357,31 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
                 }
         except Exception:
             pass
+
+    def _pending_repo_updates(self):
+        """Обновления из checkupdates, которые ещё не поставлены (версия та же)."""
+        return {name for name, (old, _new) in self.repo_updates.items()
+                if self.installed_versions.get(name) == old}
+
+    def _load_repo_updates(self):
+        self._repo_updates_loader = RepoUpdatesLoader()
+        self._repo_updates_loader.finished.connect(self._on_repo_updates_loaded)
+        self._repo_updates_loader.start()
+
+    def _on_repo_updates_loaded(self, updates):
+        if updates is None:  # нет сети и т.п. — остаётся то, что видит pacman -Qu
+            return
+        self.repo_updates = updates
+        self.upgradable_packages |= self._pending_repo_updates()
+        self._apply_repo_versions()
+        self.filter_store()
+
+    def _apply_repo_versions(self):
+        """Каталог читает локальную базу — версия в нём старая. Показываем ту,
+        что встанет при обновлении (её нашёл checkupdates)."""
+        for pkg in self.store_packages:
+            if pkg.source_type == "pacman" and pkg.name in self.repo_updates:
+                pkg.version = self.repo_updates[pkg.name][1]
 
     def event(self, e):
         # Fallback for anything the panel's on_done callback didn't catch --
@@ -656,6 +692,7 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
 
     def on_store_loaded(self, packages):
         self.store_packages = packages
+        self._apply_repo_versions()
         self._rebuild_merged()
         self.store_loading_lbl.hide()
         self.filter_store()
@@ -1277,10 +1314,11 @@ class main_app(QMainWindow, Ui_SoftwareCenter):
                 args = ["install", "-y"] + ([scope] if scope else []) + ["flathub", pkg.app_id]
                 program, elevated = "flatpak", False
         else:
-            # Одиночное обновление — тоже `-S <пакет>`, БЕЗ -y/-u: «-Syu» обновлял всю
-            # систему. База синхронизации уже свежая (по ней pacman -Qu нашёл обновление),
-            # а -Sy без -u дал бы частичное обновление, которое Arch не поддерживает.
-            program, args, elevated = "pkexec", ["pacman", "-S", "--noconfirm", pkg.name], True
+            # Одиночное обновление — `-S <пакет>`, БЕЗ -u: «-Syu» обновлял всю систему.
+            # Если обновление нашёл только checkupdates, локальная база старая и -S
+            # переустановил бы ту же версию — тогда сначала синхронизация (-Sy).
+            sync = "-Sy" if pkg.name in self.repo_updates and pkg.name not in self.local_upgradable else "-S"
+            program, args, elevated = "pkexec", ["pacman", sync, "--noconfirm", pkg.name], True
 
         title = self.t("install.title_installing").replace("{0}", pkg.name)
         self._run_in_panel(title, program, args, elevated,
