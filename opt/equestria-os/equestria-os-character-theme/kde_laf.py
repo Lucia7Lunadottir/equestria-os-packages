@@ -295,13 +295,45 @@ class DayNight:
         self.apply(dark if mode == "dark" else light)
 
 
+def refresh_user_themes(day_night: DayNight | None = None, home: Path | None = None) -> list[str]:
+    """Пересобрать устаревшие пары в ~/.local (см. StalePairRefresher).
+
+    Вызывается при входе в сессию (автозапуск --refresh-user) и при запуске
+    переключателя: KDE меняет день/ночь сам, и ждать, пока кто-то откроет
+    переключатель, нельзя. Если устаревшей была активная тема — она
+    применяется заново, чтобы стиль панели совпал уже сейчас."""
+    day_night = day_night or DayNight()
+    share = (home or Path.home()) / ".local" / "share"
+    themes = share / "EquestriaOS" / "Themes"
+    characters = []
+    for path in (themes / "characters.json", Path(__file__).resolve().parent / "characters.json"):
+        try:
+            characters = json.loads(path.read_text(encoding="utf-8")).get("Characters", [])
+            break
+        except (OSError, ValueError):
+            continue
+    rebuilt = StalePairRefresher(share, themes).refresh([c for c in characters if isinstance(c, dict)])
+    current = day_night.current()
+    if current in rebuilt:
+        day_night.apply(current)
+    return rebuilt
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--dest", required=True, help="каталог share (например $pkgdir/usr/share)")
-    ap.add_argument("--characters", required=True, help="characters.json")
+    ap.add_argument("--refresh-user", action="store_true",
+                    help="пересобрать устаревшие темы в ~/.local (автозапуск сессии)")
+    ap.add_argument("--dest", help="каталог share (например $pkgdir/usr/share)")
+    ap.add_argument("--characters", help="characters.json")
     ap.add_argument("--icons", help="каталог, от которого отсчитываются IconPath")
     ap.add_argument("--panel-styles", action="store_true", help="ещё и базовые стили панели (для пакета)")
     a = ap.parse_args()
+    if a.refresh_user:
+        for i in refresh_user_themes():
+            print(i)
+        return
+    if not a.dest or not a.characters:
+        ap.error("нужны --dest и --characters (или --refresh-user)")
     if a.panel_styles:
         for i in panel_styles(Path(a.dest)):
             print(i)

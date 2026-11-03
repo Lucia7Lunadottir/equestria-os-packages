@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-character-theme
 pkgver=2.1.0
-pkgrel=3
+pkgrel=4
 pkgdesc="Customizing the visual style and characters of Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -35,6 +35,19 @@ package() {
 #!/bin/bash
 cd /opt/equestria-os/equestria-os-character-theme/
 exec python3 main.py "$@"
+EOF
+
+    # При входе в сессию: пересобрать темы в ~/.local, собранные старой версией.
+    # Они перекрывают темы из /usr/share, и без этого автосмена дня/ночи KDE
+    # не меняла стиль панели, пока не откроешь переключатель.
+    install -Dm644 /dev/stdin "$pkgdir/etc/xdg/autostart/equestria-refresh-kde-themes.desktop" << 'EOF'
+[Desktop Entry]
+Type=Application
+Name=Equestria OS KDE Themes Refresh
+Exec=python3 /opt/equestria-os/equestria-os-character-theme/kde_laf.py --refresh-user
+OnlyShowIn=KDE;
+NoDisplay=true
+X-KDE-Autostart-Phase=1
 EOF
 
     install -d "$pkgdir/usr/share/applications"
