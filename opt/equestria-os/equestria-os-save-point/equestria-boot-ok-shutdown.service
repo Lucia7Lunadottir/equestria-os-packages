@@ -1,0 +1,14 @@
+[Unit]
+Description=Equestria Save Point: a clean shutdown after the login screen started counts as a successful boot
+# After= в обратную сторону при выключении: эта служба останавливается раньше экрана входа,
+# поэтому в ExecStop display-manager.service ещё работает
+After=display-manager.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/true
+ExecStop=/usr/bin/python3 /opt/equestria-os/equestria-os-save-point/rollback.py boot-ok
+
+[Install]
+WantedBy=graphical.target

@@ -4,6 +4,7 @@
     rollback.py restore <ID>   откатить корень к точке <ID> (так работает и кнопка «Восстановить»)
     rollback.py boot-guard     в начале каждой загрузки (equestria-boot-guard.service)
     rollback.py boot-ok        загрузка удалась: экран входа работает 2 минуты (equestria-boot-ok.timer)
+                               или систему штатно выключили после его запуска (equestria-boot-ok-shutdown.service)
     rollback.py notice         после входа: сообщить, если был автооткат (автозапуск в сеансе)
 
 Автооткат срабатывает, только если система FAILED_BOOTS раз подряд не дошла до экрана
@@ -225,7 +226,8 @@ class BootGuard:
 
 
 def boot_ok() -> int:
-    """Экран входа работает — загрузка удалась."""
+    """Экран входа работает — загрузка удалась. Вызывается и при штатном выключении:
+    перезагрузка из работающей системы — не сбой загрузки, даже если прошло меньше 2 минут."""
     if subprocess.run(["systemctl", "is-active", "--quiet", "display-manager.service"]).returncode != 0:
         return 0
     state = BootState()

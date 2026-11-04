@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-save-point
 pkgver=1.6.0
-pkgrel=1
+pkgrel=2
 # Только Btrfs: поддержка ext4 и других ФС (restic/timeshift) удалена из-за нестабильности бэкапов
 pkgdesc="Equestria OS Save Point — Btrfs system snapshot manager (Btrfs only)"
 arch=('any')
@@ -85,5 +85,9 @@ EOF
     install -Dm644 "$startdir/equestria-boot-guard.service" "$pkgdir/usr/lib/systemd/system/equestria-boot-guard.service"
     install -Dm644 "$startdir/equestria-boot-ok.service" "$pkgdir/usr/lib/systemd/system/equestria-boot-ok.service"
     install -Dm644 "$startdir/equestria-boot-ok.timer" "$pkgdir/usr/lib/systemd/system/equestria-boot-ok.timer"
+    # С 1.6.0-2: штатное выключение после запуска экрана входа — тоже удачная загрузка.
+    #    Без этого три быстрые перезагрузки подряд (меньше 2 минут, например после смены
+    #    настроек) считались тремя сбоями и откатывали корень.
+    install -Dm644 "$startdir/equestria-boot-ok-shutdown.service" "$pkgdir/usr/lib/systemd/system/equestria-boot-ok-shutdown.service"
     install -Dm644 "$startdir/equestria-save-point-notice.desktop" "$pkgdir/etc/xdg/autostart/equestria-save-point-notice.desktop"
 }
