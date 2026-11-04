@@ -3,6 +3,8 @@
 Общие Qt-кирпичики приложений Equestria OS, чтобы не копировать их в каждый файл:
   • render_qss   — QSS-шаблон с ролями темы: @accent@, @accent/40@, @yellow%10@ …;
   • ThemeManager — подключить приложение к общей теме одной строкой (и следить за сменой);
+  • light_variant — светлая палитра из тёмной палитры персонажа;
+  • system_prefers_dark / SystemSchemeWatcher — светлая или тёмная схема KDE и её смена;
   • theme_color  — цвет роли для того, что рисуется кодом (QPainter);
   • ThemeApplier — применить тему: QSS-шаблон с @цвет@ + QPalette + запомнить выбор;
   • check_png    — галочка для QCheckBox в цвет темы (QSS сам её не рисует);
@@ -160,6 +162,73 @@ def text_color(role: str) -> QColor:
     surf = theme.get("surface1", "#45475a")
     own = theme.get(f"{role}_text")
     return QColor(readable(own or theme_color(role).name(), surf))
+
+
+# ---------------------------------------------------------------- светлый вариант темы
+_LIGHT_LEVELS = {"base": .965, "mantle": .935, "crust": .895,
+                 "surface0": .915, "surface1": .87, "surface2": .80}
+
+
+def light_variant(theme: dict) -> dict:
+    """Светлая палитра из тёмной палитры персонажа: тот же оттенок фона (чуть тонированный),
+    тёмный текст, акцент и статусы того же оттенка, но затемнённые до читаемого контраста.
+    Порядок «глубины» ролей сохранён: mantle/crust темнее base, как в тёмной теме."""
+    base = QColor(theme["base"])
+    hue = max(base.hslHueF(), 0.0)
+    tint = min(base.hslSaturationF(), .35)
+    out = {k: QColor.fromHslF(hue, tint, lvl).name() for k, lvl in _LIGHT_LEVELS.items()}
+    out["text"] = QColor.fromHslF(hue, min(tint, .25), .14).name()
+    out["subtext"] = QColor.fromHslF(hue, min(tint, .20), .36).name()
+    for key in ("accent", "accent2", "green", "red", "yellow"):
+        if key in theme:
+            out[key] = readable(theme[key], out["base"], 3.2)
+    return out
+
+
+def system_prefers_dark() -> bool | None:
+    """Тёмная ли схема у KDE (фон окон в ~/.config/kdeglobals). None — не KDE или не узнать."""
+    path = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "kdeglobals"
+    try:
+        section = ""
+        for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+            line = line.strip()
+            if line.startswith("["):
+                section = line
+            elif section == "[Colors:Window]" and line.startswith("BackgroundNormal="):
+                r, g, b = (int(x) for x in line.split("=", 1)[1].split(",")[:3])
+                return QColor(r, g, b).lightnessF() < .5
+    except (OSError, ValueError):
+        pass
+    return None
+
+
+class SystemSchemeWatcher:
+    """Следит за сменой светлой/тёмной схемы KDE (днём/вечером) и зовёт callback(prefers_dark)."""
+
+    def __init__(self, callback: Callable[[bool | None], object]):
+        from PyQt6.QtCore import QFileSystemWatcher, QTimer
+        self.callback = callback
+        self.path = str(Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "kdeglobals")
+        self.state = system_prefers_dark()
+        self.watcher = QFileSystemWatcher()
+        self.watcher.addPath(os.path.dirname(self.path))   # KDE пишет файл заново — следим и за папкой
+        if os.path.exists(self.path):
+            self.watcher.addPath(self.path)
+        self.timer = QTimer(singleShot=True, interval=300)
+        self.timer.timeout.connect(self._check)
+        self.watcher.fileChanged.connect(lambda *_: self.timer.start())
+        self.watcher.directoryChanged.connect(lambda *_: self.timer.start())
+
+    def _check(self) -> None:
+        if os.path.exists(self.path) and self.path not in self.watcher.files():
+            self.watcher.addPath(self.path)
+        state = system_prefers_dark()
+        if state != self.state:
+            self.state = state
+            try:
+                self.callback(state)
+            except Exception as e:  # noqa: BLE001 — слот Qt: исключение уронит PyQt6
+                print(f"[equestria_kit] scheme watcher: {e}")
 
 
 class ThemeManager:
