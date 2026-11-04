@@ -35,7 +35,13 @@ def show_launching(btn: QPushButton, ms: int = 8000) -> None:
     def restore():
         btn.setText(text)
         btn.setEnabled(enabled)
-    QTimer.singleShot(ms, btn, restore)
+    # таймер-потомок кнопки: если карточку пересоздали раньше, таймер умрёт вместе с ней
+    # (в PyQt6 нет перегрузки singleShot(msec, context, slot))
+    timer = QTimer(btn)
+    timer.setSingleShot(True)
+    timer.timeout.connect(restore)
+    timer.timeout.connect(timer.deleteLater)
+    timer.start(ms)
 
 
 def card_frame(name: str = "card"):
