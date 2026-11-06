@@ -132,7 +132,6 @@ Graphics drivers are set up automatically, on both fresh installs and live syste
 ## 🌐 Community
 
 * **[Official site](https://psyche-games.com/equestria-os.php)** — screenshots, feature overview, and news.
-* **[Equestria Net](https://equestria-net.psyche-games.com)** — the project's own social network, linked right from the Welcome Hub app that ships with the OS.
 * **[GitHub Issues](https://github.com/Lucia7Lunadottir/equestria-os-packages/issues)** — bug reports, driver quirks on your specific hardware, and feature requests all go here, on this repository.
 * **Pull Requests** — welcome, see [Contributing](#-contributing) below for where to start.
 * The in-OS **Welcome Hub** also links out to the wider brony community (fan music channels, r/mylittlepony, fan games) for anyone new to the fandom side of things, not just the Linux side.
