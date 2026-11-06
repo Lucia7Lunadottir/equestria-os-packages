@@ -1,6 +1,6 @@
 pkgname=equestria-installer
-pkgver=2.0.0
-pkgrel=3
+pkgver=2.0.1
+pkgrel=1
 pkgdesc="Graphical local package installer for Equestria OS: pacman, DEB, RPM and Flatpak packages, with updates for DEB/RPM apps"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"

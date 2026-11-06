@@ -40,6 +40,47 @@ def format_size(n) -> str:
         value /= 1024
 
 
+def run_logged_process(parent, command, args, log, finished, *, stdout=None):
+    process = QProcess(parent)
+
+    def stream_reader(read, write):
+        pending = b""
+
+        def drain(final=False):
+            nonlocal pending
+            # A QProcess read can split a UTF-8 character or a PLAN_JSON line.
+            lines = (pending + read().data()).splitlines(keepends=True)
+            pending = b""
+            if lines and not final and not lines[-1].endswith((b"\r", b"\n")):
+                pending = lines.pop()
+            for line in lines:
+                text = line.decode("utf-8", errors="replace").rstrip("\r\n")
+                if text:
+                    write(text)
+
+        return drain
+
+    read_stdout = stream_reader(process.readAllStandardOutput, stdout or log)
+    read_stderr = stream_reader(process.readAllStandardError, lambda text: log(text, "red"))
+
+    def complete(code, status):
+        read_stdout(final=True)
+        read_stderr(final=True)
+        process.deleteLater()
+        finished(code, status)
+
+    def on_error(error):
+        if error == QProcess.ProcessError.FailedToStart:
+            log(process.errorString(), "red")
+            complete(-1, QProcess.ExitStatus.CrashExit)
+
+    process.readyReadStandardOutput.connect(read_stdout)
+    process.readyReadStandardError.connect(read_stderr)
+    process.finished.connect(complete)
+    process.errorOccurred.connect(on_error)
+    process.start(command, args)
+
+
 class WelcomePage(QWizardPage):
     """Что сделать: установить программу из файла или обновить/удалить уже установленную."""
 
@@ -186,7 +227,7 @@ class InstallPage(QWizardPage):
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
         layout.addWidget(self.log_output)
-        self.process = None
+        self._done = False
         self.succeeded = False
 
     @property
@@ -200,7 +241,10 @@ class InstallPage(QWizardPage):
         self.log_output.append(colored(text, role) if role else text)
 
     def initializePage(self):
-        for b in (QWizard.WizardButton.BackButton, QWizard.WizardButton.NextButton, QWizard.WizardButton.CancelButton):
+        self._done = False
+        self.succeeded = False
+        self.completeChanged.emit()
+        for b in (QWizard.WizardButton.BackButton, QWizard.WizardButton.CancelButton):
             self.wizard().button(b).setEnabled(False)
         self.log_output.clear()
         self.log(tr("Подготовка к установке: {}", self.path) + "\n")
@@ -211,40 +255,43 @@ class InstallPage(QWizardPage):
         else:
             self.start_installation()
 
-    def run_dependency_plan(self, retried_after_sync=False):
-        self._plan_output = ""
-        self._plan_process = QProcess(self)
-        self._plan_process.readyReadStandardOutput.connect(self._on_plan_stdout)
-        self._plan_process.readyReadStandardError.connect(
-            lambda: self.log(self._plan_process.readAllStandardError().data().decode().strip(), "red"))
-        self._plan_process.finished.connect(lambda *_: self._on_plan_finished(retried_after_sync))
-        self._plan_process.start(sys.executable, [BRIDGE, "plan", self.path])
+    def isComplete(self):
+        return self._done
 
-    def _on_plan_stdout(self):
-        data = self._plan_process.readAllStandardOutput().data().decode()
-        self._plan_output += data
-        for line in data.splitlines():
-            if not line.startswith("PLAN_JSON:"):
-                self.log(line.strip())
+    def validatePage(self):
+        return self.isComplete()
+
+    def run_dependency_plan(self, retried_after_sync=False):
+        self._plan_json = None
+        run_logged_process(
+            self, sys.executable, [BRIDGE, "plan", self.path], self.log,
+            lambda *_: self._on_plan_finished(retried_after_sync), stdout=self._on_plan_stdout,
+        )
+
+    def _on_plan_stdout(self, line):
+        if line.startswith("PLAN_JSON:"):
+            if self._plan_json is None:
+                self._plan_json = line[len("PLAN_JSON:"):]
+        else:
+            self.log(line)
 
     def _on_plan_finished(self, retried_after_sync):
         plan = None
-        for line in self._plan_output.splitlines():
-            if line.startswith("PLAN_JSON:"):
-                try:
-                    plan = json.loads(line[len("PLAN_JSON:"):])
-                except ValueError:
-                    plan = None
-                break
+        if self._plan_json is not None:
+            try:
+                plan = json.loads(self._plan_json)
+            except ValueError:
+                pass
         if plan is None:
             self.log(tr("Не удалось проверить зависимости — установка без них."), "red")
             self.start_installation()
             return
         if plan.get("file_db_stale") and not retried_after_sync:
             self.log(tr("Синхронизация базы зависимостей (нужен пароль администратора)…"))
-            self._sync_process = QProcess(self)
-            self._sync_process.finished.connect(lambda *_: self.run_dependency_plan(retried_after_sync=True))
-            self._sync_process.start("pkexec", [sys.executable, BRIDGE, "sync-file-db"])
+            run_logged_process(
+                self, "pkexec", [sys.executable, BRIDGE, "sync-file-db"], self.log,
+                lambda *_: self.run_dependency_plan(retried_after_sync=True),
+            )
             return
         if plan.get("missing") or plan.get("unresolved"):
             dialog = DependencyConfirmDialog(plan, self.wizard())
@@ -252,7 +299,7 @@ class InstallPage(QWizardPage):
                 self.start_installation(dialog.approved_packages())
             else:
                 self.log(tr("Установка отменена."), "red")
-                self.process_finished(1, QProcess.ExitStatus.NormalExit)
+                self._mark_done()
             return
         self.start_installation()
 
@@ -274,23 +321,21 @@ class InstallPage(QWizardPage):
             command, args = "pkexec", [sys.executable, BRIDGE, "install", self.path]
             if approved_deps:
                 args.append(",".join(approved_deps))
-        self.process = QProcess(self)
-        self.process.readyReadStandardOutput.connect(
-            lambda: self.log(self.process.readAllStandardOutput().data().decode().strip()))
-        self.process.readyReadStandardError.connect(
-            lambda: self.log(self.process.readAllStandardError().data().decode().strip(), "red"))
-        self.process.finished.connect(self.process_finished)
-        self.process.start(command, args)
+        run_logged_process(self, command, args, self.log, self.process_finished)
 
-    def process_finished(self, exit_code, _status):
-        self.succeeded = exit_code == 0
+    def process_finished(self, exit_code, status):
+        self.succeeded = status == QProcess.ExitStatus.NormalExit and exit_code == 0
         if self.succeeded:
             self.log("\n" + tr("Установка успешно завершена!"), "green")
             if self.path.endswith(FOREIGN_EXT):
                 self._refresh_app_menu()
         else:
             self.log("\n" + tr("Ошибка установки. Код: {}", exit_code), "red")
-        self.wizard().button(QWizard.WizardButton.NextButton).setEnabled(True)
+        self._mark_done()
+
+    def _mark_done(self):
+        self._done = True
+        self.completeChanged.emit()
 
     @staticmethod
     def _refresh_app_menu():
@@ -488,20 +533,20 @@ class RemovePage(QWizardPage):
         self.log_output.clear()
         for b in (QWizard.WizardButton.BackButton, QWizard.WizardButton.CancelButton):
             self.wizard().button(b).setEnabled(False)
-        self.proc = QProcess(self)
-        self.proc.readyReadStandardOutput.connect(
-            lambda: self.log_output.append(self.proc.readAllStandardOutput().data().decode().strip()))
-        self.proc.readyReadStandardError.connect(
-            lambda: self.log_output.append(colored(self.proc.readAllStandardError().data().decode().strip(), "red")))
-        self.proc.finished.connect(self._finished)
-        self.proc.start("pkexec", [sys.executable, BRIDGE, "uninstall", app.manifest])
+        run_logged_process(
+            self, "pkexec", [sys.executable, BRIDGE, "uninstall", app.manifest], self.log, self._finished,
+        )
 
-    def _finished(self, code, _status):
+    def log(self, text: str, role: str | None = None):
+        self.log_output.append(colored(text, role) if role else text)
+
+    def _finished(self, code, status):
         name = self.wizard().selected_app.name
-        self.log_output.append("\n" + (colored(tr("Удалено: {}", name), "green") if code == 0
-                                       else colored(tr("Не удалось удалить."), "red")))
-        if code == 0:
+        if status == QProcess.ExitStatus.NormalExit and code == 0:
+            self.log("\n" + tr("Удалено: {}", name), "green")
             InstallPage._refresh_app_menu()
+        else:
+            self.log("\n" + tr("Не удалось удалить."), "red")
         self._done = True
         self.completeChanged.emit()
 
