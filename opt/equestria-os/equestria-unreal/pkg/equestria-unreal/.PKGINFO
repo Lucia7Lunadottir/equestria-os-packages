@@ -3,10 +3,10 @@
 pkgname = equestria-unreal
 pkgbase = equestria-unreal
 xdata = pkgtype=pkg
-pkgver = 1.0-7
+pkgver = 1.1-7
 pkgdesc = Unreal Engine launcher: engines, projects, Epic store builds, Fab plugin (PyQt6)
 url = https://github.com/Lucia7Lunadottir
-builddate = 1793808261
+builddate = 1794008780
 packager = Lucia Lokidottir <bordiyan20035@gmail.com>
 size = 371162
 arch = any
