@@ -1,0 +1,21 @@
+{
+ "_language_name": "Polski",
+ "title": "Equestria OS: masowa zmiana nazw",
+ "dir_label": "Katalog docelowy",
+ "filter": "Filtr (tylko pliki zawierające)",
+ "find": "Szukany tekst",
+ "replace": "Zamień na",
+ "prefix": "Dodaj przedrostek",
+ "suffix": "Dodaj przyrostek",
+ "numbers": "Numeracja (od)",
+ "preview": "Podgląd",
+ "apply": "Zmień nazwy wszystkich",
+ "browse": "Przeglądaj",
+ "success": "Pomyślnie zmieniono nazwy {n} plików!",
+ "undo": "Cofnij",
+ "history": "Historia",
+ "undo_ok": "Przywrócono {n} plików.",
+ "undo_empty": "Nie ma czego cofać.",
+ "hist_title": "Historia zmian nazw",
+ "hist_empty": "Historia jest pusta."
+}

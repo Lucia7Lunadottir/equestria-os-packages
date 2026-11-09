@@ -24,7 +24,7 @@ if HAVE_WEB:
 
         def createWindow(self, _type):
             dlg = QDialog(QApplication.activeWindow())
-            dlg.setWindowTitle(tr("Вход"))
+            dlg.setWindowTitle(tr("webengine.sign"))
             dlg.resize(520, 720)
             lay = QVBoxLayout(dlg)
             lay.setContentsMargins(0, 0, 0, 0)

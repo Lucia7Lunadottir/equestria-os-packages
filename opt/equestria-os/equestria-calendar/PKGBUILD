@@ -1,18 +1,24 @@
 # Maintainer: Equestria OS
 pkgname=equestria-calendar
 pkgver=1.0
-pkgrel=4
+pkgrel=8
 pkgdesc="Календарь с фазами луны и напоминаниями (PyQt6)"
 arch=('any')
 license=('custom')
-depends=('python-pyqt6' 'equestria-qt-kit>=1.1' 'qt6-multimedia')
-source=("equestria_calendar.py" "equestria-calendar.desktop" "i18n.json")
-sha256sums=('625a8a0ec20501bcffa3471567ae660374312c923659a987c04d432cada82e1a'
-            '067aaf0f69eed52a309d18b7a4f385bd1a31ea642882262b6caaea2ab0ecd169'
-            'b84b63d2646f6ab2458c2505a012607559a836fe3598a2fd88a22a452f94dfb4')
+depends=('python-pyqt6' 'equestria-qt-kit>=1.3-2' 'qt6-multimedia')
+source=("equestria_calendar.py" "equestria-calendar.desktop")
+sha256sums=('c23be8f80fc221771062ef6abb844e4f5b976376c5792d5282b2bc0fae6f7f83' '067aaf0f69eed52a309d18b7a4f385bd1a31ea642882262b6caaea2ab0ecd169')
 
 package() {
-    install -Dm755 "$srcdir/equestria_calendar.py" "$pkgdir/usr/bin/equestria-calendar"
+    local libdir="$pkgdir/usr/lib/equestria-calendar"
+    install -Dm755 "$srcdir/equestria_calendar.py" "$libdir/equestria_calendar.py"
+    for f in "$startdir"/equestria_calendar_app/*.py; do
+        install -Dm644 "$f" "$libdir/equestria_calendar_app/$(basename "$f")"
+    done
+    install -d "$pkgdir/usr/bin"
+    ln -s /usr/lib/equestria-calendar/equestria_calendar.py "$pkgdir/usr/bin/equestria-calendar"
     install -Dm644 "$srcdir/equestria-calendar.desktop" "$pkgdir/usr/share/applications/equestria-calendar.desktop"
-    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-calendar/i18n.json"
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$pkgdir/usr/share/equestria-calendar/locales/$(basename "$f")"
+    done
 }

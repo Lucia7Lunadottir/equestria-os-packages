@@ -1,16 +1,32 @@
 # Maintainer: Equestria OS
+# Собирать из папки, где рядом лежат PKGBUILD, equestria_audio_converter.py,
+# .desktop и папки locales/, audio_converter/
 pkgname=equestria-audio-converter
-pkgver=1.0
+pkgver=1.2.0
 pkgrel=2
 pkgdesc="Convert audio and make videos from audio (PyQt6)"
 arch=('any')
 license=('custom')
 depends=('python-pyqt6' 'equestria-qt-kit>=1.1' 'ffmpeg')
-source=("equestria_audio_converter.py" "equestria-audio-converter.desktop" "i18n.json")
-sha256sums=('SKIP' 'SKIP' 'SKIP')
+source=("equestria_audio_converter.py" "equestria-audio-converter.desktop")
+sha256sums=('SKIP' 'SKIP')
 
 package() {
-    install -Dm755 "$srcdir/equestria_audio_converter.py" "$pkgdir/usr/bin/equestria-audio-converter"
+    local libdir="$pkgdir/usr/lib/equestria-audio-converter"
+
+    # запускающий файл и пакет лежат рядом: Python сам находит audio_converter
+    install -Dm755 "$srcdir/equestria_audio_converter.py" "$libdir/equestria_audio_converter.py"
+    for f in "$startdir"/audio_converter/*.py; do
+        install -Dm644 "$f" "$libdir/audio_converter/$(basename "$f")"
+    done
+
+    # команда equestria-audio-converter
+    install -d "$pkgdir/usr/bin"
+    ln -s /usr/lib/equestria-audio-converter/equestria_audio_converter.py \
+        "$pkgdir/usr/bin/equestria-audio-converter"
+
     install -Dm644 "$srcdir/equestria-audio-converter.desktop" "$pkgdir/usr/share/applications/equestria-audio-converter.desktop"
-    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-audio-converter/i18n.json"
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$pkgdir/usr/share/equestria-audio-converter/locales/$(basename "$f")"
+    done
 }

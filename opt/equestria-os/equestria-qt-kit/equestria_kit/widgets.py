@@ -6,6 +6,8 @@
 """
 from __future__ import annotations
 
+from . import live_i18n
+
 import copy
 import json
 from pathlib import Path
@@ -18,12 +20,12 @@ from PyQt6.QtWidgets import (QFrame, QHBoxLayout, QLabel, QLayout, QPushButton,
 
 def small_btn(text: str, checkable: bool = False, tip: str = "") -> QPushButton:
     """Маленькая кнопка панели инструментов (#small), не забирает фокус."""
-    b = QPushButton(text)
+    b = live_i18n.call(QPushButton, text)
     b.setObjectName("small")
     b.setCheckable(checkable)
     b.setFocusPolicy(Qt.FocusPolicy.NoFocus)
     if tip:
-        b.setToolTip(tip)
+        live_i18n.call(b.setToolTip, tip)
     return b
 
 
@@ -38,7 +40,7 @@ def card(title: str = "", *items, header: QWidget | None = None, upper: bool = F
     v.setSpacing(spacing)
     if title or header is not None:
         top = QHBoxLayout()
-        t = QLabel(title.upper() if upper else title)
+        t = live_i18n.call(QLabel, title.upper() if upper else title)
         t.setObjectName("h2")
         top.addWidget(t)
         top.addStretch()

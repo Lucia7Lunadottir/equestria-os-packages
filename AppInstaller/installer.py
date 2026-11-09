@@ -25,8 +25,7 @@ from PyQt6.QtCore import QLibraryInfo, QLocale, QTranslator
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QMessageBox
 
-from ui_common import QSS, kit_qt, tr
-from equestria_kit.i18n import detect_language
+from ui_common import QSS, kit_qt, tr, catalog
 
 
 def package_from_args(argv: list[str]) -> str:
@@ -45,7 +44,7 @@ def install_excepthook():
         text = "".join(traceback.format_exception(exc_type, exc, tb))
         sys.stderr.write(text)
         if QApplication.instance():
-            QMessageBox.critical(None, tr("Установщик Equestria OS"), text[-1500:])
+            QMessageBox.critical(None, tr("common.equestria_os_installer"), text[-1500:])
     sys.excepthook = hook
 
 
@@ -63,9 +62,7 @@ def main():
         icon = QIcon(os.path.join(os.path.dirname(os.path.realpath(__file__)), "Installer.svg"))
     app.setWindowIcon(icon)
     # стандартные кнопки Qt (Далее/Назад/Отмена) — на языке интерфейса
-    qt_tr = QTranslator(app)
-    if qt_tr.load(QLocale(detect_language()), "qtbase", "_", QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):
-        app.installTranslator(qt_tr)
+    catalog.set_language(catalog.lang, persist=False)
     kit_qt.ThemeManager(app, QSS)   # общая тема Equestria: следит за переключателем персонажей
 
     from install_wizard import InstallWizard

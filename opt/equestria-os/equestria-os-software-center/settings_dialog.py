@@ -17,7 +17,10 @@ try:
 except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
-from equestria_kit import qt as kit_qt
+from equestria_kit import live_i18n, qt as kit_qt
+
+# Language names come from each locales/<code>.json (_language_name), not from a list in code
+_LANG_CATALOG = live_i18n.Catalog("equestria-os-software-center", __file__)
 
 # All code comments inside the script are written in English as requested
 
@@ -140,7 +143,7 @@ class SettingsDialog(QDialog):
         self.combo_lang.addItem(self.t("settings.lang_auto"), "")
         
         for lang in self.available_langs:
-            self.combo_lang.addItem(lang.upper(), lang)
+            self.combo_lang.addItem(_LANG_CATALOG.language_name(lang), lang)
         
         current_lang = self.settings.get("language", "")
         idx = self.combo_lang.findData(current_lang)

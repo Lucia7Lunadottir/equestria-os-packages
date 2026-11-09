@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from equestria_kit import live_i18n
+
 from PyQt6.QtCore import QObject, Qt
 from PyQt6.QtGui import QAction, QColor, QFont, QIcon, QPainter, QPixmap
 from PyQt6.QtWidgets import QMenu, QMessageBox, QSystemTrayIcon
@@ -26,7 +28,7 @@ def app_icon() -> QIcon:
     p.drawEllipse(2, 2, 60, 60)
     p.setPen(QColor("white"))
     p.setFont(QFont("sans-serif", 30, QFont.Weight.Bold))
-    p.drawText(pm.rect(), Qt.AlignmentFlag.AlignCenter, "U")
+    live_i18n.call(p.drawText, pm.rect(), Qt.AlignmentFlag.AlignCenter, "U")
     p.end()
     return QIcon(pm)
 
@@ -59,14 +61,14 @@ class LauncherTray(QObject):
         self.deleteLater()
 
     def update_tooltip(self, status: str = "") -> None:
-        self.icon.setToolTip("Equestria · Unreal Launcher" + (f"\n{status}" if status else ""))
+        live_i18n.call(self.icon.setToolTip, "Equestria · Unreal Launcher" + (f"\n{status}" if status else ""))
 
     def hidden_hint(self) -> None:
         """Подсказка при первом сворачивании в трей за сеанс."""
         if not self._hint_shown:
             self._hint_shown = True
-            self.icon.showMessage(tr("Unreal Launcher продолжает работать"),
-                                  tr("Загрузки и сборка идут дальше. Значок в трее — открыть окно или выйти."))
+            self.icon.showMessage(tr("tray.unreal_launcher_keeps_running"),
+                                  tr("tray.downloads_builds_keep_going_use"))
 
     # --- меню
     def _activated(self, reason) -> None:
@@ -75,38 +77,38 @@ class LauncherTray(QObject):
 
     def _fill(self) -> None:
         self.menu.clear()
-        show = QAction(tr("Показать лаунчер"), self.menu)
+        show = live_i18n.call(QAction, tr("tray.show_launcher"), self.menu)
         show.triggered.connect(self.win.show_window)
-        self.menu.addAction(show)
+        live_i18n.call(self.menu.addAction, show)
         self.menu.addSeparator()
         recent = self.win.projects[:RECENT]
         if recent:
-            title = QAction(tr("Последние проекты"), self.menu)
+            title = live_i18n.call(QAction, tr("tray.recent_projects"), self.menu)
             title.setEnabled(False)
-            self.menu.addAction(title)
+            live_i18n.call(self.menu.addAction, title)
             for pr in recent:
-                act = QAction(pr.name, self.menu)
+                act = live_i18n.call(QAction, pr.name, self.menu)
                 act.triggered.connect(lambda _=False, p=pr: self._launch(p))
-                self.menu.addAction(act)
+                live_i18n.call(self.menu.addAction, act)
             self.menu.addSeparator()
-        quit_ = QAction(tr("Выйти"), self.menu)
+        quit_ = live_i18n.call(QAction, tr("tray.quit"), self.menu)
         quit_.triggered.connect(self.win.quit_app)
-        self.menu.addAction(quit_)
+        live_i18n.call(self.menu.addAction, quit_)
 
     def _launch(self, pr) -> None:
         built = sorted((e for e in self.win.engines if e.built), key=lambda e: e.version, reverse=True)
         eng = resolve_engine(pr, self.win.engines) or (built[0] if built else None)
         if not eng:
             self.win.show_window()
-            QMessageBox.information(self.win, tr("Нет движка"), tr("Сначала установите Unreal Engine на вкладке «Каталог»."))
+            QMessageBox.information(self.win, tr("common.no_engine"), tr("common.install_unreal_engine_catalog_tab"))
             return
         if RunningEditors.is_open(pr.path):
             self.win.show_window()
-            QMessageBox.information(self.win, tr("Проект уже открыт"), already_open_message(pr.path))
+            QMessageBox.information(self.win, tr("common.project_already_open"), already_open_message(pr.path))
             return
         if not confirm_launch(self.win):
             return
         err = launch_editor(self.win.cfg, eng, pr.path)
         if err:
             self.win.show_window()
-            QMessageBox.warning(self.win, tr("Не удалось запустить"), err)
+            QMessageBox.warning(self.win, tr("common.could_not_launch"), err)

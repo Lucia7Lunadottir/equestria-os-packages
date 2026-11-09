@@ -3,15 +3,20 @@
 Единые цветовые темы Equestria OS для всех PyQt6-приложений.
 
 Откуда берутся темы (по порядку, поздние перекрывают ранние):
-  1. встроенные — словарь BUILTIN ниже;
-  2. системные  — /usr/share/equestria-os/themes/*.json;
-  3. свои       — ~/.config/equestria-os/themes/*.json.
+  1. запасная   — Catppuccin Mocha (основа для недостающих цветов);
+  2. персонажи  — characters.json переключателя «Тема персонажа» (и свои персонажи);
+  3. системные  — /usr/share/equestria-os/themes/*.json;
+  4. свои       — ~/.config/equestria-os/themes/*.json.
+Списка персонажей в коде нет: новый персонаж в characters.json сразу становится темой.
 
 Формат файла темы (недостающие цвета берутся из Catppuccin Mocha):
     {"name": "Моя тема", "colors": {"base": "#101010", "accent": "#ffcc00", ...}}
 
-Выбранная тема общая для всех приложений: ~/.config/equestria-os/theme.json.
-Если поменять тему в одном приложении, остальные запущенные подхватят её сами.
+Выбор темы:
+  • «Как в системе» (SYSTEM, по умолчанию) — персонаж, выбранный в переключателе;
+    приложение перекрашивается вслед за ним;
+  • конкретная тема — только для этого приложения
+    (~/.config/equestria-os/app-themes/<приложение>.json); общий выбор она не меняет.
 """
 from __future__ import annotations
 
@@ -33,17 +38,11 @@ KEYS = ("base", "mantle", "crust", "surface0", "surface1", "surface2",
 
 DEFAULT_THEME = "Catppuccin Mocha"
 
-_BUILTIN_RAW = {
-    "Catppuccin Mocha": "#1e1e2e #181825 #11111b #313244 #45475a #585b70 #cdd6f4 #a6adc8 #cba6f7 #a6e3a1 #f38ba8 #f9e2af",
-    "Twilight Sparkle": "#1d1830 #17122a #110d20 #2d2548 #40356a #55478a #ece6ff #b7a9e0 #e86bc0 #8fe3b0 #ff7a90 #ffd979",
-    "Rainbow Dash": "#161f2e #111926 #0b111b #23314a #334768 #476089 #e6f4ff #9fbcd9 #4fc3f7 #7ee08f #ff5d73 #ffd54f",
-    "Pinkie Pie": "#2a1624 #22101c #190b14 #3d2236 #573250 #74446c #ffe8f4 #e0a9c9 #ff6fb5 #8fe3b0 #ff7a8a #ffd979",
-    "Applejack": "#2a1f14 #21180f #171009 #3e2f20 #58442d #755a3b #fff0dc #d9b992 #f7a239 #9bd36b #ef5b4c #ffd966",
-    "Rarity": "#1c1a2e #161425 #0f0e1b #2b2845 #3d3962 #524d82 #f1ecff #b9b2e0 #b99cff #8fe3c0 #ff7fa5 #f5e6a8",
-    "Fluttershy": "#1d2a25 #17221e #101a16 #2c3f38 #3e564d #547163 #f3fff4 #a9cdb8 #f4a9cb #a6e3a1 #ff8a9e #fbe58a",
-    # Красно-жёлтая (не оранжевая!): красный фон + жёлтый акцент, как грива Сансет.
-    "Sunset Shimmer": "#2b1517 #221012 #190b0c #42201f #5e2e2b #7d423b #fff1d6 #e8c08a #ffcc33 #a3d977 #ff4f5e #ffe066",
-}
+SYSTEM = ""   # выбор «Как в системе»: тема персонажа из переключателя
+
+# Единственная тема в коде — нейтральная запасная (и основа недостающих цветов).
+# Темы персонажей берутся только из characters.json.
+_FALLBACK_RAW = "#1e1e2e #181825 #11111b #313244 #45475a #585b70 #cdd6f4 #a6adc8 #cba6f7 #a6e3a1 #f38ba8 #f9e2af"
 
 
 @dataclass(frozen=True)
@@ -73,8 +72,7 @@ class ThemeSource(Protocol):
 
 class BuiltinThemes:
     def load(self, fallback: Theme) -> Iterable[Theme]:
-        for name, raw in _BUILTIN_RAW.items():
-            yield Theme(name, dict(zip(KEYS, raw.split())))
+        yield fallback
 
 
 class JsonDirThemes:
@@ -320,14 +318,10 @@ class ThemeRegistry:
         self.reload()
 
     def reload(self) -> None:
-        fallback = Theme(DEFAULT_THEME, dict(zip(KEYS, _BUILTIN_RAW[DEFAULT_THEME].split())))
+        fallback = Theme(DEFAULT_THEME, dict(zip(KEYS, _FALLBACK_RAW.split())))
         found: dict = {}
         for src in self.sources:
-            themes = list(src.load(fallback))
-            if isinstance(src, CharacterThemes) and themes:
-                # есть настоящие персонажи → встроенные заглушки персонажей не нужны
-                found = {n: c for n, c in found.items() if n == DEFAULT_THEME}
-            for theme in themes:
+            for theme in src.load(fallback):
                 found[theme.name] = theme.colors
         self.palettes.clear()
         self.palettes.update(found)
@@ -336,47 +330,88 @@ class ThemeRegistry:
         return name if name in self.palettes else DEFAULT_THEME
 
 
-class SharedThemeChoice:
-    """Какая тема выбрана — одна на все приложения."""
+class SystemTheme:
+    """Тема «Как в системе» — персонаж, выбранный в переключателе тем.
+    Старые версии библиотеки писали общий theme.json из меню приложений; он
+    только читается и только если персонаж не выбран (переключатель не запускали)."""
 
-    def __init__(self, path: Path | None = None):
-        self.path = path or config_dir() / "theme.json"
+    def __init__(self, characters: "CharacterThemes", legacy_path: Path | None = None):
+        self.characters = characters
+        self.legacy_path = legacy_path or config_dir() / "theme.json"
 
-    def load(self, default: str = DEFAULT_THEME) -> str:
-        """Тема из переключателя персонажей, если её выбрали позже, чем тему в
-        меню какого-нибудь приложения; иначе — из theme.json."""
-        own, own_time = default, 0.0
+    def name(self) -> str:
+        active = self.characters.active_name()
+        if active:
+            return active
         try:
-            name = json.loads(self.path.read_text(encoding="utf-8")).get("theme")
+            name = json.loads(self.legacy_path.read_text(encoding="utf-8")).get("theme")
             if isinstance(name, str) and name:
-                own, own_time = name, self.path.stat().st_mtime
+                return name
         except (OSError, ValueError, AttributeError):
             pass
-        if CHARACTERS.changed_at() > own_time:
-            return CHARACTERS.active_name() or own
-        return own
+        return DEFAULT_THEME
 
-    def save(self, name: str) -> None:
-        if self.load("") == name and self.path.exists():
+
+class AppThemeChoice:
+    """Тема одного приложения: SYSTEM («Как в системе») или имя темы.
+    Файл свой у каждого приложения, поэтому выбор в одном не трогает остальные.
+    Имя приложения — QApplication.applicationName() (его ставят все приложения)."""
+
+    def __init__(self, folder: Path | None = None, app_key: str | None = None):
+        self.folder = folder or config_dir() / "app-themes"
+        self._app_key = app_key
+
+    @property
+    def app_key(self) -> str:
+        if self._app_key:
+            return self._app_key
+        name = ""
+        try:
+            from PyQt6.QtCore import QCoreApplication
+            name = QCoreApplication.applicationName()
+        except ImportError:
+            pass
+        if not name or name.startswith("python"):
+            import sys
+            name = Path(sys.argv[0]).stem if sys.argv and sys.argv[0] else "app"
+        return "".join(ch if ch.isalnum() else "-" for ch in name.strip().lower()).strip("-") or "app"
+
+    @property
+    def path(self) -> Path:
+        return self.folder / f"{self.app_key}.json"
+
+    def load(self) -> str:
+        try:
+            name = json.loads(self.path.read_text(encoding="utf-8")).get("theme")
+            return name if isinstance(name, str) else SYSTEM
+        except (OSError, ValueError, AttributeError):
+            return SYSTEM
+
+    def save(self, choice: str) -> None:
+        if self.load() == choice:
             return
         try:
-            self.path.parent.mkdir(parents=True, exist_ok=True)
+            if choice == SYSTEM:
+                self.path.unlink(missing_ok=True)
+                return
+            self.folder.mkdir(parents=True, exist_ok=True)
             tmp = self.path.with_suffix(".tmp")
-            tmp.write_text(json.dumps({"theme": name}, ensure_ascii=False), encoding="utf-8")
+            tmp.write_text(json.dumps({"theme": choice}, ensure_ascii=False), encoding="utf-8")
             tmp.replace(self.path)
         except OSError:
             pass
 
 
 class ThemeFollower:
-    """Следит за общим выбором темы и зовёт apply(name), когда его поменяли
-    в другом приложении. current() — какая тема сейчас в этом окне."""
+    """Следит за переключателем персонажей и файлами тем и зовёт apply(name),
+    когда тема этого приложения должна смениться. wanted() — какая тема нужна
+    (с учётом выбора приложения), current() — какая сейчас в окне."""
 
-    def __init__(self, choice: SharedThemeChoice, registry: ThemeRegistry,
+    def __init__(self, wanted: Callable[[], str], registry: ThemeRegistry,
                  apply: Callable[[str], object], current: Callable[[], str]):
         from PyQt6.QtCore import QFileSystemWatcher, QTimer
-        self.choice, self.registry, self.apply, self.current = choice, registry, apply, current
-        folder = choice.path.parent
+        self.wanted, self.registry, self.apply, self.current = wanted, registry, apply, current
+        folder = config_dir()
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "themes").mkdir(exist_ok=True)
         paths = [str(folder), str(folder / "themes")]
@@ -394,8 +429,7 @@ class ThemeFollower:
         персонажей перезаписывает state.json на месте — за ним следим отдельно.
         После атомарной замены файла Qt его «теряет», поэтому зовётся повторно."""
         watched = set(self.watcher.files())
-        for f in (CHARACTERS.user_dir / "state.json", CHARACTERS.user_dir / "characters.json",
-                  self.choice.path):
+        for f in (CHARACTERS.user_dir / "state.json", CHARACTERS.user_dir / "characters.json"):
             if f.is_file() and str(f) not in watched:
                 self.watcher.addPath(str(f))
 
@@ -409,7 +443,7 @@ class ThemeFollower:
                     fn()
                 except Exception as e:  # noqa: BLE001 — слот Qt
                     print(f"[equestria_kit] themes list listener: {e}")
-        name = self.registry.resolve(self.choice.load())
+        name = self.wanted()
         if name != self.current():
             self.apply(name)
 
@@ -417,7 +451,8 @@ class ThemeFollower:
 # ── простой интерфейс для приложений ──────────────────────────────────────
 CHARACTERS = CharacterThemes()
 _registry = ThemeRegistry()
-_choice = SharedThemeChoice()
+_system = SystemTheme(CHARACTERS)
+_app_choice = AppThemeChoice()
 _followers: list = []
 
 THEMES: dict = _registry.palettes
@@ -427,14 +462,25 @@ def registry() -> ThemeRegistry:
     return _registry
 
 
+def system_name() -> str:
+    """Тема «Как в системе» (персонаж из переключателя)."""
+    return _registry.resolve(_system.name())
+
+
+def choice() -> str:
+    """Выбор этого приложения: SYSTEM или имя темы."""
+    return _app_choice.load()
+
+
 def current_name() -> str:
-    """Общая тема (если в файле неизвестное имя — Catppuccin Mocha)."""
-    return _registry.resolve(_choice.load())
+    """Тема этого приложения: своя, если выбрана и существует, иначе «Как в системе»."""
+    own = choice()
+    return own if own != SYSTEM and own in _registry.palettes else system_name()
 
 
 def remember(name: str) -> None:
-    """Сохранить выбор для всех приложений."""
-    _choice.save(_registry.resolve(name))
+    """Запомнить выбор только для этого приложения (SYSTEM — «Как в системе»)."""
+    _app_choice.save(name if name == SYSTEM else _registry.resolve(name))
 
 
 _list_listeners: list = []
@@ -448,4 +494,4 @@ def on_list_change(fn: Callable[[], object]) -> None:
 
 def follow(apply: Callable[[str], object], current: Callable[[], str]) -> None:
     """Подписать окно на смену темы из других приложений (нужен QApplication)."""
-    _followers.append(ThemeFollower(_choice, _registry, apply, current))
+    _followers.append(ThemeFollower(current_name, _registry, apply, current))

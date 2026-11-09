@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from equestria_kit import live_i18n
+
 
 from PyQt6.QtCore import QRectF, QTimer, QUrl, Qt
 from PyQt6.QtGui import QColor, QDesktopServices, QFont, QIcon, QLinearGradient, QPainter, QPixmap
@@ -10,18 +12,18 @@ from equestria_ue.kit import kit_qt, tr
 
 
 def chip(text: str, lvl: str = "") -> QLabel:
-    lab = QLabel(text)
+    lab = live_i18n.call(QLabel, text)
     lab.setObjectName("chip")
     lab.setProperty("lvl", lvl)
     return lab
 
 
 def small_btn(text: str, tip: str = "", name: str = "small") -> QPushButton:
-    b = QPushButton(text)
+    b = live_i18n.call(QPushButton, text)
     b.setObjectName(name)
     b.setFocusPolicy(Qt.FocusPolicy.NoFocus)
     if tip:
-        b.setToolTip(tip)
+        live_i18n.call(b.setToolTip, tip)
     return b
 
 
@@ -29,11 +31,11 @@ def show_launching(btn: QPushButton, ms: int = 8000) -> None:
     """Редактор открывается долго: кнопка на это время пишет «Запускается…» и не нажимается,
     чтобы было видно, что нажатие сработало."""
     text, enabled = btn.text(), btn.isEnabled()
-    btn.setText(tr("Запускается…"))
+    live_i18n.call(btn.setText, tr("widgets.starting"))
     btn.setEnabled(False)
 
     def restore():
-        btn.setText(text)
+        live_i18n.call(btn.setText, text)
         btn.setEnabled(enabled)
     # таймер-потомок кнопки: если карточку пересоздали раньше, таймер умрёт вместе с ней
     # (в PyQt6 нет перегрузки singleShot(msec, context, slot))
@@ -60,7 +62,7 @@ def scrolled(inner: QWidget) -> QScrollArea:
 
 def title_row(text: str, *widgets) -> QHBoxLayout:
     h = QHBoxLayout()
-    t = QLabel(text)
+    t = live_i18n.call(QLabel, text)
     t.setObjectName("title")
     h.addWidget(t)
     h.addStretch()
@@ -93,6 +95,6 @@ def make_icon(pr: Project) -> QIcon:
         f.setBold(True)
         p.setFont(f)
         p.setPen(QColor(255, 255, 255, 200))
-        p.drawText(QRectF(0, 0, w, h), Qt.AlignmentFlag.AlignCenter, pr.name[:1].upper() or "U")
+        live_i18n.call(p.drawText, QRectF(0, 0, w, h), Qt.AlignmentFlag.AlignCenter, pr.name[:1].upper() or "U")
         p.end()
     return QIcon(pm)

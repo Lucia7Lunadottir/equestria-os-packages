@@ -93,11 +93,11 @@ class JobManager(QObject):
     def step_label(self) -> str:
         if not self.current or not (0 <= self.idx < len(self.current.steps)):
             return ""
-        return tr("Шаг {}/{}: {}", self.idx + 1, len(self.current.steps), self.current.steps[self.idx].label)
+        return tr("jobs.step", self.idx + 1, len(self.current.steps), self.current.steps[self.idx].label)
 
     def add(self, job: Job) -> None:
         self.queue.append(job)
-        self.log.emit("\n=== " + tr("В очереди: {}", job.title) + " ===")
+        self.log.emit("\n=== " + tr("common.queued", job.title) + " ===")
         if self.current is None:
             self._next_job()
         self.changed.emit()
@@ -162,15 +162,14 @@ class JobManager(QObject):
         if self.cancelled:
             self._finish(False)
         elif code != 0:
-            self.log.emit("\n" + tr("✗ Шаг завершился с кодом {}. Исправьте причину (см. выше) и запустите установку снова — "
-                                 "уже скачанное будет использовано повторно.", code))
+            self.log.emit("\n" + tr("jobs.step_exited_with_code_fix", code))
             self._finish(False)
         else:
             self._next_step()
 
     def _err(self, err) -> None:
         if err == QProcess.ProcessError.FailedToStart:
-            self.log.emit(tr("✗ Не удалось запустить команду (не установлена программа?)."))
+            self.log.emit(tr("jobs.could_not_run_command_program"))
             self._finish(False)
 
     def cancel(self) -> None:
@@ -184,12 +183,12 @@ class JobManager(QObject):
     def _finish(self, ok: bool) -> None:
         job = self.current
         job.ok = ok
-        self.log.emit("\n" + (tr("✓ Готово: {}", job.title) if ok else tr("✗ Не выполнено: {}", job.title)))
+        self.log.emit("\n" + (tr("jobs.done", job.title) if ok else tr("jobs.failed", job.title)))
         if ok and job.on_done:
             try:
                 job.on_done()
             except Exception as ex:
-                self.log.emit(tr("Ошибка после установки: {}", ex))
+                self.log.emit(tr("jobs.error_after_installation", ex))
         self.history.append(job)
         self.current, self.proc = None, None
         self.changed.emit()

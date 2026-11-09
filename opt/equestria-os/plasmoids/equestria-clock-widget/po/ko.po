@@ -101,3 +101,52 @@ msgstr "어제"
 msgid "%1 event today"
 msgid_plural "%1 events today"
 msgstr[0] "오늘 일정 %1개"
+
+msgid "New moon"
+msgstr "삭"
+
+msgid "First quarter"
+msgstr "상현달"
+
+msgid "Full moon"
+msgstr "보름달"
+
+msgid "Last quarter"
+msgstr "하현달"
+
+msgid "Waxing crescent"
+msgstr "초승달"
+
+msgid "Waxing gibbous"
+msgstr "상현망간의 달"
+
+msgid "Waning gibbous"
+msgstr "하현망간의 달"
+
+msgid "Waning crescent"
+msgstr "그믐달"
+
+msgid "Full moon ≈ %1"
+msgstr "보름달 ≈ %1"
+
+msgid "New moon ≈ %1"
+msgstr "삭 ≈ %1"
+
+msgctxt "moon: illuminated percent, age in days"
+msgid "Illuminated %1% · age %2 d"
+msgstr "밝기 %1% · 월령 %2일"
+
+msgid "Date position:"
+msgstr "날짜 위치:"
+
+msgid "Adaptive"
+msgstr "자동"
+
+msgid "Beside time"
+msgstr "시간 옆"
+
+msgid "Below time"
+msgstr "시간 아래"
+
+msgid "Show moon phases"
+msgstr "달의 위상 표시"

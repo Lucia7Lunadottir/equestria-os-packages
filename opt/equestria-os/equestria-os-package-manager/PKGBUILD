@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-package-manager
 pkgver=2.8.0
-pkgrel=7
+pkgrel=9
 pkgdesc="Official Equestria OS Package Manager (Uninstall, Manage, Clean App Data)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('equestria-qt-kit>=1.1' 'polkit' 'python-pyqt6')
+depends=('equestria-qt-kit>=1.3' 'polkit' 'python-pyqt6')
 optdepends=('equestria-installer: remove packages installed from .deb/.rpm files')
 
 package() {
@@ -16,6 +16,11 @@ package() {
 
     for f in main.py ui_pkg.py style.qss equestria_cyrillic.ttf equestria-os-package-manager.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    # переводы: locales/<язык>.json рядом с программой
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$_lib/locales/$(basename "$f")"
     done
 
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-package-manager" << 'EOF'

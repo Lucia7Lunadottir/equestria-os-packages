@@ -140,6 +140,40 @@ QPushButton#BtnAction[btnAction="na"]:disabled {
     border-color: @surface2/40@;
 }
 
+QPushButton#BtnAction[btnAction="restart"] {
+    background-color: @accent/28@; color: @accent@;
+    border-color: @accent/95@; font-size: 14px; padding: 2px 0;
+}
+QPushButton#BtnAction[btnAction="restart"]:hover {
+    background-color: @accent/65@;
+}
+QPushButton#BtnAction[btnAction="na"]:disabled {
+    font-size: 14px;
+}
+
+/* ── Group headers, favorites, refresh ────────────────────────────────── */
+QPushButton#GroupHeader {
+    text-align: left; padding: 8px 12px; margin-top: 6px;
+    background-color: @surface1%60@; color: @accent_hover@;
+    border: none; border-radius: 8px;
+    font-size: 14px; font-weight: bold;
+}
+QPushButton#GroupHeader:hover { background-color: @surface1@; }
+
+QToolButton#StarBtn {
+    /* пустая звезда — цветом второстепенного текста: surface2 в тёмных темах (Сансет) почти не виден */
+    color: @subtext@; font-size: 18px; background: transparent; border: none;
+}
+QToolButton#StarBtn:hover { color: @yellow@; }
+QToolButton#StarBtn[favorite="true"] { color: @yellow@; }
+
+QPushButton#RefreshBtn {
+    border-radius: 8px; background-color: @surface0@; color: @text@;
+    padding: 8px 14px; border: 1px solid @accent%75@; font-weight: bold;
+}
+QPushButton#RefreshBtn:hover { border-color: @accent@; background-color: @surface1@; }
+QPushButton#RefreshBtn:disabled { color: @surface2@; }
+
 /* ── Language dropdown ────────────────────────────────────────────────
    No ::drop-down/::down-arrow rules on purpose: declaring them makes Qt
    stop drawing the native arrow. */

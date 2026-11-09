@@ -1,0 +1,21 @@
+{
+ "_language_name": "Français",
+ "title": "Equestria OS : renommage en masse",
+ "dir_label": "Dossier cible",
+ "filter": "Filtre (seulement les fichiers contenant)",
+ "find": "Texte à rechercher",
+ "replace": "Remplacer par",
+ "prefix": "Ajouter un préfixe",
+ "suffix": "Ajouter un suffixe",
+ "numbers": "Numérotation (à partir de)",
+ "preview": "Aperçu",
+ "apply": "Tout renommer",
+ "browse": "Parcourir",
+ "success": "{n} fichiers renommés avec succès !",
+ "undo": "Annuler",
+ "history": "Historique",
+ "undo_ok": "{n} fichiers restaurés.",
+ "undo_empty": "Rien à annuler.",
+ "hist_title": "Historique des renommages",
+ "hist_empty": "L'historique est vide."
+}

@@ -1,0 +1,36 @@
+{
+  "backends": [
+    "localization"
+  ],
+  "paths": [],
+  "style": [],
+  "processes": [
+    "localization"
+  ],
+  "entries": [
+    "processes"
+  ],
+  "picker": [
+    "backends"
+  ],
+  "window": [
+    "backends",
+    "entries",
+    "localization",
+    "paths",
+    "picker",
+    "processes",
+    "style"
+  ],
+  "settings": [
+    "entries",
+    "paths",
+    "style"
+  ],
+  "app": [
+    "settings",
+    "style",
+    "window"
+  ],
+  "localization": []
+}

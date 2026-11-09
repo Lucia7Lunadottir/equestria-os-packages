@@ -1,10 +1,12 @@
 // Календарь месяца: стрелки, щелчок по названию месяца — вернуться к сегодняшнему дню,
-// сегодня — кружок цвета выделения, выбранный день — рамка, дни с напоминаниями — точка.
+// сегодня — кружок цвета выделения, выбранный день — рамка, дни с напоминаниями — точка,
+// дни главных фаз луны (новолуние, четверти, полнолуние) — маленькая луна в углу.
 import QtQuick
 import QtQuick.Layouts
 import org.kde.plasma.components as PlasmaComponents3
 import org.kde.kirigami as Kirigami
 import "../code/reminders.js" as Rem
+import "../code/moon.js" as Moon
 
 ColumnLayout {
     id: month
@@ -14,6 +16,7 @@ ColumnLayout {
     property date selected: today
     property var reminders: []
     property bool weekNumbers: false
+    property bool showMoon: true
 
     readonly property int firstDay: Qt.locale().firstDayOfWeek          // 0 = воскресенье
     readonly property date gridStart: {
@@ -117,10 +120,12 @@ ColumnLayout {
             readonly property bool isToday: month.sameDay(day, month.today)
             readonly property bool isSelected: month.sameDay(day, month.selected)
             readonly property var events: Rem.forDay(month.reminders, day)
+            readonly property var moon: month.showMoon ? Moon.info(day) : null
             hoverEnabled: true
             onClicked: { month.selected = day; month.daySelected(day) }
 
             Rectangle {
+                id: dayCircle
                 anchors.centerIn: parent
                 width: Math.min(parent.width, parent.height) - 2
                 height: width
@@ -137,6 +142,17 @@ ColumnLayout {
                 color: cell.isToday ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
                 opacity: cell.inMonth ? 1 : 0.4
                 font.bold: cell.isToday
+            }
+            MoonIcon {    // главная фаза луны в этот день
+                visible: cell.moon !== null && cell.moon.major
+                fraction: cell.moon ? cell.moon.f : 0
+                width: Math.round(Kirigami.Units.gridUnit * 0.55)
+                height: width
+                // в правом верхнем углу кружка дня — рядом с числом, а не у края широкой ячейки
+                anchors.top: dayCircle.top
+                anchors.right: dayCircle.right
+                anchors.rightMargin: -width / 4
+                opacity: cell.inMonth ? 1 : 0.4
             }
             Rectangle {   // точка: в этот день есть напоминания (цвет первого)
                 visible: cell.events.length > 0

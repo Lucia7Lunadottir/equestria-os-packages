@@ -1,1 +1,0 @@
-/mnt/NewBaseD/FromSystem/Git Projects/equestria-packages/opt/equestria-os/equestria-audio-converter/equestria_audio_converter.py

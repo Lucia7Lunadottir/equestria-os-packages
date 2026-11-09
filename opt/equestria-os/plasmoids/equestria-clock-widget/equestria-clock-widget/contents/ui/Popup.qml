@@ -6,6 +6,7 @@ import QtQuick.Layouts
 import org.kde.plasma.components as PlasmaComponents3
 import org.kde.kirigami as Kirigami
 import "../code/reminders.js" as Rem
+import "../code/moon.js" as Moon
 
 ColumnLayout {
     id: popup
@@ -15,6 +16,7 @@ ColumnLayout {
     property var zones: []              // [{city, offset}] — смещение от UTC в секундах
     property bool weekNumbers: false
     property bool calendarInstalled: true
+    property bool showMoon: true
 
     property date selected: now
 
@@ -51,6 +53,21 @@ ColumnLayout {
     }
 
     readonly property var dayEvents: Rem.forDay(reminders, selected)
+    readonly property var moon: Moon.info(selected)
+
+    function phaseName(phase) {
+        switch (phase) {
+        case "new": return i18n("New moon")
+        case "firstQuarter": return i18n("First quarter")
+        case "full": return i18n("Full moon")
+        case "lastQuarter": return i18n("Last quarter")
+        case "waxingCrescent": return i18n("Waxing crescent")
+        case "waxingGibbous": return i18n("Waxing gibbous")
+        case "waningGibbous": return i18n("Waning gibbous")
+        default: return i18n("Waning crescent")
+        }
+    }
+    function shortDate(d) { return d.toLocaleDateString(Qt.locale(), "d MMMM") }
 
     spacing: Kirigami.Units.smallSpacing
     Layout.minimumWidth: Kirigami.Units.gridUnit * 18
@@ -81,6 +98,7 @@ ColumnLayout {
         today: popup.now
         reminders: popup.reminders
         weekNumbers: popup.weekNumbers
+        showMoon: popup.showMoon
         onDaySelected: (day) => popup.selected = day
     }
 
@@ -126,6 +144,46 @@ ColumnLayout {
         text: popup.calendarInstalled ? i18n("No events") : i18n("Install Equestria Calendar to see events here")
         opacity: 0.6
         wrapMode: Text.WordWrap
+    }
+
+    // --- луна выбранного дня (как карточка луны в Equestria Calendar)
+    RowLayout {
+        visible: popup.showMoon
+        Layout.fillWidth: true
+        Layout.topMargin: Kirigami.Units.smallSpacing
+        spacing: Kirigami.Units.largeSpacing
+        MoonIcon {
+            fraction: popup.moon.f
+            Layout.preferredWidth: Kirigami.Units.gridUnit * 2.4
+            Layout.preferredHeight: Layout.preferredWidth
+            Layout.alignment: Qt.AlignTop
+        }
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 0
+            PlasmaComponents3.Label {
+                Layout.fillWidth: true
+                text: popup.phaseName(popup.moon.phase)
+                font.bold: true
+                elide: Text.ElideRight
+            }
+            PlasmaComponents3.Label {
+                Layout.fillWidth: true
+                text: i18nc("moon: illuminated percent, age in days", "Illuminated %1% · age %2 d",
+                            Math.round(popup.moon.illum * 100), popup.moon.age.toFixed(1))
+                opacity: 0.7
+                font: Kirigami.Theme.smallFont
+                elide: Text.ElideRight
+            }
+            PlasmaComponents3.Label {
+                Layout.fillWidth: true
+                text: i18n("Full moon ≈ %1", popup.shortDate(Moon.nextPhase(popup.selected, 0.5)))
+                      + "   " + i18n("New moon ≈ %1", popup.shortDate(Moon.nextPhase(popup.selected, 0)))
+                opacity: 0.7
+                font: Kirigami.Theme.smallFont
+                elide: Text.ElideRight
+            }
+        }
     }
 
     // --- другие часовые пояса

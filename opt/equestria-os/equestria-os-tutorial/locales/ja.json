@@ -1,4 +1,5 @@
 {
+  "_language_name": "日本語",
   "app_title": "Equestria OS — ツアー",
   "btn_next": "次へ ➔",
   "btn_prev": "← 戻る",
@@ -30,5 +31,6 @@
   "s6_btn3": "💽 ディスク",
   "slide7_title": "あなたは素晴らしい！🌟",
   "slide7_text": "<p>このシステムはあなたの新しい家です。何か忘れた場合や自動起動を設定したい場合は、セントラルハブをご覧ください。</p><p>Equestria OS での魔法のような体験をお楽しみください！</p>",
-  "s7_btn1": "🏠 Welcome Hub"
+  "s7_btn1": "🏠 Welcome Hub",
+  "language_label": "言語"
 }

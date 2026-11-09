@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                             QPushButton, QLineEdit, QComboBox, QScrollArea, QFrame)
-from PyQt6.QtCore import Qt
+                             QPushButton, QLineEdit, QComboBox, QScrollArea, QFrame, QToolButton,
+                             QSizePolicy)
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QIcon
 try:
     import equestria_kit  # noqa: F401
 except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
@@ -9,12 +11,46 @@ except ImportError:  # запуск из исходников, пакет equest
 from equestria_kit import qt as kit_qt
 
 
+class GroupHeader(QPushButton):
+    """Заголовок группы сервисов: значок, название и число; щелчок сворачивает/разворачивает."""
+
+    def __init__(self, group, on_toggle):
+        super().__init__()
+        self.group = group
+        self.setObjectName("GroupHeader")
+        self.setCheckable(True)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setIcon(QIcon.fromTheme(group.icon))
+        self.setIconSize(QSize(18, 18))
+        self.toggled.connect(lambda expanded: on_toggle(self.group, expanded))
+        self._title, self._count = "", 0
+
+    def set_title(self, title: str) -> None:
+        self._title = title
+        self._update_text()
+
+    def set_count(self, count: int) -> None:
+        self._count = count
+        self._update_text()
+
+    def _update_text(self) -> None:
+        arrow = "▾" if self.isChecked() else "▸"
+        self.setText(f"{arrow}  {self._title}   {self._count}")
+
+    def nextCheckState(self):
+        super().nextCheckState()
+        self._update_text()
+
+
 class ServiceRow(QFrame):
-    def __init__(self, svc_data, labels, on_start_stop, on_enable_disable):
+    def __init__(self, svc_data, labels, on_start_stop, on_enable_disable, on_restart, on_favorite, favorite):
         super().__init__()
         self.svc_data = svc_data
         self.on_start_stop = on_start_stop
         self.on_enable_disable = on_enable_disable
+        self.on_restart = on_restart
+        self.on_favorite = on_favorite
+        self.favorite = favorite
         self.setObjectName("ServiceRow")
         self.setFixedHeight(84)
         self._build_ui()
@@ -22,8 +58,15 @@ class ServiceRow(QFrame):
 
     def _build_ui(self):
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 8, 16, 8)
+        layout.setContentsMargins(10, 8, 16, 8)
         layout.setSpacing(12)
+
+        self.btn_star = QToolButton()
+        self.btn_star.setObjectName("StarBtn")
+        self.btn_star.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_star.setAutoRaise(True)
+        self.btn_star.clicked.connect(lambda: self.on_favorite(self.svc_data))
+        layout.addWidget(self.btn_star)
 
         self.dot = QLabel("●")
         self.dot.setFixedWidth(18)
@@ -39,6 +82,11 @@ class ServiceRow(QFrame):
         self.lbl_tech = QLabel()
         self.lbl_tech.setObjectName("SvcTechName")
 
+        # длинные имена (app-\x2f…@….service) не должны раздвигать список вбок: подпись сжимается,
+        # полное имя — во всплывающей подсказке
+        for label in (self.lbl_display, self.lbl_tech):
+            label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+            label.setMinimumWidth(0)
         info.addWidget(self.lbl_display)
         info.addWidget(self.lbl_tech)
         layout.addLayout(info, 1)
@@ -69,13 +117,24 @@ class ServiceRow(QFrame):
         self.btn_active.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_active.clicked.connect(lambda: self.on_start_stop(self.svc_data))
 
+        # перезапуск — рядом с «Запустить/Остановить»: один клик вместо «стоп» + «старт»
+        self.btn_restart = QPushButton("⟳")
+        self.btn_restart.setObjectName("BtnAction")
+        self.btn_restart.setFixedWidth(25)
+        self.btn_restart.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_restart.clicked.connect(lambda: self.on_restart(self.svc_data))
+        top = QHBoxLayout()
+        top.setSpacing(5)
+        top.addWidget(self.btn_active)
+        top.addWidget(self.btn_restart)
+
         self.btn_file = QPushButton()
         self.btn_file.setObjectName("BtnAction")
         self.btn_file.setFixedWidth(145)
         self.btn_file.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_file.clicked.connect(lambda: self.on_enable_disable(self.svc_data))
 
-        btn_col.addWidget(self.btn_active)
+        btn_col.addLayout(top)
         btn_col.addWidget(self.btn_file)
         layout.addLayout(btn_col)
 
@@ -95,12 +154,20 @@ class ServiceRow(QFrame):
     def update_labels(self, labels):
         svc = self.svc_data
 
+        self.btn_star.setText("★" if self.favorite else "☆")
+        self.btn_star.setProperty("favorite", self.favorite)
+        self.btn_star.style().unpolish(self.btn_star)
+        self.btn_star.style().polish(self.btn_star)
+        self.btn_star.setToolTip(labels["tip.fav_remove"] if self.favorite else labels["tip.fav_add"])
+
         self.lbl_display.setText(svc.display_name)
         if svc.scope == "user":
             scope_tag = labels.get("scope.user", "User")
             self.lbl_tech.setText(f"{svc.name}  [{scope_tag}]")
         else:
             self.lbl_tech.setText(svc.name)
+        self.lbl_display.setToolTip(svc.display_name)
+        self.lbl_tech.setToolTip(svc.name)
 
         # Dot state
         if svc.active_state == "failed":
@@ -151,6 +218,12 @@ class ServiceRow(QFrame):
         else:
             self._set_btn(self.btn_active, "start", labels["start"])
             self.btn_active.setToolTip(labels.get("tip.start_btn", ""))
+
+        # перезапуск доступен всегда, кроме заблокированных: остановленный сервис он просто запустит
+        # (упавший plasmashell поднимается одной кнопкой)
+        restartable = svc.unit_file_state != "masked"
+        self._set_btn(self.btn_restart, "restart" if restartable else "na", "⟳", enabled=restartable)
+        self.btn_restart.setToolTip(labels["tip.restart_btn"])
 
         # Enable/Disable button + tooltip
         if svc.unit_file_state in ("static", "masked", "generated", "indirect"):
@@ -203,14 +276,20 @@ class Ui_ServicesManager:
         self.category_dropdown.setObjectName("CategoryDropdown")
         self.category_dropdown.setFixedWidth(190)
 
+        self.btn_refresh = QPushButton("⟳")
+        self.btn_refresh.setObjectName("RefreshBtn")
+        self.btn_refresh.setCursor(Qt.CursorShape.PointingHandCursor)
+
         filter_box.addWidget(self.search_field, 1)
         filter_box.addWidget(self.scope_dropdown)
         filter_box.addWidget(self.category_dropdown)
+        filter_box.addWidget(self.btn_refresh)
         self.main_layout.addLayout(filter_box)
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setObjectName("ServiceList")
         self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_content = QWidget()
         self.scroll_content.setObjectName("ScrollContent")
         self.list_layout = QVBoxLayout(self.scroll_content)
@@ -228,7 +307,8 @@ class Ui_ServicesManager:
 
         self.modal_box = QFrame()
         self.modal_box.setObjectName("ModalBox")
-        self.modal_box.setFixedSize(460, 220)
+        self.modal_box.setMinimumSize(460, 220)
+        self.modal_box.setMaximumWidth(620)   # текст ошибки systemctl может быть длинным
 
         m_layout = QVBoxLayout(self.modal_box)
         m_layout.setContentsMargins(32, 28, 32, 28)

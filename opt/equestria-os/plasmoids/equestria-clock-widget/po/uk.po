@@ -103,3 +103,52 @@ msgid_plural "%1 events today"
 msgstr[0] "%1 подія сьогодні"
 msgstr[1] "%1 події сьогодні"
 msgstr[2] "%1 подій сьогодні"
+
+msgid "New moon"
+msgstr "Молодик"
+
+msgid "First quarter"
+msgstr "Перша чверть"
+
+msgid "Full moon"
+msgstr "Повня"
+
+msgid "Last quarter"
+msgstr "Остання чверть"
+
+msgid "Waxing crescent"
+msgstr "Молодий місяць"
+
+msgid "Waxing gibbous"
+msgstr "Зростаючий місяць"
+
+msgid "Waning gibbous"
+msgstr "Спадний місяць"
+
+msgid "Waning crescent"
+msgstr "Старий місяць"
+
+msgid "Full moon ≈ %1"
+msgstr "Повня ≈ %1"
+
+msgid "New moon ≈ %1"
+msgstr "Молодик ≈ %1"
+
+msgctxt "moon: illuminated percent, age in days"
+msgid "Illuminated %1% · age %2 d"
+msgstr "Освітлено %1% · вік %2 дн."
+
+msgid "Date position:"
+msgstr "Розташування дати:"
+
+msgid "Adaptive"
+msgstr "Адаптивно"
+
+msgid "Beside time"
+msgstr "Поруч із часом"
+
+msgid "Below time"
+msgstr "Під часом"
+
+msgid "Show moon phases"
+msgstr "Показувати фази місяця"

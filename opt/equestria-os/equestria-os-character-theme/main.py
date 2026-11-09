@@ -1,7 +1,6 @@
 import sys
 import os
 import json
-import csv
 import shutil
 import subprocess
 import threading
@@ -17,7 +16,7 @@ try:
 except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
-from equestria_kit.i18n import detect_language
+from equestria_kit import live_i18n
 from equestria_kit.widgets import font_families
 
 from ui import Ui_MainWindow, APP_STYLE, ModeSwitch
@@ -25,6 +24,9 @@ from character_card import CharacterCard
 import kde_laf
 
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
+
+# Переводы лежат в locales/<язык>.json рядом с main.py (ключ -> текст)
+CATALOG = live_i18n.Catalog("equestria-os-character-theme", __file__)
 USER_PATH = os.path.expanduser("~/.local/share/EquestriaOS/Themes/")
 
 _QDBUS_BIN = None
@@ -90,7 +92,6 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.editing_original_id = None
         self.is_creating_new = False
 
-        self.localized_strings = {}
         self.available_langs = []
         self.current_lang = "en"
 
@@ -135,28 +136,14 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
                         shutil.copy2(src, dst)
 
     def load_localization_csv(self):
-        loc_path = os.path.join(SYSTEM_PATH, "localization.csv")
-        if not os.path.exists(loc_path): return
-        with open(loc_path, 'r', encoding='utf-8') as f:
-            reader = csv.reader(f)
-            try:
-                headers = next(reader)
-                self.available_langs = [h.strip() for h in headers[1:]]
-                for row in reader:
-                    if not row or not row[0].strip(): continue
-                    key = row[0].strip()
-                    self.localized_strings[key] = {}
-                    for i in range(1, len(row)):
-                        if i <= len(self.available_langs):
-                            self.localized_strings[key][self.available_langs[i-1]] = row[i].strip().replace("\\n", "\n")
-            except StopIteration: pass
+        # список языков — найденные файлы locales/*.json, без списка в коде
+        self.available_langs = list(CATALOG.languages)
 
     def t_str(self, key):
-        langs = self.localized_strings.get(key, {})
-        return langs.get(self.current_lang, langs.get("en", key))
+        return str(CATALOG.tr(key))
 
     def detect_system_language(self):
-        sys_code = detect_language()
+        sys_code = CATALOG.lang
         self.current_lang = sys_code if sys_code in self.available_langs else (self.available_langs[0] if self.available_langs else "en")
 
 
@@ -352,7 +339,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.lang_combo = QComboBox()
         self.lang_combo.setObjectName("LangCombo")
         for code in self.available_langs:
-            self.lang_combo.addItem(code.upper(), code)
+            self.lang_combo.addItem(CATALOG.language_name(code), code)
         idx = self.lang_combo.findData(self.current_lang)
         if idx != -1:
             self.lang_combo.setCurrentIndex(idx)
@@ -379,7 +366,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
                                    {m: self.t_str(f"ui.mode_{m}_tip") for m in kde_laf.MODES})
 
     def set_language(self, code):
-        self.current_lang = code
+        self.current_lang = CATALOG.set_language(code) or code  # ещё и сохраняет выбор
         idx = self.lang_combo.findData(code)
         if idx != -1 and self.lang_combo.currentIndex() != idx:
             self.lang_combo.setCurrentIndex(idx)

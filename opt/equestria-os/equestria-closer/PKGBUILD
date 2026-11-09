@@ -1,21 +1,29 @@
 # Maintainer: Equestria OS
 pkgname=equestria-closer
 pkgver=1.0
-pkgrel=2
+pkgrel=4
 pkgdesc="Close a frozen window or process (PyQt6)"
 arch=('any')
 license=('custom')
-depends=('python-pyqt6' 'equestria-qt-kit>=1.1')
+depends=('python-pyqt6' 'equestria-qt-kit>=1.3-2')
 optdepends=('wmctrl: окна на X11'
             'xdotool: выбор окна кликом на X11'
             'xorg-xprop: окна на X11 без wmctrl'
             'xorg-xwininfo: выбор окна кликом без xdotool'
             'kdotool: показать окно в KDE Wayland')
-source=("equestria_closer.py" "equestria-closer.desktop" "i18n.json")
-sha256sums=('SKIP' 'SKIP' 'SKIP')
+source=("equestria_closer.py" "equestria-closer.desktop")
+sha256sums=('1bde4c24881f279d22c0403a31ef2afdc883a30091caf82a6638742568252093' '44342fbb78c0f5859043a096a91e19191d910a3bf2b086375f800898f3489aed')
 
 package() {
-    install -Dm755 "$srcdir/equestria_closer.py" "$pkgdir/usr/bin/equestria-closer"
+    local libdir="$pkgdir/usr/lib/equestria-closer"
+    install -Dm755 "$srcdir/equestria_closer.py" "$libdir/equestria_closer.py"
+    for f in "$startdir"/equestria_closer_app/*.py; do
+        install -Dm644 "$f" "$libdir/equestria_closer_app/$(basename "$f")"
+    done
+    install -d "$pkgdir/usr/bin"
+    ln -s /usr/lib/equestria-closer/equestria_closer.py "$pkgdir/usr/bin/equestria-closer"
     install -Dm644 "$srcdir/equestria-closer.desktop" "$pkgdir/usr/share/applications/equestria-closer.desktop"
-    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-closer/i18n.json"
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$pkgdir/usr/share/equestria-closer/locales/$(basename "$f")"
+    done
 }

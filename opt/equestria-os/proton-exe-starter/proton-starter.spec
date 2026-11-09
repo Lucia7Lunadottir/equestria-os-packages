@@ -54,7 +54,7 @@ def _is_system_lib(dest_name, src_path):
 
 # Shared data files for all three apps
 _datas = [
-    (str(project_root / "localization.csv"),    "."),
+    (str(project_root / "locales"),            "locales"),
     (str(project_root / "style.qss"),           "."),
     (str(project_root / "EquestriaOS-Logo.png"), "."),
 ]

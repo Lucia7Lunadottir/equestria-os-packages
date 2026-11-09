@@ -1,0 +1,21 @@
+{
+ "_language_name": "简体中文",
+ "title": "Equestria OS：批量重命名",
+ "dir_label": "目标目录",
+ "filter": "筛选（仅包含该文本的文件）",
+ "find": "查找文本",
+ "replace": "替换为",
+ "prefix": "添加前缀",
+ "suffix": "添加后缀",
+ "numbers": "编号（起始值）",
+ "preview": "预览",
+ "apply": "全部重命名",
+ "browse": "浏览",
+ "success": "已成功重命名 {n} 个文件！",
+ "undo": "撤销",
+ "history": "历史",
+ "undo_ok": "已还原 {n} 个文件。",
+ "undo_empty": "没有可撤销的操作。",
+ "hist_title": "重命名历史",
+ "hist_empty": "历史为空。"
+}

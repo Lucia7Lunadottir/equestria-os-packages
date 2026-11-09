@@ -156,14 +156,13 @@ class RunningEditors:
 
 
 def already_open_message(uproject: str) -> str:
-    return tr("Проект «{}» уже открыт в Unreal Engine. Второй редактор с тем же проектом "
-              "запускать нельзя: они перезаписывают файлы друг друга.", Path(uproject).stem)
+    return tr("launcher.project_already_open_unreal_engine", Path(uproject).stem)
 
 
 def launch_editor(cfg: Config, eng: Engine, uproject: str = "") -> str:
     """Запускает редактор отдельным процессом. Возвращает текст ошибки или ''."""
     if not eng.built:
-        return tr("Редактор этого движка ещё не собран.")
+        return tr("launcher.editor_engine_has_not_been")
     if RunningEditors.is_open(uproject):
         return already_open_message(uproject)
     mode = DdcPolicy(cfg, eng).resolve()

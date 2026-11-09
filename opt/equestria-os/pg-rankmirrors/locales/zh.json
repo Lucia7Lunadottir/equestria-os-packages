@@ -1,4 +1,5 @@
 {
+  "_language_name": "简体中文",
   "title": "🐴  Equestria OS — 镜像管理器",
   "select_countries": "选择要搜索镜像的国家：",
   "search_placeholder": "🔍 搜索国家...",
@@ -18,5 +19,8 @@
   "mirrors_updated": "✓ 镜像更新成功！",
   "backup_restored": "✓ 备份已恢复。",
   "parse_error": "完成（无法解析后端响应）。",
-  "mirrors_count": "{0} 个镜像"
+  "mirrors_count": "{0} 个镜像",
+  "language_label": "语言",
+  "error_message": "错误：{0}",
+  "unknown_error": "未知错误"
 }

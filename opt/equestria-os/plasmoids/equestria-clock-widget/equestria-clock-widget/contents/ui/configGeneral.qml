@@ -9,7 +9,9 @@ KCM.SimpleKCM {
     property alias cfg_showSeconds: showSeconds.checked
     property alias cfg_showDate: showDate.checked
     property string cfg_dateFormat
+    property int cfg_dateDisplayFormat
     property alias cfg_showWeekNumbers: weekNumbers.checked
+    property alias cfg_showMoon: showMoon.checked
     property var cfg_timeZones: []
     property alias cfg_calendarCommand: calendarCommand.text
     property alias cfg_clockCommand: clockCommand.text
@@ -39,12 +41,24 @@ KCM.SimpleKCM {
             currentIndex: Math.max(0, formats.indexOf(cfg_dateFormat))
             onActivated: (i) => cfg_dateFormat = formats[i]
         }
+        QQC2.ComboBox {
+            Kirigami.FormData.label: i18n("Date position:")
+            Layout.preferredWidth: Kirigami.Units.gridUnit * 14
+            enabled: showDate.checked
+            model: [i18n("Adaptive"), i18n("Beside time"), i18n("Below time")]
+            currentIndex: cfg_dateDisplayFormat
+            onActivated: (i) => cfg_dateDisplayFormat = i
+        }
 
         Item { Kirigami.FormData.isSection: true }
         QQC2.CheckBox {
             id: weekNumbers
             Kirigami.FormData.label: i18n("Calendar:")
             text: i18n("Show week numbers")
+        }
+        QQC2.CheckBox {
+            id: showMoon
+            text: i18n("Show moon phases")
         }
 
         Item { Kirigami.FormData.isSection: true }

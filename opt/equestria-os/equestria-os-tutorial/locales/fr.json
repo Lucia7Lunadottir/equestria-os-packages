@@ -1,4 +1,5 @@
 {
+  "_language_name": "Français",
   "app_title": "Equestria OS — Visite guidée",
   "btn_next": "Suivant ➔",
   "btn_prev": "← Retour",
@@ -30,5 +31,6 @@
   "s6_btn3": "💽 Disques",
   "slide7_title": "Vous êtes incroyable ! 🌟",
   "slide7_text": "<p>Ce système est maintenant votre maison. Si vous oubliez quelque chose ou souhaitez configurer le démarrage automatique, consultez notre hub central.</p><p>Bonne expérience magique avec Equestria OS !</p>",
-  "s7_btn1": "🏠 Welcome Hub"
+  "s7_btn1": "🏠 Welcome Hub",
+  "language_label": "Langue"
 }

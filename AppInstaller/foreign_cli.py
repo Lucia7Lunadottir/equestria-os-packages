@@ -37,14 +37,14 @@ def _plan_deps(path: str) -> list[str]:
     out = subprocess.run([sys.executable, BRIDGE, "plan", path], capture_output=True, text=True).stdout
     plan = next((json.loads(l[len("PLAN_JSON:"):]) for l in out.splitlines() if l.startswith("PLAN_JSON:")), {})
     for lib in plan.get("unresolved", []):
-        print(tr("Не найден пакет для: {} — программа может не запуститься.", lib), flush=True)
+        print(tr("common.no_package_found_app_may", lib), flush=True)
     return list(dict.fromkeys(c[0]["pkg"] for c in plan.get("missing", {}).values() if c))
 
 
 def update(names: list[str]) -> int:
     todo = [p for p in pending_updates() if not names or p.name in names]
     if not todo:
-        print(tr("Все программы актуальны."), flush=True)
+        print(tr("common.all_apps_up_date"), flush=True)
         return 0
     failed = 0
     for p in todo:
@@ -52,7 +52,7 @@ def update(names: list[str]) -> int:
         try:
             path = sources.download(p.latest, Path(CACHE_DIR) / "updates")
         except OSError as e:
-            print(tr("Не удалось скачать: {}", e), flush=True)
+            print(tr("common.could_not_download", e), flush=True)
             failed += 1
             continue
         args = ["pkexec", sys.executable, BRIDGE, "install", str(path)]
@@ -61,7 +61,7 @@ def update(names: list[str]) -> int:
             args.append(",".join(deps))
         code = subprocess.run(args).returncode
         os.remove(path)
-        print(tr("Установка успешно завершена!") if code == 0 else tr("Ошибка установки. Код: {}", code), flush=True)
+        print(tr("common.installation_completed_successfully") if code == 0 else tr("common.installation_error_code", code), flush=True)
         failed += code != 0
     if any(True for _ in todo) and subprocess.run(["which", "kbuildsycoca6"], capture_output=True).returncode == 0:
         subprocess.Popen(["kbuildsycoca6", "--noincremental"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

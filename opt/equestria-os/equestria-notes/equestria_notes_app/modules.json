@@ -1,0 +1,45 @@
+{
+  "paths": [],
+  "style": [],
+  "markdown": [],
+  "source_editor": [
+    "markdown",
+    "style"
+  ],
+  "images": [],
+  "rich_editor": [
+    "images",
+    "localization",
+    "style"
+  ],
+  "storage": [
+    "localization"
+  ],
+  "library": [
+    "localization",
+    "markdown",
+    "paths",
+    "storage"
+  ],
+  "window": [
+    "images",
+    "library",
+    "localization",
+    "markdown",
+    "paths",
+    "rich_editor",
+    "source_editor",
+    "storage",
+    "style"
+  ],
+  "settings": [
+    "paths",
+    "style"
+  ],
+  "app": [
+    "settings",
+    "style",
+    "window"
+  ],
+  "localization": []
+}

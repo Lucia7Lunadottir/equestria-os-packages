@@ -1,15 +1,16 @@
 import os
 import sys
 
+# Запуск из исходников: соседний equestria-qt-kit новее установленного (нужен live_i18n)
+import os as _os, sys as _sys
+_kit = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit")
+if _os.path.isfile(_os.path.join(_kit, "equestria_kit", "live_i18n.py")) and _kit not in _sys.path:
+    _sys.path.insert(0, _kit)
+
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QIcon
 
 from app import SettingsWindow
-try:
-    import equestria_kit  # noqa: F401
-except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
-    import os as _os, sys as _sys
-    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))

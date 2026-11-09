@@ -39,21 +39,19 @@ def fetch_tags(access: str):
         return None, str(ex)
     if r.returncode != 0:
         lines = [x for x in r.stderr.strip().splitlines() if x.strip()]
-        return None, lines[-1] if lines else tr("git ls-remote завершился с ошибкой")
+        return None, lines[-1] if lines else tr("versions.git_ls_remote_failed")
     vs = sorted({tuple(int(x) for x in m.groups()) for m in TAG_RX.finditer(r.stdout)}, reverse=True)
-    return (vs or None), ("" if vs else tr("В репозитории не найдено релизных тегов"))
+    return (vs or None), ("" if vs else tr("versions.no_release_tags_found_repository"))
 
 
 def explain_git_error(err: str) -> str:
     e = err.lower()
     if "permission denied" in e or "publickey" in e:
-        return tr("SSH-ключ не принят GitHub. Добавьте публичный ключ (~/.ssh/id_ed25519.pub) в GitHub → Settings → "
-                  "SSH keys, либо переключитесь на HTTPS в настройках. Ключ с паролем должен быть загружен в ssh-agent.")
+        return tr("versions.github_did_not_accept_ssh")
     if "not found" in e or "could not read" in e or "404" in e:
-        return tr("Ключ рабочий, но у аккаунта нет доступа к репозиторию Epic: свяжите GitHub с Epic-аккаунтом и "
-                  "примите письмо-приглашение в организацию EpicGames. Или скачайте готовую сборку — это не требует GitHub.")
+        return tr("versions.key_works_but_account_has")
     if "could not resolve" in e or "timed out" in e or "unable to access" in e:
-        return tr("Нет связи с github.com — проверьте интернет.")
+        return tr("versions.no_connection_github_com_check")
     return err
 
 def latest_patch(versions: list, ver: tuple):

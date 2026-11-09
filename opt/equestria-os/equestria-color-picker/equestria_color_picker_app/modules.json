@@ -1,0 +1,40 @@
+{
+  "paths": [],
+  "style": [],
+  "color": [],
+  "formats": [
+    "color",
+    "localization"
+  ],
+  "capture": [
+    "localization"
+  ],
+  "widgets": [],
+  "format_dialog": [
+    "color",
+    "formats",
+    "localization",
+    "widgets"
+  ],
+  "window": [
+    "capture",
+    "color",
+    "format_dialog",
+    "formats",
+    "localization",
+    "paths",
+    "style",
+    "widgets"
+  ],
+  "settings": [
+    "formats",
+    "paths",
+    "style"
+  ],
+  "app": [
+    "settings",
+    "style",
+    "window"
+  ],
+  "localization": []
+}

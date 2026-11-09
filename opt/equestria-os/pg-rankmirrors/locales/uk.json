@@ -1,4 +1,5 @@
 {
+  "_language_name": "Українська",
   "title": "🐴  Equestria OS — Менеджер дзеркал",
   "select_countries": "Оберіть країни для пошуку дзеркал:",
   "search_placeholder": "🔍 Пошук країни...",
@@ -18,5 +19,8 @@
   "mirrors_updated": "✓ Дзеркала успішно оновлено!",
   "backup_restored": "✓ Резервну копію відновлено.",
   "parse_error": "Готово (не вдалося розібрати відповідь бекенду).",
-  "mirrors_count": "{0} дзеркал"
+  "mirrors_count": "{0} дзеркал",
+  "language_label": "Мова",
+  "error_message": "Помилка: {0}",
+  "unknown_error": "Невідома помилка"
 }

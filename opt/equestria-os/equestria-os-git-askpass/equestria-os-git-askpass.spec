@@ -35,7 +35,7 @@ if _sys_site:
     _pathex.append(_sys_site)
 
 _datas = [
-    (str(project_root / "localization.csv"), "."),
+    (str(project_root / "locales"), "locales"),
     (str(project_root / "style.qss"),        "."),
 ]
 

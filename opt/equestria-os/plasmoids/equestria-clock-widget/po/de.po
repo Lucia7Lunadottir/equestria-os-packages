@@ -102,3 +102,52 @@ msgid "%1 event today"
 msgid_plural "%1 events today"
 msgstr[0] "%1 Termin heute"
 msgstr[1] "%1 Termine heute"
+
+msgid "New moon"
+msgstr "Neumond"
+
+msgid "First quarter"
+msgstr "Erstes Viertel"
+
+msgid "Full moon"
+msgstr "Vollmond"
+
+msgid "Last quarter"
+msgstr "Letztes Viertel"
+
+msgid "Waxing crescent"
+msgstr "Zunehmende Sichel"
+
+msgid "Waxing gibbous"
+msgstr "Zunehmender Mond"
+
+msgid "Waning gibbous"
+msgstr "Abnehmender Mond"
+
+msgid "Waning crescent"
+msgstr "Abnehmende Sichel"
+
+msgid "Full moon ≈ %1"
+msgstr "Vollmond ≈ %1"
+
+msgid "New moon ≈ %1"
+msgstr "Neumond ≈ %1"
+
+msgctxt "moon: illuminated percent, age in days"
+msgid "Illuminated %1% · age %2 d"
+msgstr "Beleuchtet %1% · Alter %2 T."
+
+msgid "Date position:"
+msgstr "Position des Datums:"
+
+msgid "Adaptive"
+msgstr "Automatisch"
+
+msgid "Beside time"
+msgstr "Neben der Uhrzeit"
+
+msgid "Below time"
+msgstr "Unter der Uhrzeit"
+
+msgid "Show moon phases"
+msgstr "Mondphasen anzeigen"

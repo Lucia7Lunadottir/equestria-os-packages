@@ -262,16 +262,11 @@ def notice() -> int:
     from equestria_kit import qt as kit_qt
     app = QApplication(sys.argv)
     kit_qt.ThemeManager(app)
-    with open(os.path.join(APP_DIR, "locales", "en.json"), encoding="utf-8") as f:
-        texts = json.load(f)
-    try:
-        from equestria_kit.i18n import detect_language
-        with open(os.path.join(APP_DIR, "locales", f"{detect_language()}.json"), encoding="utf-8") as f:
-            texts.update(json.load(f))
-    except (ImportError, OSError):
-        pass
-    QMessageBox.information(None, texts["rollback.notice_title"],
-                            texts["rollback.notice_body"].format(n=FAILED_BOOTS, date=info.get("date", "?")))
+    from equestria_kit import live_i18n
+    # тот же каталог и выбранный язык, что у окна Save Point
+    tr = live_i18n.Catalog("equestria-os-save-point", os.path.join(APP_DIR, "main.py")).tr
+    QMessageBox.information(None, str(tr("rollback.notice_title")),
+                            str(tr("rollback.notice_body", n=FAILED_BOOTS, date=info.get("date", "?"))))
     seen.parent.mkdir(parents=True, exist_ok=True)
     seen.write_text(info.get("at", ""))
     return 0

@@ -1,0 +1,21 @@
+{
+ "_language_name": "Español",
+ "title": "Equestria OS: renombrado masivo",
+ "dir_label": "Carpeta de destino",
+ "filter": "Filtro (solo archivos que contengan)",
+ "find": "Texto a buscar",
+ "replace": "Reemplazar por",
+ "prefix": "Añadir prefijo",
+ "suffix": "Añadir sufijo",
+ "numbers": "Numeración (empezar en)",
+ "preview": "Vista previa",
+ "apply": "Renombrar todo",
+ "browse": "Examinar",
+ "success": "¡Se renombraron {n} archivos correctamente!",
+ "undo": "Deshacer",
+ "history": "Historial",
+ "undo_ok": "Se revirtieron {n} archivos.",
+ "undo_empty": "Nada que deshacer.",
+ "hist_title": "Historial de renombrados",
+ "hist_empty": "El historial está vacío."
+}

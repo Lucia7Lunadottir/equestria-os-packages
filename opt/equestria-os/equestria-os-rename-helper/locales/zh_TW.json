@@ -1,0 +1,21 @@
+{
+ "_language_name": "繁體中文",
+ "title": "Equestria OS：批次重新命名",
+ "dir_label": "目標目錄",
+ "filter": "篩選（僅包含該文本的檔案）",
+ "find": "查詢文本",
+ "replace": "替換為",
+ "prefix": "新增字首",
+ "suffix": "新增字尾",
+ "numbers": "編號（起始值）",
+ "preview": "預覽",
+ "apply": "全部重新命名",
+ "browse": "瀏覽",
+ "success": "已成功重新命名 {n} 個檔案！",
+ "undo": "撤銷",
+ "history": "歷史",
+ "undo_ok": "已還原 {n} 個檔案。",
+ "undo_empty": "沒有可撤銷的操作。",
+ "hist_title": "重新命名歷史",
+ "hist_empty": "歷史為空。"
+}

@@ -1,0 +1,66 @@
+{
+  "widgets": [
+    "localization"
+  ],
+  "paths": [],
+  "style": [],
+  "models": [
+    "localization"
+  ],
+  "probes": [
+    "localization",
+    "models",
+    "rules"
+  ],
+  "rules": [
+    "localization",
+    "models"
+  ],
+  "descriptions": [
+    "localization",
+    "models",
+    "probes",
+    "rules"
+  ],
+  "commands": [
+    "localization",
+    "models",
+    "probes",
+    "rules"
+  ],
+  "run_dialog": [
+    "localization",
+    "widgets"
+  ],
+  "gpu_page": [
+    "commands",
+    "descriptions",
+    "localization",
+    "models",
+    "probes",
+    "rules",
+    "widgets"
+  ],
+  "panel": [
+    "commands",
+    "gpu_page",
+    "localization",
+    "models",
+    "probes",
+    "run_dialog",
+    "style",
+    "widgets"
+  ],
+  "window": [
+    "localization",
+    "panel",
+    "paths",
+    "style"
+  ],
+  "app": [
+    "paths",
+    "style",
+    "window"
+  ],
+  "localization": []
+}

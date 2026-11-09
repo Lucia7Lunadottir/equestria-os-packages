@@ -5,15 +5,22 @@ import html
 import os
 import sys
 
-try:
-    import equestria_kit  # noqa: F401
-except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
-    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                                    "opt", "equestria-os", "equestria-qt-kit"))
-from equestria_kit import i18n as kit_i18n
-from equestria_kit import qt as kit_qt  # noqa: F401 — реэкспорт для окон
+from pathlib import Path
+_local_kit = Path(__file__).resolve().parent.parent / "opt/equestria-os/equestria-qt-kit"
+if (_local_kit / "equestria_kit/live_i18n.py").is_file():
+    sys.path.insert(0, str(_local_kit))
+from equestria_kit import live_i18n, qt as kit_qt
 
-tr = kit_i18n.install("equestria-installer", __file__)
+catalog = live_i18n.Catalog("equestria-installer", __file__)
+tr = catalog.tr
+
+
+def ui_call(fn, *args, **kwargs):
+    result = live_i18n.call(fn, *args, **kwargs)
+    if getattr(fn, "__name__", "") == "setSubTitle" and isinstance(args[0], live_i18n.Text):
+        catalog.bind(fn.__self__, ("subTitle", "setSubTitle"), args[0], str(args[0]))
+    return result
+
 
 BRIDGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "foreign_bridge.py")
 CACHE_DIR = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"), "equestria-installer")
@@ -53,4 +60,6 @@ QProgressBar::chunk { background: @accent@; border-radius: 6px; }
 
 def colored(text: str, role: str) -> str:
     """Строка журнала установки в цвете роли темы (HTML для QTextEdit)."""
-    return f"<span style='color: {kit_qt.theme_color(role).name()};'>{html.escape(text)}</span>"
+    def render():
+        return f"<span style='color: {kit_qt.theme_color(role).name()};'>{html.escape(str(text))}</span>"
+    return live_i18n.Text(text.catalog, render) if isinstance(text, live_i18n.Text) else render()

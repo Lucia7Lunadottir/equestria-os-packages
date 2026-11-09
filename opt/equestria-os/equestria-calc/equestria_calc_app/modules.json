@@ -1,0 +1,50 @@
+{
+  "paths": [],
+  "style": [],
+  "arithmetic": [],
+  "programmer_math": [],
+  "units": [],
+  "dates": [
+    "localization"
+  ],
+  "widgets": [
+    "localization"
+  ],
+  "expression_page": [
+    "arithmetic",
+    "localization",
+    "widgets"
+  ],
+  "programmer_page": [
+    "localization",
+    "programmer_math",
+    "widgets"
+  ],
+  "converter_page": [
+    "arithmetic",
+    "localization",
+    "units",
+    "widgets"
+  ],
+  "date_page": [
+    "dates",
+    "localization",
+    "widgets"
+  ],
+  "window": [
+    "converter_page",
+    "date_page",
+    "expression_page",
+    "localization",
+    "paths",
+    "programmer_page",
+    "style",
+    "widgets"
+  ],
+  "app": [
+    "paths",
+    "style",
+    "window"
+  ],
+  "localization": []
+}

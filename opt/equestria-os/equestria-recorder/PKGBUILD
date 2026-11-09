@@ -1,16 +1,23 @@
 # Maintainer: Equestria OS
 pkgname=equestria-recorder
 pkgver=1.0
-pkgrel=2
+pkgrel=5
 pkgdesc="Sound recorder (PyQt6)"
 arch=('any')
 license=('custom')
-depends=('python-pyqt6' 'equestria-qt-kit>=1.1' 'qt6-multimedia')
-source=("equestria_recorder.py" "equestria-recorder.desktop" "i18n.json")
-sha256sums=('SKIP' 'SKIP' 'SKIP')
+depends=('python-pyqt6' 'equestria-qt-kit>=1.3' 'qt6-multimedia')
+source=()
 
 package() {
-    install -Dm755 "$srcdir/equestria_recorder.py" "$pkgdir/usr/bin/equestria-recorder"
-    install -Dm644 "$srcdir/equestria-recorder.desktop" "$pkgdir/usr/share/applications/equestria-recorder.desktop"
-    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-recorder/i18n.json"
+    local libdir="$pkgdir/usr/lib/equestria-recorder"
+    install -Dm755 "$startdir/equestria_recorder.py" "$libdir/equestria_recorder.py"
+    for f in "$startdir"/equestria_recorder_app/*.py; do
+        install -Dm644 "$f" "$libdir/equestria_recorder_app/$(basename "$f")"
+    done
+    install -d "$pkgdir/usr/bin"
+    ln -s /usr/lib/equestria-recorder/equestria_recorder.py "$pkgdir/usr/bin/equestria-recorder"
+    install -Dm644 "$startdir/equestria-recorder.desktop" "$pkgdir/usr/share/applications/equestria-recorder.desktop"
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$pkgdir/usr/share/equestria-recorder/locales/$(basename "$f")"
+    done
 }

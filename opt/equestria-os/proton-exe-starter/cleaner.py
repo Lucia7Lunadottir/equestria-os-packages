@@ -5,7 +5,6 @@ Equestria OS Proton Cache Cleaner
 
 import sys
 import os
-import csv
 import shutil
 import subprocess
 
@@ -21,7 +20,7 @@ except ImportError:  # запуск из исходников, пакет equest
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
-from equestria_kit.i18n import detect_language
+import proton_i18n
 
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
@@ -37,29 +36,17 @@ MESA_CACHE_DIRS = [
     os.path.expanduser("~/.cache/AMD"),
 ]
 
-_locales: dict = {}
-_lang: str = "en"
-
-
+# Переводы грузит proton_i18n (locales/<язык>.json); имена ниже оставлены для вызовов в main()
 def _load_localization():
-    global _locales
-    csv_path = os.path.join(SYSTEM_PATH, "localization.csv")
-    if not os.path.exists(csv_path):
-        return
-    with open(csv_path, "r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            key = row["key"]
-            _locales[key] = {lang: text for lang, text in row.items() if lang != "key"}
+    pass
 
 
 def _detect_language():
-    global _lang
-    _lang = detect_language()
+    pass
 
 
 def t(key: str) -> str:
-    return _locales.get(key, {}).get(_lang) or _locales.get(key, {}).get("en") or key
+    return proton_i18n.t(key)
 
 
 def get_dir_size(path: str) -> int:

@@ -1,3 +1,0 @@
-#!/bin/bash
-cd /opt/equestria-os/pg-rankmirrors/
-exec python3 main.py "$@"

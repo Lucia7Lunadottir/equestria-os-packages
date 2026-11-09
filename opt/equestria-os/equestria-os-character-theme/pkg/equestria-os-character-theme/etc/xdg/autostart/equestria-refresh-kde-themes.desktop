@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Equestria OS KDE Themes Refresh
-Exec=python3 /opt/equestria-os/equestria-os-character-theme/kde_laf.py --refresh-user
-OnlyShowIn=KDE;
-NoDisplay=true
-X-KDE-Autostart-Phase=1

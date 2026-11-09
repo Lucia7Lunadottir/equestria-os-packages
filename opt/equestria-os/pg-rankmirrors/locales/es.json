@@ -1,4 +1,5 @@
 {
+  "_language_name": "Español",
   "title": "🐴  Equestria OS — Gestor de espejos",
   "select_countries": "Selecciona países para buscar espejos:",
   "search_placeholder": "🔍 Buscar un país...",
@@ -18,5 +19,8 @@
   "mirrors_updated": "✓ ¡Espejos actualizados correctamente!",
   "backup_restored": "✓ Copia de seguridad restaurada.",
   "parse_error": "Listo (no se pudo analizar la respuesta del backend).",
-  "mirrors_count": "{0} espejos"
+  "mirrors_count": "{0} espejos",
+  "language_label": "Idioma",
+  "error_message": "Error: {0}",
+  "unknown_error": "Error desconocido"
 }

@@ -6,7 +6,7 @@
         "Description": "Time and date on the panel with a calendar, events from Equestria Calendar and clocks of other time zones — like in Windows",
         "Category": "Date and Time",
         "Icon": "preferences-system-time",
-        "Version": "2.0",
+        "Version": "2.1",
         "License": "GPL-2.0+",
         "Authors": [
             {

@@ -2,13 +2,13 @@
 
 pkgname=equestria-os-proton-starter
 pkgver=1.8.0
-pkgrel=6
+pkgrel=8
 pkgdesc="Native Windows .exe/.msi launcher for Equestria OS (double-click support via Proton, engine manager, Xbox 360 gamepad mode, GameMode, upscaler DLL upgrades)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
 
-depends=('equestria-qt-kit>=1.1' 
+depends=('equestria-qt-kit>=1.3' 
     'python-pyqt6'
     'umu-launcher'
     'winetricks'
@@ -33,8 +33,13 @@ package() {
     local _lib="$pkgdir/opt/equestria-os/equestria-proton-starter"
     install -dm755 "$_lib"
 
-    for f in dispatch.py main.py launcher.py steam_integration.py cleaner.py proton_runner.py ui.py style.qss localization.csv EquestriaOS-Logo.png; do
+    for f in dispatch.py main.py launcher.py steam_integration.py cleaner.py proton_runner.py ui.py proton_i18n.py style.qss EquestriaOS-Logo.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    # переводы: locales/<язык>.json рядом с программой
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$_lib/locales/$(basename "$f")"
     done
 
     # Three entry points, each calling the appropriate module directly

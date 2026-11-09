@@ -1,0 +1,55 @@
+{
+  "sounds": [
+    "paths"
+  ],
+  "paths": [],
+  "dates": [
+    "localization"
+  ],
+  "storage": [
+    "paths"
+  ],
+  "style": [
+    "dates",
+    "localization",
+    "moon_drawing",
+    "paths"
+  ],
+  "calendar_views": [
+    "dates",
+    "localization",
+    "moon_drawing",
+    "style"
+  ],
+  "reminder_dialog": [
+    "calendar_views",
+    "dates",
+    "localization",
+    "style"
+  ],
+  "reminder_popup": [
+    "dates",
+    "localization"
+  ],
+  "reminders": [
+    "dates"
+  ],
+  "window": [
+    "calendar_views",
+    "dates",
+    "localization",
+    "reminder_dialog",
+    "reminder_popup",
+    "reminders",
+    "sounds",
+    "storage",
+    "style"
+  ],
+  "app": [
+    "storage",
+    "style",
+    "window"
+  ],
+  "localization": [],
+  "moon_drawing": []
+}

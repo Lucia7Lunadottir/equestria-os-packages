@@ -2,20 +2,24 @@
 
 pkgname=equestria-os-welcome-hub
 pkgver=2.4.0
-pkgrel=1
+pkgrel=3
 pkgdesc="The official Equestria OS Welcome Center and Community Portal"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('equestria-qt-kit>=1.1' 'python-pyqt6' 'xdg-utils')
+depends=('equestria-qt-kit>=1.3' 'python-pyqt6' 'xdg-utils')
 
 package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
     install -dm755 "$_lib"
 
-    for f in welcome_hub.py ui_welcome.py style.qss equestria_cyrillic.ttf EquestriaOS-Logo.png; do
+    for f in welcome_hub.py ui_welcome.py localization.py style.qss equestria_cyrillic.ttf EquestriaOS-Logo.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$_lib/locales/$(basename "$f")"
+    done
+
 
     # Имя изменено на equestria-os-welcome для соответствия с кодом
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-welcome" << 'EOF'

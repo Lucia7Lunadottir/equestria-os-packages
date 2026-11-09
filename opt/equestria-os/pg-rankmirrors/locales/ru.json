@@ -1,4 +1,5 @@
 {
+  "_language_name": "Русский",
   "title": "🐴  Equestria OS — Менеджер зеркал",
   "select_countries": "Выберите страны для поиска зеркал:",
   "search_placeholder": "🔍 Поиск страны...",
@@ -18,5 +19,8 @@
   "mirrors_updated": "✓ Зеркала успешно обновлены!",
   "backup_restored": "✓ Резервная копия восстановлена.",
   "parse_error": "Готово (не удалось разобрать ответ бэкенда).",
-  "mirrors_count": "{0} зеркал"
+  "mirrors_count": "{0} зеркал",
+  "error_message": "Ошибка: {0}",
+  "unknown_error": "Неизвестная ошибка",
+  "language_label": "Язык"
 }

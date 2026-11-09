@@ -1,4 +1,5 @@
 {
+  "_language_name": "한국어",
   "app_title": "Equestria OS — 둘러보기",
   "btn_next": "다음 ➔",
   "btn_prev": "← 뒤로",
@@ -30,5 +31,6 @@
   "s6_btn3": "💽 디스크",
   "slide7_title": "정말 멋져요! 🌟",
   "slide7_text": "<p>이제 이 시스템이 여러분의 집입니다. 무언가를 잊었거나 자동 시작을 설정하고 싶다면 중앙 허브를 확인하세요.</p><p>Equestria OS와 함께 마법 같은 시간을 보내세요!</p>",
-  "s7_btn1": "🏠 환영 허브"
+  "s7_btn1": "🏠 환영 허브",
+  "language_label": "언어"
 }

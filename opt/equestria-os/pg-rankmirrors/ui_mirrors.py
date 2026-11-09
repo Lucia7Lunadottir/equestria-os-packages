@@ -1,10 +1,11 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QLineEdit, QScrollArea, QFrame, QCheckBox)
 from PyQt6.QtCore import Qt
+from localization import tr, call
 
 
 class CountryRow(QFrame):
-    def __init__(self, country_data, on_toggle_callback, mirrors_label="mirrors"):
+    def __init__(self, country_data, on_toggle_callback):
         super().__init__()
         self.country_data = country_data
         self.setObjectName("CountryRow")
@@ -32,9 +33,9 @@ class CountryRow(QFrame):
         self.lbl_code.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         count = country_data['mirrors']
-        self.lbl_mirrors = QLabel(mirrors_label.replace("{0}", str(count)))
+        self.lbl_mirrors = call(QLabel, tr("mirrors_count", count))
         self.lbl_mirrors.setObjectName("CountryMirrors")
-        self.lbl_mirrors.setFixedWidth(80)
+        self.lbl_mirrors.setMinimumWidth(80)
         self.lbl_mirrors.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
         layout.addWidget(self.checkbox)

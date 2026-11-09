@@ -1,20 +1,24 @@
 pkgname=equestria-installer
 pkgver=2.0.1
-pkgrel=1
+pkgrel=3
 pkgdesc="Graphical local package installer for Equestria OS: pacman, DEB, RPM and Flatpak packages, with updates for DEB/RPM apps"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL3')
-depends=('python' 'python-pyqt6' 'equestria-qt-kit>=1.1' 'polkit' 'tar' 'libarchive' 'zstd' 'pacman')
+depends=('python' 'python-pyqt6' 'equestria-qt-kit>=1.3' 'polkit' 'tar' 'libarchive' 'zstd' 'pacman')
 optdepends=('flatpak: install .flatpak/.flatpakref packages')
 install=equestria-installer.install
 
 package() {
     local _lib="$pkgdir/usr/lib/equestria-installer"
     local f
-    for f in installer.py install_wizard.py foreign_apps.py foreign_cli.py sources.py pkgmeta.py ui_common.py i18n.json Installer.svg; do
+    for f in installer.py install_wizard.py foreign_apps.py foreign_cli.py sources.py pkgmeta.py ui_common.py Installer.svg; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$_lib/locales/$(basename "$f")"
+    done
+
     # от root через pkexec: установка/удаление DEB и RPM
     install -Dm755 "$startdir/foreign_bridge.py" "$_lib/foreign_bridge.py"
 

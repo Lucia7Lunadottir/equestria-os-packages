@@ -1,0 +1,21 @@
+{
+ "_language_name": "Português",
+ "title": "Equestria OS: renomeação em massa",
+ "dir_label": "Pasta de destino",
+ "filter": "Filtro (apenas arquivos que contêm)",
+ "find": "Texto a procurar",
+ "replace": "Substituir por",
+ "prefix": "Adicionar prefixo",
+ "suffix": "Adicionar sufixo",
+ "numbers": "Numeração (começar em)",
+ "preview": "Pré-visualizar",
+ "apply": "Renomear tudo",
+ "browse": "Procurar",
+ "success": "{n} arquivos renomeados com sucesso!",
+ "undo": "Desfazer",
+ "history": "Histórico",
+ "undo_ok": "{n} arquivos revertidos.",
+ "undo_empty": "Nada para desfazer.",
+ "hist_title": "Histórico de renomeações",
+ "hist_empty": "O histórico está vazio."
+}

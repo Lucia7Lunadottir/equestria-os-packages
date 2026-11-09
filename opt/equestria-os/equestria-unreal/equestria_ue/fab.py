@@ -82,11 +82,11 @@ print(label_done + " " + dst, flush=True)
 
 def fab_steps(zip_path: str, eng: Engine, delete_zip: bool) -> list:
     tmp = str(Path(zip_path).with_suffix("")) + "-unpacked"
-    steps = [Step(tr("Очистка временной папки"), ["rm", "-rf", tmp, tmp + "-built"])]
+    steps = [Step(tr("fab.cleaning_temporary_folder"), ["rm", "-rf", tmp, tmp + "-built"])]
     steps += zip_steps(zip_path, tmp)
-    steps.append(Step(tr("Установка плагина Fab в {}", eng.title),
+    steps.append(Step(tr("fab.installing_fab_plugin_into", eng.title),
                       [sys.executable, "-c", INSTALL_SCRIPT, tmp, eng.path,
-                       tr("В архиве только исходники — собираю плагин (несколько минут)…"),
-                       tr("Плагин Fab установлен:"), tr("В архиве не найден Fab.uplugin")]))
-    steps.append(Step(tr("Удаление временных файлов"), ["rm", "-rf", tmp, tmp + "-built"] + ([zip_path] if delete_zip else [])))
+                       tr("fab.archive_contains_only_sources_building"),
+                       tr("fab.fab_plugin_installed"), tr("fab.fab_uplugin_not_found_archive")]))
+    steps.append(Step(tr("fab.deleting_temporary_files"), ["rm", "-rf", tmp, tmp + "-built"] + ([zip_path] if delete_zip else [])))
     return steps

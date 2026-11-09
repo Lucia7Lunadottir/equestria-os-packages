@@ -20,11 +20,11 @@ from PyQt6.QtWidgets import (
 )
 
 from base_module import BaseModule
-try:
-    import equestria_kit  # noqa: F401
-except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
-    import os as _os, sys as _sys
-    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+# Запуск из исходников: соседний equestria-qt-kit новее установленного (нужен live_i18n)
+import os as _os, sys as _sys
+_kit = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit")
+if _os.path.isfile(_os.path.join(_kit, "equestria_kit", "live_i18n.py")) and _kit not in _sys.path:
+    _sys.path.insert(0, _kit)
 from equestria_kit import qt as kit_qt
 from equestria_kit.widgets import font_families
 
@@ -35,6 +35,8 @@ _COMMON_NAMES = [
     "core", "privilege", "hooks", "screenshot", "plasma_utils",
     "auto_restore", "restore_system",
     "settings", "settings_dialog",
+    # у Tutorial, pg-rankmirrors и панели задач — свои, разные localization.py
+    "localization", "rich_text",
 ]
 
 _LANG_METHOD_1ARG = ("change_lang", "set_language", "_change_lang")

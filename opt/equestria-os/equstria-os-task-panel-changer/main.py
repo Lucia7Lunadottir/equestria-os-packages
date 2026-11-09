@@ -54,7 +54,7 @@ class TaskPanelApp(QMainWindow):
         self.ui.setupUi(self)
         self.setWindowTitle("Equestria OS Task Panel Styles")
 
-        self.loc = Localizer(os.path.join(SYSTEM_DIR, "localization.csv"))
+        self.loc = Localizer()  # переводы: locales/<язык>.json
         self.store = PresetStore()
         self.store.load()
         self.applier = PresetApplier(self)
@@ -109,7 +109,7 @@ class TaskPanelApp(QMainWindow):
         self.lang_combo = QComboBox()
         self.lang_combo.setObjectName("LangCombo")
         for code in self.loc.languages:
-            self.lang_combo.addItem(code.upper(), code)
+            self.lang_combo.addItem(self.loc.catalog.language_name(code), code)
         idx = self.lang_combo.findData(self.loc.lang)
         if idx != -1:
             self.lang_combo.setCurrentIndex(idx)

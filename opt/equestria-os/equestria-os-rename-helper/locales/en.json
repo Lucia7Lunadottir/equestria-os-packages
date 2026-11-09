@@ -1,0 +1,21 @@
+{
+ "_language_name": "English",
+ "title": "Equestria OS: Bulk Renamer",
+ "dir_label": "Target Directory",
+ "filter": "Filter (only files containing)",
+ "find": "Find text",
+ "replace": "Replace with",
+ "prefix": "Add Prefix",
+ "suffix": "Add Suffix",
+ "numbers": "Numbering (Start at)",
+ "preview": "Preview",
+ "apply": "Rename All",
+ "browse": "Browse",
+ "success": "Successfully renamed {n} files!",
+ "undo": "Undo",
+ "history": "History",
+ "undo_ok": "Reverted {n} files.",
+ "undo_empty": "Nothing to undo.",
+ "hist_title": "Rename History",
+ "hist_empty": "History is empty."
+}

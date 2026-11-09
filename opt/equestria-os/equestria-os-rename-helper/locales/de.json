@@ -1,0 +1,21 @@
+{
+ "_language_name": "Deutsch",
+ "title": "Equestria OS: Massen-Umbenennung",
+ "dir_label": "Zielverzeichnis",
+ "filter": "Filter (nur Dateien, die enthalten)",
+ "find": "Text suchen",
+ "replace": "Ersetzen durch",
+ "prefix": "Präfix hinzufügen",
+ "suffix": "Suffix hinzufügen",
+ "numbers": "Nummerierung (Start bei)",
+ "preview": "Vorschau",
+ "apply": "Alle umbenennen",
+ "browse": "Durchsuchen",
+ "success": "{n} Dateien erfolgreich umbenannt!",
+ "undo": "Rückgängig",
+ "history": "Verlauf",
+ "undo_ok": "{n} Dateien zurückgesetzt.",
+ "undo_empty": "Nichts rückgängig zu machen.",
+ "hist_title": "Umbenennungsverlauf",
+ "hist_empty": "Der Verlauf ist leer."
+}

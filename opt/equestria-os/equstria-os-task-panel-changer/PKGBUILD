@@ -2,12 +2,12 @@
 
 pkgname=equestria-os-task-panel-changer
 pkgver=2.0.0
-pkgrel=3
+pkgrel=5
 pkgdesc="Task panel style manager for Equestria OS (KDE Plasma 6)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL')
-depends=('equestria-qt-kit>=1.1' 'python-pyqt6' 'plasma-workspace')
+depends=('equestria-qt-kit>=1.3' 'python-pyqt6' 'plasma-workspace')
 optdepends=('equestria-os-character-theme>=2.1.0-2: панель меняет дневной и ночной цвет вместе с глобальной темой персонажа')
 install="$pkgname.install"
 
@@ -15,8 +15,13 @@ package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
     install -dm755 "$_lib"
 
-    for f in main.py ui.py widgets.py localization.py plasma.py panel_style.py panel_layout.py desktop_icons.py presets.py preset_applier.py style.qss equestria_cyrillic.ttf localization.csv presets.json restore_panel.sh save_panel.sh fix_sysmon_title.sh EquestriaOS-Logo.png; do
+    for f in main.py ui.py widgets.py localization.py plasma.py panel_style.py panel_layout.py desktop_icons.py presets.py preset_applier.py style.qss equestria_cyrillic.ttf presets.json restore_panel.sh save_panel.sh fix_sysmon_title.sh EquestriaOS-Logo.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+
+    # переводы: locales/<язык>.json рядом с программой
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$_lib/locales/$(basename "$f")"
     done
     chmod 755 "$_lib/restore_panel.sh" "$_lib/save_panel.sh" "$_lib/fix_sysmon_title.sh"
 

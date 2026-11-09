@@ -111,7 +111,9 @@ PlasmoidItem {
         showSeconds: cfg.showSeconds
         showDate: cfg.showDate
         dateFormat: cfg.dateFormat
+        dateDisplay: cfg.dateDisplayFormat
         vertical: root.vertical
+        horizontal: Plasmoid.formFactor === PlasmaCore.Types.Horizontal
         onClicked: (mouse) => {
             if (mouse.button === Qt.MiddleButton)
                 root.launch(cfg.clockCommand)
@@ -126,6 +128,7 @@ PlasmoidItem {
         zones: root.zones
         weekNumbers: cfg.showWeekNumbers
         calendarInstalled: root.calendarInstalled
+        showMoon: cfg.showMoon
         onOpenCalendar: root.launch(cfg.calendarCommand)
         onOpenClock: root.launch(cfg.clockCommand)
         onOpenSettings: root.launch("systemsettings kcm_clock")

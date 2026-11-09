@@ -1,20 +1,28 @@
 # Maintainer: Equestria OS
 pkgname=equestria-gpu
 pkgver=1.0
-pkgrel=2
+pkgrel=4
 pkgdesc="Graphics card drivers and diagnostics (PyQt6)"
 arch=('any')
 license=('custom')
-depends=('python-pyqt6' 'equestria-qt-kit>=1.1' 'pciutils')
+depends=('python-pyqt6' 'equestria-qt-kit>=1.3-2' 'pciutils')
 optdepends=('nvidia-utils: сведения и настройки NVIDIA'
             'vulkan-tools: проверка Vulkan и DX12 (vulkaninfo)'
             'mangohud: оверлей FPS в играх'
             'gamemode: режим производительности в играх')
-source=("equestria_gpu.py" "equestria-gpu.desktop" "i18n.json")
-sha256sums=('SKIP' 'SKIP' 'SKIP')
+source=("equestria_gpu.py" "equestria-gpu.desktop")
+sha256sums=('7ae3c81a21a7afb6606fa9b68e8c78d105a779a8098ea78b45582a5a5f61c563' '76838cd89812e7a526f5d053eb02e27ac3747e2902f90d11c119dc7c25e78324')
 
 package() {
-    install -Dm755 "$srcdir/equestria_gpu.py" "$pkgdir/usr/bin/equestria-gpu"
+    local libdir="$pkgdir/usr/lib/equestria-gpu"
+    install -Dm755 "$srcdir/equestria_gpu.py" "$libdir/equestria_gpu.py"
+    for f in "$startdir"/equestria_gpu_app/*.py; do
+        install -Dm644 "$f" "$libdir/equestria_gpu_app/$(basename "$f")"
+    done
+    install -d "$pkgdir/usr/bin"
+    ln -s /usr/lib/equestria-gpu/equestria_gpu.py "$pkgdir/usr/bin/equestria-gpu"
     install -Dm644 "$srcdir/equestria-gpu.desktop" "$pkgdir/usr/share/applications/equestria-gpu.desktop"
-    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-gpu/i18n.json"
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$pkgdir/usr/share/equestria-gpu/locales/$(basename "$f")"
+    done
 }

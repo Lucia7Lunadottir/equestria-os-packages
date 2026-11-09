@@ -1,4 +1,5 @@
 {
+  "_language_name": "日本語",
   "title": "🐴  Equestria OS — ミラーマネージャー",
   "select_countries": "ミラーを検索する国を選択：",
   "search_placeholder": "🔍 国を検索...",
@@ -18,5 +19,8 @@
   "mirrors_updated": "✓ ミラーが正常に更新されました！",
   "backup_restored": "✓ バックアップが復元されました。",
   "parse_error": "完了（バックエンドの応答を解析できませんでした）。",
-  "mirrors_count": "{0} ミラー"
+  "mirrors_count": "{0} ミラー",
+  "language_label": "言語",
+  "error_message": "エラー: {0}",
+  "unknown_error": "不明なエラー"
 }

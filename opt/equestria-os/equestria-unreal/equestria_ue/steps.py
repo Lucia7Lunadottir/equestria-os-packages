@@ -25,18 +25,18 @@ print("%s: 100%%" % sys.argv[3], flush=True)
 
 
 def build_chain(dest: str) -> list:
-    return [Step(tr("Setup.sh — загрузка зависимостей движка"), ["bash", "./Setup.sh"], dest),
+    return [Step(tr("steps.setup_sh_downloading_engine_dependencies"), ["bash", "./Setup.sh"], dest),
             Step("GenerateProjectFiles.sh", ["bash", "./GenerateProjectFiles.sh"], dest),
-            Step(tr("Сборка редактора (make) — это долго"), ["make"], dest)]
+            Step(tr("steps.building_editor_make_takes_while"), ["make"], dest)]
 
 
 def install_steps(cfg: Config, ver: tuple, dest: str) -> list:
     steps = []
     miss = missing_deps(ver[0] == 4) if cfg["deps"] else []
     if miss:
-        steps.append(Step(tr("Зависимости (pacman)"), ["pkexec", "pacman", "-S", "--needed", "--noconfirm", *miss]))
+        steps.append(Step(tr("steps.dependencies_pacman"), ["pkexec", "pacman", "-S", "--needed", "--noconfirm", *miss]))
     if not (Path(dest) / ".git").exists():
-        steps.append(Step(tr("Загрузка исходников {} (git clone --depth 1)", vstr(ver)),
+        steps.append(Step(tr("steps.downloading_sources_git_clone_depth", vstr(ver)),
                           ["git", "clone", "--depth", "1", "--progress", "--branch", f"{vstr(ver)}-release",
                            REPO[cfg["access"]], dest], "", GIT_ENV))
     return steps + build_chain(dest)
@@ -44,8 +44,8 @@ def install_steps(cfg: Config, ver: tuple, dest: str) -> list:
 
 def update_steps(cfg: Config, path: str, ver: tuple) -> list:
     tag = f"{vstr(ver)}-release"
-    return [Step(tr("Загрузка {}", tag), ["git", "fetch", "--depth", "1", "origin", "tag", tag], path, GIT_ENV),
-            Step(tr("Переключение на {}", tag), ["git", "checkout", "-f", f"tags/{tag}"], path)] + build_chain(path)
+    return [Step(tr("steps.downloading", tag), ["git", "fetch", "--depth", "1", "origin", "tag", tag], path, GIT_ENV),
+            Step(tr("steps.switching", tag), ["git", "checkout", "-f", f"tags/{tag}"], path)] + build_chain(path)
 
 
 DOWNLOAD_SCRIPT = r'''
@@ -75,18 +75,18 @@ print(f"100% {done_txt}", flush=True)
 
 
 def download_steps(url: str, zip_path: str) -> list:
-    return [Step(tr("Скачивание архива (докачка поддерживается)"),
-                 [sys.executable, "-c", DOWNLOAD_SCRIPT, url, zip_path, tr("ГБ"), tr("МБ/с"), tr("готово")])]
+    return [Step(tr("steps.downloading_archive_resume_supported"),
+                 [sys.executable, "-c", DOWNLOAD_SCRIPT, url, zip_path, tr("common.gb"), tr("steps.mb_s"), tr("common.done")])]
 
 
 def zip_steps(zip_path: str, dest: str) -> list:
-    return [Step(tr("Распаковка архива"), [sys.executable, "-c", UNZIP_SCRIPT, zip_path, dest, tr("Распаковка")])]
+    return [Step(tr("steps.unpacking_archive"), [sys.executable, "-c", UNZIP_SCRIPT, zip_path, dest, tr("steps.unpacking")])]
 
 
 def project_steps(kind: str, eng: Engine, uproject: str) -> list:
     bat = f"{eng.path}/Engine/Build/BatchFiles/Linux"
     if kind == "gen":
-        return [Step(tr("Генерация файлов проекта"), ["bash", f"{bat}/GenerateProjectFiles.sh", f"-project={uproject}", "-game"], eng.path)]
+        return [Step(tr("steps.generating_project_files"), ["bash", f"{bat}/GenerateProjectFiles.sh", f"-project={uproject}", "-game"], eng.path)]
     name = Path(uproject).stem
-    return [Step(tr("Сборка {}Editor (Development)", name),
+    return [Step(tr("steps.building_editor_development", name),
                  ["bash", f"{bat}/Build.sh", f"{name}Editor", "Linux", "Development", f"-project={uproject}", "-progress"], eng.path)]

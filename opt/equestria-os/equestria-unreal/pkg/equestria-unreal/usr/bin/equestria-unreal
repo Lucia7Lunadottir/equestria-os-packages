@@ -1,2 +1,0 @@
-#!/bin/bash
-exec python3 /opt/equestria-os/equestria-unreal/equestria_unreal.py "$@"

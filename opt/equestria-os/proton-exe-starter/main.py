@@ -1,7 +1,6 @@
 import sys
 import os
 import re
-import csv
 import json
 import shutil
 import hashlib
@@ -17,7 +16,7 @@ except ImportError:  # запуск из исходников, пакет equest
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
-from equestria_kit.i18n import detect_language
+import proton_i18n
 
 APPS_DATA_DIR = os.path.expanduser("~/.local/share/Equestria OS/ProtonApps/")
 CONFIG_DIR = os.path.expanduser("~/.config/Equestria OS/Proton/")
@@ -187,7 +186,6 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         super().__init__()
         self.setupUi(self)
 
-        self.locales = {}
         self.current_lang = "en"
         self.exe_path = ""
         self.exe_name = ""
@@ -195,7 +193,6 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         self.prefix_path = ""
         self.config_file = ""
 
-        self.load_localization()
         self.detect_language()
         self.setup_lang_selector()
         self.populate_proton_combo()
@@ -223,29 +220,19 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
 
         self.update_ui_text()
 
-    def load_localization(self):
-        csv_path = os.path.join(SYSTEM_PATH, "localization.csv")
-        if not os.path.exists(csv_path):
-            return
-        with open(csv_path, "r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                key = row["key"]
-                self.locales[key] = {lang: text for lang, text in row.items() if lang != "key"}
-
     def detect_language(self):
-        self.current_lang = detect_language()
+        self.current_lang = proton_i18n.current_lang()
 
     def t_str(self, key):
-        return self.locales.get(key, {}).get(self.current_lang, key)
+        return proton_i18n.t(key)
 
     def setup_lang_selector(self):
         # Компактный выпадающий список языков вместо ряда кнопок
-        codes = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "zh_TW", "ja", "ko"]
         self.lang_combo = QComboBox()
         self.lang_combo.setObjectName("LangCombo")
-        for code in codes:
-            self.lang_combo.addItem(code.upper(), code)
+        # языки — найденные файлы locales/*.json, названия — из них же (_language_name)
+        for code in proton_i18n.CATALOG.languages:
+            self.lang_combo.addItem(proton_i18n.CATALOG.language_name(code), code)
         idx = self.lang_combo.findData(self.current_lang)
         if idx != -1:
             self.lang_combo.setCurrentIndex(idx)
@@ -255,7 +242,7 @@ class LauncherApp(QMainWindow, Ui_SettingsWindow):
         self.lang_layout.addWidget(self.lang_combo)
 
     def change_language(self, code):
-        self.current_lang = code
+        self.current_lang = proton_i18n.set_language(code)  # ещё и сохраняет выбор
         idx = self.lang_combo.findData(code)
         if idx != -1 and self.lang_combo.currentIndex() != idx:
             self.lang_combo.setCurrentIndex(idx)

@@ -1,4 +1,5 @@
 {
+  "_language_name": "繁體中文",
   "app_title": "Equestria OS — 導覽",
   "btn_next": "下一步 ➔",
   "btn_prev": "← 返回",
@@ -30,5 +31,6 @@
   "s6_btn3": "💽 磁碟",
   "slide7_title": "您太棒了！🌟",
   "slide7_text": "<p>這個系統現在是您的新家。如果您忘記了什麼或想配置自動啟動——請檢視我們的中央樞紐。</p><p>祝您使用 Equestria OS 擁有神奇的體驗！</p>",
-  "s7_btn1": "🏠 Welcome Hub"
+  "s7_btn1": "🏠 Welcome Hub",
+  "language_label": "語言"
 }

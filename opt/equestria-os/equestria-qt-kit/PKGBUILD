@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS
 pkgname=equestria-qt-kit
-pkgver=1.2
-pkgrel=1
+pkgver=1.3
+pkgrel=3
 pkgdesc="Общая библиотека PyQt6-приложений Equestria OS: темы персонажей, локализация, автозапуск, общие виджеты"
 arch=('any')
 license=('custom')
@@ -13,5 +13,6 @@ package() {
     site=$(python -c "import sysconfig; print(sysconfig.get_path('purelib'))")
     install -Dm644 -t "$pkgdir$site/equestria_kit" "$startdir"/equestria_kit/*.py
     install -Dm644 -t "$pkgdir$site/equestria_kit/icons" "$startdir"/equestria_kit/icons/*.svg
+    install -Dm644 -t "$pkgdir$site/equestria_kit/locales" "$startdir"/equestria_kit/locales/*.json
     install -dm755 "$pkgdir/usr/share/equestria-os/themes"
 }

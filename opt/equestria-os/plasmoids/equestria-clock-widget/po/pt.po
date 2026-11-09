@@ -102,3 +102,52 @@ msgid "%1 event today"
 msgid_plural "%1 events today"
 msgstr[0] "%1 evento hoje"
 msgstr[1] "%1 eventos hoje"
+
+msgid "New moon"
+msgstr "Lua nova"
+
+msgid "First quarter"
+msgstr "Quarto crescente"
+
+msgid "Full moon"
+msgstr "Lua cheia"
+
+msgid "Last quarter"
+msgstr "Quarto minguante"
+
+msgid "Waxing crescent"
+msgstr "Lua crescente"
+
+msgid "Waxing gibbous"
+msgstr "Gibosa crescente"
+
+msgid "Waning gibbous"
+msgstr "Gibosa minguante"
+
+msgid "Waning crescent"
+msgstr "Lua minguante"
+
+msgid "Full moon ≈ %1"
+msgstr "Lua cheia ≈ %1"
+
+msgid "New moon ≈ %1"
+msgstr "Lua nova ≈ %1"
+
+msgctxt "moon: illuminated percent, age in days"
+msgid "Illuminated %1% · age %2 d"
+msgstr "Iluminada %1% · idade %2 d"
+
+msgid "Date position:"
+msgstr "Posição da data:"
+
+msgid "Adaptive"
+msgstr "Adaptável"
+
+msgid "Beside time"
+msgstr "Ao lado da hora"
+
+msgid "Below time"
+msgstr "Abaixo da hora"
+
+msgid "Show moon phases"
+msgstr "Mostrar as fases da lua"

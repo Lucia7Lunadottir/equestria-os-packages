@@ -101,3 +101,52 @@ msgstr "昨日"
 msgid "%1 event today"
 msgid_plural "%1 events today"
 msgstr[0] "今日の予定 %1 件"
+
+msgid "New moon"
+msgstr "新月"
+
+msgid "First quarter"
+msgstr "上弦の月"
+
+msgid "Full moon"
+msgstr "満月"
+
+msgid "Last quarter"
+msgstr "下弦の月"
+
+msgid "Waxing crescent"
+msgstr "三日月"
+
+msgid "Waxing gibbous"
+msgstr "十三夜月"
+
+msgid "Waning gibbous"
+msgstr "寝待月"
+
+msgid "Waning crescent"
+msgstr "有明月"
+
+msgid "Full moon ≈ %1"
+msgstr "満月 ≈ %1"
+
+msgid "New moon ≈ %1"
+msgstr "新月 ≈ %1"
+
+msgctxt "moon: illuminated percent, age in days"
+msgid "Illuminated %1% · age %2 d"
+msgstr "輝面 %1% · 月齢 %2 日"
+
+msgid "Date position:"
+msgstr "日付の位置:"
+
+msgid "Adaptive"
+msgstr "自動"
+
+msgid "Beside time"
+msgstr "時刻の横"
+
+msgid "Below time"
+msgstr "時刻の下"
+
+msgid "Show moon phases"
+msgstr "月相を表示"

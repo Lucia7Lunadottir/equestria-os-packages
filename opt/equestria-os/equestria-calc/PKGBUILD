@@ -1,17 +1,25 @@
 # Maintainer: Equestria OS
 pkgname=equestria-calc
 pkgver=1.0
-pkgrel=3
+pkgrel=6
 pkgdesc="Calculator (PyQt6)"
 arch=('any')
 license=('custom')
-depends=('python-pyqt6' 'equestria-qt-kit>=1.1')
-source=("equestria_calc.py" "equestria-calc.desktop" "i18n.json" "equestria-calc.svg")
-sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP')
+depends=('python-pyqt6' 'equestria-qt-kit>=1.3-2')
+source=("equestria_calc.py" "equestria-calc.desktop" "equestria-calc.svg")
+sha256sums=('6955219ed7fe52111bd9b8b9d810d15629e1034c40c4e0793b131ecc0aea69fb' '06fd65e251b3422a18a35343618156ef0d8bc9d4b667b051ae71d350f1ef80f5' 'fbb64a2a61ed3b4b8a105d10a0ec365df81505e5003a4107738d7e0f8b3e2bc8')
 
 package() {
-    install -Dm755 "$srcdir/equestria_calc.py" "$pkgdir/usr/bin/equestria-calc"
+    local libdir="$pkgdir/usr/lib/equestria-calc"
+    install -Dm755 "$srcdir/equestria_calc.py" "$libdir/equestria_calc.py"
+    for f in "$startdir"/equestria_calc_app/*.py; do
+        install -Dm644 "$f" "$libdir/equestria_calc_app/$(basename "$f")"
+    done
+    install -d "$pkgdir/usr/bin"
+    ln -s /usr/lib/equestria-calc/equestria_calc.py "$pkgdir/usr/bin/equestria-calc"
     install -Dm644 "$srcdir/equestria-calc.desktop" "$pkgdir/usr/share/applications/equestria-calc.desktop"
-    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-calc/i18n.json"
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$pkgdir/usr/share/equestria-calc/locales/$(basename "$f")"
+    done
     install -Dm644 "$srcdir/equestria-calc.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/equestria-calc.svg"
 }

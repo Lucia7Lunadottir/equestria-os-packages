@@ -101,3 +101,52 @@ msgstr "昨天"
 msgid "%1 event today"
 msgid_plural "%1 events today"
 msgstr[0] "今天有 %1 個事件"
+
+msgid "New moon"
+msgstr "新月"
+
+msgid "First quarter"
+msgstr "上弦月"
+
+msgid "Full moon"
+msgstr "滿月"
+
+msgid "Last quarter"
+msgstr "下弦月"
+
+msgid "Waxing crescent"
+msgstr "娥眉月"
+
+msgid "Waxing gibbous"
+msgstr "盈凸月"
+
+msgid "Waning gibbous"
+msgstr "虧凸月"
+
+msgid "Waning crescent"
+msgstr "殘月"
+
+msgid "Full moon ≈ %1"
+msgstr "滿月 ≈ %1"
+
+msgid "New moon ≈ %1"
+msgstr "新月 ≈ %1"
+
+msgctxt "moon: illuminated percent, age in days"
+msgid "Illuminated %1% · age %2 d"
+msgstr "照亮 %1% · 月齡 %2 天"
+
+msgid "Date position:"
+msgstr "日期位置："
+
+msgid "Adaptive"
+msgstr "自動調整"
+
+msgid "Beside time"
+msgstr "在時間旁邊"
+
+msgid "Below time"
+msgstr "在時間下方"
+
+msgid "Show moon phases"
+msgstr "顯示月相"

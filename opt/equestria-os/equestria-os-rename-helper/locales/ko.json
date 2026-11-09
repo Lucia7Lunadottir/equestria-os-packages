@@ -1,0 +1,21 @@
+{
+ "_language_name": "한국어",
+ "title": "Equestria OS: 일괄 이름 변경",
+ "dir_label": "대상 디렉터리",
+ "filter": "필터 (이 텍스트를 포함하는 파일만)",
+ "find": "찾을 텍스트",
+ "replace": "바꿀 내용",
+ "prefix": "접두사 추가",
+ "suffix": "접미사 추가",
+ "numbers": "번호 매기기 (시작 번호)",
+ "preview": "미리 보기",
+ "apply": "모두 이름 바꾸기",
+ "browse": "찾아보기",
+ "success": "파일 {n}개의 이름을 바꿨습니다!",
+ "undo": "실행 취소",
+ "history": "기록",
+ "undo_ok": "파일 {n}개를 되돌렸습니다.",
+ "undo_empty": "되돌릴 작업이 없습니다.",
+ "hist_title": "이름 변경 기록",
+ "hist_empty": "기록이 비어 있습니다."
+}

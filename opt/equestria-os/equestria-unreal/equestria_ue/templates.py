@@ -44,9 +44,9 @@ def read_templates(eng: Engine) -> list:
 
 
 # имена переводятся при чтении (tr в read_templates) — язык можно сменить на лету
-BUILTIN = [("blank_bp", "Пустой проект (Blueprint)", False),
-           ("blank_cpp", "Пустой проект (C++)", True),
-           ("light", "Лёгкий — для слабых видеокарт (GTX 10xx)", False),
+BUILTIN = [("blank_bp", "templates.blank_project_blueprint", False),
+           ("blank_cpp", "templates.blank_project_c", True),
+           ("light", "templates.lightweight_weak_gpus_gtx_10xx", False),
            ("rt", "Ray Tracing + Lumen (RTX)", False)]
 BUILTIN_INI = {
     "blank_bp": "",
@@ -111,10 +111,10 @@ def create_builtin(tp: Template, parent: str, name: str, eng: Engine) -> str:
 
 def create_project(tp: Template, parent: str, name: str, eng: Engine) -> str:
     if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", name):
-        raise ValueError(tr("Имя проекта: латиница, цифры и _, первая — буква."))
+        raise ValueError(tr("templates.project_name_latin_letters_digits"))
     dest = Path(parent) / name
     if dest.exists() and any(dest.iterdir()):
-        raise ValueError(tr("Папка {} уже существует и не пуста.", dest))
+        raise ValueError(tr("templates.folder_already_exists_not_empty", dest))
     if tp.builtin:
         return create_builtin(tp, parent, name, eng)
     defs = read_text(tp.path / "TemplateDefs.ini")
@@ -146,7 +146,7 @@ def create_project(tp: Template, parent: str, name: str, eng: Engine) -> str:
                 shutil.copy2(src, dst)
     ups = list((dest).glob("*.uproject"))
     if not ups:
-        raise RuntimeError(tr("В шаблоне не найден .uproject"))
+        raise RuntimeError(tr("templates.no_uproject_found_template"))
     pr = load_project(str(ups[0]))
     if pr:
         set_association(pr, f"{eng.version[0]}.{eng.version[1]}")

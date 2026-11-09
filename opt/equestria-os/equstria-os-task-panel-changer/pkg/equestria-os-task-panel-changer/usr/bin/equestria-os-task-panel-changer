@@ -1,3 +1,0 @@
-#!/bin/bash
-cd /opt/equestria-os/equestria-os-task-panel-changer/
-exec python3 main.py "$@"

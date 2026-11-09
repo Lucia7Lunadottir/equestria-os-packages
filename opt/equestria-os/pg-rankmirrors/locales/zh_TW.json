@@ -1,4 +1,5 @@
 {
+  "_language_name": "繁體中文",
   "title": "🐴  Equestria OS — 映象管理器",
   "select_countries": "選擇要搜尋映象的國家：",
   "search_placeholder": "🔍 搜尋國家...",
@@ -18,5 +19,8 @@
   "mirrors_updated": "✓ 映象更新成功！",
   "backup_restored": "✓ 備份已恢復。",
   "parse_error": "完成（無法解析後端響應）。",
-  "mirrors_count": "{0} 個映象"
+  "mirrors_count": "{0} 個映象",
+  "language_label": "語言",
+  "error_message": "錯誤：{0}",
+  "unknown_error": "未知錯誤"
 }

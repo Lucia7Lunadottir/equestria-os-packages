@@ -6,9 +6,10 @@
   • light_variant — светлая палитра из тёмной палитры персонажа;
   • system_prefers_dark / SystemSchemeWatcher — светлая или тёмная схема KDE и её смена;
   • theme_color  — цвет роли для того, что рисуется кодом (QPainter);
-  • ThemeApplier — применить тему: QSS-шаблон с @цвет@ + QPalette + запомнить выбор;
+  • ThemeApplier — применить тему: QSS-шаблон с @цвет@ + QPalette (выбор не сохраняет);
   • check_png    — галочка для QCheckBox в цвет темы (QSS сам её не рисует);
-  • theme_menu   — выпадающее меню выбора темы;
+  • theme_menu   — меню выбора темы: «Как в системе» + все темы, выбор — только этого приложения;
+  • theme_choices — те же пункты для своих списков (QComboBox).
   • JsonConfig   — настройки приложения в ~/.config/<app>/settings.json.
 """
 from __future__ import annotations
@@ -23,7 +24,7 @@ from PyQt6.QtCore import QPointF, Qt
 from PyQt6.QtGui import QAction, QColor, QPainter, QPalette, QPen, QPixmap, QPolygonF
 from PyQt6.QtWidgets import QApplication, QMenu, QWidget
 
-from . import themes as kit_themes
+from . import live_i18n, themes as kit_themes
 
 
 _TOKEN = re.compile(r"@([a-z_0-9]+)(?:([/%])(\d{1,3}))?@")
@@ -355,7 +356,6 @@ class ThemeApplier:
         app = QApplication.instance()
         app.setPalette(pal)
         app.setStyleSheet(qss)
-        kit_themes.remember(name)
         return name
 
 
@@ -383,13 +383,41 @@ def check_png(color: str, app_id: str) -> str:
     return path.as_posix()
 
 
+def kit_text(key: str, catalog: "live_i18n.Catalog | None" = None) -> "live_i18n.Text":
+    """Строка библиотеки (equestria_kit/locales, ключи kit.*) на языке приложения. Текст привязан
+    к каталогу приложения, поэтому live_i18n.call(...) обновит его при смене языка.
+    catalog — каталог приложения; без него берётся первый найденный (в процессе одно приложение)."""
+    library = live_i18n._library_catalog()
+    app = catalog or next((c for c in live_i18n.catalogs() if c is not library), None)
+    return (app or library).library_text(key)
+
+
+def theme_choices(catalog: "live_i18n.Catalog | None" = None) -> list:
+    """[(подпись, выбор)] для списка тем: первым «Как в системе» (SYSTEM), дальше все темы.
+    catalog — каталог приложения, чтобы подпись менялась вместе с его языком."""
+    return [(kit_text("kit.system_theme", catalog), kit_themes.SYSTEM)] + [(n, n) for n in kit_themes.THEMES]
+
+
+def pick_theme(choice: str) -> str:
+    """Запомнить выбор этого приложения и вернуть тему, которую надо применить."""
+    kit_themes.remember(choice)
+    return kit_themes.current_name()
+
+
 def theme_menu(parent: QWidget, anchor: QWidget, current: str, on_pick: Callable[[str], object]) -> None:
-    """Меню со всеми темами под кнопкой anchor; текущая отмечена точкой."""
+    """Меню тем под кнопкой anchor; отмечен выбор этого приложения.
+    on_pick(имя темы) получает уже готовую к применению тему («Как в системе» → тема персонажа).
+    current оставлен для совместимости: отметка берётся из сохранённого выбора."""
     menu = QMenu(parent)
-    for name in kit_themes.THEMES:
-        act = QAction(("● " if name == current else "   ") + name, parent)
-        act.triggered.connect(lambda _=False, n=name: on_pick(n))
+    chosen = kit_themes.choice()
+    if chosen != kit_themes.SYSTEM and chosen not in kit_themes.THEMES:
+        chosen = kit_themes.SYSTEM   # выбранную тему удалили — работает «Как в системе»
+    for i, (label, value) in enumerate(theme_choices()):
+        act = QAction(("● " if value == chosen else "   ") + str(label), parent)
+        act.triggered.connect(lambda _=False, v=value: on_pick(pick_theme(v)))
         menu.addAction(act)
+        if i == 0:
+            menu.addSeparator()
     menu.exec(anchor.mapToGlobal(anchor.rect().bottomLeft()))
 
 

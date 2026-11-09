@@ -1,4 +1,5 @@
 {
+  "_language_name": "English",
   "app_title": "Equestria OS — Tour",
   "btn_next": "Next ➔",
   "btn_prev": "← Back",
@@ -30,5 +31,6 @@
   "s6_btn3": "💽 Disks",
   "slide7_title": "You are amazing! 🌟",
   "slide7_text": "<p>This system is now your home. If you forget something or want to configure autostart, check out our central hub.</p><p>Have a magical experience with Equestria OS!</p>",
-  "s7_btn1": "🏠 Welcome Hub"
+  "s7_btn1": "🏠 Welcome Hub",
+  "language_label": "Language"
 }

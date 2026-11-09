@@ -35,12 +35,12 @@ class InstalledPackage:
 
     @property
     def display_version(self) -> str:
-        return tr("неизвестна") if self.version == pkgmeta.UNKNOWN_VERSION else self.version
+        return tr("foreign_apps.unknown") if self.version == pkgmeta.UNKNOWN_VERSION else self.version
 
     @property
     def source_text(self) -> str:
         if not self.source:
-            return tr("нет источника")
+            return tr("foreign_apps.no_source")
         return urlparse(self.source.get("url", "")).hostname or self.source.get("url", "")
 
     @property
@@ -109,7 +109,7 @@ class Download(QThread):
             self.path = str(sources.download(self.candidate, Path(CACHE_DIR) / "updates",
                                              lambda done, total: self.progress.emit(int(done * 100 / total) if total else 0)))
         except OSError as e:
-            self.error = (tr("Контрольная сумма не совпала — файл повреждён или подменён.")
+            self.error = (tr("foreign_apps.checksum_mismatch_file_damaged_has")
                           if "checksum" in str(e) else str(e))
         except Exception as e:  # noqa: BLE001
             self.error = str(e)

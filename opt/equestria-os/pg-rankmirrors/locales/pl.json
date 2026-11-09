@@ -1,4 +1,5 @@
 {
+  "_language_name": "Polski",
   "title": "🐴  Equestria OS — Menedżer serwerów lustrzanych",
   "select_countries": "Wybierz kraje do wyszukiwania serwerów:",
   "search_placeholder": "🔍 Szukaj kraju...",
@@ -18,5 +19,8 @@
   "mirrors_updated": "✓ Serwery lustrzane zaktualizowane pomyślnie!",
   "backup_restored": "✓ Kopia zapasowa przywrócona.",
   "parse_error": "Gotowe (nie można przetworzyć odpowiedzi backendu).",
-  "mirrors_count": "{0} serwerów"
+  "mirrors_count": "{0} serwerów",
+  "language_label": "Język",
+  "error_message": "Błąd: {0}",
+  "unknown_error": "Nieznany błąd"
 }

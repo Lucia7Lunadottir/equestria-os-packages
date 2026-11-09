@@ -1,9 +1,0 @@
-[Unit]
-Description=Equestria Save Point: mark the boot as successful after 2 minutes
-
-[Timer]
-OnActiveSec=2min
-AccuracySec=10s
-
-[Install]
-WantedBy=graphical.target

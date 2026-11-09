@@ -1,31 +1,26 @@
-import sys, os, glob, json, subprocess, threading
+import sys, os, json, subprocess, threading
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui import QFontDatabase, QFont, QIcon
 from PyQt6.QtCore import Qt, pyqtSignal
+from localization import catalog, tr, call
 from ui_mirrors import Ui_RankMirrors, CountryRow
-try:
-    import equestria_kit  # noqa: F401
-except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
-    import os as _os, sys as _sys
-    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
-from equestria_kit.i18n import detect_language
 from equestria_kit.widgets import font_families
 
 class main_app(QMainWindow, Ui_RankMirrors):
-    countries_loaded = pyqtSignal(list, str)
-    mirrors_loaded = pyqtSignal(str)
+    countries_loaded = pyqtSignal(list, object)
+    mirrors_loaded = pyqtSignal(object)
     operation_finished = pyqtSignal(bool, str)
 
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         self.base_path = os.path.dirname(os.path.abspath(__file__))
-        self.setWindowTitle("Equestria OS Mirrors")
+        call(self.setWindowTitle, tr("title"))
 
-        # --- Locales ---
-        self.langs: dict = self._load_locales()
-        self.current_lang = self._detect_lang()
+        self.lang_combo = catalog.selector(self.header)
+        call(self.lang_combo.setToolTip, tr("language_label"))
+        self.header.layout().addWidget(self.lang_combo)
 
         # Сигналы
         self.countries_loaded.connect(self.on_countries_loaded)
@@ -50,56 +45,28 @@ class main_app(QMainWindow, Ui_RankMirrors):
                 self.title_label.setFont(QFont(families[0], 22, QFont.Weight.Bold))
 
         if os.path.exists(os.path.join(self.base_path, "style.qss")):
-            kit_qt.style(self, open(os.path.join(self.base_path, "style.qss")).read())
+            with open(os.path.join(self.base_path, "style.qss"), encoding="utf-8") as stylesheet:
+                kit_qt.style(self, stylesheet.read())
 
-        self._retranslate_ui()
+        self.bind_interface_texts()
         self.update_apply_button()
         self._check_timer_state()
         self.load_data()
 
     # ── Localization ──────────────────────────────────────────────────────────
 
-    def _load_locales(self) -> dict:
-        langs = {}
-        locales_dir = os.path.join(self.base_path, "locales")
-        for path in sorted(glob.glob(os.path.join(locales_dir, "*.json"))):
-            code = os.path.basename(path).removesuffix(".json")
-            try:
-                with open(path, encoding="utf-8") as f:
-                    langs[code] = json.load(f)
-            except Exception as e:
-                print(f"[pg-rankmirrors] locale load failed: {path}: {e}")
-        return langs
-
-    def _detect_lang(self) -> str:
-        code = detect_language()
-        return code if code in self.langs else "en"
-
-    def t(self, key: str) -> str:
-        return (
-            self.langs.get(self.current_lang, {}).get(key)
-            or self.langs.get("en", {}).get(key, key)
-        )
-
-    def change_lang(self, code: str):
-        if code not in self.langs:
-            return
-        self.current_lang = code
-        self._retranslate_ui()
-        self.rebuild_list(self.all_countries)
-
-    def _retranslate_ui(self):
-        self.title_label.setText(self.t("title"))
-        self.lbl_select.setText(self.t("select_countries"))
-        self.search_field.setPlaceholderText(self.t("search_placeholder"))
-        self.lbl_selected_count.setText(self.t("selected_count").replace("{0}", str(len(self.selected_codes))))
-        self.lbl_current.setText(self.t("current_mirrors"))
+    def bind_interface_texts(self):
+        call(self.title_label.setText, tr("title"))
+        call(self.lbl_select.setText, tr("select_countries"))
+        call(self.search_field.setPlaceholderText, tr("search_placeholder"))
+        call(self.lbl_selected_count.setText, tr("selected_count", len(self.selected_codes)))
+        call(self.lbl_current.setText, tr("current_mirrors"))
         if not self.lbl_current_mirrors.text():
-            self.lbl_current_mirrors.setText(self.t("loading"))
-        self.chk_auto.setText(self.t("auto_update"))
-        self.btn_restore.setText(self.t("btn_restore"))
-        self.btn_apply.setText(self.t("btn_apply"))
-        self.lbl_loading.setText(self.t("wait"))
+            call(self.lbl_current_mirrors.setText, tr("loading"))
+        call(self.chk_auto.setText, tr("auto_update"))
+        call(self.btn_restore.setText, tr("btn_restore"))
+        call(self.btn_apply.setText, tr("btn_apply"))
+        call(self.lbl_loading.setText, tr("wait"))
 
     # ── Backend calls ─────────────────────────────────────────────────────────
 
@@ -109,14 +76,14 @@ class main_app(QMainWindow, Ui_RankMirrors):
 
     def set_loading(self, active, text=None):
         if active:
-            self.lbl_loading.setText(text or self.t("wait"))
+            call(self.lbl_loading.setText, text or tr("wait"))
             self.loading_overlay.show()
             self.loading_overlay.raise_()
         else:
             self.loading_overlay.hide()
 
     def set_status(self, msg):
-        self.lbl_status.setText(msg)
+        call(self.lbl_status.setText, msg)
 
     def run_command(self, cmd_list):
         try:
@@ -126,7 +93,7 @@ class main_app(QMainWindow, Ui_RankMirrors):
             return f'{{"error": "{str(e)}" }}'
 
     def load_data(self):
-        self.set_loading(True, self.t("loading_countries"))
+        self.set_loading(True, tr("loading_countries"))
 
         def fetch_countries():
             out = self.run_command(["pg-rankmirrors-backend", "list-countries"])
@@ -135,14 +102,14 @@ class main_app(QMainWindow, Ui_RankMirrors):
                 if isinstance(data, list):
                     self.countries_loaded.emit(data, "")
                 else:
-                    self.countries_loaded.emit([], self.t("unexpected_json"))
+                    self.countries_loaded.emit([], tr("unexpected_json"))
             except Exception as e:
                 self.countries_loaded.emit([], str(e))
         threading.Thread(target=fetch_countries, daemon=True).start()
 
         def fetch_current():
             out = self.run_command(["pg-rankmirrors-backend", "current"])
-            self.mirrors_loaded.emit(out if out else self.t("no_mirrors"))
+            self.mirrors_loaded.emit(out if out else tr("no_mirrors"))
         threading.Thread(target=fetch_current, daemon=True).start()
 
     # ── Data handlers ─────────────────────────────────────────────────────────
@@ -150,14 +117,14 @@ class main_app(QMainWindow, Ui_RankMirrors):
     def on_countries_loaded(self, data, error):
         self.set_loading(False)
         if error:
-            self.set_status(f"Error: {error}")
+            self.set_status(tr("error_message", error))
             return
         self.all_countries = sorted(data, key=lambda x: x.get("name", "").lower())
         self.rebuild_list(self.all_countries)
-        self.set_status(self.t("loaded_n_countries").replace("{0}", str(len(self.all_countries))))
+        self.set_status(tr("loaded_n_countries", len(self.all_countries)))
 
     def on_mirrors_loaded(self, text):
-        self.lbl_current_mirrors.setText(text)
+        call(self.lbl_current_mirrors.setText, text)
 
     def rebuild_list(self, countries):
         while self.countries_layout.count():
@@ -165,9 +132,8 @@ class main_app(QMainWindow, Ui_RankMirrors):
             if w:
                 w.deleteLater()
 
-        mirrors_label = self.t("mirrors_count")
         for c in countries:
-            row = CountryRow(c, self.on_country_toggled, mirrors_label)
+            row = CountryRow(c, self.on_country_toggled)
             if c["code"] in self.selected_codes:
                 row.checkbox.blockSignals(True)
                 row.checkbox.setChecked(True)
@@ -185,8 +151,8 @@ class main_app(QMainWindow, Ui_RankMirrors):
         self.update_apply_button()
 
     def update_selected_count(self):
-        self.lbl_selected_count.setText(
-            self.t("selected_count").replace("{0}", str(len(self.selected_codes)))
+        call(self.lbl_selected_count.setText,
+            tr("selected_count", len(self.selected_codes))
         )
 
     def update_apply_button(self):
@@ -204,7 +170,7 @@ class main_app(QMainWindow, Ui_RankMirrors):
 
     def on_apply_clicked(self):
         codes = ",".join(self.selected_codes)
-        self.set_loading(True, self.t("ranking"))
+        self.set_loading(True, tr("ranking"))
         self.btn_apply.setEnabled(False)
         self.btn_restore.setEnabled(False)
 
@@ -214,7 +180,7 @@ class main_app(QMainWindow, Ui_RankMirrors):
         threading.Thread(target=_apply, daemon=True).start()
 
     def on_restore_clicked(self):
-        self.set_loading(True, self.t("restoring"))
+        self.set_loading(True, tr("restoring"))
         self.btn_apply.setEnabled(False)
         self.btn_restore.setEnabled(False)
 
@@ -231,16 +197,16 @@ class main_app(QMainWindow, Ui_RankMirrors):
         try:
             data = json.loads(result_json)
             status = data.get("status", "")
-            err_msg = data.get("error") or data.get("message", "Unknown error")
+            err_msg = data.get("error") or data.get("message") or tr("unknown_error")
 
             if is_apply:
-                self.set_status(self.t("mirrors_updated") if status == "done"
-                                else f"Error: {err_msg}")
+                self.set_status(tr("mirrors_updated") if status == "done"
+                                else tr("error_message", err_msg))
             else:
-                self.set_status(self.t("backup_restored") if status == "restored"
-                                else f"Error: {err_msg}")
+                self.set_status(tr("backup_restored") if status == "restored"
+                                else tr("error_message", err_msg))
         except Exception:
-            self.set_status(self.t("parse_error"))
+            self.set_status(tr("parse_error"))
 
         threading.Thread(
             target=lambda: self.mirrors_loaded.emit(

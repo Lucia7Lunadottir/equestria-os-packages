@@ -1,18 +1,24 @@
 # Maintainer: Equestria OS
 pkgname=equestria-clock
 pkgver=1.0
-pkgrel=5
+pkgrel=7
 pkgdesc="Будильник, таймер и секундомер (PyQt6)"
 arch=('any')
 license=('custom')
-depends=('python-pyqt6' 'equestria-qt-kit>=1.1' 'pipewire')
-source=("equestria_clock.py" "equestria-clock.desktop" "i18n.json")
-sha256sums=('eacba69e71089f3a3f95b5dfa3bea556969756891ffa6769b7c531d596b59baf'
-            'e3f979cae8f68f996519958133bb31043759d1eda05289cbaf10eadb5f1a470d'
-            '7bb94e38e9d65e75e4444a6c642f033bb7e63f1f67a5e917dbc54923c954cf78')
+depends=('python-pyqt6' 'equestria-qt-kit>=1.3-3' 'pipewire')
+source=("equestria_clock.py" "equestria-clock.desktop")
+sha256sums=('da0666a00eae805598525ffc6cdcc838018496264510a53cd53dc8da297d3cfa' 'e3f979cae8f68f996519958133bb31043759d1eda05289cbaf10eadb5f1a470d')
 
 package() {
-    install -Dm755 "$srcdir/equestria_clock.py" "$pkgdir/usr/bin/equestria-clock"
+    local libdir="$pkgdir/usr/lib/equestria-clock"
+    install -Dm755 "$srcdir/equestria_clock.py" "$libdir/equestria_clock.py"
+    for f in "$startdir"/equestria_clock_app/*.py; do
+        install -Dm644 "$f" "$libdir/equestria_clock_app/$(basename "$f")"
+    done
+    install -d "$pkgdir/usr/bin"
+    ln -s /usr/lib/equestria-clock/equestria_clock.py "$pkgdir/usr/bin/equestria-clock"
     install -Dm644 "$srcdir/equestria-clock.desktop" "$pkgdir/usr/share/applications/equestria-clock.desktop"
-    install -Dm644 "$srcdir/i18n.json" "$pkgdir/usr/share/equestria-clock/i18n.json"
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$pkgdir/usr/share/equestria-clock/locales/$(basename "$f")"
+    done
 }

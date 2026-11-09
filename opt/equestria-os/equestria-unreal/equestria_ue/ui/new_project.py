@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from equestria_kit import live_i18n
+
 from pathlib import Path
 
 from PyQt6.QtCore import QSize, Qt
@@ -22,14 +24,14 @@ class NewProjectPage(QWidget):
         v = QVBoxLayout(self)
         v.setContentsMargins(28, 24, 28, 20)
         v.setSpacing(12)
-        v.addLayout(title_row(tr("Новый проект")))
+        v.addLayout(title_row(tr("new_project.new_project")))
         top = QHBoxLayout()
         top.setSpacing(8)
         self.combo = QComboBox()
         self.combo.activated.connect(lambda *_: self.load())
-        bare = small_btn(tr("Открыть редактор без проекта"), tr("Там есть собственный выбор шаблонов Unreal"))
+        bare = small_btn(tr("new_project.open_editor_without_project"), tr("new_project.has_own_unreal_template_picker"))
         bare.clicked.connect(self.bare)
-        top.addWidget(QLabel(tr("Движок:")))
+        top.addWidget(live_i18n.call(QLabel, tr("new_project.engine")))
         top.addWidget(self.combo, 1)
         top.addWidget(bare)
         v.addLayout(top)
@@ -45,7 +47,7 @@ class NewProjectPage(QWidget):
         self.grid.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.grid.itemSelectionChanged.connect(self._sel)
         v.addWidget(self.grid, 1)
-        self.empty = QLabel("")
+        self.empty = live_i18n.call(QLabel, "")
         self.empty.setObjectName("hint")
         self.empty.setWordWrap(True)
         v.addWidget(self.empty)
@@ -56,13 +58,13 @@ class NewProjectPage(QWidget):
         self.name = QLineEdit("MyProject")
         self.name.setFixedWidth(200)
         self.loc = QLineEdit((win.cfg["project_dirs"] or [str(Path.home() / "UnrealProjects")])[0])
-        br = small_btn(tr("Обзор…"))
+        br = small_btn(tr("common.browse"))
         br.clicked.connect(self._browse)
-        self.make = QPushButton(tr("Создать"))
+        self.make = live_i18n.call(QPushButton, tr("new_project.create"))
         self.make.setObjectName("primary")
         self.make.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.make.clicked.connect(self.create)
-        for w in (QLabel(tr("Имя:")), self.name, QLabel(tr("Папка:"))):
+        for w in (live_i18n.call(QLabel, tr("new_project.name")), self.name, live_i18n.call(QLabel, tr("new_project.folder"))):
             h.addWidget(w)
         h.addWidget(self.loc, 1)
         h.addWidget(br)
@@ -77,7 +79,7 @@ class NewProjectPage(QWidget):
         keep = self.combo.currentData()
         self.combo.clear()
         for e in sorted(self.win.engines, key=lambda e: e.version, reverse=True):
-            self.combo.addItem(e.title, e.id)
+            live_i18n.call(self.combo.addItem, e.title, e.id)
         if keep and self.combo.findData(keep) >= 0:
             self.combo.setCurrentIndex(self.combo.findData(keep))
         self.load()
@@ -87,13 +89,13 @@ class NewProjectPage(QWidget):
         eng = self.engine()
         self.tpls = read_templates(eng) if eng else []
         for i, t in enumerate(self.tpls):
-            it = QListWidgetItem(self._icon(t), t.name + ("\nC++" if t.cpp else "\nBlueprint") + ("" if t.builtin else tr(" · через редактор")))
+            it = live_i18n.call(QListWidgetItem, self._icon(t), t.name + ("\nC++" if t.cpp else "\nBlueprint") + ("" if t.builtin else tr("new_project.via_editor")))
             it.setData(Qt.ItemDataRole.UserRole, i)
-            self.grid.addItem(it)
+            live_i18n.call(self.grid.addItem, it)
         if self.tpls:
             self.grid.setCurrentRow(0)
-        self.empty.setText("" if self.tpls else
-                           (tr("Сначала установите движок.") if not eng else ""))
+        live_i18n.call(self.empty.setText, "" if self.tpls else
+                           (tr("new_project.install_engine_first") if not eng else ""))
         self._sel()
 
     def _icon(self, t: Template) -> QIcon:
@@ -111,7 +113,7 @@ class NewProjectPage(QWidget):
             f = QFont()
             f.setPointSize(40)
             pa.setFont(f)
-            pa.drawText(pm.rect(), Qt.AlignmentFlag.AlignCenter, cols[2])
+            live_i18n.call(pa.drawText, pm.rect(), Qt.AlignmentFlag.AlignCenter, cols[2])
             pa.end()
             return QIcon(pm)
         pm = QPixmap(t.image) if t.image else QPixmap()
@@ -120,7 +122,7 @@ class NewProjectPage(QWidget):
             pm.fill(kit_qt.theme_color("surface1"))
             pa = QPainter(pm)
             pa.setPen(kit_qt.theme_color("subtext"))
-            pa.drawText(pm.rect(), Qt.AlignmentFlag.AlignCenter, t.name)
+            live_i18n.call(pa.drawText, pm.rect(), Qt.AlignmentFlag.AlignCenter, t.name)
             pa.end()
             return QIcon(pm)
         pm = pm.scaled(W, H, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation)
@@ -130,15 +132,15 @@ class NewProjectPage(QWidget):
         self.make.setEnabled(self.grid.currentItem() is not None)
 
     def _browse(self) -> None:
-        d = QFileDialog.getExistingDirectory(self, tr("Куда создать проект"), self.loc.text())
+        d = QFileDialog.getExistingDirectory(self, tr("new_project.where_create_project"), self.loc.text())
         if d:
-            self.loc.setText(d)
+            live_i18n.call(self.loc.setText, d)
 
     def bare(self) -> None:
         eng = self.engine()
-        err = launch_editor(self.win.cfg, eng) if eng else tr("Движок не выбран.")
+        err = launch_editor(self.win.cfg, eng) if eng else tr("new_project.no_engine_selected")
         if err:
-            QMessageBox.warning(self, tr("Не удалось запустить"), err)
+            QMessageBox.warning(self, tr("common.could_not_launch"), err)
 
     def create(self) -> None:
         win, eng = self.win, self.engine()
@@ -149,19 +151,16 @@ class NewProjectPage(QWidget):
         if not tp.builtin:
             # Шаблоны Epic берут меши, ввод и варианты из общих пакетов (SharedContentPacks / Variants) —
             # правильно собрать такой проект умеет только сам редактор.
-            QMessageBox.information(self, tr("Создаст редактор Unreal"),
-                                    tr("Шаблон «{}» использует общие пакеты контента (меши, ввод, варианты), и "
-                                       "копировать его вручную нельзя — без них пропадают меши и Input Action.\n\n"
-                                       "Сейчас откроется редактор Unreal: выберите этот же шаблон в его окне создания "
-                                       "проекта. Готовый проект потом появится в «Библиотеке».", tp.name))
+            QMessageBox.information(self, tr("new_project.unreal_editor_will_create"),
+                                    tr("new_project.template_uses_shared_content_packs", tp.name))
             err = launch_editor(win.cfg, eng)
             if err:
-                QMessageBox.warning(self, tr("Не удалось запустить"), err)
+                QMessageBox.warning(self, tr("common.could_not_launch"), err)
             return
         try:
             up = create_project(tp, self.loc.text().strip(), self.name.text().strip(), eng)
         except Exception as ex:
-            QMessageBox.warning(self, tr("Не удалось создать проект"), str(ex))
+            QMessageBox.warning(self, tr("new_project.could_not_create_project"), str(ex))
             return
         dirs = [Path(d).resolve() for d in win.cfg["project_dirs"]]
         if not any(d in Path(up).resolve().parents for d in dirs) and up not in win.cfg["extra_projects"]:
@@ -170,8 +169,8 @@ class NewProjectPage(QWidget):
         win.reload_projects()
         win.go("library")
         if tp.cpp:
-            win.add_job(Job(tr("Генерация проекта"), project_steps("gen", eng, up) + project_steps("build", eng, up)), True)
-        elif QMessageBox.question(self, tr("Проект создан"), tr("Открыть проект в редакторе?")) == QMessageBox.StandardButton.Yes:
+            win.add_job(Job(tr("new_project.generating_project"), project_steps("gen", eng, up) + project_steps("build", eng, up)), True)
+        elif QMessageBox.question(self, tr("new_project.project_created"), tr("new_project.open_project_editor")) == QMessageBox.StandardButton.Yes:
             err = launch_editor(win.cfg, eng, up)
             if err:
-                QMessageBox.warning(self, tr("Не удалось запустить"), err)
+                QMessageBox.warning(self, tr("common.could_not_launch"), err)

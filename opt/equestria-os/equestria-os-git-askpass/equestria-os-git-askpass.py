@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import sys
 import os
-import csv
 from PyQt6.QtWidgets import (QApplication, QDialog, QVBoxLayout,
                              QLabel, QLineEdit, QPushButton, QHBoxLayout)
 from PyQt6.QtCore import Qt
@@ -12,42 +11,17 @@ except ImportError:  # запуск из исходников, пакет equest
     import os as _os, sys as _sys
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
-from equestria_kit.i18n import detect_language
+from equestria_kit import live_i18n
 
 # Полностью отвязываемся от хардкода. Все пути строим относительно самого скрипта
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
 
-# --- Локализация ---
-def get_sys_lang():
-    return detect_language()
-
-def load_localization():
-    csv_path = os.path.join(SYSTEM_PATH, "localization.csv")
-    translations = {}
-    if not os.path.exists(csv_path):
-        return translations
-
-    lang = get_sys_lang()
-    with open(csv_path, newline='', encoding='utf-8') as f:
-        reader = csv.reader(f)
-        try:
-            headers = next(reader)
-            lang_idx = headers.index(lang)
-        except (StopIteration, ValueError):
-            try:
-                lang_idx = headers.index("en")
-            except ValueError:
-                lang_idx = 1
-
-        for row in reader:
-            if len(row) > lang_idx:
-                translations[row[0]] = row[lang_idx]
-    return translations
-
-t = load_localization()
+# --- Локализация --- (locales/<язык>.json рядом со скриптом)
+CATALOG = live_i18n.Catalog("equestria-os-git-askpass", os.path.join(SYSTEM_PATH, "equestria-os-git-askpass.py"))
 
 def t_str(key, default):
-    return t.get(key, default)
+    text = str(CATALOG.tr(key))
+    return default if text == key else text
 
 # --- GUI ---
 class AskPassDialog(QDialog):

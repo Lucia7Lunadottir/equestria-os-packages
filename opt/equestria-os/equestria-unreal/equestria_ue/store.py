@@ -48,9 +48,9 @@ class EpicStore(QObject):
         self.req = None
         self.pending = None
         self.view = None
-        self.status = tr("Войдите в Epic-аккаунт на вкладке «Магазин» — один раз.")
+        self.status = tr("store.sign_your_epic_account_store")
         if not HAVE_WEB:
-            self.status = tr("Не установлен python-pyqt6-webengine — встроенный вход недоступен.")
+            self.status = tr("store.python_pyqt6_webengine_not_installed")
             return
         self.profile = QWebEngineProfile("equestria-unreal", self)
         wd = CONFIG_DIR / "web"
@@ -84,9 +84,7 @@ class EpicStore(QObject):
         from PyQt6.QtWebEngineCore import QWebEnginePage
         if status == QWebEnginePage.RenderProcessTerminationStatus.NormalTerminationStatus:
             return
-        self.status = tr("✗ Встроенный браузер (QtWebEngine) аварийно завершился, код {}. Это неисправность "
-                         "системного пакета qt6-webengine, а не сайта Epic — переустановите его: "
-                         "sudo pacman -S qt6-webengine", code)
+        self.status = tr("store.built_browser_qtwebengine_crashed_with", code)
         self.changed.emit()
 
     @property
@@ -98,9 +96,9 @@ class EpicStore(QObject):
         from PyQt6.QtCore import QDateTime
         from PyQt6.QtNetwork import QNetworkCookie
         if not self.view:
-            return tr("Встроенный браузер недоступен.")
+            return tr("store.built_browser_unavailable")
         if not cookies:
-            return tr("В этом браузере нет cookie Epic — сначала войдите на unrealengine.com в нём.")
+            return tr("store.browser_has_no_epic_cookies")
         store = self.profile.cookieStore()
         for c in cookies:
             qc = QNetworkCookie(c.name.encode(), c.value.encode())
@@ -112,7 +110,7 @@ class EpicStore(QObject):
                 qc.setExpirationDate(QDateTime.fromSecsSinceEpoch(c.expires))
             store.setCookie(qc, QUrl("https://" + c.domain.lstrip(".")))
         self.reload()
-        return tr("Перенесено cookie: {}. Страница перезагружается — вход должен подхватиться.", len(cookies))
+        return tr("store.cookies_transferred_page_reloading_sign", len(cookies))
 
     def reload(self) -> None:
         if self.view:
@@ -136,10 +134,10 @@ class EpicStore(QObject):
                 self.win.pages["engines"].rebuild()
             if vs and vs != self.builds:
                 self.builds = vs
-                self.status = tr("✓ Вход выполнен · готовых сборок: {}", len(vs))
+                self.status = tr("store.signed_prebuilt_versions", len(vs))
                 self.win.pages["catalog"].rebuild()
             elif not vs:
-                self.status = tr("Войдите в Epic-аккаунт и примите лицензию на вкладке «Магазин» — список появится сам.")
+                self.status = tr("store.sign_your_epic_account_accept")
             self.changed.emit()
 
         self.view.page().runJavaScript(JS_LIST, cb)
@@ -179,7 +177,7 @@ class EpicStore(QObject):
         self.view.page().runJavaScript(JS_LINK % json.dumps(name), cb)
 
     def _manual(self) -> None:
-        self.status = tr("Нужно действие на странице Epic: войдите / примите лицензию / нажмите Download у нужной версии.")
+        self.status = tr("store.action_needed_epic_page_sign")
         self.win.go("store")
         self.changed.emit()
 
@@ -218,27 +216,27 @@ class EpicStore(QObject):
         st = r.state()
         self.changed.emit()
         if st != D.DownloadState.DownloadCompleted:
-            self.win.jobs.log.emit(tr("✗ Загрузка {} не завершена", dl["name"]))
+            self.win.jobs.log.emit(tr("store.download_did_not_finish", dl["name"]))
             return
         zp = dl["path"]
         if parse_fab_zip(dl["name"]):
             eng = self.fab_target or engine_for_fab(self.win.engines, dl["name"])
             self.fab_target = None
             if not eng:
-                self.win.jobs.log.emit(tr("✗ Нет установленного движка для {} — архив оставлен в {}", dl["name"], zp))
+                self.win.jobs.log.emit(tr("store.no_installed_engine_archive_was", dl["name"], zp))
                 return
-            self.win.add_job(Job(tr("Плагин Fab для {}", eng.title), fab_steps(zp, eng, True)), True)
+            self.win.add_job(Job(tr("common.fab_plugin", eng.title), fab_steps(zp, eng, True)), True)
             return
         dest = str(Path(zp).with_suffix(""))
 
         def done():
             root = find_engine_root(dest)
             if not root:
-                raise RuntimeError(tr("в архиве не найдена папка Engine"))
+                raise RuntimeError(tr("common.no_engine_folder_found_archive"))
             self.win.register_engine(root)
 
-        steps = zip_steps(zp, dest) + [Step(tr("Удаление архива"), ["rm", "-f", zp])]
-        self.win.add_job(Job(tr("Установка {}", dl["name"]), steps, done), True)
+        steps = zip_steps(zp, dest) + [Step(tr("store.deleting_archive"), ["rm", "-f", zp])]
+        self.win.add_job(Job(tr("store.installing", dl["name"]), steps, done), True)
 
     def toggle_pause(self) -> None:
         r, dl = self.req, self.dl

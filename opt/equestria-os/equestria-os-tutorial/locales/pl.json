@@ -1,4 +1,5 @@
 {
+  "_language_name": "Polski",
   "app_title": "Equestria OS — Wycieczka",
   "btn_next": "Dalej ➔",
   "btn_prev": "← Wstecz",
@@ -30,5 +31,6 @@
   "s6_btn3": "💽 Dyski",
   "slide7_title": "Jesteś niesamowity! 🌟",
   "slide7_text": "<p>Ten system jest teraz Twoim domem. Jeśli coś zapomnisz lub chcesz skonfigurować autostart — zajrzyj do naszego centralnego hubu.</p><p>Życzymy magicznych wrażeń z Equestria OS!</p>",
-  "s7_btn1": "🏠 Welcome Hub"
+  "s7_btn1": "🏠 Welcome Hub",
+  "language_label": "Język"
 }

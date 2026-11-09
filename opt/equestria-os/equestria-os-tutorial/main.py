@@ -1,21 +1,15 @@
 import sys
 import os
-import json
 import subprocess
-import glob
 import shlex
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QStackedWidget, QTextBrowser, QLabel,
                              QGraphicsDropShadowEffect, QSizePolicy, QCheckBox, QComboBox)
 from PyQt6.QtGui import QFontDatabase, QFont, QPixmap, QPainter, QPainterPath, QColor, QIcon
-from PyQt6.QtCore import Qt, QLocale
-try:
-    import equestria_kit  # noqa: F401
-except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
-    import os as _os, sys as _sys
-    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+from PyQt6.QtCore import Qt
+from localization import catalog, tr, call
+from rich_text import LocalizedTextBrowser
 from equestria_kit import qt as kit_qt
-from equestria_kit.i18n import normalize
 from equestria_kit.widgets import font_families
 
 class RoundedImageLabel(QLabel):
@@ -57,18 +51,11 @@ class RoundedImageLabel(QLabel):
 class TutorialApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Equestria OS — Interactive Tour")
+        call(self.setWindowTitle, tr("app_title"))
         icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tutorial.png")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
         self.base_path = os.path.dirname(os.path.abspath(__file__))
-
-        # --- Динамическая локализация ---
-        self.locales_dir = os.path.join(self.base_path, "locales")
-        self.langs = []
-        self.translations = {}
-        self.current_lang = "en"
-        self.load_translations()
 
         # Загрузка шрифта
         self.custom_font_family = "sans-serif"
@@ -127,67 +114,7 @@ class TutorialApp(QMainWindow):
 
         self.init_ui()
         self.load_stylesheet()
-        self.update_ui_texts()
-
-    def load_translations(self):
-        if not os.path.exists(self.locales_dir):
-            os.makedirs(self.locales_dir, exist_ok=True)
-            return
-
-        # Загружаем все доступные json файлы
-        for file_path in glob.glob(os.path.join(self.locales_dir, "*.json")):
-            lang_code = os.path.basename(file_path).replace(".json", "")
-            try:
-                with open(file_path, "r", encoding="utf-8") as f:
-                    self.translations[lang_code] = json.load(f)
-                    self.langs.append(lang_code)
-            except Exception as e:
-                print(f"Error loading {file_path}: {e}")
-
-        self.langs.sort()
-
-        # --- ТОЧНОЕ ОПРЕДЕЛЕНИЕ СИСТЕМНОГО ЯЗЫКА ---
-        detected_lang = None
-
-        # Способ 1: Опрашиваем список UI-языков от Qt (идеально для KDE)
-        # Он возвращает список вида ['ru-RU', 'ru', 'en-US'] или ['zh-Hans-CN', 'zh']
-        ui_langs = QLocale.system().uiLanguages()
-        for lang in ui_langs:
-            # Код из LANGS общей библиотеки: "zh-Hans-CN" → "zh", "zh-Hant-TW" → "zh_TW", "en_US" → "en"
-            clean_lang = normalize(lang)
-            if clean_lang in self.langs:
-                detected_lang = clean_lang
-                break
-
-        # Способ 2: Если Qt не помог, проверяем переменные окружения Linux напрямую
-        if not detected_lang:
-            for var in ['LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG']:
-                val = os.environ.get(var)
-                if val:
-                    # Переменная LANGUAGE может содержать список через двоеточие: "uk_UA:uk:en"
-                    parts = val.split(':') if var == 'LANGUAGE' else [val]
-                    for part in parts:
-                        clean_lang = normalize(part)
-                        if clean_lang in self.langs:
-                            detected_lang = clean_lang
-                            break
-                if detected_lang:
-                    break
-
-        # Способ 3: Финальные фолбеки, если совпадений вообще не найдено
-        if detected_lang:
-            self.current_lang = detected_lang
-        elif "en" in self.langs:
-            self.current_lang = "en"
-        elif "ru" in self.langs:
-            self.current_lang = "ru"
-        elif self.langs:
-            self.current_lang = self.langs[0]
-
-    def t(self, key):
-        lang_dict = self.translations.get(self.current_lang, {})
-        en_dict = self.translations.get("en", {})
-        return lang_dict.get(key, en_dict.get(key, f"[{key}]"))
+        self.bind_interface_texts()
 
     def init_ui(self):
         self.central_widget = QWidget()
@@ -209,17 +136,10 @@ class TutorialApp(QMainWindow):
         self.top_layout.addStretch()
 
         # Компактный выпадающий список языков вместо ряда кнопок
-        self.lang_combo = QComboBox()
+        self.lang_combo = catalog.selector(self.top_bar)
+        call(self.lang_combo.setToolTip, tr("language_label"))
         self.lang_combo.setObjectName("LangCombo")
         self.lang_combo.setCursor(Qt.CursorShape.PointingHandCursor)
-        for lang in self.langs:
-            self.lang_combo.addItem(lang.upper(), lang)
-        idx = self.lang_combo.findData(self.current_lang)
-        if idx != -1:
-            self.lang_combo.setCurrentIndex(idx)
-        # activated срабатывает только при выборе пользователем — без рекурсии
-        self.lang_combo.activated.connect(
-            lambda i: self.change_language(self.lang_combo.itemData(i)))
         self.top_layout.addWidget(self.lang_combo)
 
         self.main_layout.addWidget(self.top_bar)
@@ -313,7 +233,7 @@ class TutorialApp(QMainWindow):
         layout.addSpacing(10)
 
         # 3. Текст
-        text = QTextBrowser()
+        text = LocalizedTextBrowser()
         text.setObjectName("SlideText")
         text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(text)
@@ -426,10 +346,10 @@ class TutorialApp(QMainWindow):
         self.btn_prev.setVisible(self.current_slide > 0)
 
         if self.current_slide == len(self.slides_config) - 1:
-            self.btn_next.setText(self.t("btn_close"))
+            call(self.btn_next.setText, tr("btn_close"))
             self.btn_next.setObjectName("NavBtnFinish")
         else:
-            self.btn_next.setText(self.t("btn_next"))
+            call(self.btn_next.setText, tr("btn_next"))
             self.btn_next.setObjectName("NavBtnNext")
 
         self.btn_next.style().unpolish(self.btn_next)
@@ -440,30 +360,15 @@ class TutorialApp(QMainWindow):
             dot.style().unpolish(dot)
             dot.style().polish(dot)
 
-    def change_language(self, lang_code):
-        if lang_code == self.current_lang: return
-        self.current_lang = lang_code
-        self.update_ui_texts()
-
-    def update_ui_texts(self):
-        self.logo_label.setText(self.t("app_title"))
-        self.autostart_checkbox.setText(self.t("autostart_label"))
-        idx = self.lang_combo.findData(self.current_lang)
-        if idx != -1 and self.lang_combo.currentIndex() != idx:
-            self.lang_combo.setCurrentIndex(idx)
-
-        if self.current_slide == len(self.slides_config) - 1:
-            self.btn_next.setText(self.t("btn_close"))
-        else:
-            self.btn_next.setText(self.t("btn_next"))
-        self.btn_prev.setText(self.t("btn_prev"))
-
+    def bind_interface_texts(self):
+        call(self.logo_label.setText, tr("app_title"))
+        call(self.autostart_checkbox.setText, tr("autostart_label"))
+        call(self.btn_prev.setText, tr("btn_prev"))
         for data in self.slides_data:
-            data["title_widget"].setText(self.t(data["title_key"]))
-            data["text_widget"].setHtml(self.t(data["text_key"]))
-
-            for btn_data in data.get("buttons", []):
-                btn_data["widget"].setText(self.t(btn_data["key"]))
+            call(data["title_widget"].setText, tr(data["title_key"]))
+            call(data["text_widget"].setText, tr(data["text_key"]))
+            for button in data["buttons"]:
+                call(button["widget"].setText, tr(button["key"]))
 
     def load_stylesheet(self):
         qss_path = os.path.join(self.base_path, "style.qss")

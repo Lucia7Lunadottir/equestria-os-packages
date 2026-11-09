@@ -1,32 +1,44 @@
 import glob
 import importlib.util
 import inspect
-import json
 import os
 import shutil
 import subprocess
+import sys
 import threading
 
 from PyQt6.QtCore import Qt, pyqtSignal, QObject
 from PyQt6.QtGui import QColor, QFont, QFontDatabase, QPainter, QPen
 from PyQt6.QtWidgets import (
-    QApplication, QComboBox, QFrame, QHBoxLayout, QLabel, QListWidget,
+    QApplication, QFrame, QHBoxLayout, QLabel, QListWidget,
     QListWidgetItem, QMainWindow, QPushButton, QScrollArea,
     QSizePolicy, QSplitter, QStackedWidget, QStyledItemDelegate,
     QStyleOptionViewItem, QVBoxLayout, QWidget,
 )
 
 from base_module import BaseModule
-try:
-    import equestria_kit  # noqa: F401
-except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
-    import os as _os, sys as _sys
-    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
+# Запуск из исходников: соседний equestria-qt-kit новее установленного (нужен live_i18n)
+import os as _os, sys as _sys
+_kit = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit")
+if _os.path.isfile(_os.path.join(_kit, "equestria_kit", "live_i18n.py")) and _kit not in _sys.path:
+    _sys.path.insert(0, _kit)
 from equestria_kit import qt as kit_qt
-from equestria_kit.i18n import detect_language
+from equestria_kit import live_i18n
 from equestria_kit.widgets import font_families
 
-SUPPORTED_LANGS = ["en", "ru", "de", "fr", "es", "pt", "pl", "uk", "zh", "zh_TW", "ja", "ko"]
+# Язык = файл locales/<код>.json; новый файл сразу появляется в списке, код не трогаем
+CATALOG = live_i18n.Catalog("equestria-os-settings", __file__)
+
+
+def sync_embedded_catalogs(code: str) -> None:
+    """Встроенные приложения (Tutorial, зеркала, видеокарта…) держат свои каталоги
+    live_i18n — переключаем их на язык «Настроек», не трогая их собственный выбор."""
+    seen = {id(CATALOG)}
+    for mod in list(sys.modules.values()):
+        for value in list(getattr(mod, "__dict__", {}).values()):
+            if isinstance(value, live_i18n.Catalog) and id(value) not in seen:
+                seen.add(id(value))
+                value.set_language(code, persist=False)
 
 CATEGORIES_ORDER = ["system", "software", "appearance"]
 CATEGORY_KEYS = {
@@ -288,8 +300,7 @@ class SettingsWindow(QMainWindow):
         families = font_families(font_path)
         self._eq_font_family = families[0] if families else "Sans Serif"
 
-        self.langs: dict[str, dict] = self._load_locales()
-        self.current_lang = self._detect_lang()
+        self.current_lang = CATALOG.lang
 
         self._qss = ""
         qss_path = os.path.join(base_path, "style.qss")
@@ -339,27 +350,8 @@ class SettingsWindow(QMainWindow):
 
         self._select_first()
 
-    def _load_locales(self) -> dict:
-        langs = {}
-        locales_dir = os.path.join(self.base_path, "locales")
-        for path in sorted(glob.glob(os.path.join(locales_dir, "*.json"))):
-            code = os.path.basename(path).removesuffix(".json")
-            try:
-                with open(path, encoding="utf-8") as f:
-                    langs[code] = json.load(f)
-            except Exception as e:
-                print(f"[settings] locale load failed: {path}: {e}")
-        return langs
-
-    def _detect_lang(self) -> str:
-        code = detect_language()
-        return code if code in self.langs else "en"
-
     def t(self, key: str) -> str:
-        return (
-            self.langs.get(self.current_lang, {}).get(key)
-            or self.langs.get("en", {}).get(key, key)
-        )
+        return str(CATALOG.tr(key))
 
     def _discover_modules(self) -> list[BaseModule]:
         modules = []
@@ -400,17 +392,10 @@ class SettingsWindow(QMainWindow):
 
         layout.addStretch()
 
-        # Компактный выпадающий список языков вместо ряда кнопок
-        self._lang_combo = QComboBox()
+        # Список языков — из найденных файлов locales/*.json (общий выбор из kit,
+        # он же запоминает язык); модули и сайдбар перевода ждут _apply_language
+        self._lang_combo = CATALOG.selector(header, after=lambda: self._apply_language(CATALOG.lang))
         self._lang_combo.setObjectName("LangCombo")
-        for code in sorted(self.langs.keys()):
-            self._lang_combo.addItem(code.upper(), code)
-        idx = self._lang_combo.findData(self.current_lang)
-        if idx != -1:
-            self._lang_combo.setCurrentIndex(idx)
-        # activated срабатывает только при выборе пользователем — без рекурсии
-        self._lang_combo.activated.connect(
-            lambda i: self._apply_language(self._lang_combo.itemData(i)))
         layout.addWidget(self._lang_combo)
 
         layout.addSpacing(12)
@@ -508,6 +493,7 @@ class SettingsWindow(QMainWindow):
                         kit_qt.style(child, self._qss)
 
             module.apply_language()
+            sync_embedded_catalogs(self.current_lang)
 
             self._stack.addWidget(widget)
             self._widget_map[module.module_id] = widget
@@ -517,7 +503,8 @@ class SettingsWindow(QMainWindow):
         module.on_shown()
 
     def _apply_language(self, code: str):
-        self.current_lang = code
+        self.current_lang = code = CATALOG.set_language(code) or code
+        sync_embedded_catalogs(code)
 
         idx = self._lang_combo.findData(code)
         if idx != -1 and self._lang_combo.currentIndex() != idx:

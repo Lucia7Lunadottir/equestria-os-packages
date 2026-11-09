@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from equestria_kit import live_i18n
+
 import uuid
 from pathlib import Path
 
@@ -27,14 +29,14 @@ from equestria_ue.versions import PREBUILT_SIZE, fetch_tags
 
 class MainWindow(QMainWindow):
     # подписи переводятся при показе (tr в _retranslate) — язык меняется на лету
-    NAV = [("library", "Библиотека"), ("new", "Новый проект (окно Unreal)"), ("engines", "Движки"), ("catalog", "Каталог"),
-           ("store", "Магазин Epic"), ("downloads", "Загрузки"), ("settings", "Настройки")]
+    NAV = [("library", "common.library"), ("new", "main_window.new_project_unreal_window"), ("engines", "main_window.engines"), ("catalog", "main_window.catalog"),
+           ("store", "common.epic_store"), ("downloads", "main_window.downloads"), ("settings", "common.settings")]
     PAGES = (("library", ProjectsPage), ("engines", EnginesPage), ("catalog", CatalogPage),
              ("store", StorePage), ("downloads", DownloadsPage), ("settings", SettingsPage))
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Equestria · Unreal Launcher")
+        live_i18n.call(self.setWindowTitle, "Equestria · Unreal Launcher")
         self.resize(1120, 720)
         self.cfg = Config()
         set_language(self.cfg["lang"])
@@ -64,13 +66,13 @@ class MainWindow(QMainWindow):
         sv = QVBoxLayout(side)
         sv.setContentsMargins(12, 18, 12, 14)
         sv.setSpacing(4)
-        logo = QLabel("UNREAL\nLauncher")
+        logo = live_i18n.call(QLabel, "UNREAL\nLauncher")
         logo.setObjectName("title")
         sv.addWidget(logo)
         sv.addSpacing(14)
         self.nav = {}
         for key, _text in self.NAV:
-            b = QPushButton()
+            b = live_i18n.call(QPushButton, )
             b.setObjectName("nav")
             b.setCheckable(True)
             b.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -78,15 +80,15 @@ class MainWindow(QMainWindow):
             sv.addWidget(b)
             self.nav[key] = b
         sv.addStretch()
-        self.mini = QLabel("")
+        self.mini = live_i18n.call(QLabel, "")
         self.mini.setObjectName("hint")
         self.mini.setWordWrap(True)
         sv.addWidget(self.mini)
         self.lang = QComboBox()
         self.lang.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.lang.addItem("", "")
+        live_i18n.call(self.lang.addItem, "", "")
         for code, name in LANGUAGES:
-            self.lang.addItem(name, code)
+            live_i18n.call(self.lang.addItem, name, code)
         self.lang.setCurrentIndex(max(0, self.lang.findData(self.cfg["lang"])))
         self.lang.activated.connect(lambda i: self.set_lang(self.lang.itemData(i)))
         sv.addWidget(self.lang)
@@ -115,28 +117,16 @@ class MainWindow(QMainWindow):
 
     def _retranslate(self) -> None:
         for key, text in self.NAV:
-            self.nav[key].setText(tr(text))
-        self.lang.setItemText(0, tr("Как в системе"))
+            live_i18n.call(self.nav[key].setText, tr(text))
+        live_i18n.call(self.lang.setItemText, 0, tr("main_window.system_language"))
         self._mini()
 
     def set_lang(self, code: str) -> None:
-        """Сменить язык интерфейса без перезапуска: страницы пересоздаются заново."""
+        """Сменить язык интерфейса без перезапуска: обновляются подписи существующих виджетов."""
         self.cfg["lang"] = code
         self.cfg.save()
         set_language(code)
-        current = next((k for k, p in self.pages.items() if p is self.stack.currentWidget()), "library")
-        log = self.pages["downloads"].log.toPlainText()
-        if self.store.view is not None:
-            self.store.view.setParent(None)          # веб-страница Epic живёт дольше страницы «Магазин»
-        for p in self.pages.values():
-            self.stack.removeWidget(p)
-            p.deleteLater()
-        self.pages = {}
-        self._build_pages()
-        self.pages["downloads"].log.setPlainText(log)
-        self.pages["library"].fill()
         self._retranslate()
-        self.go(current)
 
     # --- навигация
     def go(self, key: str) -> None:
@@ -150,21 +140,21 @@ class MainWindow(QMainWindow):
     def _open_unreal_browser(self) -> None:
         built = sorted((e for e in self.engines if e.built), key=lambda e: e.version, reverse=True)
         if not built:
-            QMessageBox.information(self, tr("Нет движка"), tr("Сначала установите или подключите Unreal Engine («Каталог»)."))
+            QMessageBox.information(self, tr("common.no_engine"), tr("main_window.install_add_unreal_engine_first"))
             return
         if not confirm_launch(self):
             return
         err = launch_editor(self.cfg, built[0])
         if err:
-            QMessageBox.warning(self, tr("Не удалось запустить"), err)
+            QMessageBox.warning(self, tr("common.could_not_launch"), err)
 
     def _mini(self) -> None:
         j, d = self.jobs, self.store.dl
         if d:
             pc = int(d["recv"] * 100 / (d["total"] or PREBUILT_SIZE))
-            self.mini.setText(f"⬇ {d['name']}\n{min(pc, 100)}%")
+            live_i18n.call(self.mini.setText, f"⬇ {d['name']}\n{min(pc, 100)}%")
         else:
-            self.mini.setText(f"⏳ {j.current.title}\n{int(j.progress)}%" if j.current else "")
+            live_i18n.call(self.mini.setText, live_i18n.format_text('⏳ {0}\n{1}%', j.current.title, int(j.progress)) if j.current else "")
         if self.tray:
             self.tray.update_tooltip(self.mini.text())
 
@@ -271,8 +261,8 @@ class MainWindow(QMainWindow):
         Редактор Unreal при этом не закрывается — он запущен отдельно."""
         if self.jobs.current or self.store.dl:
             self.show_window()
-            r = QMessageBox.question(self, tr("Идёт задача"),
-                                     tr("Установка или сборка ещё выполняется. Закрыть лаунчер и остановить её?"))
+            r = QMessageBox.question(self, tr("main_window.task_progress"),
+                                     tr("main_window.installation_build_still_running_close"))
             if r != QMessageBox.StandardButton.Yes:
                 return
             self.jobs.cancel()

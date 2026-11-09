@@ -1,4 +1,5 @@
 {
+  "_language_name": "English",
   "title": "🐴  Equestria OS — Mirror Manager",
   "select_countries": "Select countries to search mirrors:",
   "search_placeholder": "🔍 Search for a country...",
@@ -18,5 +19,8 @@
   "mirrors_updated": "✓ Mirrors updated successfully!",
   "backup_restored": "✓ Backup restored.",
   "parse_error": "Done (could not parse backend response).",
-  "mirrors_count": "{0} mirrors"
+  "mirrors_count": "{0} mirrors",
+  "error_message": "Error: {0}",
+  "unknown_error": "Unknown error",
+  "language_label": "Language"
 }

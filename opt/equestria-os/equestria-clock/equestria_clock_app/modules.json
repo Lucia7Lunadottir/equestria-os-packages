@@ -1,0 +1,67 @@
+{
+  "paths": [],
+  "style": [
+    "paths"
+  ],
+  "sound": [
+    "localization",
+    "paths"
+  ],
+  "settings": [
+    "paths",
+    "style"
+  ],
+  "schedule": [
+    "localization"
+  ],
+  "widgets": [
+    "localization",
+    "sound",
+    "style"
+  ],
+  "dialogs": [
+    "localization",
+    "schedule",
+    "widgets"
+  ],
+  "alarms": [
+    "dialogs",
+    "localization",
+    "schedule",
+    "widgets"
+  ],
+  "timer": [
+    "localization",
+    "schedule",
+    "widgets"
+  ],
+  "stopwatch": [
+    "localization",
+    "schedule"
+  ],
+  "settings_page": [
+    "localization",
+    "paths",
+    "style",
+    "widgets"
+  ],
+  "window": [
+    "alarms",
+    "dialogs",
+    "localization",
+    "schedule",
+    "settings",
+    "settings_page",
+    "sound",
+    "stopwatch",
+    "style",
+    "timer"
+  ],
+  "app": [
+    "paths",
+    "settings",
+    "style",
+    "window"
+  ],
+  "localization": []
+}

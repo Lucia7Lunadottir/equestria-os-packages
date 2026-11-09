@@ -1,40 +1,28 @@
-"""Строки интерфейса на 10 языках из localization.csv (ключ, en, ru, de, ...)."""
+"""Строки интерфейса из locales/<язык>.json (ключ -> текст) через общий каталог equestria_kit."""
 from __future__ import annotations
 
-import csv
-import os
+from equestria_kit import live_i18n
 
 
 class Localizer:
-    def __init__(self, path: str):
-        self.strings: dict[str, dict[str, str]] = {}
-        self.languages: list[str] = []
-        self._load(path)
-        from equestria_kit.i18n import detect_language
-        sys_code = detect_language()
-        self.lang = sys_code if sys_code in self.languages else "en"
+    def __init__(self, path: str = ""):  # path оставлен для совместимости, переводы ищутся рядом с этим файлом
+        self.catalog = live_i18n.Catalog("equestria-os-task-panel-changer", __file__)
+        # языки — найденные файлы locales/*.json, без списка в коде
+        self.languages: list[str] = list(self.catalog.languages)
 
-    def _load(self, path: str) -> None:
-        try:
-            with open(path, encoding="utf-8") as f:
-                rows = list(csv.reader(f))
-        except OSError:
-            return
-        if not rows:
-            return
-        self.languages = [h.strip() for h in rows[0][1:]]
-        for row in rows[1:]:
-            if row and row[0].strip():
-                self.strings[row[0].strip()] = {
-                    lang: text.strip().replace("\\n", "\n")
-                    for lang, text in zip(self.languages, row[1:])}
+    @property
+    def lang(self) -> str:
+        return self.catalog.lang
+
+    @lang.setter
+    def lang(self, code: str) -> None:
+        self.catalog.set_language(code)  # ещё и сохраняет выбор
 
     def has(self, key: str) -> bool:
-        return key in self.strings
+        return any(key in rows for rows in self.catalog.translations.values())
 
     def t(self, key: str, *args) -> str:
-        texts = self.strings.get(key, {})
-        text = texts.get(self.lang) or texts.get("en") or key
+        text = str(self.catalog.tr(key))
         for i, arg in enumerate(args):
             text = text.replace("{%d}" % i, str(arg))
         return text

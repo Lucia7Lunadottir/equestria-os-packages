@@ -31,6 +31,21 @@ _DEFAULTS = {
 }
 
 
+_TRADITIONAL = ("zh_tw", "zh_hk", "zh_mo", "zh_hant")
+
+
+def _match_locale(locale_name: str, available_langs: list[str]) -> str:
+    """"ru_RU.UTF-8" → code of an existing locales/<code>.json, or "".
+    Matches against the files found, so a newly added file is detected without code changes."""
+    name = (locale_name or "").split(":")[0].split(".")[0].split("@")[0].strip().replace("-", "_").lower()
+    by_lower = {code.lower(): code for code in available_langs}
+    if name in by_lower:                         # exact: pt_BR, zh_TW…
+        return by_lower[name]
+    if name.startswith(_TRADITIONAL):            # zh_TW must not collapse to Simplified "zh"
+        return by_lower.get("zh_tw") or by_lower.get("zh", "")
+    return by_lower.get(name.split("_")[0], "")
+
+
 def _detect_system_lang(available_langs: list[str]) -> str:
     """Try to detect the system language and return the best matching code.
 
@@ -40,28 +55,11 @@ def _detect_system_lang(available_langs: list[str]) -> str:
     3. `locale` command output
     Fallback: "en"
     """
-    # Код языка — по правилу общей библиотеки: "zh_TW.UTF-8" → "zh_TW", "ru_RU.UTF-8" → "ru"
-    # (первые две буквы не годятся: традиционный китайский стал бы упрощённым)
-    from equestria_kit.i18n import normalize
-    candidates = []
-
-    # $LANGUAGE can hold multiple codes separated by colons
-    env_language = os.environ.get("LANGUAGE", "")
-    for part in env_language.split(":"):
-        code = normalize(part)
-        if code:
-            candidates.append(code)
-
-    # $LANG: "ru_RU.UTF-8" → "ru"
-    code = normalize(os.environ.get("LANG", ""))
-    if code:
-        candidates.append(code)
+    candidates = os.environ.get("LANGUAGE", "").split(":") + [os.environ.get("LANG", "")]
 
     # Try Python's own locale
     try:
-        code = normalize(locale.getdefaultlocale()[0] or "")
-        if code:
-            candidates.append(code)
+        candidates.append(locale.getdefaultlocale()[0] or "")
     except Exception:
         pass
 
@@ -70,17 +68,16 @@ def _detect_system_lang(available_langs: list[str]) -> str:
         res = subprocess.run(["locale"], capture_output=True, text=True, timeout=2)
         for line in res.stdout.splitlines():
             if line.startswith("LANG="):
-                code = normalize(line.split("=", 1)[1].strip().strip('"'))
-                if code:
-                    candidates.append(code)
+                candidates.append(line.split("=", 1)[1].strip().strip('"'))
                 break
     except Exception:
         pass
 
     # First candidate that matches an available locale file wins
     for c in candidates:
-        if c in available_langs:
-            return c
+        code = _match_locale(c, available_langs)
+        if code:
+            return code
 
     return "en"
 
