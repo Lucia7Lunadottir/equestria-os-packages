@@ -152,3 +152,21 @@ msgstr "Pod godziną"
 
 msgid "Show moon phases"
 msgstr "Pokazuj fazy księżyca"
+
+msgid "Show months"
+msgstr "Pokaż miesiące"
+
+msgid "Show years"
+msgstr "Pokaż lata"
+
+msgid "Previous year"
+msgstr "Poprzedni rok"
+
+msgid "Next year"
+msgstr "Następny rok"
+
+msgid "Previous decade"
+msgstr "Poprzednia dekada"
+
+msgid "Next decade"
+msgstr "Następna dekada"

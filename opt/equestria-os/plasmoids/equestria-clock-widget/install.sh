@@ -12,3 +12,4 @@ done
 kpackagetool6 -t Plasma/Applet -u "$tmp" 2>/dev/null || kpackagetool6 -t Plasma/Applet -i "$tmp"
 rm -rf "$tmp"
 echo "Готово. Правый щелчок по панели → Добавить виджеты → Часы Equestria"
+echo "Эта копия в ~/.local перекрывает пакет. Вернуться к пакету: kpackagetool6 -t Plasma/Applet -r org.equestria.clockwidget"

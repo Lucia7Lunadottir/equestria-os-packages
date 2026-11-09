@@ -69,6 +69,20 @@ function forDay(reminders, d) {
     return out
 }
 
+// есть ли хоть одно напоминание в этом месяце — для точки в виде «месяцы года»
+function anyInMonth(reminders, y, m) {
+    if (!reminders.length)
+        return false
+    var n = daysInMonth(y, m)
+    for (var day = 1; day <= n; day++) {
+        var d = new Date(y, m, day)
+        for (var i = 0; i < reminders.length; i++)
+            if (occursOn(reminders[i], d))
+                return true
+    }
+    return false
+}
+
 function isDone(rem, d) { return (rem.done || []).indexOf(iso(d)) >= 0 }
 
 function parse(text) {

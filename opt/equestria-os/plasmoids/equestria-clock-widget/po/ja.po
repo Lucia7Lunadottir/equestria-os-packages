@@ -150,3 +150,21 @@ msgstr "時刻の下"
 
 msgid "Show moon phases"
 msgstr "月相を表示"
+
+msgid "Show months"
+msgstr "月を表示"
+
+msgid "Show years"
+msgstr "年を表示"
+
+msgid "Previous year"
+msgstr "前の年"
+
+msgid "Next year"
+msgstr "次の年"
+
+msgid "Previous decade"
+msgstr "前の10年"
+
+msgid "Next decade"
+msgstr "次の10年"

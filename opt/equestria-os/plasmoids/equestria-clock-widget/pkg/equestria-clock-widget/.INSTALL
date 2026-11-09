@@ -1,0 +1,9 @@
+_note() {
+    echo ">>> Часы Equestria: перезапустите Plasma, чтобы панель взяла новую версию виджета:"
+    echo ">>>     systemctl --user restart plasma-plasmashell"
+    echo ">>> Equestria Clock: restart Plasma so the panel loads the new widget version (command above)."
+    echo ">>> Копия из install.sh в ~/.local/share/plasma/plasmoids перекрывает пакет — уберите её:"
+    echo ">>>     kpackagetool6 -t Plasma/Applet -r org.equestria.clockwidget"
+}
+post_install() { _note; }
+post_upgrade() { _note; }

@@ -150,3 +150,21 @@ msgstr "在时间下方"
 
 msgid "Show moon phases"
 msgstr "显示月相"
+
+msgid "Show months"
+msgstr "显示月份"
+
+msgid "Show years"
+msgstr "显示年份"
+
+msgid "Previous year"
+msgstr "上一年"
+
+msgid "Next year"
+msgstr "下一年"
+
+msgid "Previous decade"
+msgstr "上一个十年"
+
+msgid "Next decade"
+msgstr "下一个十年"

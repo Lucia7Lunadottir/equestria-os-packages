@@ -1,5 +1,7 @@
-// Календарь месяца: стрелки, щелчок по названию месяца — вернуться к сегодняшнему дню,
-// сегодня — кружок цвета выделения, выбранный день — рамка, дни с напоминаниями — точка,
+// Календарь, как у KDE, в трёх видах: дни месяца, месяцы года и годы десятилетия.
+// Щелчок по заголовку — вид крупнее, щелчок по месяцу или году — обратно; стрелки листают
+// текущий вид, кнопка «сегодня» возвращает к сегодняшнему дню.
+// Сегодня — кружок цвета выделения, выбранный день — рамка, дни (и месяцы) с напоминаниями — точка,
 // дни главных фаз луны (новолуние, четверти, полнолуние) — маленькая луна в углу.
 import QtQuick
 import QtQuick.Layouts
@@ -17,6 +19,8 @@ ColumnLayout {
     property var reminders: []
     property bool weekNumbers: false
     property bool showMoon: true
+    property int view: 0                // 0 — дни месяца, 1 — месяцы года, 2 — годы десятилетия
+    readonly property int decadeStart: shown.getFullYear() - shown.getFullYear() % 10
 
     readonly property int firstDay: Qt.locale().firstDayOfWeek          // 0 = воскресенье
     readonly property date gridStart: {
@@ -29,8 +33,15 @@ ColumnLayout {
     function sameDay(a, b) {
         return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
     }
-    function shift(months) { shown = new Date(shown.getFullYear(), shown.getMonth() + months, 1) }
+    // шаг стрелок: месяц, год или десятилетие — смотря какой вид открыт
+    function shift(steps) {
+        var months = steps * (view === 0 ? 1 : view === 1 ? 12 : 120)
+        shown = new Date(shown.getFullYear(), shown.getMonth() + months, 1)
+    }
+    function openMonth(y, m) { shown = new Date(y, m, 1); view = 0 }
+    function openYear(y) { shown = new Date(y, shown.getMonth(), 1); view = 1 }
     function goToday() {
+        view = 0
         shown = new Date(today.getFullYear(), today.getMonth(), 1)
         selected = today
         daySelected(today)
@@ -44,58 +55,116 @@ ColumnLayout {
             id: monthTitle
             Layout.fillWidth: true
             text: {
+                if (month.view === 2)
+                    return month.decadeStart + " – " + (month.decadeStart + 9)
+                if (month.view === 1)
+                    return String(month.shown.getFullYear())
                 var t = Qt.locale().standaloneMonthName(month.shown.getMonth(), Locale.LongFormat) + " " + month.shown.getFullYear()
                 return t.charAt(0).toUpperCase() + t.slice(1)
             }
             font.bold: true
+            enabled: month.view < 2
+            onClicked: month.view++
+            PlasmaComponents3.ToolTip { text: month.view === 0 ? i18n("Show months") : i18n("Show years") }
+        }
+        PlasmaComponents3.ToolButton {
+            icon.name: "go-jump-today"
             onClicked: month.goToday()
             PlasmaComponents3.ToolTip { text: i18n("Back to today") }
         }
         PlasmaComponents3.ToolButton {
             icon.name: "go-up"
             onClicked: month.shift(-1)
-            PlasmaComponents3.ToolTip { text: i18n("Previous month") }
+            PlasmaComponents3.ToolTip {
+                text: month.view === 0 ? i18n("Previous month") : month.view === 1 ? i18n("Previous year") : i18n("Previous decade")
+            }
         }
         PlasmaComponents3.ToolButton {
             icon.name: "go-down"
             onClicked: month.shift(1)
-            PlasmaComponents3.ToolTip { text: i18n("Next month") }
+            PlasmaComponents3.ToolTip {
+                text: month.view === 0 ? i18n("Next month") : month.view === 1 ? i18n("Next year") : i18n("Next decade")
+            }
         }
     }
 
-    GridLayout {
-        id: grid
+    // все три вида в одном StackLayout — высота календаря не прыгает при переключении
+    StackLayout {
         Layout.fillWidth: true
-        columns: month.weekNumbers ? 8 : 7
-        rowSpacing: 2
-        columnSpacing: 2
+        currentIndex: month.view
 
-        // шапка: дни недели в порядке, принятом в стране пользователя
-        Item { visible: month.weekNumbers; Layout.preferredWidth: Kirigami.Units.gridUnit * 1.4; Layout.preferredHeight: 1 }
-        Repeater {
-            model: 7
-            PlasmaComponents3.Label {
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
-                text: Qt.locale().standaloneDayName((month.firstDay + index) % 7, Locale.ShortFormat)
-                opacity: 0.6
-                font: Kirigami.Theme.smallFont
+        GridLayout {
+            id: grid
+            Layout.fillWidth: true
+            columns: month.weekNumbers ? 8 : 7
+            rowSpacing: 2
+            columnSpacing: 2
+
+            // шапка: дни недели в порядке, принятом в стране пользователя
+            Item { visible: month.weekNumbers; Layout.preferredWidth: Kirigami.Units.gridUnit * 1.4; Layout.preferredHeight: 1 }
+            Repeater {
+                model: 7
+                PlasmaComponents3.Label {
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    text: Qt.locale().standaloneDayName((month.firstDay + index) % 7, Locale.ShortFormat)
+                    opacity: 0.6
+                    font: Kirigami.Theme.smallFont
+                }
+            }
+
+            Repeater {
+                model: 6 * (month.weekNumbers ? 8 : 7)
+                delegate: Loader {
+                    readonly property int row: Math.floor(index / grid.columns)
+                    readonly property int col: index % grid.columns
+                    readonly property bool isWeek: month.weekNumbers && col === 0
+                    readonly property int dayIndex: row * 7 + (month.weekNumbers ? col - 1 : col)
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: isWeek ? Kirigami.Units.gridUnit * 1.4 : Kirigami.Units.gridUnit * 2
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * 2
+                    sourceComponent: isWeek ? weekCell : dayCell
+                    property date day: new Date(month.gridStart.getFullYear(), month.gridStart.getMonth(),
+                                                month.gridStart.getDate() + dayIndex)
+                }
             }
         }
 
-        Repeater {
-            model: 6 * (month.weekNumbers ? 8 : 7)
-            delegate: Loader {
-                readonly property int row: Math.floor(index / grid.columns)
-                readonly property int col: index % grid.columns
-                readonly property bool isWeek: month.weekNumbers && col === 0
-                readonly property int dayIndex: row * 7 + (month.weekNumbers ? col - 1 : col)
-                Layout.fillWidth: true
-                Layout.preferredWidth: isWeek ? Kirigami.Units.gridUnit * 1.4 : Kirigami.Units.gridUnit * 2
-                Layout.preferredHeight: Kirigami.Units.gridUnit * 2
-                sourceComponent: isWeek ? weekCell : dayCell
-                property date day: new Date(month.gridStart.getFullYear(), month.gridStart.getMonth(),
-                                            month.gridStart.getDate() + dayIndex)
+        // месяцы года: 4 ряда по 3, точка — в месяце есть напоминания
+        GridLayout {
+            columns: 3
+            rowSpacing: 2
+            columnSpacing: 2
+            Repeater {
+                model: 12
+                delegate: PeriodCell {
+                    text: {
+                        var t = Qt.locale().standaloneMonthName(index, Locale.LongFormat)
+                        return t.charAt(0).toUpperCase() + t.slice(1)
+                    }
+                    current: month.today.getFullYear() === month.shown.getFullYear() && month.today.getMonth() === index
+                    chosen: month.selected.getFullYear() === month.shown.getFullYear() && month.selected.getMonth() === index
+                    marked: month.view === 1 && Rem.anyInMonth(month.reminders, month.shown.getFullYear(), index)
+                    onClicked: month.openMonth(month.shown.getFullYear(), index)
+                }
+            }
+        }
+
+        // годы: десятилетие и по году с краёв (как у KDE), крайние — бледнее
+        GridLayout {
+            columns: 3
+            rowSpacing: 2
+            columnSpacing: 2
+            Repeater {
+                model: 12
+                delegate: PeriodCell {
+                    readonly property int year: month.decadeStart - 1 + index
+                    text: String(year)
+                    current: month.today.getFullYear() === year
+                    chosen: month.selected.getFullYear() === year
+                    dimmed: index === 0 || index === 11
+                    onClicked: month.openYear(year)
+                }
             }
         }
     }
@@ -163,6 +232,47 @@ ColumnLayout {
                 color: cell.isToday ? Kirigami.Theme.highlightedTextColor
                        : (cell.events.length ? (cell.events[0].color || Kirigami.Theme.highlightColor) : "transparent")
             }
+        }
+    }
+
+    // ячейка месяца или года: сегодняшний — заливка, выбранный — рамка, как у дней
+    component PeriodCell: MouseArea {
+        id: period
+        property alias text: periodLabel.text
+        property bool current: false
+        property bool chosen: false
+        property bool marked: false
+        property bool dimmed: false
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        Layout.preferredWidth: Kirigami.Units.gridUnit * 4
+        Layout.preferredHeight: Kirigami.Units.gridUnit * 2
+        hoverEnabled: true
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: Kirigami.Units.cornerRadius
+            color: period.current ? Kirigami.Theme.highlightColor
+                   : (period.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g,
+                                                    Kirigami.Theme.highlightColor.b, 0.2) : "transparent")
+            border.width: period.chosen && !period.current ? 2 : 0
+            border.color: Kirigami.Theme.highlightColor
+        }
+        PlasmaComponents3.Label {
+            id: periodLabel
+            anchors.centerIn: parent
+            color: period.current ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
+            opacity: period.dimmed ? 0.4 : 1
+            font.bold: period.current
+        }
+        Rectangle {
+            visible: period.marked
+            width: 5; height: 5; radius: 2.5
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 4
+            color: period.current ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.highlightColor
         }
     }
 }

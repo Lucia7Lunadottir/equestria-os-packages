@@ -151,3 +151,21 @@ msgstr "Debajo de la hora"
 
 msgid "Show moon phases"
 msgstr "Mostrar las fases lunares"
+
+msgid "Show months"
+msgstr "Mostrar meses"
+
+msgid "Show years"
+msgstr "Mostrar años"
+
+msgid "Previous year"
+msgstr "Año anterior"
+
+msgid "Next year"
+msgstr "Año siguiente"
+
+msgid "Previous decade"
+msgstr "Década anterior"
+
+msgid "Next decade"
+msgstr "Década siguiente"

@@ -1,6 +1,6 @@
 # Maintainer: Equestria OS
 pkgname=equestria-clock-widget
-pkgver=2.1
+pkgver=2.2
 pkgrel=1
 pkgdesc="Clock widget for the Plasma panel: calendar, Equestria Calendar events and world clocks, like in Windows"
 arch=('any')
@@ -10,6 +10,7 @@ makedepends=('gettext')
 optdepends=('equestria-calendar: события в календаре виджета'
             'equestria-clock: будильник, таймер и секундомер по кнопке и среднему щелчку')
 source=()
+install=$pkgname.install
 
 _id=org.equestria.clockwidget
 

@@ -150,3 +150,21 @@ msgstr "시간 아래"
 
 msgid "Show moon phases"
 msgstr "달의 위상 표시"
+
+msgid "Show months"
+msgstr "월 보기"
+
+msgid "Show years"
+msgstr "연도 보기"
+
+msgid "Previous year"
+msgstr "이전 연도"
+
+msgid "Next year"
+msgstr "다음 연도"
+
+msgid "Previous decade"
+msgstr "이전 10년"
+
+msgid "Next decade"
+msgstr "다음 10년"

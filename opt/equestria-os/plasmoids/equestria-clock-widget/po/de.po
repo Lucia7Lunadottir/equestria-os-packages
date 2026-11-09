@@ -151,3 +151,21 @@ msgstr "Unter der Uhrzeit"
 
 msgid "Show moon phases"
 msgstr "Mondphasen anzeigen"
+
+msgid "Show months"
+msgstr "Monate anzeigen"
+
+msgid "Show years"
+msgstr "Jahre anzeigen"
+
+msgid "Previous year"
+msgstr "Vorheriges Jahr"
+
+msgid "Next year"
+msgstr "Nächstes Jahr"
+
+msgid "Previous decade"
+msgstr "Vorheriges Jahrzehnt"
+
+msgid "Next decade"
+msgstr "Nächstes Jahrzehnt"

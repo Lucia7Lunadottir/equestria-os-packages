@@ -152,3 +152,21 @@ msgstr "Під часом"
 
 msgid "Show moon phases"
 msgstr "Показувати фази місяця"
+
+msgid "Show months"
+msgstr "Показати місяці"
+
+msgid "Show years"
+msgstr "Показати роки"
+
+msgid "Previous year"
+msgstr "Попередній рік"
+
+msgid "Next year"
+msgstr "Наступний рік"
+
+msgid "Previous decade"
+msgstr "Попереднє десятиліття"
+
+msgid "Next decade"
+msgstr "Наступне десятиліття"
