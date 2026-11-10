@@ -167,4 +167,6 @@ Created for the herd, by Psyche Games.
 
 ## ⚖️ Trademark & Legal
 
-Equestria OS is an independent, fan-created Linux distribution. It is not affiliated with, endorsed by, or sponsored by Hasbro. "My Little Pony" and "Equestria Girls" are registered trademarks of Hasbro. The custom software and architecture in this repository are copyright Psyche Games.
+Equestria OS is an independent, fan-created Linux distribution. It is not affiliated with, endorsed by, or sponsored by Hasbro. "My Little Pony" and "Equestria Girls" are registered trademarks of Hasbro. The custom software and architecture in this repository are copyright © 2026 Lucia Lunadottir (Psyche Games).
+
+The code is licensed under the [GNU General Public License v3.0 or later](LICENSE). The Equestria OS name, logo and branding are not covered by the GPL, and the artwork belongs to its respective artists — see [TRADEMARKS.md](TRADEMARKS.md). Want to help? See [CONTRIBUTING.md](CONTRIBUTING.md).

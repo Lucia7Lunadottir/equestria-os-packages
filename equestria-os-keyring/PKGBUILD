@@ -6,7 +6,7 @@ pkgrel=1
 pkgdesc="Digital trust keys for Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
-license=('GPL')
+license=('GPL-3.0-or-later')
 install="equestria-os-keyring.install"
 
 source=('equestria-os.gpg'

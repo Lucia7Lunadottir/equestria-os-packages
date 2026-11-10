@@ -6,7 +6,7 @@ pkgrel=5
 pkgdesc="Native GUI Git credential interceptor for Equestria OS (fixes Unity Git errors)"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
-license=('GPL')
+license=('GPL-3.0-or-later')
 depends=('equestria-qt-kit>=1.3' 'git' 'python-pyqt6')
 install="$pkgname.install"
 

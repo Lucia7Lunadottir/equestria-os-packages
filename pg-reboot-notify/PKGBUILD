@@ -5,7 +5,7 @@ pkgver=1.0.0
 pkgrel=2
 pkgdesc='Equestria OS — KDE notification when a reboot is needed after updates'
 arch=('any')
-license=('GPL3')
+license=('GPL-3.0-or-later')
 url='https://psyche-games.com'
 depends=('bash' 'libnotify')
 

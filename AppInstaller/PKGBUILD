@@ -4,7 +4,7 @@ pkgrel=3
 pkgdesc="Graphical local package installer for Equestria OS: pacman, DEB, RPM and Flatpak packages, with updates for DEB/RPM apps"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
-license=('GPL3')
+license=('GPL-3.0-or-later')
 depends=('python' 'python-pyqt6' 'equestria-qt-kit>=1.3' 'polkit' 'tar' 'libarchive' 'zstd' 'pacman')
 optdepends=('flatpak: install .flatpak/.flatpakref packages')
 install=equestria-installer.install
