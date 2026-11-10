@@ -1,0 +1,3 @@
+#!/bin/bash
+cd /opt/equestria-os/equestria-os-settings/
+exec python3 main.py "$@"

@@ -471,23 +471,21 @@ class _CmdWorker(QObject):
 
 def _load_gpu_panel():
     """Панель менеджера видеокарт из equestria-gpu или None, если его нет.
-    Установленный — один файл /usr/bin/equestria-gpu; из исходников — соседняя папка."""
-    import importlib.machinery
-    import importlib.util
+    Реализация — пакет equestria_gpu_app: установленный лежит в /usr/lib/equestria-gpu,
+    из исходников — в соседней папке equestria-gpu. Папка добавляется в sys.path."""
+    import importlib
     here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    for path in ("/usr/bin/equestria-gpu", os.path.join(os.path.dirname(here), "equestria-gpu", "equestria_gpu.py")):
-        if not os.path.isfile(path):
+    for base in ("/usr/lib/equestria-gpu", os.path.join(os.path.dirname(here), "equestria-gpu")):
+        if not os.path.isfile(os.path.join(base, "equestria_gpu_app", "panel.py")):
             continue
+        sys.path.insert(0, base)
         try:
-            loader = importlib.machinery.SourceFileLoader("equestria_gpu", path)
-            spec = importlib.util.spec_from_file_location("equestria_gpu", path, loader=loader)
-            mod = importlib.util.module_from_spec(spec)
-            sys.modules["equestria_gpu"] = mod  # dataclass ищет свой модуль в sys.modules
-            loader.exec_module(mod)
-            return mod.GpuPanel(embedded=True)
+            return importlib.import_module("equestria_gpu_app.panel").GpuPanel(embedded=True)
         except Exception as e:  # повреждённая установка не должна ронять «Настройки»
-            sys.modules.pop("equestria_gpu", None)
-            print(f"mod_gpu: equestria-gpu не загрузился ({path}): {e}")
+            sys.path.remove(base)
+            for name in [n for n in sys.modules if n == "equestria_gpu_app" or n.startswith("equestria_gpu_app.")]:
+                sys.modules.pop(name)
+            print(f"mod_gpu: equestria-gpu не загрузился ({base}): {e}")
     return None
 
 

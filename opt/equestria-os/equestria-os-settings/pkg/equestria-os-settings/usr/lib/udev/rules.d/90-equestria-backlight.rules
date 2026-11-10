@@ -1,0 +1,5 @@
+# Grants the active local user (via systemd-logind's dynamic ACLs) write
+# access to sysfs backlight devices, so brightness control — both this
+# module's sliders and KDE Powerdevil's own brightness keys/OSD — doesn't
+# need a polkit/root prompt on every change.
+SUBSYSTEM=="backlight", TAG+="uaccess"

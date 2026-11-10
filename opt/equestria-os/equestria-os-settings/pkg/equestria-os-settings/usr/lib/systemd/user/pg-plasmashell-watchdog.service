@@ -1,0 +1,13 @@
+[Unit]
+Description=Equestria OS — Plasmashell Watchdog (restarts plasmashell when it hangs or dies)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pg-plasmashell-watchdog
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

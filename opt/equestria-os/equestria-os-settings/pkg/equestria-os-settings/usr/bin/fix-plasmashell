@@ -1,0 +1,44 @@
+#!/bin/bash
+# fix-plasmashell — перезапуск зависшего plasmashell (панель, обои, виджеты).
+#
+# Запускать от обычного пользователя, sudo не нужен:   fix-plasmashell
+# Ту же команду автоматически вызывает pg-plasmashell-watchdog, когда
+# замечает, что plasmashell завис. Окна программ при этом не закрываются —
+# перезапускается только оболочка рабочего стола.
+
+set -u
+
+log() { echo "$1"; logger -t fix-plasmashell "$1"; }
+
+if [[ $EUID -eq 0 ]]; then
+    echo "Не запускай через sudo: plasmashell принадлежит твоему пользователю." >&2
+    exit 1
+fi
+
+pids=$(pgrep -u "$UID" -x plasmashell || true)
+
+if [[ -n "$pids" ]]; then
+    log "останавливаю plasmashell (pid: $(echo $pids))"
+    kill -TERM $pids 2>/dev/null || true
+    # Зависший процесс на SIGTERM обычно не реагирует — ждём недолго и добиваем.
+    for _ in 1 2 3 4 5 6; do
+        pgrep -u "$UID" -x plasmashell >/dev/null || break
+        sleep 0.5
+    done
+    if pgrep -u "$UID" -x plasmashell >/dev/null; then
+        log "plasmashell не отвечает на SIGTERM — kill -9"
+        pkill -KILL -u "$UID" -x plasmashell || true
+        sleep 0.5
+    fi
+else
+    log "plasmashell не запущен — запускаю"
+fi
+
+if systemctl --user cat plasma-plasmashell.service >/dev/null 2>&1; then
+    systemctl --user reset-failed plasma-plasmashell.service 2>/dev/null || true
+    systemctl --user restart plasma-plasmashell.service
+else
+    setsid -f plasmashell >/dev/null 2>&1
+fi
+
+log "готово — plasmashell перезапущен"

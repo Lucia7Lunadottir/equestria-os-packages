@@ -1,0 +1,347 @@
+/* ============================================================
+ *  Equestria OS Settings — stylesheet
+ * ============================================================ */
+
+QWidget#root {
+    background-color: @base@;
+}
+
+/* ============================================================
+ *  HEADER
+ * ============================================================ */
+
+QFrame#Header {
+    background-color: @surface0%45@;
+    border-bottom: 1px solid @surface1@;
+}
+
+QLabel#AppTitle {
+    color: rgb(240, 240, 255);
+    background: transparent;
+}
+
+QPushButton#KDESettingsBtn {
+    background-color: @surface1@;
+    color: @text@;
+    border: 1px solid @surface2@;
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 13px;
+}
+QPushButton#KDESettingsBtn:hover {
+    background-color: @surface2@;
+    color: white;
+    border-color: @surface2@;
+}
+
+/* ============================================================
+ *  LANG DROPDOWN
+ * ============================================================ */
+
+/* Компактный override глобального QComboBox для переключателя языка */
+QComboBox#LangCombo {
+    min-width: 56px;
+    padding: 2px 8px;
+    font-size: 11px;
+}
+
+/* ============================================================
+ *  SIDEBAR
+ * ============================================================ */
+
+QWidget#Sidebar {
+    background-color: @surface0%45@;
+    border-right: 1px solid @surface1@;
+}
+
+QListWidget#SidebarList {
+    background-color: @surface0%45@;
+    border: none;
+    outline: none;
+    padding: 4px 0;
+}
+
+QListWidget#SidebarList::item {
+    border: none;
+    outline: none;
+}
+
+QListWidget#SidebarList::item:selected {
+    background-color: transparent;
+}
+
+QScrollBar:vertical {
+    background: @surface0%45@;
+    width: 6px;
+    border: none;
+}
+QScrollBar::handle:vertical {
+    background: @surface2@;
+    border-radius: 3px;
+    min-height: 20px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+/* ============================================================
+ *  SPLITTER
+ * ============================================================ */
+
+QSplitter::handle {
+    background-color: @surface1@;
+    width: 1px;
+}
+
+/* ============================================================
+ *  CONTENT AREA
+ * ============================================================ */
+
+QStackedWidget#ContentStack {
+    background-color: @base@;
+}
+
+QWidget#ContentPage {
+    background-color: @base@;
+}
+
+QLabel#ModTitle {
+    color: rgb(240, 240, 255);
+    font-size: 22px;
+    font-weight: bold;
+    background: transparent;
+}
+
+QLabel#ModDesc {
+    color: @subtext@;
+    font-size: 14px;
+    background: transparent;
+    max-width: 480px;
+}
+
+QFrame#StatusBox {
+    background-color: @surface0@;
+    border: 1px solid @surface2@;
+    border-radius: 8px;
+    min-width: 280px;
+    max-width: 420px;
+}
+
+QLabel#StatusText {
+    color: @text@;
+    font-size: 13px;
+    background: transparent;
+}
+
+QPushButton#LaunchBtn {
+    background-color: @accent%55@;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-weight: bold;
+    font-size: 14px;
+    border: 1px solid @accent%75@;
+}
+QPushButton#LaunchBtn:hover {
+    background-color: @accent%75@;
+    border: 1px solid @accent@;
+}
+
+/* ============================================================
+ *  INLINE MODULE WIDGETS
+ * ============================================================ */
+
+QLabel#SectionTitle {
+    color: @accent@;
+    font-size: 15px;
+    font-weight: bold;
+    background: transparent;
+    margin-top: 8px;
+}
+
+QLabel#FieldLabel {
+    color: @text@;
+    font-size: 13px;
+    background: transparent;
+}
+
+QLabel#FieldHint {
+    color: @subtext@;
+    font-size: 12px;
+    background: transparent;
+}
+
+QFrame#InlineCard {
+    background-color: @surface0@;
+    border: 1px solid @surface2@;
+    border-radius: 10px;
+}
+
+QSlider::groove:horizontal {
+    height: 6px;
+    background: @surface1@;
+    border-radius: 3px;
+}
+QSlider::sub-page:horizontal {
+    height: 6px;
+    background: @accent@;
+    border-radius: 3px;
+}
+QSlider::handle:horizontal {
+    width: 16px;
+    height: 16px;
+    margin: -6px 0;
+    background: @accent@;
+    border-radius: 8px;
+}
+QSlider::handle:horizontal:hover {
+    background: @accent_hover@;
+}
+
+QCheckBox {
+    color: @text@;
+    font-size: 13px;
+    background: transparent;
+    spacing: 8px;
+}
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    image: url(@icon:cb_unchecked@);
+}
+QCheckBox::indicator:hover {
+    image: url(@icon:cb_unchecked_hover@);
+}
+QCheckBox::indicator:checked {
+    image: url(@icon:cb_checked@);
+}
+
+QComboBox {
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @accent%75@;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 13px;
+    min-width: 180px;
+    selection-background-color: @accent%55@;
+}
+QComboBox:focus {
+    border: 1px solid @accent@;
+}
+QComboBox::drop-down {
+    /* border, не padding: при padding у самого комбобокса
+       область стрелки схлопывается и стрелка исчезает */
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 24px;
+    border-left: 1px solid @accent%55@;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: @surface1@;
+}
+QComboBox::down-arrow {
+    /* CSS-трюк с треугольником из бордеров в Qt не рендерится —
+       нужна настоящая картинка */
+    image: url(@icon:arrow_down@);
+    width: 12px;
+    height: 8px;
+}
+QComboBox QAbstractItemView {
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @accent%75@;
+    selection-background-color: @accent%55@;
+    outline: none;
+    padding: 2px;
+}
+
+QLineEdit {
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @accent%75@;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 13px;
+    selection-background-color: @accent%55@;
+    selection-color: rgb(240, 235, 255);
+}
+QLineEdit:focus {
+    border: 1px solid @accent@;
+}
+
+QPlainTextEdit {
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @accent%75@;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    selection-background-color: @accent%55@;
+    selection-color: rgb(240, 235, 255);
+}
+QPlainTextEdit:focus {
+    border: 1px solid @accent@;
+}
+
+QPushButton#ActionBtn {
+    background-color: @surface1@;
+    color: @text@;
+    border-radius: 6px;
+    padding: 6px 18px;
+    font-size: 13px;
+    border: 1px solid @surface2@;
+}
+QPushButton#ActionBtn:hover {
+    background-color: @surface2@;
+    color: white;
+}
+QPushButton#ActionBtn:disabled {
+    background-color: @surface0@;
+    color: @surface2@;
+}
+
+QPushButton#DeleteBtn {
+    background-color: @red%45@;
+    color: @red@;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    border: 1px solid @red%65@;
+}
+QPushButton#DeleteBtn:hover {
+    background-color: @red%65@;
+    color: white;
+    border-color: @red@;
+}
+
+QPushButton#OpenAppBtn {
+    background-color: transparent;
+    color: @text@;
+    border: 1px solid @surface2@;
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 12px;
+}
+QPushButton#OpenAppBtn:hover {
+    background-color: @surface1@;
+    color: @accent_hover@;
+}
+
+QScrollArea {
+    background-color: transparent;
+    border: none;
+}
+QScrollArea > QWidget > QWidget {
+    background-color: transparent;
+}
+
+QLabel#MirrorText {
+    color: @text@;
+    font-size: 12px;
+    font-family: monospace;
+    background-color: @base@;
+    border: 1px solid @surface1@;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
