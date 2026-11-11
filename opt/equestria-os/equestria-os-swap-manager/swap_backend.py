@@ -13,7 +13,16 @@ import subprocess
 
 FSTAB_PATH  = "/etc/fstab"
 SYSCTL_DIR  = "/etc/sysctl.d"
-ZRAM_SERVICE = "/etc/systemd/system/equestria-zram.service"
+# zram is configured through zram-generator (one device, zram0) via our own
+# drop-in, so it can't collide with a system-wide zram-generator.conf.
+ZRAM_GENERATOR = "/usr/lib/systemd/system-generators/zram-generator"
+ZRAM_DROPIN = "/etc/systemd/zram-generator.conf.d/90-equestria-swap-manager.conf"
+ZRAM_DEVICE = "zram0"
+# Old versions created their own device with this service — on top of
+# zram-generator's, giving two zram devices at once.
+LEGACY_ZRAM_SERVICE = "/etc/systemd/system/equestria-zram.service"
+ZSWAP_PARAM = "/sys/module/zswap/parameters/enabled"
+ZSWAP_TMPFILES = "/etc/tmpfiles.d/equestria-swap-manager-zswap.conf"
 BTRFS_SWAP_SUBVOL = "/swap"
 
 
@@ -164,87 +173,107 @@ def set_oomd(state):
 
 # ── zram commands ─────────────────────────────────────────────────────────────
 
-def enable_zram(size_gb, algorithm):
+class ZramSetup:
     """
-    Set up zram swap in RAM:
-      1. Load the zram kernel module
-      2. Use 'zramctl --find' to create the next available device
-      3. Format and activate with priority 100 (higher than disk swap)
-      4. Persist via a systemd oneshot service
-      5. Set vm.page-cluster=0 (optimal for in-RAM swap)
+    zram swap via zram-generator.
+
+    The size/algorithm go into a drop-in that overrides the [zram0] section
+    of any /etc/systemd/zram-generator.conf (the base file itself is never
+    touched). "Off" is the same drop-in with zram-size = 0 — zram-generator
+    then creates no device.
+
+    zswap is switched off while zram is on: it would otherwise compress the
+    same pages a second time and keep its own pool (up to 20% of RAM) in front
+    of zram.
     """
-    size_str = f"{size_gb}G"
 
-    # Ensure module is loaded (ignore error if already loaded)
-    subprocess.run(["modprobe", "zram"], check=False)
+    def enable(self, size_gb, algorithm):
+        self._require_generator()
+        self._remove_legacy_service()
+        self._write_dropin(int(size_gb) * 1024, algorithm)
+        self._reload_device(start=True)
+        self._set_zswap(False)
 
-    # Swapoff and reset any existing equestria-managed zram devices
-    r = subprocess.run(["swapon", "--show=NAME,TYPE"], capture_output=True, text=True)
-    for line in r.stdout.splitlines():
-        parts = line.split()
-        if parts and "/dev/zram" in parts[0]:
-            subprocess.run(["swapoff", parts[0]], check=False)
-            subprocess.run(["zramctl", "--reset", parts[0]], check=False)
+        # page-cluster=0: kernel reads one page at a time from zram instead of
+        # clusters — much better latency for compressed in-RAM swap.
+        _sysctl_set("vm.page-cluster", "0")
+        _sysctl_persist("99-zram.conf", "vm.page-cluster", "0")
 
-    # --find creates the next free zram device, sets size+algorithm atomically,
-    # and prints the device path — no manual /dev/zramN guessing needed.
-    result = subprocess.run(
-        ["zramctl", "--find", "--size", size_str, "--algorithm", algorithm],
-        capture_output=True, text=True, check=True,
-    )
-    zram_dev = result.stdout.strip() or "/dev/zram0"
+        sys.stdout.write(f"OK: zram enabled ({size_gb}G, {algorithm}) on /dev/{ZRAM_DEVICE}\n")
 
-    subprocess.run(["mkswap", zram_dev], check=True)
-    subprocess.run(["swapon", "-p", "100", zram_dev], check=True)
+    def disable(self):
+        self._remove_legacy_service()
+        if os.path.exists(ZRAM_GENERATOR):
+            self._write_dropin(0, None)
+            self._reload_device(start=False)
+        self._set_zswap(True)
 
-    # Persist via systemd service (uses --find on every boot too)
-    service = f"""[Unit]
-Description=Equestria OS Fast Swap (zram)
-After=local-fs.target
+        # Restore page-cluster to default (3)
+        _sysctl_set("vm.page-cluster", "3")
+        zram_conf = os.path.join(SYSCTL_DIR, "99-zram.conf")
+        if os.path.exists(zram_conf):
+            os.remove(zram_conf)
 
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/usr/bin/sh -c 'modprobe zram; \\
-    DEV=$(zramctl --find --size {size_str} --algorithm {algorithm}) && \\
-    mkswap "$DEV" && \\
-    swapon -p 100 "$DEV"'
-ExecStop=/usr/bin/sh -c 'for d in /dev/zram*; do swapoff "$d" 2>/dev/null; zramctl --reset "$d" 2>/dev/null; done; true'
+        sys.stdout.write("OK: zram disabled\n")
 
-[Install]
-WantedBy=multi-user.target
-"""
-    with open(ZRAM_SERVICE, "w") as f:
-        f.write(service)
-    subprocess.run(["systemctl", "daemon-reload"], check=False)
-    subprocess.run(["systemctl", "enable", "equestria-zram.service"], check=False)
+    # ── internals ──
 
-    # page-cluster=0: kernel reads one page at a time from zram instead of
-    # clusters — much better latency for compressed in-RAM swap.
-    _sysctl_set("vm.page-cluster", "0")
-    _sysctl_persist("99-zram.conf", "vm.page-cluster", "0")
+    @staticmethod
+    def _require_generator():
+        if not os.path.exists(ZRAM_GENERATOR):
+            raise RuntimeError("zram-generator is not installed (pacman -S zram-generator)")
 
-    sys.stdout.write(f"OK: zram enabled ({size_gb}G, {algorithm}) on {zram_dev}\n")
+    @staticmethod
+    def _write_dropin(size_mb, algorithm):
+        lines = [f"[{ZRAM_DEVICE}]", f"zram-size = {size_mb}"]
+        if algorithm:
+            lines += [f"compression-algorithm = {algorithm}",
+                      "swap-priority = 100",
+                      "fs-type = swap"]
+        os.makedirs(os.path.dirname(ZRAM_DROPIN), exist_ok=True)
+        with open(ZRAM_DROPIN, "w") as f:
+            f.write("# Managed by Equestria OS Swap Manager\n" + "\n".join(lines) + "\n")
 
+    @staticmethod
+    def _reload_device(start):
+        """Re-run the generator and recreate zram0 with the new settings."""
+        swap_unit = f"dev-{ZRAM_DEVICE}.swap"
+        setup_unit = f"systemd-zram-setup@{ZRAM_DEVICE}.service"
+        subprocess.run(["systemctl", "daemon-reload"], check=True)
+        # Stopping the setup unit resets the device, so the next start
+        # applies the new size/algorithm.
+        subprocess.run(["systemctl", "stop", swap_unit, setup_unit], check=False)
+        if start:
+            subprocess.run(["systemctl", "start", swap_unit], check=True)
 
-def disable_zram():
-    """Remove zram swap and its persistence."""
-    subprocess.run(["swapoff", "/dev/zram0"], check=False)
-    subprocess.run(["zramctl", "--reset", "/dev/zram0"], check=False)
+    @staticmethod
+    def _remove_legacy_service():
+        if not os.path.exists(LEGACY_ZRAM_SERVICE):
+            return
+        # Its ExecStop resets every /dev/zram*; harmless here, zram0 is
+        # recreated (or intentionally left off) right after.
+        subprocess.run(["systemctl", "disable", "--now",
+                        os.path.basename(LEGACY_ZRAM_SERVICE)], check=False)
+        os.remove(LEGACY_ZRAM_SERVICE)
+        subprocess.run(["systemctl", "daemon-reload"], check=False)
 
-    # Restore page-cluster to default (3)
-    _sysctl_set("vm.page-cluster", "3")
-    zram_conf = os.path.join(SYSCTL_DIR, "99-zram.conf")
-    if os.path.exists(zram_conf):
-        os.remove(zram_conf)
-
-    # Remove service
-    subprocess.run(["systemctl", "disable", "--now", "equestria-zram.service"], check=False)
-    if os.path.exists(ZRAM_SERVICE):
-        os.remove(ZRAM_SERVICE)
-    subprocess.run(["systemctl", "daemon-reload"], check=False)
-
-    sys.stdout.write("OK: zram disabled\n")
+    @staticmethod
+    def _set_zswap(enabled):
+        if not os.path.exists(ZSWAP_PARAM):
+            return
+        if enabled:
+            # Only undo what we did ourselves — zswap may be off on purpose.
+            if not os.path.exists(ZSWAP_TMPFILES):
+                return
+            os.remove(ZSWAP_TMPFILES)
+        else:
+            # tmpfiles.d re-applies it on every boot.
+            os.makedirs(os.path.dirname(ZSWAP_TMPFILES), exist_ok=True)
+            with open(ZSWAP_TMPFILES, "w") as f:
+                f.write("# Managed by Equestria OS Swap Manager: zswap off while zram is on\n"
+                        f"w {ZSWAP_PARAM} - - - - N\n")
+        with open(ZSWAP_PARAM, "w") as f:
+            f.write("Y" if enabled else "N")
 
 
 # ── main ──────────────────────────────────────────────────────────────────────
@@ -289,11 +318,11 @@ def main():
                 i += 2
 
             elif cmd == "--zram-enable" and i + 2 < len(args):
-                enable_zram(args[i+1], args[i+2])
+                ZramSetup().enable(args[i+1], args[i+2])
                 i += 3
 
             elif cmd == "--zram-disable":
-                disable_zram()
+                ZramSetup().disable()
                 i += 1
 
             else:

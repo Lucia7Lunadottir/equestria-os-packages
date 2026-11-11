@@ -1,0 +1,56 @@
+# До 2.0.1-10 zram включался собственной службой equestria-zram.service
+# (zramctl --find). Рядом с zram-generator это давало два zram-устройства.
+# Теперь zram настраивается drop-in'ом zram-generator — переносим туда
+# настройки старой службы, чтобы исправилось и у тех, кто приложение
+# больше не открывает. Ничего не останавливаем на ходу: новая схема
+# вступает в силу со следующей загрузки.
+
+_LEGACY=/etc/systemd/system/equestria-zram.service
+_DROPIN=/etc/systemd/zram-generator.conf.d/90-equestria-swap-manager.conf
+_ZSWAP_TMPFILES=/etc/tmpfiles.d/equestria-swap-manager-zswap.conf
+
+_migrate_legacy_zram() {
+    [ -f "$_LEGACY" ] || return 0
+    # zram выключен пользователем — служба ни на что не влияет, не трогаем
+    systemctl is-enabled --quiet equestria-zram.service 2>/dev/null || return 0
+    # уже настроено новой версией приложения
+    [ -f "$_DROPIN" ] && return 0
+
+    local size algo
+    size=$(sed -n 's/.*--size \([0-9]\+\)G.*/\1/p' "$_LEGACY" | head -n1)
+    algo=$(sed -n 's/.*--algorithm \([a-z0-9-]\+\).*/\1/p' "$_LEGACY" | head -n1)
+    # не смогли разобрать — оставляем старую службу работать как есть
+    if [ -z "$size" ] || [ -z "$algo" ]; then
+        echo "equestria-os-swap-manager: не удалось перенести настройки zram из $_LEGACY, служба оставлена как есть."
+        return 0
+    fi
+
+    mkdir -p "$(dirname "$_DROPIN")"
+    cat > "$_DROPIN" <<EOF
+# Managed by Equestria OS Swap Manager
+[zram0]
+zram-size = $((size * 1024))
+compression-algorithm = $algo
+swap-priority = 100
+fs-type = swap
+EOF
+
+    if [ -e /sys/module/zswap/parameters/enabled ] && [ ! -f "$_ZSWAP_TMPFILES" ]; then
+        mkdir -p "$(dirname "$_ZSWAP_TMPFILES")"
+        cat > "$_ZSWAP_TMPFILES" <<EOF
+# Managed by Equestria OS Swap Manager: zswap off while zram is on
+w /sys/module/zswap/parameters/enabled - - - - N
+EOF
+    fi
+
+    # disable без --now: ExecStop старой службы сбросил бы все /dev/zram* прямо сейчас
+    systemctl disable equestria-zram.service >/dev/null 2>&1 || true
+    rm -f "$_LEGACY"
+    systemctl daemon-reload >/dev/null 2>&1 || true
+
+    echo "equestria-os-swap-manager: zram (${size}G, $algo) перенесён на zram-generator, применится после перезагрузки."
+}
+
+post_upgrade() {
+    _migrate_legacy_zram
+}
