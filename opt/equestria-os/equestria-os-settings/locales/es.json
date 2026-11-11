@@ -183,6 +183,7 @@
   "network.wifi_status_on": "Ahorro de energía: ACTIVADO (puede reducir la velocidad)",
   "network.wifi_status_off": "Ahorro de energía: DESACTIVADO (rendimiento completo)",
   "network.wifi_not_detected": "No se detectó adaptador WiFi",
+  "network.drv_adapter_down": "Se encontró el adaptador WiFi, pero su controlador ha fallado (error de firmware). Pulse «Recargar módulo» para recuperar el WiFi sin reiniciar.",
   "network.wifi_disable_powersave": "Desactivar ahorro de energía",
   "network.wifi_enable_powersave": "Activar ahorro de energía",
   "network.wifi_powersave_disabled": "Ahorro de energía WiFi desactivado (puede requerir reinicio)",

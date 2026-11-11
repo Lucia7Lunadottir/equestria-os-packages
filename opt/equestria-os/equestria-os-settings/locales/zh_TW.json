@@ -183,6 +183,7 @@
   "network.wifi_status_on": "省電模式：開啟（可能降低速度）",
   "network.wifi_status_off": "省電模式：關閉（全速效能）",
   "network.wifi_not_detected": "未檢測到WiFi介面卡",
+  "network.drv_adapter_down": "已找到 WiFi 介面卡，但其驅動程式已當機（韌體故障）。按下「重新載入模組」即可在不重新開機的情況下恢復 WiFi。",
   "network.wifi_disable_powersave": "停用省電模式",
   "network.wifi_enable_powersave": "啟用省電模式",
   "network.wifi_powersave_disabled": "WiFi省電模式已停用（可能需要重啟）",

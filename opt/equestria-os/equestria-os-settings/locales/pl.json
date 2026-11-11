@@ -183,6 +183,7 @@
   "network.wifi_status_on": "Oszczędzanie energii: WŁ (może zmniejszyć prędkość)",
   "network.wifi_status_off": "Oszczędzanie energii: WYŁ (pełna wydajność)",
   "network.wifi_not_detected": "Nie wykryto adaptera WiFi",
+  "network.drv_adapter_down": "Znaleziono kartę WiFi, ale jej sterownik uległ awarii (błąd firmware). Kliknij „Przeładuj moduł”, aby przywrócić WiFi bez ponownego uruchamiania.",
   "network.wifi_disable_powersave": "Wyłącz oszczędzanie energii",
   "network.wifi_enable_powersave": "Włącz oszczędzanie energii",
   "network.wifi_powersave_disabled": "Oszczędzanie energii WiFi wyłączone (może wymagać restartu)",

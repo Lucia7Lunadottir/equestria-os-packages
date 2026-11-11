@@ -183,6 +183,7 @@
   "network.wifi_status_on": "Economia de energia: LIGADA (pode reduzir velocidade)",
   "network.wifi_status_off": "Economia de energia: DESLIGADA (desempenho total)",
   "network.wifi_not_detected": "Nenhum adaptador WiFi detectado",
+  "network.drv_adapter_down": "Adaptador WiFi encontrado, mas o driver falhou (erro de firmware). Clique em «Recarregar módulo» para restaurar o WiFi sem reiniciar.",
   "network.wifi_disable_powersave": "Desativar economia de energia",
   "network.wifi_enable_powersave": "Ativar economia de energia",
   "network.wifi_powersave_disabled": "Economia de energia WiFi desativada (reinício pode ser necessário)",

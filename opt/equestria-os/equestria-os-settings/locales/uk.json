@@ -183,6 +183,7 @@
   "network.wifi_status_on": "Енергозбереження: УВІМК (може знижувати швидкість)",
   "network.wifi_status_off": "Енергозбереження: ВИМК (повна продуктивність)",
   "network.wifi_not_detected": "WiFi-адаптер не виявлено",
+  "network.drv_adapter_down": "WiFi-адаптер знайдено, але його драйвер упав (збій прошивки). Натисніть «Перезавантажити модуль», щоб повернути WiFi без перезавантаження системи.",
   "network.wifi_disable_powersave": "Вимкнути енергозбереження",
   "network.wifi_enable_powersave": "Увімкнути енергозбереження",
   "network.wifi_powersave_disabled": "Енергозбереження WiFi вимкнено (може знадобитися перезавантаження)",

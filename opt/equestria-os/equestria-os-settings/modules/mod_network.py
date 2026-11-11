@@ -250,6 +250,66 @@ def _detect_wifi_driver(iface: str) -> str:
     return ""
 
 
+def _detect_wifi_adapter_drivers() -> list[str]:
+    """Kernel modules of PCI WiFi adapters (class 0x0280), found by the device
+    itself, not by its network interface. After a firmware crash the driver
+    may fail to re-probe and wlan0 disappears — the adapter is still on the
+    bus, and reloading its module is exactly what brings it back."""
+    drivers = []
+    base = "/sys/bus/pci/devices"
+    try:
+        devices = os.listdir(base)
+    except Exception:
+        return drivers
+    for dev in devices:
+        path = os.path.join(base, dev)
+        try:
+            with open(os.path.join(path, "class")) as f:
+                if not f.read().strip().startswith("0x0280"):
+                    continue
+        except OSError:
+            continue
+        drv = ""
+        if os.path.exists(os.path.join(path, "driver")):
+            drv = os.path.basename(os.path.realpath(os.path.join(path, "driver")))
+        else:
+            # Driver already unbound — ask modprobe which module claims the device
+            try:
+                with open(os.path.join(path, "modalias")) as f:
+                    alias = f.read().strip()
+                r = subprocess.run(
+                    ["modprobe", "-R", alias],
+                    capture_output=True, text=True, timeout=5
+                )
+                if r.returncode == 0 and r.stdout.strip():
+                    drv = r.stdout.split()[0]
+            except Exception:
+                pass
+        if drv and drv not in drivers:
+            drivers.append(drv)
+    return drivers
+
+
+def _wifi_module_reload_script(drv: str) -> str:
+    """Shell script that reloads a WiFi module the same way it is done by hand:
+    NetworkManager is stopped first so it does not hold the dying device, and
+    is started again even if modprobe fails — otherwise the user is left
+    without any network at all."""
+    if drv == "iwlwifi":
+        # iwlmvm/iwlmld sit on top of iwlwifi and must be unloaded first
+        reload = ("modprobe -r iwlmvm 2>/dev/null; modprobe -r iwlmld 2>/dev/null; "
+                  "modprobe -r iwlwifi; modprobe iwlwifi")
+    else:
+        reload = f"modprobe -r {drv}; modprobe {drv}"
+    return (
+        "nm=$(systemctl is-active NetworkManager); "
+        "[ \"$nm\" = active ] && systemctl stop NetworkManager; "
+        f"{reload}; rc=$?; "
+        "[ \"$nm\" = active ] && systemctl start NetworkManager; "
+        "exit $rc"
+    )
+
+
 def _get_driver_current_params(driver: str) -> dict[str, str]:
     """Read current module parameters from /sys/module/<driver>/parameters/."""
     params = {}
@@ -395,6 +455,9 @@ class _NetInfoWorker(QObject):
             if drv:
                 wifi_drivers[iface] = drv
         info["wifi_drivers"] = wifi_drivers
+        # Adapters present on the bus but without a working interface
+        # (firmware crashed, re-probe failed)
+        info["wifi_adapter_drivers"] = _detect_wifi_adapter_drivers()
 
         # Current driver module params
         driver_params = {}
@@ -836,10 +899,15 @@ class NetworkModule(BaseModule):
         conf_exists = info.get("driver_conf_exists", False)
 
         if not wifi_drivers:
-            self._drv_info_lbl.setText(self.t("network.wifi_not_detected"))
+            # Adapter is on the bus but has no interface — the driver died.
+            # Reloading the module is the fix, so keep that button alive.
+            adapter_down = bool(info.get("wifi_adapter_drivers"))
+            self._drv_info_lbl.setText(self.t(
+                "network.drv_adapter_down" if adapter_down else "network.wifi_not_detected"
+            ))
             self._drv_file_lbl.setText("")
             self._drv_apply_btn.setEnabled(False)
-            self._drv_reload_btn.setEnabled(False)
+            self._drv_reload_btn.setEnabled(adapter_down)
             self._drv_reconnect_btn.setEnabled(False)
             self._drv_reboot_lbl.hide()
             self._drv_usb_lbl.hide()
@@ -1127,28 +1195,22 @@ class NetworkModule(BaseModule):
 
         def do_reload():
             try:
-                wifi_ifaces = _detect_wifi_interfaces()
-                if not wifi_ifaces:
-                    return False, self.t("network.wifi_not_detected")
-
                 drivers = []
-                for iface in wifi_ifaces:
+                for iface in _detect_wifi_interfaces():
                     drv = _detect_wifi_driver(iface)
                     if drv and drv not in drivers:
+                        drivers.append(drv)
+                # Also adapters whose interface is gone after a driver crash
+                for drv in _detect_wifi_adapter_drivers():
+                    if drv not in drivers:
                         drivers.append(drv)
 
                 if not drivers:
                     return False, self.t("network.wifi_not_detected")
 
                 for drv in drivers:
-                    # iwlwifi needs companion modules unloaded first
-                    if drv == "iwlwifi":
-                        script = "modprobe -r iwlmvm 2>/dev/null; modprobe -r iwlwifi && modprobe iwlwifi"
-                    else:
-                        script = f"modprobe -r {drv} && modprobe {drv}"
-
                     proc = subprocess.run(
-                        ["pkexec", "bash", "-c", script],
+                        ["pkexec", "bash", "-c", _wifi_module_reload_script(drv)],
                         capture_output=True, text=True, timeout=30
                     )
                     if proc.returncode != 0:

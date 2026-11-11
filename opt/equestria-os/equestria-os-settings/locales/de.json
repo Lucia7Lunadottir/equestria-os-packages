@@ -183,6 +183,7 @@
   "network.wifi_status_on": "Energiesparmodus: EIN (kann Geschwindigkeit verringern)",
   "network.wifi_status_off": "Energiesparmodus: AUS (volle Leistung)",
   "network.wifi_not_detected": "Kein WLAN-Adapter erkannt",
+  "network.drv_adapter_down": "WLAN-Adapter gefunden, aber sein Treiber ist abgestürzt (Firmware-Fehler). Klicken Sie auf „Modul neu laden“, um WLAN ohne Neustart wiederherzustellen.",
   "network.wifi_disable_powersave": "Energiesparen deaktivieren",
   "network.wifi_enable_powersave": "Energiesparen aktivieren",
   "network.wifi_powersave_disabled": "WLAN-Energiesparen deaktiviert (Neustart evtl. erforderlich)",

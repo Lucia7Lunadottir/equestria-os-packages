@@ -183,6 +183,7 @@
   "network.wifi_status_on": "Économie d'énergie : ACTIVÉE (peut réduire la vitesse)",
   "network.wifi_status_off": "Économie d'énergie : DÉSACTIVÉE (performance maximale)",
   "network.wifi_not_detected": "Aucun adaptateur WiFi détecté",
+  "network.drv_adapter_down": "Adaptateur WiFi détecté, mais son pilote a planté (erreur du firmware). Cliquez sur « Recharger le module » pour rétablir le WiFi sans redémarrer.",
   "network.wifi_disable_powersave": "Désactiver l'économie d'énergie",
   "network.wifi_enable_powersave": "Activer l'économie d'énergie",
   "network.wifi_powersave_disabled": "Économie d'énergie WiFi désactivée (redémarrage peut être nécessaire)",

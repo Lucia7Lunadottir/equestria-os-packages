@@ -183,6 +183,7 @@
   "network.wifi_status_on": "Энергосбережение: ВКЛ (может снижать скорость)",
   "network.wifi_status_off": "Энергосбережение: ВЫКЛ (полная производительность)",
   "network.wifi_not_detected": "WiFi-адаптер не обнаружен",
+  "network.drv_adapter_down": "WiFi-адаптер найден, но его драйвер упал (сбой прошивки). Нажмите «Перезагрузить модуль», чтобы вернуть WiFi без перезагрузки системы.",
   "network.wifi_disable_powersave": "Отключить энергосбережение",
   "network.wifi_enable_powersave": "Включить энергосбережение",
   "network.wifi_powersave_disabled": "Энергосбережение WiFi отключено (может потребоваться перезагрузка)",

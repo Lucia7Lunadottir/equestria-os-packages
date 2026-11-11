@@ -183,6 +183,7 @@
   "network.wifi_status_on": "Power saving: ON (may reduce speed)",
   "network.wifi_status_off": "Power saving: OFF (full performance)",
   "network.wifi_not_detected": "No WiFi adapter detected",
+  "network.drv_adapter_down": "WiFi adapter found, but its driver has crashed (firmware failure). Click «Reload module» to bring WiFi back without rebooting.",
   "network.wifi_disable_powersave": "Disable power saving",
   "network.wifi_enable_powersave": "Enable power saving",
   "network.wifi_powersave_disabled": "WiFi power saving disabled (restart may be needed)",

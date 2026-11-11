@@ -183,6 +183,7 @@
   "network.wifi_status_on": "절전: 켜짐 (속도가 떨어질 수 있음)",
   "network.wifi_status_off": "절전: 꺼짐 (최대 성능)",
   "network.wifi_not_detected": "Wi-Fi 어댑터가 감지되지 않음",
+  "network.drv_adapter_down": "WiFi 어댑터는 있지만 드라이버가 중단되었습니다(펌웨어 오류). 재부팅 없이 WiFi를 복구하려면 «모듈 다시 불러오기»를 누르세요.",
   "network.wifi_disable_powersave": "절전 끄기",
   "network.wifi_enable_powersave": "절전 켜기",
   "network.wifi_powersave_disabled": "Wi-Fi 절전이 꺼졌습니다 (재시작이 필요할 수 있음)",

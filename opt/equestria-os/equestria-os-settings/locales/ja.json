@@ -183,6 +183,7 @@
   "network.wifi_status_on": "省電力：オン（速度低下の可能性）",
   "network.wifi_status_off": "省電力：オフ（フルパフォーマンス）",
   "network.wifi_not_detected": "WiFiアダプターが検出されません",
+  "network.drv_adapter_down": "WiFi アダプターは見つかりましたが、ドライバーがクラッシュしました（ファームウェア障害）。「モジュール再読み込み」を押すと、再起動せずに WiFi を復旧できます。",
   "network.wifi_disable_powersave": "省電力を無効化",
   "network.wifi_enable_powersave": "省電力を有効化",
   "network.wifi_powersave_disabled": "WiFi省電力が無効になりました（再起動が必要な場合があります）",

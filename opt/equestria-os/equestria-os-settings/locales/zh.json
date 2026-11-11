@@ -183,6 +183,7 @@
   "network.wifi_status_on": "省电模式：开启（可能降低速度）",
   "network.wifi_status_off": "省电模式：关闭（全速性能）",
   "network.wifi_not_detected": "未检测到WiFi适配器",
+  "network.drv_adapter_down": "已找到 WiFi 适配器，但其驱动已崩溃（固件故障）。点击「重新加载模块」即可在不重启的情况下恢复 WiFi。",
   "network.wifi_disable_powersave": "禁用省电模式",
   "network.wifi_enable_powersave": "启用省电模式",
   "network.wifi_powersave_disabled": "WiFi省电模式已禁用（可能需要重启）",
