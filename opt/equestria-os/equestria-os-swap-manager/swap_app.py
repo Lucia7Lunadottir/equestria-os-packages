@@ -272,7 +272,9 @@ class SwapManagerApp(QMainWindow):
         L.addWidget(self.lbl_swappiness)
         swapp_row = QHBoxLayout()
         self.swapp_slider = QSlider(Qt.Orientation.Horizontal)
-        self.swapp_slider.setRange(0, 100)
+        # Kernel accepts 0–200 since 5.8; >100 favours swap over dropping
+        # file cache, which is what zram wants.
+        self.swapp_slider.setRange(0, 200)
         self.swapp_slider.setValue(60)
         self.swapp_slider.valueChanged.connect(lambda v: self.swapp_val_lbl.setText(str(v)))
         self.swapp_val_lbl = QLabel("60")

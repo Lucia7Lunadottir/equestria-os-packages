@@ -5,7 +5,7 @@
  "path": "Swap File Path",
  "size": "Size (GB)",
  "fstab_chk": "Mount on boot (/etc/fstab)",
- "swappiness": "Kernel Swappiness (0–100)",
+ "swappiness": "Kernel Swappiness (0–200)",
  "btn_apply": "Create / Resize Swap",
  "btn_swapp": "Apply Swappiness",
  "btn_disable": "Disable Swap",

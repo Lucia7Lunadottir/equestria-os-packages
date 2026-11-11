@@ -5,7 +5,7 @@
  "path": "스왑 파일 경로",
  "size": "크기 (GB)",
  "fstab_chk": "부팅 시 마운트 (/etc/fstab)",
- "swappiness": "커널 Swappiness (0–100)",
+ "swappiness": "커널 Swappiness (0–200)",
  "btn_apply": "스왑 만들기 / 크기 조정",
  "btn_swapp": "Swappiness 적용",
  "btn_disable": "스왑 끄기",
