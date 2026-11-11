@@ -240,9 +240,19 @@ class ZramSetup:
         swap_unit = f"dev-{ZRAM_DEVICE}.swap"
         setup_unit = f"systemd-zram-setup@{ZRAM_DEVICE}.service"
         subprocess.run(["systemctl", "daemon-reload"], check=True)
-        # Stopping the setup unit resets the device, so the next start
-        # applies the new size/algorithm.
-        subprocess.run(["systemctl", "stop", swap_unit, setup_unit], check=False)
+        # Strictly one after another: stopping both units in one call let
+        # systemd run the setup unit's reset while the swap was still on
+        # ("Device or resource busy"), leaving zram0 with the old settings.
+        subprocess.run(["systemctl", "stop", swap_unit], check=False)
+        subprocess.run(["swapoff", f"/dev/{ZRAM_DEVICE}"], check=False)
+        subprocess.run(["systemctl", "stop", setup_unit], check=False)
+        subprocess.run(["systemctl", "reset-failed", setup_unit, swap_unit], check=False)
+        # An initialized device refuses a new algorithm/size — reset it
+        # ourselves rather than rely on the setup unit's stop.
+        reset = f"/sys/block/{ZRAM_DEVICE}/reset"
+        if os.path.exists(reset):
+            with open(reset, "w") as f:
+                f.write("1")
         if start:
             subprocess.run(["systemctl", "start", swap_unit], check=True)
 

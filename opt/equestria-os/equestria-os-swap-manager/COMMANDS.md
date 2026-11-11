@@ -50,7 +50,7 @@
 **Включение:**
 1. Если осталась старая `equestria-zram.service` — `systemctl disable --now` и удаление файла юнита (её `ExecStop` сбрасывает все `/dev/zram*`, это нормально: `zram0` сразу пересоздаётся).
 2. Пишет drop-in: `zram-size = <N×1024>` (в МиБ), `compression-algorithm = <алгоритм>`, `swap-priority = 100` (выше дискового свопа — ядро сначала жмёт в RAM), `fs-type = swap`.
-3. `systemctl daemon-reload` (генератор перечитывает конфиг) → `systemctl stop dev-zram0.swap systemd-zram-setup@zram0.service` (остановка setup-юнита сбрасывает устройство) → `systemctl start dev-zram0.swap` (создаёт `zram0` уже с новым размером/алгоритмом).
+3. `systemctl daemon-reload` (генератор перечитывает конфиг) → **по очереди** `stop dev-zram0.swap` → `swapoff /dev/zram0` → `stop systemd-zram-setup@zram0.service` → `echo 1 > /sys/block/zram0/reset` → `systemctl start dev-zram0.swap`. Порядок важен: остановка обоих юнитов одной командой давала сброс раньше swapoff («Device or resource busy»), и новый алгоритм не применялся.
 4. Выключает **zswap**: пишет `N` в `/sys/module/zswap/parameters/enabled` и `/etc/tmpfiles.d/equestria-swap-manager-zswap.conf`, чтобы это повторялось при каждой загрузке. zswap поверх zram сжимает те же страницы второй раз и держит в RAM свой пул (до 20% памяти).
 5. `vm.page-cluster=0` — для zram (память, а не диск) чтение «кластерами» по несколько страниц только замедляет; `0` — читать по одной странице.
 
