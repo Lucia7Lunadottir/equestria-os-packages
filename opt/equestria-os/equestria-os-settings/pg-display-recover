@@ -20,32 +20,104 @@
 # Killing the VRAM-heavy process (Unity) did not help, confirming this is a
 # KWin/DRM output-layer negotiation wedge, not VRAM pressure.
 #
-# So: trigger on the first matching line (no window/threshold), and recover
-# by running pg-fix-display, which force-terminates the stuck seat0 session
-# via loginctl (that's what actually releases the DRM master) before
-# restarting the display manager. Same script also exists standalone for
-# manual use from a TTY when you don't want to wait for this watchdog.
+# So: a single matching line is enough (no repeat threshold), and recovery
+# runs pg-fix-display, which force-terminates the stuck seat0 session via
+# loginctl (that's what actually releases the DRM master) before restarting
+# the display manager. Same script also exists standalone for manual use
+# from a TTY when you don't want to wait for this watchdog.
+#
+# 2026-11-12: the same signature lines are ALSO logged in perfectly normal
+# situations, whenever logind revokes KWin's DRM access: entering suspend or
+# hibernation, resuming, switching to a TTY, logging out, shutting down. KWin
+# then reports "...output layer configuration: EACCESS" / "atomic commit
+# failed: Отказано в доступе". 13 recoveries fired between 09-21 and 11-12 and
+# most of them were exactly that — the watchdog itself was killing a healthy
+# session every time the laptop went to sleep. So a matching line is now only
+# a *candidate*: we wait CONFIRM_DELAY seconds, then recover only if
+#   - no suspend/hibernate/shutdown happened around the line,
+#   - seat0 still has an active graphical (wayland/x11) user session
+#     (not a TTY, not the login screen),
+#   - the kwin_wayland process that logged the line is still alive
+#     (if it died, the session is already being torn down/restarted).
+# The real wedge passes all three: the session stays active, the compositor
+# stays alive, and nothing sleeps.
 
 set -u
 
 PATTERN='Failed to find a working output layer configuration|Failed to authenticate the drm magic token|atomic commit failed'
-COOLDOWN=90     # minimum seconds between two consecutive recoveries
+SLEEP_PATTERN='PM: suspend (entry|exit)|PM: hibernation: hibernation (entry|exit)|PM: hibernation: (restore|resume)|The system will (suspend|hibernate|power off|reboot)'
+COOLDOWN=90       # minimum seconds between two consecutive recoveries
+CONFIRM_DELAY=20  # seconds to wait before deciding a candidate is a real wedge
+SLEEP_GRACE=60    # a sleep/resume this close to the line means it's not a wedge
 
 last_recovery=0
+ignore_until=0    # lines logged before this (unix ts) belong to an already-judged burst
 
 log() { logger -t pg-display-recover "$1"; }
 
+# Prints the reason a candidate is NOT a wedge, or nothing if it is one.
+# $1 = unix ts of the line, $2 = PID of the process that logged it.
+why_not_wedge() {
+    local line_ts=$1 pid=$2 sid type state
+
+    if journalctl -q --no-pager --since "@$(( line_ts - SLEEP_GRACE ))" \
+            -g "$SLEEP_PATTERN" -n1 -o cat 2>/dev/null | grep -q .; then
+        echo "suspend/resume/shutdown around the line"
+        return
+    fi
+
+    case "$(systemctl is-system-running 2>/dev/null)" in
+        stopping) echo "system is shutting down"; return ;;
+    esac
+
+    sid=$(loginctl show-seat seat0 -p ActiveSession --value 2>/dev/null)
+    if [[ -z "$sid" ]]; then
+        echo "no active session on seat0"
+        return
+    fi
+    type=$(loginctl show-session "$sid" -p Type --value 2>/dev/null)
+    state=$(loginctl show-session "$sid" -p State --value 2>/dev/null)
+    if [[ "$type" != wayland && "$type" != x11 ]] || [[ "$state" != active ]]; then
+        echo "active seat0 session $sid is type=$type state=$state (TTY/login screen)"
+        return
+    fi
+
+    if [[ -n "$pid" ]] && ! kill -0 "$pid" 2>/dev/null; then
+        echo "compositor PID $pid already exited"
+        return
+    fi
+}
+
 log "watchdog started, watching for: $PATTERN"
 
-while read -r _; do
+# short-unix: "1794502180.123456 host kwin_wayland[1364]: message"
+while read -r ts _ ident _; do
+    line_ts=${ts%%.*}
+    [[ "$line_ts" =~ ^[0-9]+$ ]] || continue
+    (( line_ts < ignore_until )) && continue
+
+    pid=""
+    [[ "$ident" =~ \[([0-9]+)\]:$ ]] && pid=${BASH_REMATCH[1]}
+
     now=$(date +%s)
-    if (( now - last_recovery > COOLDOWN )); then
-        log "display failure detected — running pg-fix-display"
-        /usr/bin/pg-fix-display 2>&1 | logger -t pg-display-recover
-        last_recovery=$now
-    else
+    if (( now - last_recovery <= COOLDOWN )); then
         log "failure signature seen again within cooldown (${COOLDOWN}s) — skipping, already recovering/recovered"
+        continue
     fi
-done < <(journalctl -f -n0 --output=cat -g "$PATTERN")
+
+    log "possible display failure (${ident%:}) — confirming in ${CONFIRM_DELAY}s"
+    sleep "$CONFIRM_DELAY"
+    ignore_until=$(date +%s)
+
+    reason=$(why_not_wedge "$line_ts" "$pid")
+    if [[ -n "$reason" ]]; then
+        log "not a display wedge — $reason; leaving the session alone"
+        continue
+    fi
+
+    log "display failure confirmed — running pg-fix-display"
+    /usr/bin/pg-fix-display 2>&1 | logger -t pg-display-recover
+    last_recovery=$(date +%s)
+done < <(journalctl -f -n0 --output=short-unix -g "$PATTERN")
 
 log "watchdog exited (journalctl stream ended)"

@@ -21,13 +21,15 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
+# Ask the seat itself for its sessions — `loginctl list-sessions` column
+# order changed between systemd versions (SEAT moved from $3 to $4), and
+# the old awk silently matched nothing, so no session was ever terminated.
 found=0
-while read -r sid; do
-    [[ -z "$sid" ]] && continue
+for sid in $(loginctl show-seat seat0 -p Sessions --value 2>/dev/null); do
     found=1
     log "terminating session $sid on seat0"
-    loginctl terminate-session "$sid"
-done < <(loginctl list-sessions --no-legend 2>/dev/null | awk '$3 == "seat0" {print $1}')
+    loginctl terminate-session "$sid" || log "failed to terminate session $sid"
+done
 
 if [[ "$found" -eq 0 ]]; then
     log "no active seat0 sessions found — nothing to terminate"
