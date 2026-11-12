@@ -3,15 +3,13 @@ import os
 import subprocess
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QLineEdit, QFrame, QMessageBox,
-    QCheckBox, QProgressBar, QSpinBox, QSlider, QComboBox, QScrollArea
+    QLabel, QPushButton, QFrame, QMessageBox, QProgressBar, QComboBox,
+    QScrollArea, QTabBar, QButtonGroup, QSizePolicy,
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from PyQt6.QtGui import QFontDatabase
 
 import privilege
 import health
-from memory_config import ZRAM_ALGORITHMS
 try:
     import equestria_kit  # noqa: F401
 except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
@@ -19,8 +17,7 @@ except ImportError:  # запуск из исходников, пакет equest
     _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "equestria-qt-kit"))
 from equestria_kit import qt as kit_qt
 from equestria_kit import live_i18n
-from equestria_kit.widgets import font_families
-from panels import HealthPanel, TuningPanel, ConfigFilesPanel
+import panels
 
 # Переводы лежат в locales/<язык>.json рядом с swap_app.py (ключ -> текст)
 CATALOG = live_i18n.Catalog("equestria-os-swap-manager", __file__)
@@ -75,11 +72,30 @@ class SwapWorker(QThread):
 
 
 class SwapManagerApp(QMainWindow):
+    """
+    Window = header (title, Simple/Professional switch, language) + pages of
+    cards from panels.py + the configuration files card, shown on demand.
+
+    Simple mode shows only the Overview page (state, problems with Fix
+    buttons, one-click preset). Professional mode adds the Swap and Memory
+    pages with every setting. The choice is remembered.
+    """
+
+    PAGES = (
+        # (tab translation key, card classes)
+        ("tab_overview", (panels.StatusCard, panels.HealthCard, panels.PresetCard)),
+        ("tab_swap", (panels.ZramCard, panels.SwappinessCard, panels.SwapFileCard)),
+        ("tab_memory", (panels.OomCard, panels.TuningCard)),
+    )
+
     def __init__(self):
         super().__init__()
         self.current_lang = CATALOG.lang or "en"
+        self.config = kit_qt.JsonConfig("equestria-os-swap-manager", {"pro_mode": False})
+        self.worker = None
 
         self._setup_ui()
+        self._apply_mode()
         self._load_data()
 
     def t(self, key):
@@ -92,91 +108,132 @@ class SwapManagerApp(QMainWindow):
             self.lang_combo.setCurrentIndex(idx)
         self._refresh_ui()
 
-    def _make_divider(self):
-        d = QFrame()
-        d.setObjectName("Divider")
-        d.setFrameShape(QFrame.Shape.HLine)
-        d.setFixedHeight(1)
-        return d
+    # ── UI ────────────────────────────────────────────────────────────────────
 
     def _setup_ui(self):
         self.setWindowTitle(self.t("title"))
-        self.resize(780, 820)
+        self.resize(860, 760)
+        self.setMinimumWidth(760)  # Settings resets it to 0 when embedding
 
-        base_path = os.path.dirname(os.path.abspath(__file__))
-
-        title_font_family = "sans-serif"
-        font_path = os.path.join(base_path, "equestria_cyrillic.ttf")
-        if os.path.exists(font_path):
-            families = font_families(font_path)
-            if families:
-                title_font_family = families[0]
-
-        qss_path = os.path.join(base_path, "style.qss")
+        qss_path = os.path.join(ASSETS_DIR, "style.qss")
         if os.path.exists(qss_path):
-            qss = open(qss_path).read()
-            qss = qss.replace("{{CHECKMARK_SVG_PATH}}", CHECKMARK_SVG)
-            qss = qss.replace("{{TITLE_FONT}}", f'"{title_font_family}"')
-            qss += """
-            QSlider::groove:horizontal { border-radius: 4px; height: 6px; background: @surface0@; }
-            QSlider::handle:horizontal { background: @accent@; width: 16px; margin: -5px 0; border-radius: 8px; }
-            QSlider::handle:horizontal:hover { background: @accent_hover@; }
-            QComboBox { background-color: @base@; color: @text@; border: 1px solid @surface1@; border-radius: 6px; padding: 4px 8px; min-height: 28px; }
-            QComboBox#LangCombo { min-height: 22px; padding: 2px 8px; font-size: 11px; min-width: 46px; }
-            QComboBox QAbstractItemView { background-color: @base@; color: @text@; selection-background-color: @surface0@; border: 1px solid @surface1@; }
-            QScrollArea { border: none; background: transparent; }
-            QScrollBar:vertical { background: @base@; width: 8px; border-radius: 4px; }
-            QScrollBar::handle:vertical { background: @surface1@; border-radius: 4px; min-height: 20px; }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
-            QScrollBar:horizontal { background: @base@; height: 8px; border-radius: 4px; }
-            QScrollBar::handle:horizontal { background: @surface1@; border-radius: 4px; min-width: 20px; }
-            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }
-            QLabel#HintLabel { color: @subtext@; font-size: 11px; font-style: italic; }
-            QMenu { background-color: @base@; color: @text@; border: 1px solid @surface1@; border-radius: 6px; padding: 4px; }
-            QMenu::item { padding: 6px 20px; border-radius: 4px; }
-            QMenu::item:selected { background-color: @surface0@; }
-            QMenu::separator { height: 1px; background: @surface1@; margin: 4px 8px; }
-            QLabel#ZramStatusLabel { color: @green@; font-size: 12px; font-weight: bold; }
-            QPushButton#WindowsBtn { background-color: @accent2%25@; border: 2px solid @accent2@; border-radius: 8px; color: @accent2@; font-size: 13px; font-weight: bold; padding: 6px 18px; }
-            QPushButton#WindowsBtn:hover { background-color: @accent2%35@; }
-            QPushButton#WindowsBtn:pressed { background-color: @accent2%15@; }
-            QLabel#HealthWarn { color: @yellow@; font-size: 13px; }
-            QLabel#HealthInfo { color: @subtext@; font-size: 13px; }
-            QFrame#FileRow { border: 1px solid @surface0@; border-radius: 8px; }
-            QLabel#FilePath { font-family: monospace; font-size: 12px; color: @subtext@; }
-            """
+            with open(qss_path, encoding="utf-8") as f:
+                qss = (f.read().replace("{{CHECKMARK_SVG_PATH}}", CHECKMARK_SVG)
+                       .replace("{{ASSETS_DIR}}", ASSETS_DIR))
             kit_qt.style(self, qss)
 
-        # Outer widget
         central = QWidget()
-        central.setObjectName("CentralBg")
+        central.setObjectName("ContentPage")
         self.setCentralWidget(central)
         outer = QVBoxLayout(central)
         outer.setContentsMargins(0, 0, 0, 0)
-        outer.setSpacing(0)
 
         # Scroll area so content is always accessible
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # as needed, not off: in a narrow Settings window rows would be cut off
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         outer.addWidget(scroll)
-
         content = QWidget()
-        content.setObjectName("CentralBg")
+        content.setObjectName("ContentPage")
         scroll.setWidget(content)
         L = QVBoxLayout(content)
-        L.setContentsMargins(30, 20, 30, 20)
+        L.setContentsMargins(40, 28, 40, 28)
         L.setSpacing(12)
 
-        # ── Title & Lang ──────────────────────────────────────────────────────
-        title_row = QHBoxLayout()
-        self.app_title = QLabel(self.t("title"))
-        self.app_title.setObjectName("AppTitle")
-        title_row.addWidget(self.app_title)
-        title_row.addStretch()
+        L.addLayout(self._build_header())
 
-        # Компактный выпадающий список языков вместо ряда кнопок
+        # ── Progress ──────────────────────────────────────────────────────────
+        self.progress_frame = QFrame()
+        self.progress_frame.setVisible(False)
+        prog = QHBoxLayout(self.progress_frame)
+        prog.setContentsMargins(0, 0, 0, 0)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 0)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setFixedHeight(6)
+        self.prog_status_lbl = QLabel()
+        self.prog_status_lbl.setObjectName("FieldHint")
+        prog.addWidget(self.prog_status_lbl)
+        prog.addWidget(self.progress_bar, 1)
+        L.addWidget(self.progress_frame)
+
+        # ── Pages: a tab bar over plain widgets, so a hidden page takes no space
+        self.tab_bar = QTabBar()
+        self.tab_bar.setDrawBase(False)
+        self.tab_bar.setExpanding(False)
+        L.addWidget(self.tab_bar)
+        self.cards = []
+        self.pages = []
+        for key, card_classes in self.PAGES:
+            page = QWidget()
+            lay = QVBoxLayout(page)
+            lay.setContentsMargins(0, 0, 0, 0)
+            lay.setSpacing(12)
+            for cls in card_classes:
+                card = (cls(self.t, self._run_backend, self._load_data)
+                        if cls is panels.StatusCard else cls(self.t, self._run_backend))
+                lay.addWidget(card)
+                self.cards.append(card)
+            self.tab_bar.addTab("")
+            self.pages.append(page)
+            L.addWidget(page)
+        self.tab_bar.currentChanged.connect(self._show_page)
+
+        # ── Configuration files, on demand ────────────────────────────────────
+        self.files_btn = QPushButton()
+        self.files_btn.setObjectName("OpenAppBtn")
+        self.files_btn.setCheckable(True)
+        self.files_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.files_btn.toggled.connect(self._toggle_files)
+        files_row = QHBoxLayout()
+        files_row.addWidget(self.files_btn)
+        files_row.addStretch()
+        L.addLayout(files_row)
+        self.files_card = panels.ConfigFilesCard(self.t, self._run_backend)
+        self.files_card.setVisible(False)
+        self.cards.append(self.files_card)
+        L.addWidget(self.files_card)
+
+        L.addStretch()
+        self._retranslate()
+
+    def _build_header(self):
+        header = QHBoxLayout()
+        header.setSpacing(12)
+        text = QVBoxLayout()
+        text.setSpacing(4)
+        self.app_title = QLabel()
+        self.app_title.setObjectName("ModTitle")
+        self.app_desc = QLabel()
+        # own name, not Settings' #ModDesc: that one has max-width: 480px
+        self.app_desc.setObjectName("PageDesc")
+        self.app_desc.setWordWrap(True)
+        text.addWidget(self.app_title)
+        text.addWidget(self.app_desc)
+        header.addLayout(text, 1)
+
+        # Simple / Professional — two halves of one switch
+        self.mode_group = QButtonGroup(self)
+        self.mode_simple = QPushButton()
+        self.mode_pro = QPushButton()
+        for i, (btn, name) in enumerate(((self.mode_simple, "ModeLeft"), (self.mode_pro, "ModeRight"))):
+            btn.setObjectName(name)
+            # Fixed: in Settings the page description has a max-width, and
+            # Minimum-policy buttons would take all the spare width
+            btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+            btn.setCheckable(True)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.mode_group.addButton(btn, i)
+        self.mode_group.idClicked.connect(self._on_mode_clicked)
+        switch = QHBoxLayout()
+        switch.setSpacing(0)
+        switch.addWidget(self.mode_simple)
+        switch.addWidget(self.mode_pro)
+        header.addLayout(switch)
+
+        # Компактный выпадающий список языков (в Настройках его прячут)
         self.lang_combo = QComboBox()
         self.lang_combo.setObjectName("LangCombo")
         self.lang_combo.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -189,388 +246,69 @@ class SwapManagerApp(QMainWindow):
         # activated срабатывает только при выборе пользователем — без рекурсии
         self.lang_combo.activated.connect(
             lambda i: self._change_lang(self.lang_combo.itemData(i)))
-        title_row.addWidget(self.lang_combo)
-        L.addLayout(title_row)
-        L.addWidget(self._make_divider())
+        header.addWidget(self.lang_combo, 0, Qt.AlignmentFlag.AlignTop)
+        return header
 
-        # ── Active Swap Info ──────────────────────────────────────────────────
-        info_row = QHBoxLayout()
-        self.lbl_current = QLabel(self.t("current_swap"))
-        self.lbl_current.setObjectName("SectionLabel")
-        info_row.addWidget(self.lbl_current)
-        self.refresh_btn = QPushButton("⟳")
-        self.refresh_btn.setObjectName("BrowseBtn")
-        self.refresh_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.refresh_btn.clicked.connect(self._load_data)
-        info_row.addWidget(self.refresh_btn)
-        info_row.addStretch()
-        L.addLayout(info_row)
-        self.info_lbl = QLabel(self.t("no_swap"))
-        self.info_lbl.setObjectName("StatusLabel")
-        L.addWidget(self.info_lbl)
-        L.addWidget(self._make_divider())
+    # ── Mode / pages ──────────────────────────────────────────────────────────
 
-        # ── System check ──────────────────────────────────────────────────────
-        self.health_panel = HealthPanel(self.t, self._run_backend)
-        L.addWidget(self.health_panel)
-        L.addWidget(self._make_divider())
+    @property
+    def pro_mode(self):
+        return bool(self.config.data.get("pro_mode"))
 
-        # ── Swap File Settings ────────────────────────────────────────────────
-        self.lbl_path = QLabel(self.t("path"))
-        self.lbl_path.setObjectName("SectionLabel")
-        L.addWidget(self.lbl_path)
-        self.path_input = QLineEdit()
-        self.path_input.setObjectName("DestEdit")
-        self.path_input.setText("/swapfile")
-        L.addWidget(self.path_input)
+    def _on_mode_clicked(self, mode_id):
+        self.config.data["pro_mode"] = mode_id == 1
+        self.config.save()
+        self._apply_mode()
 
-        size_row = QHBoxLayout()
-        self.lbl_size = QLabel(self.t("size"))
-        self.lbl_size.setObjectName("SectionLabel")
-        size_row.addWidget(self.lbl_size)
-        self.size_spin = QSpinBox()
-        self.size_spin.setObjectName("SourceEdit")
-        self.size_spin.setRange(1, 256)
-        self.size_spin.setValue(32)
-        self.size_spin.setSuffix(" GB")
-        self.size_spin.setFixedHeight(34)
-        size_row.addWidget(self.size_spin)
-        size_row.addStretch()
-        L.addLayout(size_row)
+    def _apply_mode(self):
+        pro = self.pro_mode
+        (self.mode_pro if pro else self.mode_simple).setChecked(True)
+        self.tab_bar.setVisible(pro)
+        if not pro:
+            self.tab_bar.setCurrentIndex(0)
+        for card in self.cards:
+            card.set_pro(pro)
+        self._show_page(self.tab_bar.currentIndex())
 
-        self.fstab_cb = QCheckBox(self.t("fstab_chk"))
-        self.fstab_cb.setChecked(True)
-        self.fstab_cb.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.fstab_cb.setObjectName("SwapCheckBox")
-        L.addWidget(self.fstab_cb)
+    def _show_page(self, index):
+        for i, page in enumerate(self.pages):
+            page.setVisible(i == index)
 
-        self.apply_btn = QPushButton(self.t("btn_apply"))
-        self.apply_btn.setObjectName("RelocateBtn")
-        self.apply_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.apply_btn.clicked.connect(self._apply_swap)
-        L.addWidget(self.apply_btn)
+    def _toggle_files(self, shown):
+        self.files_card.setVisible(shown)
+        self.files_btn.setText(self.t("files_toggle_hide" if shown else "files_toggle_show"))
 
-        action_row = QHBoxLayout()
-        self.disable_btn = QPushButton(self.t("btn_disable"))
-        self.disable_btn.setObjectName("BrowseBtn")
-        self.disable_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.disable_btn.clicked.connect(self._disable_swap)
-        self.delete_btn = QPushButton(self.t("btn_delete"))
-        self.delete_btn.setObjectName("DangerBtn")
-        self.delete_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.delete_btn.clicked.connect(self._delete_swap)
-        action_row.addWidget(self.disable_btn)
-        action_row.addWidget(self.delete_btn)
-        L.addLayout(action_row)
-        L.addWidget(self._make_divider())
-
-        # ── Swappiness ────────────────────────────────────────────────────────
-        self.lbl_swappiness = QLabel(self.t("swappiness"))
-        self.lbl_swappiness.setObjectName("SectionLabel")
-        L.addWidget(self.lbl_swappiness)
-        swapp_row = QHBoxLayout()
-        self.swapp_slider = QSlider(Qt.Orientation.Horizontal)
-        # Kernel accepts 0–200 since 5.8; >100 favours swap over dropping
-        # file cache, which is what zram wants.
-        self.swapp_slider.setRange(0, 200)
-        self.swapp_slider.setValue(60)
-        self.swapp_slider.valueChanged.connect(lambda v: self.swapp_val_lbl.setText(str(v)))
-        self.swapp_val_lbl = QLabel("60")
-        self.swapp_val_lbl.setObjectName("StatusLabel")
-        self.swapp_val_lbl.setFixedWidth(30)
-        swapp_row.addWidget(self.swapp_slider)
-        swapp_row.addWidget(self.swapp_val_lbl)
-        L.addLayout(swapp_row)
-        self.apply_swapp_btn = QPushButton(self.t("btn_swapp"))
-        self.apply_swapp_btn.setObjectName("BrowseBtn")
-        self.apply_swapp_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.apply_swapp_btn.clicked.connect(self._apply_swappiness)
-        L.addWidget(self.apply_swapp_btn)
-        L.addWidget(self._make_divider())
-
-        # ── Fast Swap (zram) ──────────────────────────────────────────────────
-        self.lbl_zram_section = QLabel(self.t("zram_section"))
-        self.lbl_zram_section.setObjectName("SectionLabel")
-        L.addWidget(self.lbl_zram_section)
-
-        self.lbl_zram_hint = QLabel(self.t("zram_hint"))
-        self.lbl_zram_hint.setObjectName("HintLabel")
-        self.lbl_zram_hint.setWordWrap(True)
-        L.addWidget(self.lbl_zram_hint)
-
-        zram_status_row = QHBoxLayout()
-        self.lbl_zram_status_key = QLabel(self.t("zram_status"))
-        self.lbl_zram_status_key.setObjectName("SectionLabel")
-        self.lbl_zram_status_val = QLabel(self.t("zram_inactive"))
-        self.lbl_zram_status_val.setObjectName("ZramStatusLabel")
-        zram_status_row.addWidget(self.lbl_zram_status_key)
-        zram_status_row.addWidget(self.lbl_zram_status_val)
-        zram_status_row.addStretch()
-        L.addLayout(zram_status_row)
-
-        zram_cfg_row = QHBoxLayout()
-        self.lbl_zram_size = QLabel(self.t("zram_size_lbl"))
-        self.lbl_zram_size.setObjectName("SectionLabel")
-        zram_cfg_row.addWidget(self.lbl_zram_size)
-
-        self.zram_size_spin = QSpinBox()
-        self.zram_size_spin.setObjectName("SourceEdit")
-        self.zram_size_spin.setRange(1, 128)
-        self.zram_size_spin.setValue(health.recommended_zram_gb(health.read_ram_gb()))
-        self.zram_size_spin.setSuffix(" GB")
-        self.zram_size_spin.setFixedHeight(34)
-        zram_cfg_row.addWidget(self.zram_size_spin)
-
-        self.lbl_zram_algo = QLabel(self.t("zram_algo_lbl"))
-        self.lbl_zram_algo.setObjectName("SectionLabel")
-        zram_cfg_row.addWidget(self.lbl_zram_algo)
-
-        self.zram_algo_combo = QComboBox()
-        for algo in ZRAM_ALGORITHMS:
-            self.zram_algo_combo.addItem(algo)
-        self.zram_algo_combo.setCursor(Qt.CursorShape.PointingHandCursor)
-        zram_cfg_row.addWidget(self.zram_algo_combo)
-        zram_cfg_row.addStretch()
-        L.addLayout(zram_cfg_row)
-
-        zram_btn_row = QHBoxLayout()
-        # Always available: applies a new size/algorithm to a running zram too
-        self.zram_enable_btn = QPushButton(self.t("zram_apply"))
-        self.zram_enable_btn.setObjectName("BrowseBtn")
-        self.zram_enable_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.zram_enable_btn.clicked.connect(self._enable_zram)
-        self.zram_disable_btn = QPushButton(self.t("zram_disable"))
-        self.zram_disable_btn.setObjectName("DangerBtn")
-        self.zram_disable_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.zram_disable_btn.clicked.connect(self._disable_zram)
-        self.zram_disable_btn.setEnabled(False)
-        zram_btn_row.addWidget(self.zram_enable_btn)
-        zram_btn_row.addWidget(self.zram_disable_btn)
-        L.addLayout(zram_btn_row)
-        L.addWidget(self._make_divider())
-
-        # ── Memory Pressure & OOM Killer ──────────────────────────────────────
-        self.lbl_oom_section = QLabel(self.t("oom_section"))
-        self.lbl_oom_section.setObjectName("SectionLabel")
-        L.addWidget(self.lbl_oom_section)
-
-        self.lbl_oom_hint = QLabel(self.t("oom_hint"))
-        self.lbl_oom_hint.setObjectName("HintLabel")
-        self.lbl_oom_hint.setWordWrap(True)
-        L.addWidget(self.lbl_oom_hint)
-
-        overcommit_row = QHBoxLayout()
-        self.lbl_overcommit = QLabel(self.t("oom_overcommit"))
-        self.lbl_overcommit.setObjectName("SectionLabel")
-        overcommit_row.addWidget(self.lbl_overcommit)
-        self.overcommit_combo = QComboBox()
-        self.overcommit_combo.addItem(self.t("oom_mode_0"))
-        self.overcommit_combo.addItem(self.t("oom_mode_1"))
-        self.overcommit_combo.addItem(self.t("oom_mode_2"))
-        self.overcommit_combo.setMinimumWidth(280)
-        self.overcommit_combo.setCursor(Qt.CursorShape.PointingHandCursor)
-        overcommit_row.addWidget(self.overcommit_combo)
-        overcommit_row.addStretch()
-        L.addLayout(overcommit_row)
-
-        # Fix transparent dropdown: style view() directly so global
-        # "QWidget { background: transparent }" in style.qss doesn't win.
-        _dv = ("background-color: @base@; color: @text@; "
-               "selection-background-color: @surface0@; selection-color: @text@; "
-               "border: 1px solid @surface1@;")
-        kit_qt.style(self.zram_algo_combo.view(), _dv)
-        kit_qt.style(self.overcommit_combo.view(), _dv)
-
-        self.oomd_cb = QCheckBox(self.t("oom_oomd_cb"))
-        self.oomd_cb.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.oomd_cb.setObjectName("SwapCheckBox")
-        L.addWidget(self.oomd_cb)
-
-        self.panic_oom_cb = QCheckBox(self.t("oom_panic_cb"))
-        self.panic_oom_cb.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.panic_oom_cb.setObjectName("SwapCheckBox")
-        L.addWidget(self.panic_oom_cb)
-
-        self.apply_oom_btn = QPushButton(self.t("oom_apply"))
-        self.apply_oom_btn.setObjectName("BrowseBtn")
-        self.apply_oom_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.apply_oom_btn.clicked.connect(self._apply_oom_settings)
-        L.addWidget(self.apply_oom_btn)
-        L.addWidget(self._make_divider())
-
-        # ── Fine memory tuning ────────────────────────────────────────────────
-        self.tuning_panel = TuningPanel(self.t, self._run_backend)
-        L.addWidget(self.tuning_panel)
-        L.addWidget(self._make_divider())
-
-        # ── Windows-like Preset ───────────────────────────────────────────────
-        self.lbl_win_section = QLabel(self.t("win_section"))
-        self.lbl_win_section.setObjectName("SectionLabel")
-        L.addWidget(self.lbl_win_section)
-
-        self.lbl_win_hint = QLabel(self.t("win_hint"))
-        self.lbl_win_hint.setObjectName("HintLabel")
-        self.lbl_win_hint.setWordWrap(True)
-        L.addWidget(self.lbl_win_hint)
-
-        self.win_btn = QPushButton(self.t("win_btn"))
-        self.win_btn.setObjectName("WindowsBtn")
-        self.win_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.win_btn.clicked.connect(self._apply_windows_preset)
-        L.addWidget(self.win_btn)
-        L.addWidget(self._make_divider())
-
-        # ── Configuration files ───────────────────────────────────────────────
-        self.files_panel = ConfigFilesPanel(self.t, self._run_backend)
-        L.addWidget(self.files_panel)
-
-        L.addStretch()
-
-        # ── Progress ──────────────────────────────────────────────────────────
-        self.progress_frame = QFrame()
-        self.progress_frame.setObjectName("ProgressFrame")
-        self.progress_frame.setVisible(False)
-        prog_layout = QVBoxLayout(self.progress_frame)
-        prog_layout.setContentsMargins(0, 10, 0, 0)
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 0)
-        self.progress_bar.setTextVisible(False)
-        prog_layout.addWidget(self.progress_bar)
-        self.prog_status_lbl = QLabel(self.t("status_app"))
-        self.prog_status_lbl.setObjectName("StatusLabel")
-        self.prog_status_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        prog_layout.addWidget(self.prog_status_lbl)
-        L.addWidget(self.progress_frame)
-
-    # ── Data loading ──────────────────────────────────────────────────────────
-
-    def _panels(self):
-        return (self.health_panel, self.tuning_panel, self.files_panel)
+    # ── Data ──────────────────────────────────────────────────────────────────
 
     def _load_data(self):
         state = health.MemoryState.from_system()
+        for card in self.cards:
+            card.load(state)
 
-        # Active swaps
-        if state.swaps:
-            self.info_lbl.setText("\n".join(f"•  {name}  —  {size}" for name, size, _ in state.swaps))
-        else:
-            self.info_lbl.setText(self.t("no_swap"))
-
-        # Swappiness
-        swappiness = state.values.get("swappiness")
-        if swappiness is not None:
-            self.swapp_slider.setValue(swappiness)
-            self.swapp_val_lbl.setText(str(swappiness))
-
-        # zram status: "19G · zstd · compression 3.0×" per device
-        if state.zram:
-            parts = []
-            for dev in state.zram:
-                info = [dev.size]
-                if dev.algorithm:
-                    info.append(dev.algorithm)
-                if dev.ratio:
-                    info.append(self.t("zram_ratio").format(f"{dev.ratio:.1f}"))
-                parts.append(" · ".join(info))
-            self.lbl_zram_status_val.setText(self.t("zram_active").format(";  ".join(parts)))
-        else:
-            self.lbl_zram_status_val.setText(self.t("zram_inactive"))
-        # Controls show what is saved, so "Apply" changes exactly that
-        size_gb, algo = state.zram_target()
-        self.zram_size_spin.setValue(size_gb)
-        idx = self.zram_algo_combo.findText(algo)
-        if idx != -1:
-            self.zram_algo_combo.setCurrentIndex(idx)
-        self._zram_can_disable = state.zram_active or bool(state.dropin and state.dropin[0] > 0)
-        self.zram_disable_btn.setEnabled(self._zram_can_disable)
-
-        for panel in self._panels():
-            panel.load(state)
-
-        # Overcommit policy
-        try:
-            with open("/proc/sys/vm/overcommit_memory") as f:
-                self.overcommit_combo.setCurrentIndex(max(0, min(2, int(f.read().strip()))))
-        except Exception:
-            pass
-
-        # systemd-oomd state
-        try:
-            r = subprocess.run(["systemctl", "is-enabled", "systemd-oomd"], capture_output=True, text=True)
-            self.oomd_cb.setChecked(r.stdout.strip() not in ("enabled", "static", "preset"))
-        except Exception:
-            self.oomd_cb.setChecked(False)
-
-        # panic_on_oom (checked = prevent panic = value is 0)
-        # Parameter may not exist on all kernel builds
-        _panic_path = "/proc/sys/kernel/panic_on_oom"
-        if os.path.exists(_panic_path):
-            try:
-                with open(_panic_path) as f:
-                    self.panic_oom_cb.setChecked(int(f.read().strip()) == 0)
-                self.panic_oom_cb.setEnabled(True)
-            except Exception:
-                self.panic_oom_cb.setChecked(True)
-                self.panic_oom_cb.setEnabled(True)
-        else:
-            self.panic_oom_cb.setChecked(False)
-            self.panic_oom_cb.setEnabled(False)
-            self.panic_oom_cb.setText(self.t("oom_panic_cb") + " (n/a)")
-
-    # ── Language refresh ──────────────────────────────────────────────────────
-
-    def _refresh_ui(self):
+    def _retranslate(self):
         self.setWindowTitle(self.t("title"))
         self.app_title.setText(self.t("title"))
-        self.lbl_current.setText(self.t("current_swap"))
-        self.lbl_path.setText(self.t("path"))
-        self.lbl_size.setText(self.t("size"))
-        self.lbl_swappiness.setText(self.t("swappiness"))
-        self.fstab_cb.setText(self.t("fstab_chk"))
-        self.apply_btn.setText(self.t("btn_apply"))
-        self.apply_swapp_btn.setText(self.t("btn_swapp"))
-        self.disable_btn.setText(self.t("btn_disable"))
-        self.delete_btn.setText(self.t("btn_delete"))
+        self.app_desc.setText(self.t("app_desc"))
+        self.mode_simple.setText(self.t("mode_simple"))
+        self.mode_pro.setText(self.t("mode_pro"))
+        for i, (key, _) in enumerate(self.PAGES):
+            self.tab_bar.setTabText(i, self.t(key))
+        self.files_btn.setText(self.t("files_toggle_hide" if self.files_btn.isChecked()
+                                      else "files_toggle_show"))
         self.prog_status_lbl.setText(self.t("status_app"))
-        # zram
-        self.lbl_zram_section.setText(self.t("zram_section"))
-        self.lbl_zram_hint.setText(self.t("zram_hint"))
-        self.lbl_zram_status_key.setText(self.t("zram_status"))
-        self.lbl_zram_size.setText(self.t("zram_size_lbl"))
-        self.lbl_zram_algo.setText(self.t("zram_algo_lbl"))
-        self.zram_enable_btn.setText(self.t("zram_apply"))
-        self.zram_disable_btn.setText(self.t("zram_disable"))
-        # OOM
-        self.lbl_oom_section.setText(self.t("oom_section"))
-        self.lbl_oom_hint.setText(self.t("oom_hint"))
-        self.lbl_overcommit.setText(self.t("oom_overcommit"))
-        cur = self.overcommit_combo.currentIndex()
-        self.overcommit_combo.setItemText(0, self.t("oom_mode_0"))
-        self.overcommit_combo.setItemText(1, self.t("oom_mode_1"))
-        self.overcommit_combo.setItemText(2, self.t("oom_mode_2"))
-        self.overcommit_combo.setCurrentIndex(cur)
-        self.oomd_cb.setText(self.t("oom_oomd_cb"))
-        self.panic_oom_cb.setText(self.t("oom_panic_cb"))
-        self.apply_oom_btn.setText(self.t("oom_apply"))
-        # Windows preset
-        self.lbl_win_section.setText(self.t("win_section"))
-        self.lbl_win_hint.setText(self.t("win_hint"))
-        self.win_btn.setText(self.t("win_btn"))
-        for panel in self._panels():
-            panel.retranslate()
+        for card in self.cards:
+            card.retranslate()
+
+    def _refresh_ui(self):
+        self._retranslate()
         self._load_data()
 
     # ── Backend plumbing ──────────────────────────────────────────────────────
 
     def _all_interactive(self):
         return (
-            self.apply_btn, self.disable_btn, self.delete_btn,
-            self.path_input, self.size_spin, self.fstab_cb,
-            self.refresh_btn, self.apply_swapp_btn, self.swapp_slider,
-            self.zram_enable_btn, self.zram_disable_btn, self.zram_size_spin, self.zram_algo_combo,
-            self.overcommit_combo, self.oomd_cb, self.panic_oom_cb, self.apply_oom_btn,
-            self.win_btn,
-            *(w for panel in self._panels() for w in panel.interactive_widgets()),
+            self.mode_simple, self.mode_pro, self.tab_bar, self.files_btn,
+            *(w for card in self.cards for w in card.interactive_widgets()),
         )
 
     def _run_backend(self, args):
@@ -587,72 +325,15 @@ class SwapManagerApp(QMainWindow):
         # _load_data() below re-disables what doesn't apply right now
         self.progress_frame.setVisible(False)
         if success:
-            QMessageBox.information(self, "Success", self.t("success"))
+            QMessageBox.information(self, self.t("title"), self.t("success"))
         else:
             # Only show "failed to get root" prefix for actual privilege errors
             if not message or "elevation" in message.lower() or message == "No elevation tool found.":
                 text = f"{self.t('err_elevate')}\n{message}"
             else:
                 text = message
-            QMessageBox.critical(self, "Error", text)
+            QMessageBox.critical(self, self.t("title"), text)
         self._load_data()
-
-    # ── Actions ───────────────────────────────────────────────────────────────
-
-    def _apply_swap(self):
-        path = self.path_input.text().strip()
-        if not path:
-            return
-        self._run_backend(["--create", path, str(self.size_spin.value()),
-                           "yes" if self.fstab_cb.isChecked() else "no"])
-
-    def _disable_swap(self):
-        path = self.path_input.text().strip()
-        if not path:
-            return
-        self._run_backend(["--disable", path])
-
-    def _delete_swap(self):
-        path = self.path_input.text().strip()
-        if not path:
-            return
-        if QMessageBox.question(self, "Confirm Delete", f"Delete {path} completely?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes:
-            self._run_backend(["--delete", path])
-
-    def _apply_swappiness(self):
-        self._run_backend(["--swappiness", str(self.swapp_slider.value())])
-
-    def _enable_zram(self):
-        self._run_backend([
-            "--zram-enable", str(self.zram_size_spin.value()),
-            self.zram_algo_combo.currentText(),
-        ])
-
-    def _disable_zram(self):
-        self._run_backend(["--zram-disable"])
-
-    def _apply_oom_settings(self):
-        self._run_backend([
-            "--overcommit", str(self.overcommit_combo.currentIndex()),
-            "--oomd",       "disable" if self.oomd_cb.isChecked() else "enable",
-            "--panic-on-oom", "0" if self.panic_oom_cb.isChecked() else "1",
-        ])
-
-    def _apply_windows_preset(self):
-        zram_gb = health.recommended_zram_gb(health.read_ram_gb())
-        self._run_backend([
-            "--zram-enable", str(zram_gb), health.RECOMMENDED_ALGORITHM,
-            "--overcommit",    "1",
-            "--oomd",          "disable",
-            "--swappiness",    str(health.RECOMMENDED_SWAPPINESS),
-            "--panic-on-oom",  "0",
-            # recommended for zram: no reclaim bursts, earlier background reclaim,
-            # no compaction stalls on every allocation
-            "--set", "watermark_boost_factor", "0",
-            "--set", "watermark_scale_factor", "125",
-            "--set", "thp", "madvise",
-        ])
 
 
 def main():

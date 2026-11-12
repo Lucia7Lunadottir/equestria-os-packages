@@ -34,6 +34,14 @@ def read_ram_gb():
 
 
 @dataclass
+class SwapArea:
+    name: str
+    size: str
+    used: str
+    kind: str
+
+
+@dataclass
 class ZramDevice:
     path: str
     size: str
@@ -43,12 +51,15 @@ class ZramDevice:
 
 @dataclass
 class MemoryState:
-    swaps: list = field(default_factory=list)        # [(name, size, type)]
+    swaps: list = field(default_factory=list)        # [SwapArea]
     zram: list = field(default_factory=list)         # [ZramDevice] active as swap
     dropin: tuple | None = None                      # (size_mb, algorithm)
     zswap_enabled: bool | None = None
     legacy_service: bool = False
     ram_gb: int = 8
+    mem_total_gib: float = 0.0
+    mem_used_gib: float = 0.0
+    oomd_enabled: bool = False
     values: dict = field(default_factory=dict)       # knob name -> current value
 
     @classmethod
@@ -56,17 +67,24 @@ class MemoryState:
         state = cls(ram_gb=read_ram_gb(), dropin=read_zram_dropin(),
                     legacy_service=os.path.exists(LEGACY_ZRAM_SERVICE))
         try:
-            r = subprocess.run(["swapon", "--show=NAME,SIZE,TYPE", "--noheadings"],
+            r = subprocess.run(["swapon", "--show=NAME,SIZE,USED,TYPE", "--noheadings", "--raw"],
                                capture_output=True, text=True)
             for line in r.stdout.splitlines():
                 parts = line.split()
-                if len(parts) >= 3:
-                    state.swaps.append(tuple(parts[:3]))
+                if len(parts) >= 4:
+                    state.swaps.append(SwapArea(*parts[:4]))
         except OSError:
             pass
-        for name, size, _ in state.swaps:
-            if name.startswith("/dev/zram"):
-                state.zram.append(cls._zram_device(name, size))
+        for area in state.swaps:
+            if area.name.startswith("/dev/zram"):
+                state.zram.append(cls._zram_device(area.name, area.size))
+        state._read_meminfo()
+        try:
+            r = subprocess.run(["systemctl", "is-enabled", "systemd-oomd"],
+                               capture_output=True, text=True)
+            state.oomd_enabled = r.stdout.strip() in ("enabled", "static", "preset")
+        except OSError:
+            pass
         try:
             with open(ZSWAP_PARAM) as f:
                 state.zswap_enabled = f.read().strip() in ("Y", "1")
@@ -74,6 +92,19 @@ class MemoryState:
             state.zswap_enabled = None
         state.values = {name: knob.read() for name, knob in KNOBS.items()}
         return state
+
+    def _read_meminfo(self):
+        info = {}
+        try:
+            with open("/proc/meminfo") as f:
+                for line in f:
+                    key, _, rest = line.partition(":")
+                    info[key] = int(rest.split()[0])
+        except (OSError, ValueError, IndexError):
+            return
+        kib = 1024 * 1024
+        self.mem_total_gib = info.get("MemTotal", 0) / kib
+        self.mem_used_gib = (info.get("MemTotal", 0) - info.get("MemAvailable", 0)) / kib
 
     @staticmethod
     def _zram_device(path, size):

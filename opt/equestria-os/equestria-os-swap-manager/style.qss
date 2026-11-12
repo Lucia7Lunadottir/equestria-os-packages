@@ -1,173 +1,337 @@
-/* Equestria OS Global Style */
+/* Equestria OS Swap Manager — в стиле страниц «Настроек Equestria OS»
+   (equestria-os-settings/style.qss): тот же фон, карточки, кнопки и поля,
+   чтобы встроенным в Настройки и отдельным окном приложение выглядело одинаково. */
 
 QWidget {
-    color: @text@; /* Catppuccin Text */
+    color: @text@;
     background-color: transparent;
     font-family: sans-serif;
+    font-size: 13px;
+}
+
+QWidget#ContentPage {
+    background-color: @base@;
+}
+
+/* ── Шапка ── */
+QLabel#ModTitle {
+    color: @text@;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+QLabel#PageDesc {
+    color: @subtext@;
     font-size: 14px;
 }
 
-#CentralBg {
-background-color: @base@; /* фон окна — как у остальных приложений */
+/* Переключатель «Простой / Профессиональный» — две половины одной кнопки */
+QPushButton#ModeLeft, QPushButton#ModeRight {
+    background-color: @surface0@;
+    color: @subtext@;
+    border: 1px solid @surface2@;
+    padding: 6px 14px;
+    font-size: 13px;
 }
-
-#AppTitle {
-font-family: {{TITLE_FONT}};
-font-size: 24px;
-font-weight: bold;
-color: @accent@; /* Catppuccin Pink */
-margin-bottom: 5px;
+QPushButton#ModeLeft {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-right: none;
 }
-
-#SectionLabel {
-font-weight: bold;
-color: @subtext@; /* Catppuccin Subtext1 */
-margin-top: 5px;
+QPushButton#ModeRight {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
 }
-
-#StatusLabel {
-color: @subtext@; /* Catppuccin Subtext0 */
-font-size: 13px;
-}
-
-#Divider {
-color: @surface0@; /* Catppuccin Surface1 */
-}
-
-/* Элементы ввода */
-QLineEdit, QSpinBox {
-    background-color: @base@; /* Catppuccin Base */
-    border: 1px solid @surface0@; /* Catppuccin Surface1 */
-    border-radius: 6px;
-    padding: 6px 10px;
+QPushButton#ModeLeft:hover, QPushButton#ModeRight:hover {
     color: @text@;
 }
-
-QLineEdit:focus, QSpinBox:focus {
-    border-color: @accent@; /* Pink Accent */
+QPushButton#ModeLeft:checked, QPushButton#ModeRight:checked {
+    background-color: @accent%55@;
+    color: @text@;
+    border-color: @accent%75@;
 }
 
-QLineEdit#DestEdit {
+QComboBox#LangCombo {
+    min-width: 46px;
+    min-height: 22px;
+    padding: 2px 8px;
+    font-size: 11px;
+}
+
+/* ── Вкладки ── */
+QTabBar::tab {
+    background-color: @surface0@;
+    color: @subtext@;
+    border: 1px solid @surface2@;
+    border-bottom: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 6px 16px;
+    margin-right: 2px;
+}
+QTabBar::tab:hover {
+    color: @text@;
+}
+QTabBar::tab:selected {
+    background-color: @surface1@;
+    color: @text@;
+    border-bottom: 2px solid @accent@;
+}
+
+/* ── Карточки ── */
+QFrame#InlineCard {
+    background-color: @surface0@;
+    border: 1px solid @surface2@;
+    border-radius: 10px;
+}
+
+QLabel#CardTitle {
+    color: @text@;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+QLabel#FieldLabel {
+    color: @text@;
+    font-size: 13px;
+}
+
+QLabel#FieldHint {
+    color: @subtext@;
+    font-size: 12px;
+}
+
+QLabel#FilePath {
+    color: @subtext@;
     font-family: monospace;
-    font-size: 13px;
+    font-size: 12px;
 }
 
-/* Кнопки */
-QPushButton {
-    background-color: @surface0@; /* Catppuccin Surface1 */
-    border: none;
-    border-radius: 6px;
-    padding: 5px 14px;
+QLabel#ZramStatusLabel, QLabel#HealthOk {
+    color: @green@;
+    font-size: 13px;
     font-weight: bold;
-    color: @text@;
 }
 
-QPushButton:hover {
-    background-color: @surface1@; /* Catppuccin Surface2 */
-}
-
-QPushButton:pressed {
-    background-color: @base@; /* Catppuccin Base */
-}
-
-QPushButton:disabled {
-    color: @subtext@; /* Catppuccin Overlay0 */
-    background-color: @mantle@; /* Catppuccin Mantle */
-}
-
-/* Акцентная кнопка (Применить) */
-QPushButton#RelocateBtn {
-    background-color: @accent@; /* Pink */
-    color: @on_accent@; /* Crust */
-}
-
-QPushButton#RelocateBtn:hover {
-    background-color: @accent_hover@; /* Flamingo (светлее) */
-}
-
-/* Кнопка опасности (Удалить) */
-QPushButton#DangerBtn {
-    background-color: @red@; /* Red */
-    color: @on_red@;
-}
-
-QPushButton#DangerBtn:hover {
-    background-color: @red%80@; /* Maroon (светлее) */
-}
-
-/* Кнопка Обновить */
-QPushButton#BrowseBtn {
-    padding: 4px 10px;
+QLabel#HealthWarn {
+    color: @yellow@;
     font-size: 13px;
 }
 
-/* Языковые кнопки */
-/* Language dropdown: styled by the runtime-appended QComboBox rules
-   in swap_app.py; kept here only as a hover accent. */
-QComboBox#LangCombo:hover {
+QLabel#HealthInfo {
+    color: @text@;
+    font-size: 13px;
+}
+
+/* ── Кнопки ── */
+QPushButton#ActionBtn {
+    background-color: @surface1@;
+    color: @text@;
+    border-radius: 6px;
+    padding: 6px 18px;
+    font-size: 13px;
+    border: 1px solid @surface2@;
+}
+QPushButton#ActionBtn:hover {
+    background-color: @surface2@;
+}
+
+QPushButton#PrimaryBtn {
+    background-color: @accent@;
+    color: @on_accent@;
+    border-radius: 6px;
+    padding: 6px 18px;
+    font-size: 13px;
+    font-weight: bold;
     border: 1px solid @accent@;
-    color: @text@;
 }
-
-/* --- СТИЛИЗАЦИЯ ГАЛОЧКИ (FIX) --- */
-
-QCheckBox#SwapCheckBox {
-    color: @text@;
-    spacing: 10px; /* Отступ текста от галочки */
-    font-weight: bold;
-}
-
-/* Основа галочки */
-QCheckBox#SwapCheckBox::indicator {
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-    border: 2px solid @surface0@; /* Surface1 */
-    background-color: @base@; /* Base */
-}
-
-/* Состояние Hover */
-QCheckBox#SwapCheckBox::indicator:hover {
-    border-color: @accent@; /* Pink Accent */
-}
-
-/* Состояние Включено (Checked) */
-QCheckBox#SwapCheckBox::indicator:checked {
-    border-color: @accent@; /* Pink Accent */
-    background-color: @accent@; /* Розовый фон */
-
-    /* ИНЪЕКЦИЯ СГЕНЕРИРОВАННОГО SVG */
-    image: url(@icon:check_mark@);
-}
-
-/* Состояние Checked + Hover */
-QCheckBox#SwapCheckBox::indicator:checked:hover {
-    background-color: @accent_hover@; /* Светлее */
+QPushButton#PrimaryBtn:hover {
+    background-color: @accent_hover@;
     border-color: @accent_hover@;
 }
 
-/* Состояние Disabled */
-QCheckBox#SwapCheckBox::indicator:disabled {
-    border-color: @mantle@;
-    background-color: @mantle@;
+QPushButton#DeleteBtn {
+    background-color: @red%45@;
+    color: @red@;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    border: 1px solid @red%65@;
+}
+QPushButton#DeleteBtn:hover {
+    background-color: @red%65@;
+    color: @text@;
+    border-color: @red@;
 }
 
-/* --- Прогресс бар --- */
-QFrame#ProgressFrame {
-    background-color: @mantle@;
+QPushButton#OpenAppBtn {
+    background-color: transparent;
+    color: @text@;
+    border: 1px solid @surface2@;
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 12px;
+}
+QPushButton#OpenAppBtn:hover, QPushButton#OpenAppBtn:checked {
+    background-color: @surface1@;
+    color: @accent_hover@;
+}
+
+QPushButton:disabled,
+QPushButton#ActionBtn:disabled, QPushButton#PrimaryBtn:disabled,
+QPushButton#DeleteBtn:disabled, QPushButton#OpenAppBtn:disabled {
+    background-color: @surface0@;
+    color: @surface2@;
+    border-color: @surface1@;
+}
+
+/* ── Поля ── */
+QLineEdit, QSpinBox {
+    background-color: @base@;
+    color: @text@;
+    border: 1px solid @accent%75@;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+    selection-background-color: @accent%55@;
+}
+QLineEdit:focus, QSpinBox:focus {
+    border: 1px solid @accent@;
+}
+QSpinBox {
+    padding-right: 26px;
+}
+QSpinBox::up-button, QSpinBox::down-button {
+    subcontrol-origin: border;
+    width: 22px;
+    border-left: 1px solid @accent%55@;
+    background-color: @surface1@;
+}
+QSpinBox::up-button {
+    subcontrol-position: top right;
+    border-top-right-radius: 6px;
+}
+QSpinBox::down-button {
+    subcontrol-position: bottom right;
+    border-bottom-right-radius: 6px;
+}
+QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+    background-color: @surface2@;
+}
+QSpinBox::up-arrow {
+    /* у kit есть только arrow_down — своя стрелка вверх, перекрашенная в цвета темы */
+    image: url(@svg:{{ASSETS_DIR}}/arrow_up.svg@);
+    width: 9px;
+    height: 6px;
+}
+QSpinBox::down-arrow {
+    image: url(@icon:arrow_down@);
+    width: 9px;
+    height: 6px;
+}
+QLineEdit#PathEdit {
+    font-family: monospace;
+}
+QSpinBox:disabled, QComboBox:disabled {
+    color: @surface2@;
+    border-color: @surface1@;
+}
+
+QComboBox {
+    background-color: @base@;
+    color: @text@;
+    border: 1px solid @accent%75@;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 13px;
+    selection-background-color: @accent%55@;
+}
+QComboBox:focus {
+    border: 1px solid @accent@;
+}
+QComboBox::drop-down {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 24px;
+    border-left: 1px solid @accent%55@;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: @surface1@;
+}
+QComboBox::down-arrow {
+    image: url(@icon:arrow_down@);
+    width: 12px;
+    height: 8px;
+}
+
+QCheckBox {
+    color: @text@;
+    font-size: 13px;
+    spacing: 8px;
+}
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    image: url(@icon:cb_unchecked@);
+}
+QCheckBox::indicator:hover {
+    image: url(@icon:cb_unchecked_hover@);
+}
+QCheckBox::indicator:checked {
+    image: url(@icon:cb_checked@);
+}
+
+QSlider::groove:horizontal {
+    height: 6px;
+    background: @surface1@;
+    border-radius: 3px;
+}
+QSlider::sub-page:horizontal {
+    height: 6px;
+    background: @accent@;
+    border-radius: 3px;
+}
+QSlider::handle:horizontal {
+    width: 16px;
+    height: 16px;
+    margin: -6px 0;
+    background: @accent@;
     border-radius: 8px;
-    padding: 10px;
+}
+QSlider::handle:horizontal:hover {
+    background: @accent_hover@;
 }
 
 QProgressBar {
     background-color: @surface0@;
     border: none;
-    border-radius: 4px;
-    height: 6px;
-    text-align: center;
+    border-radius: 3px;
+}
+QProgressBar::chunk {
+    background-color: @accent@;
+    border-radius: 3px;
 }
 
-QProgressBar::chunk {
-    background-color: @accent@; /* Pink Accent */
+QScrollArea {
+    border: none;
+    background: transparent;
+}
+QScrollBar:vertical {
+    background: @base@;
+    width: 8px;
     border-radius: 4px;
+}
+QScrollBar::handle:vertical {
+    background: @surface1@;
+    border-radius: 4px;
+    min-height: 20px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+QToolTip {
+    background-color: @surface0@;
+    color: @text@;
+    border: 1px solid @surface2@;
 }
