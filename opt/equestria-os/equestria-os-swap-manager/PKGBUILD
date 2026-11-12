@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-swap-manager
-pkgver=2.0.1
-pkgrel=12
+pkgver=2.1.0
+pkgrel=1
 pkgdesc="GUI tool for managing swap files, partitions, and swappiness"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -15,7 +15,7 @@ package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
     install -dm755 "$_lib"
 
-    for f in swap_app.py swap_backend.py core.py privilege.py style.qss equestria_cyrillic.ttf check_mark.svg equestria-os-swap-manager.png; do
+    for f in swap_app.py swap_backend.py memory_config.py health.py panels.py core.py privilege.py style.qss equestria_cyrillic.ttf check_mark.svg equestria-os-swap-manager.png; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
 

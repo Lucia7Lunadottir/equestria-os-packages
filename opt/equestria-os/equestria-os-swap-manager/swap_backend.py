@@ -3,47 +3,26 @@ CLI backend for privileged swap and memory operations in Equestria OS.
 
 Supports multiple commands in a single invocation:
   python3 swap_backend.py --create /swapfile 32 yes
-  python3 swap_backend.py --swappiness 80
-  python3 swap_backend.py --zram-enable 8 lzo-rle --overcommit 1 --oomd disable --panic-on-oom 0
+  python3 swap_backend.py --swappiness 150
+  python3 swap_backend.py --zram-enable 19 zstd --overcommit 1 --oomd disable --panic-on-oom 0
+  python3 swap_backend.py --set thp madvise --set vfs_cache_pressure 50 --zswap off
+
+Every kernel setting (--set <name>) is described once in memory_config.KNOBS.
 """
 import sys
 import os
 import shutil
 import subprocess
 
-FSTAB_PATH  = "/etc/fstab"
-SYSCTL_DIR  = "/etc/sysctl.d"
-# zram is configured through zram-generator (one device, zram0) via our own
-# drop-in, so it can't collide with a system-wide zram-generator.conf.
-ZRAM_GENERATOR = "/usr/lib/systemd/system-generators/zram-generator"
-ZRAM_DROPIN = "/etc/systemd/zram-generator.conf.d/90-equestria-swap-manager.conf"
-ZRAM_DEVICE = "zram0"
-# Old versions created their own device with this service — on top of
-# zram-generator's, giving two zram devices at once.
-LEGACY_ZRAM_SERVICE = "/etc/systemd/system/equestria-zram.service"
-ZSWAP_PARAM = "/sys/module/zswap/parameters/enabled"
-ZSWAP_TMPFILES = "/etc/tmpfiles.d/equestria-swap-manager-zswap.conf"
+from memory_config import (
+    KNOBS, FSTAB_PATH, ZRAM_GENERATOR, ZRAM_DROPIN, ZRAM_DEVICE,
+    LEGACY_ZRAM_SERVICE, ZSWAP_PARAM, ZSWAP_TMPFILES, ZRAM_SYSCTL_FILE,
+)
+
 BTRFS_SWAP_SUBVOL = "/swap"
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
-
-def _sysctl_set(key, value):
-    subprocess.run(["sysctl", f"{key}={value}"], check=True)
-
-
-def _sysctl_persist(filename, key, value):
-    """Write/replace a single key in /etc/sysctl.d/<filename>."""
-    os.makedirs(SYSCTL_DIR, exist_ok=True)
-    path = os.path.join(SYSCTL_DIR, filename)
-    lines = []
-    if os.path.exists(path):
-        with open(path) as f:
-            lines = [l for l in f.readlines() if not l.startswith(f"{key}=")]
-    lines.append(f"{key}={value}\n")
-    with open(path, "w") as f:
-        f.writelines(lines)
-
 
 def remove_from_fstab(path):
     if not os.path.exists(FSTAB_PATH):
@@ -143,26 +122,16 @@ def delete_swap(path):
 
 # ── kernel param commands ─────────────────────────────────────────────────────
 
-def set_swappiness(value):
-    _sysctl_set("vm.swappiness", value)
-    _sysctl_persist("99-swappiness.conf", "vm.swappiness", value)
-    sys.stdout.write(f"OK: swappiness set to {value}\n")
-
-
-def set_overcommit(value):
-    _sysctl_set("vm.overcommit_memory", value)
-    _sysctl_persist("99-memory.conf", "vm.overcommit_memory", value)
-    sys.stdout.write(f"OK: overcommit_memory set to {value}\n")
-
-
-def set_panic_on_oom(value):
-    if not os.path.exists("/proc/sys/kernel/panic_on_oom"):
+def set_knob(name, value):
+    knob = KNOBS.get(name)
+    if knob is None:
+        raise ValueError(f"Unknown setting: {name}")
+    if not knob.available:
         # Not compiled into this kernel build — skip silently
-        sys.stdout.write("OK: panic_on_oom not available on this kernel, skipped\n")
+        sys.stdout.write(f"OK: {name} not available on this kernel, skipped\n")
         return
-    _sysctl_set("kernel.panic_on_oom", value)
-    _sysctl_persist("99-memory.conf", "kernel.panic_on_oom", value)
-    sys.stdout.write(f"OK: panic_on_oom set to {value}\n")
+    knob.apply(value)
+    sys.stdout.write(f"OK: {name} set to {value}\n")
 
 
 def set_oomd(state):
@@ -189,32 +158,65 @@ class ZramSetup:
 
     def enable(self, size_gb, algorithm):
         self._require_generator()
+        previous = self._read_dropin_text()
+        was_active = self._device_is_swap()
         self._remove_legacy_service()
-        self._write_dropin(int(size_gb) * 1024, algorithm)
-        self._reload_device(start=True)
-        self._set_zswap(False)
+        self._remove_extra_devices()
+        try:
+            self._write_dropin(int(size_gb) * 1024, algorithm)
+            self._reload_device(start=True)
+        except Exception:
+            # Don't leave the system half-switched: put the old drop-in back
+            # and bring the old device up again if there was one.
+            self._restore_dropin(previous)
+            try:
+                self._reload_device(start=was_active)
+            except Exception:
+                pass
+            raise
+        self.set_zswap(False)
 
         # page-cluster=0: kernel reads one page at a time from zram instead of
         # clusters — much better latency for compressed in-RAM swap.
-        _sysctl_set("vm.page-cluster", "0")
-        _sysctl_persist("99-zram.conf", "vm.page-cluster", "0")
+        KNOBS["page_cluster"].apply(0)
 
         sys.stdout.write(f"OK: zram enabled ({size_gb}G, {algorithm}) on /dev/{ZRAM_DEVICE}\n")
 
     def disable(self):
         self._remove_legacy_service()
+        self._remove_extra_devices()
         if os.path.exists(ZRAM_GENERATOR):
             self._write_dropin(0, None)
             self._reload_device(start=False)
-        self._set_zswap(True)
+        # Only after zram is really gone — before, swap would have nothing fast left.
+        self.set_zswap(True)
 
         # Restore page-cluster to default (3)
-        _sysctl_set("vm.page-cluster", "3")
-        zram_conf = os.path.join(SYSCTL_DIR, "99-zram.conf")
-        if os.path.exists(zram_conf):
-            os.remove(zram_conf)
+        page_cluster = KNOBS["page_cluster"]
+        with open(page_cluster.proc_path(page_cluster.key), "w") as f:
+            f.write(str(page_cluster.default))
+        if os.path.exists(ZRAM_SYSCTL_FILE):
+            os.remove(ZRAM_SYSCTL_FILE)
 
         sys.stdout.write("OK: zram disabled\n")
+
+    @staticmethod
+    def set_zswap(enabled):
+        if not os.path.exists(ZSWAP_PARAM):
+            return
+        if enabled:
+            # Only undo what we did ourselves — zswap may be off on purpose.
+            if not os.path.exists(ZSWAP_TMPFILES):
+                return
+            os.remove(ZSWAP_TMPFILES)
+        else:
+            # tmpfiles.d re-applies it on every boot.
+            os.makedirs(os.path.dirname(ZSWAP_TMPFILES), exist_ok=True)
+            with open(ZSWAP_TMPFILES, "w") as f:
+                f.write("# Managed by Equestria OS Swap Manager: zswap off while zram is on\n"
+                        f"w {ZSWAP_PARAM} - - - - N\n")
+        with open(ZSWAP_PARAM, "w") as f:
+            f.write("Y" if enabled else "N")
 
     # ── internals ──
 
@@ -222,6 +224,44 @@ class ZramSetup:
     def _require_generator():
         if not os.path.exists(ZRAM_GENERATOR):
             raise RuntimeError("zram-generator is not installed (pacman -S zram-generator)")
+
+    @staticmethod
+    def _active_zram_swaps():
+        r = subprocess.run(["swapon", "--show=NAME", "--noheadings"],
+                           capture_output=True, text=True)
+        return [l.strip() for l in r.stdout.splitlines() if l.strip().startswith("/dev/zram")]
+
+    def _device_is_swap(self):
+        return f"/dev/{ZRAM_DEVICE}" in self._active_zram_swaps()
+
+    def _remove_extra_devices(self):
+        """Exactly one zram swap is wanted — switch off any other zram swap
+        (left by old versions or other tools) and free its memory."""
+        for dev in self._active_zram_swaps():
+            if dev == f"/dev/{ZRAM_DEVICE}":
+                continue
+            subprocess.run(["swapoff", dev], check=True)
+            reset = f"/sys/block/{os.path.basename(dev)}/reset"
+            if os.path.exists(reset):
+                with open(reset, "w") as f:
+                    f.write("1")
+
+    @staticmethod
+    def _read_dropin_text():
+        try:
+            with open(ZRAM_DROPIN) as f:
+                return f.read()
+        except OSError:
+            return None
+
+    @staticmethod
+    def _restore_dropin(text):
+        if text is None:
+            if os.path.exists(ZRAM_DROPIN):
+                os.remove(ZRAM_DROPIN)
+        else:
+            with open(ZRAM_DROPIN, "w") as f:
+                f.write(text)
 
     @staticmethod
     def _write_dropin(size_mb, algorithm):
@@ -267,24 +307,6 @@ class ZramSetup:
         os.remove(LEGACY_ZRAM_SERVICE)
         subprocess.run(["systemctl", "daemon-reload"], check=False)
 
-    @staticmethod
-    def _set_zswap(enabled):
-        if not os.path.exists(ZSWAP_PARAM):
-            return
-        if enabled:
-            # Only undo what we did ourselves — zswap may be off on purpose.
-            if not os.path.exists(ZSWAP_TMPFILES):
-                return
-            os.remove(ZSWAP_TMPFILES)
-        else:
-            # tmpfiles.d re-applies it on every boot.
-            os.makedirs(os.path.dirname(ZSWAP_TMPFILES), exist_ok=True)
-            with open(ZSWAP_TMPFILES, "w") as f:
-                f.write("# Managed by Equestria OS Swap Manager: zswap off while zram is on\n"
-                        f"w {ZSWAP_PARAM} - - - - N\n")
-        with open(ZSWAP_PARAM, "w") as f:
-            f.write("Y" if enabled else "N")
-
 
 # ── main ──────────────────────────────────────────────────────────────────────
 
@@ -312,11 +334,20 @@ def main():
                 i += 2
 
             elif cmd == "--swappiness" and i + 1 < len(args):
-                set_swappiness(args[i+1])
+                set_knob("swappiness", args[i+1])
                 i += 2
 
             elif cmd == "--overcommit" and i + 1 < len(args):
-                set_overcommit(args[i+1])
+                set_knob("overcommit", args[i+1])
+                i += 2
+
+            elif cmd == "--set" and i + 2 < len(args):
+                set_knob(args[i+1], args[i+2])
+                i += 3
+
+            elif cmd == "--zswap" and i + 1 < len(args) and args[i+1] in ("on", "off"):
+                ZramSetup.set_zswap(args[i+1] == "on")
+                sys.stdout.write(f"OK: zswap {args[i+1]}\n")
                 i += 2
 
             elif cmd == "--oomd" and i + 1 < len(args):
@@ -324,7 +355,7 @@ def main():
                 i += 2
 
             elif cmd == "--panic-on-oom" and i + 1 < len(args):
-                set_panic_on_oom(args[i+1])
+                set_knob("panic_on_oom", args[i+1])
                 i += 2
 
             elif cmd == "--zram-enable" and i + 2 < len(args):

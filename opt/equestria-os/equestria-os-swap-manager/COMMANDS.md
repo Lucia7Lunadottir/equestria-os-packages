@@ -10,13 +10,15 @@
 
 | Флаг | Функция | Что делает |
 |---|---|---|
-| `--create <path> <size_gb> yes\|no` | `create_swap()`, строки 58-72 | См. подробный разбор ниже. |
-| `--disable <path>` | `disable_swap()`, строки 52-55 | `swapoff <path>` + убирает строку из `/etc/fstab`. Файл подкачки не удаляется. |
-| `--delete <path>` | `delete_swap()`, строки 75-81 | То же, что `--disable`, и затем `os.remove(path)` — сам файл стирается. |
-| `--swappiness <N>` | `set_swappiness()`, строки 86-89 | `sysctl vm.swappiness=<N>` (сразу) + перезаписывает ключ в `/etc/sysctl.d/99-swappiness.conf` (навсегда). |
-| `--overcommit <N>` | `set_overcommit()`, строки 92-95 | То же для `vm.overcommit_memory`, сохраняется в `/etc/sysctl.d/99-memory.conf`. |
-| `--panic-on-oom <N>` | `set_panic_on_oom()`, строки 98-105 | То же для `kernel.panic_on_oom` в тот же файл `99-memory.conf` — но только если `/proc/sys/kernel/panic_on_oom` вообще существует в текущем ядре (иначе тихо пропускается, без ошибки). |
-| `--oomd enable\|disable` | `set_oomd()`, строки 108-111 | `systemctl enable\|disable --now systemd-oomd`. |
+| `--create <path> <size_gb> yes\|no` | `create_swap()` | См. подробный разбор ниже. |
+| `--disable <path>` | `disable_swap()` | `swapoff <path>` + убирает строку из `/etc/fstab`. Файл подкачки не удаляется. |
+| `--delete <path>` | `delete_swap()` | То же, что `--disable`, и затем `os.remove(path)` — сам файл стирается. |
+| `--swappiness <N>` | `set_knob("swappiness")` | Синоним `--set swappiness <N>` (0–200): пишет `/proc/sys/vm/swappiness` (сразу) + ключ в `/etc/sysctl.d/99-swappiness.conf` (навсегда). |
+| `--overcommit <N>` | `set_knob("overcommit")` | То же для `vm.overcommit_memory`, сохраняется в `/etc/sysctl.d/99-memory.conf`. |
+| `--panic-on-oom <N>` | `set_knob("panic_on_oom")` | То же для `kernel.panic_on_oom` в тот же файл `99-memory.conf` — но только если `/proc/sys/kernel/panic_on_oom` вообще существует в текущем ядре (иначе тихо пропускается, без ошибки). |
+| `--set <имя> <значение>` | `set_knob()` | Любой параметр из `memory_config.KNOBS` (таблица ниже). Значение проверяется (диапазон / список слов) до записи; неизвестное имя — ошибка. |
+| `--zswap on\|off` | `ZramSetup.set_zswap()` | `off`: пишет `N` в `/sys/module/zswap/parameters/enabled` + `/etc/tmpfiles.d/equestria-swap-manager-zswap.conf` (повтор при загрузке). `on`: только если zswap выключали мы (есть наш файл) — удаляет файл и пишет `Y`. |
+| `--oomd enable\|disable` | `set_oomd()` | `systemctl enable\|disable --now systemd-oomd`. |
 | `--zram-enable <size_gb> <algorithm>` | `ZramSetup.enable()` | См. подробно ниже. |
 | `--zram-disable` | `ZramSetup.disable()` | Выключает zram (drop-in с `zram-size = 0`) и возвращает zswap. |
 
@@ -30,7 +32,51 @@
 >
 > **`systemd-oomd`** — более новый, «умный» OOM-демон в userspace (в дополнение к встроенному в ядро OOM killer), который следит за системой на уровне cgroups и убивает проблемные процессы раньше, чем ядро окончательно захлебнётся — `systemctl enable/disable --now` включает/выключает именно его, ядерный OOM killer при этом продолжает работать в любом случае как последняя линия защиты.
 
-### Создание файла подкачки (`create_swap()`, `swap_backend.py:58-72`)
+### Параметры `--set` (`memory_config.KNOBS`)
+
+Все параметры описаны **один раз** в `memory_config.py`: окно читает оттуда текущие значения и список файлов, бэкенд — применяет. Классы:
+- `SysctlKnob` — целое число в `/proc/sys/...`, сохраняется строкой `ключ=значение` в свой файл `/etc/sysctl.d/`;
+- `DirtyKnob` — то же, но в MiB; `0` = «Авто»: ядро не принимает `*_bytes = 0`, поэтому пишется `*_ratio` со стандартным процентом, а строка `*_bytes` убирается из файла;
+- `SysfsChoiceKnob` — слово в `/sys/...` (`always [madvise] never`); у sysfs нет своего конфига, поэтому сохраняется строкой `w <путь> - - - - <слово>` в `/etc/tmpfiles.d/equestria-swap-manager-mm.conf` — systemd-tmpfiles повторяет её при каждой загрузке.
+
+| Имя | Что | Файл | Диапазон | Стандарт ядра |
+|---|---|---|---|---|
+| `swappiness` | `vm.swappiness` | `99-swappiness.conf` | 0–200 | 60 |
+| `overcommit` | `vm.overcommit_memory` | `99-memory.conf` | 0–2 | 0 |
+| `panic_on_oom` | `kernel.panic_on_oom` | `99-memory.conf` | 0–2 | 0 |
+| `page_cluster` | `vm.page-cluster` | `99-zram.conf` | 0–10 | 3 |
+| `vfs_cache_pressure` | `vm.vfs_cache_pressure` | `99-vm-tuning.conf` | 1–1000 | 100 |
+| `watermark_boost_factor` | `vm.watermark_boost_factor` | `99-vm-tuning.conf` | 0–30000 | 15000 |
+| `watermark_scale_factor` | `vm.watermark_scale_factor` | `99-vm-tuning.conf` | 1–3000 | 10 |
+| `dirty_background_mb` | `vm.dirty_background_bytes` / `_ratio` | `99-vm-tuning.conf` | 0 (Авто) – 65536 MiB | 10% ОЗУ |
+| `dirty_mb` | `vm.dirty_bytes` / `_ratio` | `99-vm-tuning.conf` | 0 (Авто) – 65536 MiB | 20% ОЗУ |
+| `thp` | `/sys/kernel/mm/transparent_hugepage/enabled` | tmpfiles `…-mm.conf` | always / madvise / never | always |
+| `thp_defrag` | `/sys/kernel/mm/transparent_hugepage/defrag` | tmpfiles `…-mm.conf` | always / defer / defer+madvise / madvise / never | madvise |
+
+Почему именно эти: при zram swap дешёвый, а перечитывать с диска код программ — дорого. `swappiness` > 100 заставляет ядро сжимать неактивные данные в zram, а не выбрасывать кэш программ; `watermark_boost_factor = 0` убирает резкие всплески освобождения памяти; `watermark_scale_factor = 125` начинает фоновое освобождение раньше, чтобы программам не приходилось самим останавливаться на нём (direct reclaim); `thp = madvise` убирает остановки на уплотнение памяти (compaction stall) у программ, которые огромных страниц не просили. Это же ставит пресет «как в Windows».
+
+### Проверка системы (`health.py`)
+
+Работает без root, только чтение. `MemoryState.from_system()` снимает состояние (активные swap, zram-устройства с алгоритмом и степенью сжатия из `/sys/block/zramN/mm_stat`, наш drop-in, zswap, значения всех `KNOBS`), затем каждый класс-проверка из `CHECKS` возвращает `Issue` (ключ перевода + аргументы бэкенда для исправления) или `None`:
+
+| Проверка | Когда срабатывает | Исправление |
+|---|---|---|
+| `LegacyServiceCheck` | есть `/etc/systemd/system/equestria-zram.service` | `--zram-enable` (сам убирает службу) |
+| `ExtraZramCheck` | активно больше одного zram-swap | `--zram-enable` (сбрасывает лишние устройства) |
+| `ZramNotRunningCheck` | наш drop-in просит zram, но zram-swap не активен | `--zram-enable` с сохранёнными размером/алгоритмом |
+| `NoSwapCheck` | нет ни одного swap и zram не настроен | `--zram-enable` (50% ОЗУ, zstd) |
+| `ZswapWithZramCheck` | zram активен и zswap включён | `--zswap off` |
+| `LowSwappinessCheck` | zram активен и swappiness < 100 | `--set swappiness 150` |
+| `PageClusterCheck` | zram активен и page-cluster ≠ 0 | `--set page_cluster 0` |
+| `ThpAlwaysCheck` | THP = always | `--set thp madvise` |
+
+«Исправить всё» склеивает исправления в **один** вызов бэкенда (один запрос пароля), без повторов; `--zram-enable` идёт первым.
+
+### Файлы настроек (`panels.ConfigFilesPanel`)
+
+Внизу окна — каждый файл из `memory_config.CONFIG_FILES` с путём (можно выделить и скопировать), кнопками «Открыть» (`QDesktopServices.openUrl` — открывается в текстовом редакторе по умолчанию; файлы в `/etc` принадлежат root, поэтому только для чтения) и «Показать в папке» (D-Bus `org.freedesktop.FileManager1.ShowItems` через `dbus-send` — Dolphin открывает папку с выделенным файлом; если не вышло — просто папка). Ещё не созданные файлы помечены «ещё не создан».
+
+### Создание файла подкачки (`create_swap()`)
 
 1. `swapoff <path>` — на случай если файл уже используется как swap (например, при пересоздании).
 2. `touch <path>` — создать пустой файл.
@@ -47,14 +93,16 @@
 
 > Раньше (до 2.0.1-10) приложение создавало своё устройство через `zramctl --find` и службу `equestria-zram.service`. Если zram-generator уже держал `zram0`, получалось **два** zram-устройства (`zram0` + `zram1`), а при выключении `swapoff /dev/zram0` гасил чужое устройство вместо своего.
 
-**Включение:**
+**Включение** (кнопка «Применить zram» — работает и на уже запущенном zram, меняя размер/алгоритм):
+0. Запоминает текущий drop-in и был ли zram активен — для отката. Если любой следующий шаг упадёт, старый drop-in возвращается на место, старое устройство поднимается заново, а ошибка показывается пользователю — система не остаётся «наполовину переключённой».
 1. Если осталась старая `equestria-zram.service` — `systemctl disable --now` и удаление файла юнита (её `ExecStop` сбрасывает все `/dev/zram*`, это нормально: `zram0` сразу пересоздаётся).
+1a. Выключает и сбрасывает все **другие** zram-swap, кроме `zram0` (`swapoff` + `echo 1 > /sys/block/zramN/reset`).
 2. Пишет drop-in: `zram-size = <N×1024>` (в МиБ), `compression-algorithm = <алгоритм>`, `swap-priority = 100` (выше дискового свопа — ядро сначала жмёт в RAM), `fs-type = swap`.
 3. `systemctl daemon-reload` (генератор перечитывает конфиг) → **по очереди** `stop dev-zram0.swap` → `swapoff /dev/zram0` → `stop systemd-zram-setup@zram0.service` → `echo 1 > /sys/block/zram0/reset` → `systemctl start dev-zram0.swap`. Порядок важен: остановка обоих юнитов одной командой давала сброс раньше swapoff («Device or resource busy»), и новый алгоритм не применялся.
 4. Выключает **zswap**: пишет `N` в `/sys/module/zswap/parameters/enabled` и `/etc/tmpfiles.d/equestria-swap-manager-zswap.conf`, чтобы это повторялось при каждой загрузке. zswap поверх zram сжимает те же страницы второй раз и держит в RAM свой пул (до 20% памяти).
 5. `vm.page-cluster=0` — для zram (память, а не диск) чтение «кластерами» по несколько страниц только замедляет; `0` — читать по одной странице.
 
-**Выключение (`ZramSetup.disable()`):** убирает старую службу (если есть), пишет тот же drop-in с `zram-size = 0` (генератор тогда не создаёт устройство — даже если в основном конфиге оно описано), останавливает `dev-zram0.swap` и setup-юнит, возвращает zswap (только если выключали его сами — есть наш tmpfiles-файл), `vm.page-cluster=3`, удаляет `99-zram.conf`.
+**Выключение (`ZramSetup.disable()`):** убирает старую службу (если есть) и лишние zram-устройства, пишет тот же drop-in с `zram-size = 0` (генератор тогда не создаёт устройство — даже если в основном конфиге оно описано), останавливает `dev-zram0.swap` и setup-юнит, и только после этого возвращает zswap (только если выключали его сами — есть наш tmpfiles-файл), `vm.page-cluster=3`, удаляет `99-zram.conf`.
 
 ## Прочее
 

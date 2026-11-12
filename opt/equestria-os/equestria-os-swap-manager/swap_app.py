@@ -10,6 +10,8 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QFontDatabase
 
 import privilege
+import health
+from memory_config import ZRAM_ALGORITHMS
 try:
     import equestria_kit  # noqa: F401
 except ImportError:  # запуск из исходников, пакет equestria-qt-kit не установлен
@@ -18,6 +20,7 @@ except ImportError:  # запуск из исходников, пакет equest
 from equestria_kit import qt as kit_qt
 from equestria_kit import live_i18n
 from equestria_kit.widgets import font_families
+from panels import HealthPanel, TuningPanel, ConfigFilesPanel
 
 # Переводы лежат в locales/<язык>.json рядом с swap_app.py (ключ -> текст)
 CATALOG = live_i18n.Catalog("equestria-os-swap-manager", __file__)
@@ -38,20 +41,6 @@ def generate_assets():
             f.write(svg_content)
     except Exception:
         pass
-
-
-def _get_ram_gb() -> int:
-    """Return total system RAM in whole GB."""
-    try:
-        with open("/proc/meminfo") as f:
-            for line in f:
-                if line.startswith("MemTotal:"):
-                    kb = int(line.split()[1])
-                    return max(1, kb // 1024 // 1024)
-    except Exception:
-        pass
-    return 8
-
 
 
 class SwapWorker(QThread):
@@ -151,6 +140,10 @@ class SwapManagerApp(QMainWindow):
             QPushButton#WindowsBtn { background-color: @accent2%25@; border: 2px solid @accent2@; border-radius: 8px; color: @accent2@; font-size: 13px; font-weight: bold; padding: 6px 18px; }
             QPushButton#WindowsBtn:hover { background-color: @accent2%35@; }
             QPushButton#WindowsBtn:pressed { background-color: @accent2%15@; }
+            QLabel#HealthWarn { color: @yellow@; font-size: 13px; }
+            QLabel#HealthInfo { color: @subtext@; font-size: 13px; }
+            QFrame#FileRow { border: 1px solid @surface0@; border-radius: 8px; }
+            QLabel#FilePath { font-family: monospace; font-size: 12px; color: @subtext@; }
             """
             kit_qt.style(self, qss)
 
@@ -215,6 +208,11 @@ class SwapManagerApp(QMainWindow):
         self.info_lbl = QLabel(self.t("no_swap"))
         self.info_lbl.setObjectName("StatusLabel")
         L.addWidget(self.info_lbl)
+        L.addWidget(self._make_divider())
+
+        # ── System check ──────────────────────────────────────────────────────
+        self.health_panel = HealthPanel(self.t, self._run_backend)
+        L.addWidget(self.health_panel)
         L.addWidget(self._make_divider())
 
         # ── Swap File Settings ────────────────────────────────────────────────
@@ -318,8 +316,7 @@ class SwapManagerApp(QMainWindow):
         self.zram_size_spin = QSpinBox()
         self.zram_size_spin.setObjectName("SourceEdit")
         self.zram_size_spin.setRange(1, 128)
-        default_zram = max(4, _get_ram_gb() // 2)
-        self.zram_size_spin.setValue(default_zram)
+        self.zram_size_spin.setValue(health.recommended_zram_gb(health.read_ram_gb()))
         self.zram_size_spin.setSuffix(" GB")
         self.zram_size_spin.setFixedHeight(34)
         zram_cfg_row.addWidget(self.zram_size_spin)
@@ -329,16 +326,16 @@ class SwapManagerApp(QMainWindow):
         zram_cfg_row.addWidget(self.lbl_zram_algo)
 
         self.zram_algo_combo = QComboBox()
-        self.zram_algo_combo.addItem("lzo-rle")
-        self.zram_algo_combo.addItem("zstd")
-        self.zram_algo_combo.addItem("lz4")
+        for algo in ZRAM_ALGORITHMS:
+            self.zram_algo_combo.addItem(algo)
         self.zram_algo_combo.setCursor(Qt.CursorShape.PointingHandCursor)
         zram_cfg_row.addWidget(self.zram_algo_combo)
         zram_cfg_row.addStretch()
         L.addLayout(zram_cfg_row)
 
         zram_btn_row = QHBoxLayout()
-        self.zram_enable_btn = QPushButton(self.t("zram_enable"))
+        # Always available: applies a new size/algorithm to a running zram too
+        self.zram_enable_btn = QPushButton(self.t("zram_apply"))
         self.zram_enable_btn.setObjectName("BrowseBtn")
         self.zram_enable_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.zram_enable_btn.clicked.connect(self._enable_zram)
@@ -401,6 +398,11 @@ class SwapManagerApp(QMainWindow):
         L.addWidget(self.apply_oom_btn)
         L.addWidget(self._make_divider())
 
+        # ── Fine memory tuning ────────────────────────────────────────────────
+        self.tuning_panel = TuningPanel(self.t, self._run_backend)
+        L.addWidget(self.tuning_panel)
+        L.addWidget(self._make_divider())
+
         # ── Windows-like Preset ───────────────────────────────────────────────
         self.lbl_win_section = QLabel(self.t("win_section"))
         self.lbl_win_section.setObjectName("SectionLabel")
@@ -416,6 +418,11 @@ class SwapManagerApp(QMainWindow):
         self.win_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.win_btn.clicked.connect(self._apply_windows_preset)
         L.addWidget(self.win_btn)
+        L.addWidget(self._make_divider())
+
+        # ── Configuration files ───────────────────────────────────────────────
+        self.files_panel = ConfigFilesPanel(self.t, self._run_backend)
+        L.addWidget(self.files_panel)
 
         L.addStretch()
 
@@ -437,48 +444,48 @@ class SwapManagerApp(QMainWindow):
 
     # ── Data loading ──────────────────────────────────────────────────────────
 
+    def _panels(self):
+        return (self.health_panel, self.tuning_panel, self.files_panel)
+
     def _load_data(self):
-        # Swap files
-        try:
-            result = subprocess.run(["swapon", "--show=NAME,SIZE,TYPE"], capture_output=True, text=True, check=True)
-            lines = result.stdout.strip().split('\n')
-            if len(lines) <= 1:
-                self.info_lbl.setText(self.t("no_swap"))
-            else:
-                formatted = []
-                for line in lines[1:]:
-                    parts = line.split()
-                    if len(parts) >= 2:
-                        formatted.append(f"• {parts[0]}  —  {parts[1]}")
-                self.info_lbl.setText("\n".join(formatted))
-        except Exception:
+        state = health.MemoryState.from_system()
+
+        # Active swaps
+        if state.swaps:
+            self.info_lbl.setText("\n".join(f"•  {name}  —  {size}" for name, size, _ in state.swaps))
+        else:
             self.info_lbl.setText(self.t("no_swap"))
 
         # Swappiness
-        try:
-            with open("/proc/sys/vm/swappiness") as f:
-                val = int(f.read().strip())
-                self.swapp_slider.setValue(val)
-                self.swapp_val_lbl.setText(str(val))
-        except Exception:
-            pass
+        swappiness = state.values.get("swappiness")
+        if swappiness is not None:
+            self.swapp_slider.setValue(swappiness)
+            self.swapp_val_lbl.setText(str(swappiness))
 
-        # zram status
-        try:
-            r = subprocess.run(["swapon", "--show=NAME,SIZE,TYPE"], capture_output=True, text=True)
-            zram_line = next((l for l in r.stdout.splitlines() if "/dev/zram" in l), None)
-            if zram_line:
-                parts = zram_line.split()
-                size_info = parts[1] if len(parts) > 1 else "?"
-                self.lbl_zram_status_val.setText(self.t("zram_active").format(size_info))
-                self.zram_enable_btn.setEnabled(False)
-                self.zram_disable_btn.setEnabled(True)
-            else:
-                self.lbl_zram_status_val.setText(self.t("zram_inactive"))
-                self.zram_enable_btn.setEnabled(True)
-                self.zram_disable_btn.setEnabled(False)
-        except Exception:
+        # zram status: "19G · zstd · compression 3.0×" per device
+        if state.zram:
+            parts = []
+            for dev in state.zram:
+                info = [dev.size]
+                if dev.algorithm:
+                    info.append(dev.algorithm)
+                if dev.ratio:
+                    info.append(self.t("zram_ratio").format(f"{dev.ratio:.1f}"))
+                parts.append(" · ".join(info))
+            self.lbl_zram_status_val.setText(self.t("zram_active").format(";  ".join(parts)))
+        else:
             self.lbl_zram_status_val.setText(self.t("zram_inactive"))
+        # Controls show what is saved, so "Apply" changes exactly that
+        size_gb, algo = state.zram_target()
+        self.zram_size_spin.setValue(size_gb)
+        idx = self.zram_algo_combo.findText(algo)
+        if idx != -1:
+            self.zram_algo_combo.setCurrentIndex(idx)
+        self._zram_can_disable = state.zram_active or bool(state.dropin and state.dropin[0] > 0)
+        self.zram_disable_btn.setEnabled(self._zram_can_disable)
+
+        for panel in self._panels():
+            panel.load(state)
 
         # Overcommit policy
         try:
@@ -531,7 +538,7 @@ class SwapManagerApp(QMainWindow):
         self.lbl_zram_status_key.setText(self.t("zram_status"))
         self.lbl_zram_size.setText(self.t("zram_size_lbl"))
         self.lbl_zram_algo.setText(self.t("zram_algo_lbl"))
-        self.zram_enable_btn.setText(self.t("zram_enable"))
+        self.zram_enable_btn.setText(self.t("zram_apply"))
         self.zram_disable_btn.setText(self.t("zram_disable"))
         # OOM
         self.lbl_oom_section.setText(self.t("oom_section"))
@@ -549,6 +556,8 @@ class SwapManagerApp(QMainWindow):
         self.lbl_win_section.setText(self.t("win_section"))
         self.lbl_win_hint.setText(self.t("win_hint"))
         self.win_btn.setText(self.t("win_btn"))
+        for panel in self._panels():
+            panel.retranslate()
         self._load_data()
 
     # ── Backend plumbing ──────────────────────────────────────────────────────
@@ -561,6 +570,7 @@ class SwapManagerApp(QMainWindow):
             self.zram_enable_btn, self.zram_disable_btn, self.zram_size_spin, self.zram_algo_combo,
             self.overcommit_combo, self.oomd_cb, self.panic_oom_cb, self.apply_oom_btn,
             self.win_btn,
+            *(w for panel in self._panels() for w in panel.interactive_widgets()),
         )
 
     def _run_backend(self, args):
@@ -574,6 +584,7 @@ class SwapManagerApp(QMainWindow):
     def _on_worker_done(self, success, message):
         for w in self._all_interactive():
             w.setEnabled(True)
+        # _load_data() below re-disables what doesn't apply right now
         self.progress_frame.setVisible(False)
         if success:
             QMessageBox.information(self, "Success", self.t("success"))
@@ -629,13 +640,18 @@ class SwapManagerApp(QMainWindow):
         ])
 
     def _apply_windows_preset(self):
-        zram_gb = max(4, _get_ram_gb() // 2)
+        zram_gb = health.recommended_zram_gb(health.read_ram_gb())
         self._run_backend([
-            "--zram-enable", str(zram_gb), "lzo-rle",
+            "--zram-enable", str(zram_gb), health.RECOMMENDED_ALGORITHM,
             "--overcommit",    "1",
             "--oomd",          "disable",
-            "--swappiness",    "80",
+            "--swappiness",    str(health.RECOMMENDED_SWAPPINESS),
             "--panic-on-oom",  "0",
+            # recommended for zram: no reclaim bursts, earlier background reclaim,
+            # no compaction stalls on every allocation
+            "--set", "watermark_boost_factor", "0",
+            "--set", "watermark_scale_factor", "125",
+            "--set", "thp", "madvise",
         ])
 
 
