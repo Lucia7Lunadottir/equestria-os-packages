@@ -104,7 +104,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.current_lang = "en"
 
         self.init_user_folder()
-        self.load_localization_csv()
+        self.load_localization()
         self.detect_system_language()
 
         self.day_night = kde_laf.DayNight()
@@ -143,7 +143,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
                     if not os.path.exists(dst):
                         shutil.copy2(src, dst)
 
-    def load_localization_csv(self):
+    def load_localization(self):
         # список языков — найденные файлы locales/*.json, без списка в коде
         self.available_langs = list(CATALOG.languages)
 
