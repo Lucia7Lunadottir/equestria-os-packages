@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QButtonGroup,
                              QPushButton, QScrollArea, QStackedWidget, QLineEdit, QGridLayout)
 from PyQt6.QtCore import Qt, pyqtSignal
+from palette_editor import PalettePreview
 
 class ModeSwitch(QFrame):
     """Капсула из взаимоисключающих кнопок («Авто / Светлая / Тёмная»).
@@ -130,6 +131,30 @@ QLabel[cssClass="char-name"] {
     color: @text@;
     margin-top: 10px;
 }
+/* Редактор палитры */
+QLabel[cssClass="pal-group"] {
+    font-size: 14px;
+    font-weight: bold;
+    color: @accent2@;
+    margin-top: 10px;
+}
+QLabel[cssClass="pal-hint"] {
+    font-size: 13px;
+    color: @subtext@;
+}
+QLabel[cssClass="pal-warning"] {
+    font-size: 13px;
+    color: @yellow@;
+}
+/* Галочка «Фоны как в KDE» */
+QCheckBox {
+    color: @subtext@;
+    font-size: 14px;
+    spacing: 8px;
+}
+QCheckBox::indicator { width: 18px; height: 18px; image: url(@icon:cb_unchecked@); }
+QCheckBox::indicator:hover { image: url(@icon:cb_unchecked_hover@); }
+QCheckBox::indicator:checked { image: url(@icon:cb_checked@); }
 /* Переключатель режима «Авто / Светлая / Тёмная» (ModeSwitch) */
 QLabel[cssClass="mode-label"] {
     color: @subtext@;
@@ -309,10 +334,73 @@ class Ui_MainWindow:
         self.lbl_ui_colors.setProperty("cssClass", "subtitle")
         self.ed_form_layout.addWidget(self.lbl_ui_colors)
 
+        self.lbl_pal_hint = QLabel("")
+        self.lbl_pal_hint.setProperty("cssClass", "pal-hint")
+        self.lbl_pal_hint.setWordWrap(True)
+        self.ed_form_layout.addWidget(self.lbl_pal_hint)
+
+        # предпросмотр: ночь и день рядом, цвета те же, что получит схема KDE
+        self.palette_preview = PalettePreview()
+        self.ed_form_layout.addWidget(self.palette_preview)
+
+        self.lbl_pal_warning = QLabel("")
+        self.lbl_pal_warning.setProperty("cssClass", "pal-warning")
+        self.lbl_pal_warning.setWordWrap(True)
+        self.lbl_pal_warning.setVisible(False)
+        self.ed_form_layout.addWidget(self.lbl_pal_warning)
+
+        # какую половину пары правим: ночь или день
+        mode_row = QWidget()
+        mode_lo = QHBoxLayout(mode_row)
+        mode_lo.setContentsMargins(0, 4, 0, 0)
+        self.btn_pal_night = QPushButton("Night")
+        self.btn_pal_day = QPushButton("Day")
+        for b in (self.btn_pal_night, self.btn_pal_day):
+            b.setProperty("cssClass", "open-terminal-btn")
+            b.setProperty("variant", "neutral")
+            b.setCheckable(True)
+            b.setAutoExclusive(True)
+            mode_lo.addWidget(b)
+        self.btn_pal_night.setChecked(True)
+        mode_lo.addStretch()
+        self.ed_form_layout.addWidget(mode_row)
+
+        self.lbl_pal_mode_note = QLabel("")
+        self.lbl_pal_mode_note.setProperty("cssClass", "pal-hint")
+        self.lbl_pal_mode_note.setWordWrap(True)
+        self.lbl_pal_mode_note.setVisible(False)
+        self.ed_form_layout.addWidget(self.lbl_pal_mode_note)
+
         self.ui_colors_container = QWidget()
         self.ui_colors_layout = QGridLayout(self.ui_colors_container)
         self.ui_colors_layout.setHorizontalSpacing(16)
         self.ed_form_layout.addWidget(self.ui_colors_container)
+
+        pal_buttons = QWidget()
+        pal_buttons_lo = QHBoxLayout(pal_buttons)
+        pal_buttons_lo.setContentsMargins(0, 8, 0, 0)
+        self.btn_pal_more = QPushButton("More colors")
+        self.btn_pal_more.setProperty("cssClass", "open-terminal-btn")
+        self.btn_pal_more.setProperty("variant", "neutral")
+        self.btn_pal_more.setCheckable(True)
+        self.btn_pal_reset = QPushButton("Restore default colors")
+        self.btn_pal_reset.setProperty("cssClass", "open-terminal-btn")
+        self.btn_pal_reset.setProperty("variant", "neutral")
+        self.btn_pal_reset_day = QPushButton("Restore day colors")
+        self.btn_pal_reset_day.setProperty("cssClass", "open-terminal-btn")
+        self.btn_pal_reset_day.setProperty("variant", "neutral")
+        pal_buttons_lo.addWidget(self.btn_pal_more)
+        pal_buttons_lo.addStretch()
+        pal_buttons_lo.addWidget(self.btn_pal_reset_day)
+        pal_buttons_lo.addWidget(self.btn_pal_reset)
+        self.ed_form_layout.addWidget(pal_buttons)
+
+        # «Дополнительно»: спрятано, пока не нажата кнопка
+        self.pal_more_container = QWidget()
+        self.pal_more_layout = QGridLayout(self.pal_more_container)
+        self.pal_more_layout.setHorizontalSpacing(16)
+        self.pal_more_container.setVisible(False)
+        self.ed_form_layout.addWidget(self.pal_more_container)
 
         self.lbl_konsole_colors = QLabel("Konsole Colors (RGB)")
         self.lbl_konsole_colors.setProperty("cssClass", "subtitle")

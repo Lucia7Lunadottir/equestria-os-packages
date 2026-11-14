@@ -24,7 +24,7 @@ from PyQt6.QtCore import QPointF, Qt
 from PyQt6.QtGui import QAction, QColor, QPainter, QPalette, QPen, QPixmap, QPolygonF
 from PyQt6.QtWidgets import QApplication, QMenu, QWidget
 
-from . import live_i18n, themes as kit_themes
+from . import live_i18n, palette as kit_palette, themes as kit_themes
 
 
 _TOKEN = re.compile(r"@([a-z_0-9]+)(?:([/%])(\d{1,3}))?@")
@@ -118,28 +118,12 @@ def _is_text_property(text: str, pos: int) -> bool:
 
 
 def contrast(a: str, b: str) -> float:
-    def lum(h):
-        c = QColor(h)
-        ch = [x / 255 for x in (c.red(), c.green(), c.blue())]
-        ch = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in ch]
-        return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2]
-    la, lb = sorted((lum(a), lum(b)), reverse=True)
-    return (la + 0.05) / (lb + 0.05)
+    return kit_palette.contrast(a, b)   # правила цвета общие с KDE-схемами (palette.py, без Qt)
 
 
 def readable(color: str, background: str, target: float = 4.5) -> str:
     """Тот же оттенок, осветлённый (на тёмном фоне) до контраста ≥ target."""
-    if contrast(color, background) >= target:
-        return color
-    c = QColor(color)
-    h, s, l, _ = c.getHslF()
-    dark_bg = QColor(background).lightnessF() < 0.5
-    for _ in range(40):
-        l = min(1.0, l + 0.025) if dark_bg else max(0.0, l - 0.025)
-        cand = QColor.fromHslF(max(h, 0.0), s, l).name()
-        if contrast(cand, background) >= target:
-            return cand
-    return cand
+    return kit_palette.readable(color, background, target)
 
 
 def theme_color(role: str, alpha: int = 255) -> QColor:
@@ -166,24 +150,10 @@ def text_color(role: str) -> QColor:
 
 
 # ---------------------------------------------------------------- светлый вариант темы
-_LIGHT_LEVELS = {"base": .965, "mantle": .935, "crust": .895,
-                 "surface0": .915, "surface1": .87, "surface2": .80}
-
-
 def light_variant(theme: dict) -> dict:
-    """Светлая палитра из тёмной палитры персонажа: тот же оттенок фона (чуть тонированный),
-    тёмный текст, акцент и статусы того же оттенка, но затемнённые до читаемого контраста.
-    Порядок «глубины» ролей сохранён: mantle/crust темнее base, как в тёмной теме."""
-    base = QColor(theme["base"])
-    hue = max(base.hslHueF(), 0.0)
-    tint = min(base.hslSaturationF(), .35)
-    out = {k: QColor.fromHslF(hue, tint, lvl).name() for k, lvl in _LIGHT_LEVELS.items()}
-    out["text"] = QColor.fromHslF(hue, min(tint, .25), .14).name()
-    out["subtext"] = QColor.fromHslF(hue, min(tint, .20), .36).name()
-    for key in ("accent", "accent2", "green", "red", "yellow"):
-        if key in theme:
-            out[key] = readable(theme[key], out["base"], 3.2)
-    return out
+    """Светлая палитра из тёмной палитры персонажа (правила — в palette.py: те же,
+    по которым строится светлая цветовая схема KDE, чтобы Dolphin и приложения совпадали)."""
+    return kit_palette.light_variant(theme)
 
 
 def system_prefers_dark() -> bool | None:

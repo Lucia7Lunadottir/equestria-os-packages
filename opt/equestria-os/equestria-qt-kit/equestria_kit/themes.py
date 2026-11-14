@@ -55,7 +55,7 @@ class Theme:
     def from_mapping(cls, name: str, colors: dict, fallback: "Theme | None" = None) -> "Theme":
         merged = dict(fallback.colors) if fallback else {}
         for k, v in (colors or {}).items():
-            if k in KEYS and isinstance(v, str) and _is_hex(v):
+            if (k in KEYS or k.startswith("day_")) and isinstance(v, str) and _is_hex(v):
                 merged[k] = v
         return cls(str(name), merged)
 
@@ -178,6 +178,20 @@ DESIGNED_PALETTES = {
     "fluttershy": "#161a15 #121511 #0c0f0b #222820 #2d352a #3f4a3b #f6faee #b6c4ad #f4a6c8 #a8dc8a #ff7a8a #fbe58a #6fd3c7",
 }
 
+# Дневные палитры персонажей — тем же порядком ролей (base … yellow, accent2), что и ночные.
+# Фон просмотра почти белый с лёгким оттенком, окно и заголовок — заметнее тонированы в цвет
+# персонажа, акценты — те же «фирменные» цвета, затемнённые так, чтобы читаться на светлом.
+# Это значения по умолчанию для дня; свои правки пользователя (UiPaletteDay) важнее.
+DESIGNED_DAY_PALETTES = {
+    "sunset": "#fcf6f4 #f7e7e3 #f1d6d0 #faf1ee #f2d8d2 #e8bbb0 #291c19 #644f4a #c93a26 #3f7d1e #c4243f #946500 #a8620a",
+    "twilight": "#f8f5fb #ece5f4 #e0d4ed #f4f0f9 #e1d6ed #cbb8e0 #211929 #564a64 #7b3fb8 #2f7d4f #c42b45 #8a6700 #c2347a",
+    "rainbow": "#f4f8fb #e3eef6 #d1e3f0 #eff5fa #d3e4f0 #b3d0e6 #192329 #4a5964 #1565c0 #2a7d3a #d03030 #946400 #a86f00",
+    "rarity": "#f7f5fb #eae6f4 #dcd5ec #f3f0f8 #ddd7ed #c4b9df #1e1929 #514a64 #6a58c8 #2b7d57 #c8325a #857000 #1a86b8",
+    "pinkie": "#fcf4f8 #f7e3ed #f1d0e0 #faeef4 #f2d2e2 #e8b0cc #291921 #644a57 #d81b6a #2e8a4a #d62f2f #946800 #1b7fb0",
+    "applejack": "#fbf9f4 #f6efe3 #f0e4d1 #faf6ef #f0e6d3 #e6d3b3 #292319 #645a4a #c4710f #3f8a1f #c43a2a #8a6500 #4a8a1f",
+    "fluttershy": "#fbfbf5 #f4f4e5 #ecedd4 #f8f9f0 #edeed5 #e0e1b7 #292919 #63644a #d4659a #4b8a2a #d03a50 #947800 #12968a",
+}
+
 # Необязательные доп. роли: <роль>_text — цвет этой роли, когда она стоит ТЕКСТОМ
 # (заливки остаются яркими). У Пинки розовый текст пастельный, кнопки — яркие.
 DESIGNED_EXTRAS = {
@@ -215,19 +229,30 @@ class CharacterThemes:
             if colors:
                 yield Theme(str(c.get("DisplayName") or c.get("Id")), colors)
 
-    def palette_of(self, c: dict, fb: dict) -> dict | None:
-        designed = DESIGNED_PALETTES.get(str(c.get("Id")))
+    def palette_of(self, c: dict, fb: dict, overrides: bool = True) -> dict | None:
+        """Палитра персонажа: спроектированная (встроенные) или выведенная из его цветов,
+        поверх — правки пользователя из поля "UiPalette" (редактор палитры в переключателе тем).
+        overrides=False — без правок: то, к чему возвращает кнопка «Сбросить цвета»."""
+        cid = str(c.get("Id"))
+        designed = DESIGNED_PALETTES.get(cid)
         if designed:
-            pal = dict(zip(_PAL_KEYS, designed.split()))
-            pal.update(DESIGNED_EXTRAS.get(str(c.get("Id")), {}))
-            return pal
+            base = dict(zip(_PAL_KEYS, designed.split()))
+            base.update(DESIGNED_EXTRAS.get(cid, {}))
+            day = DESIGNED_DAY_PALETTES.get(cid)
+            if day:   # дневная палитра встроенного персонажа; light_variant ставит day_* поверх выведенного
+                base.update({f"day_{k}": v for k, v in zip(_PAL_KEYS, day.split())})
+        else:
+            base = self._derived(c)
         own = c.get("UiPalette")
-        if isinstance(own, dict):   # палитра, заданная пользователем для своего персонажа
-            base = self._derived(c) or dict(fb)
-            base.update({k: v for k, v in own.items()
-                         if (k in _PAL_KEYS or k.endswith("_text")) and isinstance(v, str) and _is_hex(v)})
-            return base
-        return self._derived(c)
+        if overrides and isinstance(own, dict) and own:
+            base = dict(base or fb)   # правки поверх; без своих цветов — поверх запасной палитры
+            base.update(clean_ui_palette(own))
+        # Свои цвета ДНЯ ("UiPaletteDay") — под ключами day_<роль>; light_variant ставит их поверх выведенного дня.
+        own_day = c.get("UiPaletteDay")
+        if overrides and isinstance(own_day, dict) and own_day:
+            base = dict(base or fb)
+            base.update({f"day_{k}": v for k, v in clean_ui_palette(own_day).items()})
+        return base
 
     def _derived(self, c: dict) -> dict | None:
         """Палитра для своего персонажа без UiPalette — по тем же правилам из его цветов."""
@@ -293,6 +318,27 @@ class CharacterThemes:
             return (self.user_dir / "state.json").stat().st_mtime
         except OSError:
             return 0.0
+
+
+def clean_ui_palette(own) -> dict:
+    """Из пользовательского "UiPalette" оставить только известные роли с настоящими цветами
+    (файл мог прийти из .eqtheme или быть записан вручную)."""
+    if not isinstance(own, dict):
+        return {}
+    return {k: v for k, v in own.items()
+            if (k in _PAL_KEYS or k.endswith("_text")) and isinstance(v, str) and _is_hex(v)}
+
+
+def fallback_colors() -> dict:
+    """Запасная палитра (Catppuccin Mocha) — основа для недостающих цветов."""
+    return dict(zip(KEYS, _FALLBACK_RAW.split()))
+
+
+def character_palette(c: dict, overrides: bool = True) -> dict:
+    """ЕДИНЫЙ источник цветов персонажа: из него красятся и приложения Equestria (через
+    реестр тем), и цветовые схемы KDE (kde_laf.py). c — словарь персонажа из characters.json."""
+    fb = fallback_colors()
+    return CHARACTERS.palette_of(c, fb, overrides) or fb
 
 
 def config_dir() -> Path:

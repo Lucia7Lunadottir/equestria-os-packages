@@ -134,7 +134,7 @@ class EmbeddedAppModule(BaseModule):
         mod = _load_app_module(lib, self.main_file, self.module_id)
         cls = getattr(mod, self.main_class)
 
-        self._win = cls()
+        self._win = cls(**self._ctor_kwargs(cls))
         self._win.setWindowFlag(Qt.WindowType.Widget, True)
 
         self._apply_embedded_style()
@@ -153,6 +153,19 @@ class EmbeddedAppModule(BaseModule):
         cl.setSpacing(0)
         cl.addWidget(self._win)
         return container
+
+    def _ctor_kwargs(self, cls) -> dict:
+        """Как запускает приложение само: шрифт Эквестрии для заголовков и имён (title_font_family),
+        если конструктор его принимает. Иначе встроенное окно выглядело иначе, чем отдельное."""
+        try:
+            params = inspect.signature(cls.__init__).parameters
+        except (TypeError, ValueError):
+            return {}
+        if "title_font_family" not in params:
+            return {}
+        font_path = os.path.join(self.lib_dir, "equestria_cyrillic.ttf")
+        families = font_families(font_path) if os.path.exists(font_path) else []
+        return {"title_font_family": families[0]} if families else {}
 
     def _apply_embedded_style(self) -> None:
         if self._win.styleSheet():
@@ -239,7 +252,11 @@ class EmbeddedAppModule(BaseModule):
                 continue
             container = getattr(holder, "lang_container", None)
             if isinstance(container, QWidget):
-                _collapse(container)
+                # В этом ряду может быть не только выбор языка, но и настройки самого приложения
+                # (режим «Авто/Светлая/Тёмная», галочка «Фоны как в KDE»): тогда прячем только язык.
+                has_own = (hasattr(win, "mode_switch") or bool(container.findChildren(QCheckBox)))
+                if not has_own:
+                    _collapse(container)
 
         # Language switchers are now QComboBox#LangCombo; legacy button
         # variants are still matched for older embedded apps.

@@ -8,7 +8,7 @@ import zipfile
 from pathlib import Path
 from dataclasses import dataclass, asdict, field, fields
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                             QPushButton, QFileDialog, QColorDialog, QMessageBox, QComboBox)
+                             QPushButton, QFileDialog, QColorDialog, QMessageBox, QComboBox, QCheckBox)
 from PyQt6.QtGui import QIcon, QPixmap, QColor, QFontDatabase, QFont
 from PyQt6.QtCore import Qt, QEvent
 try:
@@ -22,6 +22,7 @@ from equestria_kit.widgets import font_families
 from ui import Ui_MainWindow, APP_STYLE, ModeSwitch
 from character_card import CharacterCard
 import kde_laf
+import palette_model
 
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -67,6 +68,13 @@ class EGCharacter:
     HoverColor: str = "#28233C"
     IconPath: str = ""
     KonsoleTheme: KonsoleColorScheme = field(default_factory=KonsoleColorScheme)
+    # Только ПРАВКИ палитры пользователя ({роль: '#rrggbb'}); пусто — стандартные цвета персонажа.
+    # Остальное берётся из общей палитры equestria_kit, см. palette_model.py
+    UiPalette: dict = field(default_factory=dict)
+    # То же для ДНЯ: правки поверх дня, выведенного из ночи, и свой акцент выделения дня
+    # (пусто — как ночной AccentColor). Нужны, чтобы KDE-приложения днём читались так, как хочет пользователь.
+    UiPaletteDay: dict = field(default_factory=dict)
+    AccentColorDay: str = ""
 
 class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
     def __init__(self, title_font_family=None):
@@ -235,8 +243,8 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             return
         if not path.endswith(".eqtheme"):
             path += ".eqtheme"
-        data = asdict(char)
-        data["FormatVersion"] = 1
+        data = self._char_json(char)
+        data["FormatVersion"] = 3   # 2: + UiPalette; 3: + UiPaletteDay, AccentColorDay; старые файлы импортируются как раньше
         try:
             with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
                 z.writestr("character.json",
@@ -285,6 +293,9 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             char = EGCharacter(**{k: v for k, v in data.items() if k in known_char})
             char.KonsoleTheme = KonsoleColorScheme(
                 **{k: v for k, v in theme_dict.items() if k in known_kon})
+            char.UiPalette = palette_model.clean(char.UiPalette)   # файл чужой: только известные роли и цвета
+            char.UiPaletteDay = palette_model.clean(char.UiPaletteDay)
+            char.AccentColorDay = palette_model.clean_color(char.AccentColorDay)
 
             base_id = str(char.Id).strip() or "imported"
             new_id, n = base_id, 2
@@ -355,6 +366,12 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.lang_layout.addWidget(self.mode_switch)
         self.lang_layout.addSpacing(24)
         self.lang_layout.addWidget(self.lang_combo)
+        # «Фоны как в KDE» — настройка стиля целиком, поэтому здесь, рядом с режимом
+        self.chk_kde_bg = QCheckBox()
+        self.chk_kde_bg.setChecked(kde_laf.kde_backgrounds())
+        self.chk_kde_bg.toggled.connect(self.on_kde_bg_toggled)
+        self.lang_layout.addSpacing(24)
+        self.lang_layout.addWidget(self.chk_kde_bg)
         self.update_mode_texts()
         self.refresh_mode()
 
@@ -362,6 +379,8 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         if not hasattr(self, "mode_switch"):
             return
         self.lbl_mode.setText(self.t_str("ui.mode_label"))
+        self.chk_kde_bg.setText(self.pal_text("pal.kde_bg"))
+        self.chk_kde_bg.setToolTip(self.pal_text("pal.kde_bg_tip"))
         self.mode_switch.set_texts({m: self.t_str(f"ui.mode_{m}") for m in kde_laf.MODES},
                                    {m: self.t_str(f"ui.mode_{m}_tip") for m in kde_laf.MODES})
 
@@ -393,7 +412,19 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.lbl_fld_name.setText(self.t_str("ui.fld_name"))
         self.lbl_fld_wallpaper.setText(self.t_str("ui.fld_wallpaper"))
         self.lbl_fld_icon.setText(self.t_str("ui.fld_icon"))
-        self.lbl_ui_colors.setText(self.t_str("ui.lbl_ui_colors"))
+        self.lbl_ui_colors.setText(self.pal_text("pal.title"))
+        self.lbl_pal_hint.setText(self.pal_text("pal.hint"))
+        self.btn_pal_reset.setText(self.pal_text("pal.reset"))
+        self.btn_pal_reset.setToolTip(self.pal_text("pal.reset_tip"))
+        self.btn_pal_reset_day.setText(self.pal_text("pal.reset_day"))
+        self.btn_pal_reset_day.setToolTip(self.pal_text("pal.reset_day_tip"))
+        self.btn_pal_night.setText(self.pal_text("pal.night"))
+        self.btn_pal_day.setText(self.pal_text("pal.day"))
+        for b in (self.btn_pal_night, self.btn_pal_day):
+            b.setToolTip(self.pal_text("pal.mode_tip"))
+        self.lbl_pal_mode_note.setText(self.pal_text("pal.day_auto"))
+        self.on_palette_more_toggled(self.btn_pal_more.isChecked())
+        self.palette_preview.set_titles(self.pal_text("pal.night"), self.pal_text("pal.day"))
         self.lbl_konsole_colors.setText(self.t_str("ui.lbl_konsole_colors"))
         self.btn_delete.setText(self.t_str("ui.btn_delete"))
         self.btn_cancel.setText(self.t_str("ui.btn_cancel"))
@@ -414,6 +445,10 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.btn_delete.clicked.connect(self.confirm_delete_theme)
         self.btn_browse_wall.clicked.connect(self.browse_wallpaper)
         self.btn_browse_icon.clicked.connect(self.browse_icon)
+        self.btn_pal_more.toggled.connect(self.on_palette_more_toggled)
+        self.btn_pal_reset.clicked.connect(self.on_palette_reset)
+        self.btn_pal_reset_day.clicked.connect(self.on_palette_reset_day)
+        self.btn_pal_night.toggled.connect(self.on_palette_mode_changed)
 
 
     def load_characters(self):
@@ -444,6 +479,10 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             char = EGCharacter(**{k: v for k, v in c_dict.items() if k in known_char})
             char.KonsoleTheme = KonsoleColorScheme(
                 **{k: v for k, v in theme_dict.items() if k in known_kon})
+            char.UiPalette = palette_model.clean(char.UiPalette)
+            char.UiPaletteDay = palette_model.clean(char.UiPaletteDay)
+            char.AccentColorDay = palette_model.clean_color(char.AccentColorDay)
+            char.AccentColor = kde_laf.migrated_accent(char.Id, char.AccentColor)
             self.characters.append(char)
 
     def build_ui(self):
@@ -524,8 +563,156 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.fld_icon.setText(self.editing_character.IconPath)
         self.build_color_fields()
 
+    # ── Редактор палитры (логика — в palette_model.py, предпросмотр — в palette_editor.py) ──
+
+    def pal_text(self, key):
+        return palette_model.text(key, CATALOG.tr, self.current_lang)
+
+    def _char_dict(self):
+        return asdict(self.editing_character)
+
+    @staticmethod
+    def _paint_swatch(btn, hex_color):
+        btn.setStyleSheet(f"background-color: {hex_color}; border-radius: 4px; "
+                          "border: 1px solid rgba(255, 255, 255, 0.2);")
+
+    @property
+    def pal_variant(self):
+        """Какую половину пары сейчас правим: 'Dark' (ночь) или 'Light' (день)."""
+        return palette_model.DAY if self.btn_pal_day.isChecked() else palette_model.NIGHT
+
+    def _pal_label(self, key):
+        return self.pal_text("pal.@AccentColorDay" if key == "@AccentColorDay" else f"pal.{key}")
+
+    def _add_palette_field(self, layout, key, row, col):
+        container = QWidget()
+        container.setFixedWidth(250)
+        lo = QHBoxLayout(container)
+        lo.setContentsMargins(8, 4, 8, 4)
+        label = self._pal_label(key)
+        lbl = QLabel(label)
+        lbl.setProperty("cssClass", "editor-label")
+        lbl.setWordWrap(True)
+        btn = QPushButton()
+        btn.setFixedSize(40, 24)
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        variant = self.pal_variant
+        self._paint_swatch(btn, palette_model.value(self._char_dict(), key, variant))
+
+        def pick():
+            current = QColor(palette_model.value(self._char_dict(), key, variant))
+            new_col = QColorDialog.getColor(current, self, label)
+            if not new_col.isValid():
+                return
+            chd = self._char_dict()
+            palette_model.set_value(chd, key, new_col.name(), variant)
+            if key.startswith("@"):
+                setattr(self.editing_character, key[1:], chd[key[1:]])
+            else:
+                own = palette_model._own_key(variant)
+                setattr(self.editing_character, own, chd[own])
+            self.refresh_palette_editor()
+
+        btn.clicked.connect(pick)
+        lo.addWidget(lbl)
+        lo.addWidget(btn)
+        layout.addWidget(container, row, col)
+        self._pal_swatches[key] = btn
+
+    def _build_palette_fields(self):
+        """Поля палитры для выбранной половины (ночь/день). Пересобираются при переключении."""
+        for layout in (self.ui_colors_layout, self.pal_more_layout):
+            while layout.count():
+                item = layout.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+        self._pal_swatches = {}
+        day = self.pal_variant == palette_model.DAY
+        groups = palette_model.GROUPS_DAY if day else palette_model.GROUPS
+        advanced = palette_model.ADVANCED_DAY if day else palette_model.ADVANCED
+        row = 0
+        for group, keys in groups:
+            heading = QLabel(self.pal_text(f"pal.grp_{group}"))
+            heading.setProperty("cssClass", "pal-group")
+            self.ui_colors_layout.addWidget(heading, row, 0, 1, 3)
+            row += 1
+            for n, key in enumerate(keys):
+                self._add_palette_field(self.ui_colors_layout, key, row + n // 3, n % 3)
+            row += (len(keys) + 2) // 3
+        for n, key in enumerate(advanced):
+            self._add_palette_field(self.pal_more_layout, key, n // 3, n % 3)
+        self.btn_pal_reset_day.setVisible(day)
+        self.lbl_pal_mode_note.setVisible(day)
+
+    def on_kde_bg_toggled(self, checked):
+        """«Фоны как в KDE» — общая настройка стиля: фоны окон, списков, кнопок берутся из обычного
+        Breeze, цвета персонажей остаются в акценте и выделении. Свои цвета фонов не теряются.
+        Пересборка и повторное применение активной темы — в фоне (занимает секунду)."""
+        kde_laf.set_kde_backgrounds(bool(checked))
+        if hasattr(self, "palette_preview") and getattr(self, "editing_character", None):
+            self.refresh_palette_editor()
+        threading.Thread(target=self._refresh_kde_bg_bg, daemon=True).start()
+
+    def _refresh_kde_bg_bg(self):
+        with self._apply_lock:
+            try:
+                kde_laf.refresh_user_themes(self.day_night)
+            except Exception as e:  # noqa: BLE001
+                print(f"Не удалось обновить темы KDE: {e}", file=sys.stderr)
+
+    def on_palette_mode_changed(self, *_):
+        self._build_palette_fields()
+        self.refresh_palette_editor()
+
+    def refresh_palette_editor(self):
+        """Цвета на кнопках, предпросмотр и предупреждения — после любого изменения цвета."""
+        chd = self._char_dict()
+        variant = self.pal_variant
+        for key, btn in self._pal_swatches.items():
+            self._paint_swatch(btn, palette_model.value(chd, key, variant))
+        self.palette_preview.set_character(chd)
+        # предупреждаем о плохо читаемом тексте в выбранной половине (схема KDE всё равно подтянет текст)
+        pal = palette_model.day_effective(chd) if variant == palette_model.DAY else palette_model.effective(chd)
+        warns = kde_laf.palette_warnings(pal)
+        if warns:
+            fg, bg, ratio = warns[0]
+            msg = self.pal_text("pal.warn")
+            for i, v in enumerate((self.pal_text(f"pal.{fg}"), self.pal_text(f"pal.{bg}"), ratio)):
+                msg = msg.replace("{" + str(i) + "}", str(v))
+            self.lbl_pal_warning.setText(msg)
+        self.lbl_pal_warning.setVisible(bool(warns))
+
+    def on_palette_more_toggled(self, checked):
+        self.pal_more_container.setVisible(checked)
+        self.btn_pal_more.setText(self.pal_text("pal.less" if checked else "pal.more"))
+
+    def on_palette_reset(self):
+        """Вернуть стандартные цвета: правки палитры (ночи и дня) убираются, а у встроенного персонажа
+        акцент и цвет наведения возвращаются заводскими. Это правка в редакторе — запишется
+        по «Сохранить», а «Отмена» вернёт всё как было."""
+        char = self.editing_character
+        original = palette_model.system_character(self.editing_original_id or char.Id,
+                                                  os.path.join(SYSTEM_PATH, "characters.json"))
+        char.UiPalette = {}
+        char.UiPaletteDay = {}
+        char.AccentColorDay = ""
+        if original:
+            char.AccentColor = str(original.get("AccentColor") or char.AccentColor)
+            char.HoverColor = str(original.get("HoverColor") or char.HoverColor)
+            char.UiPaletteDay = palette_model.clean(original.get("UiPaletteDay"))
+            char.AccentColorDay = palette_model.clean_color(original.get("AccentColorDay"))
+        self._build_palette_fields()
+        self.refresh_palette_editor()
+
+    def on_palette_reset_day(self):
+        """Вернуть только цвета дня: он снова считается из ночной палитры."""
+        self.editing_character.UiPaletteDay = {}
+        self.editing_character.AccentColorDay = ""
+        self._build_palette_fields()
+        self.refresh_palette_editor()
+
     def build_color_fields(self):
-        for layout in [self.ui_colors_layout, self.konsole_colors_layout]:
+        for layout in [self.ui_colors_layout, self.pal_more_layout, self.konsole_colors_layout]:
             while layout.count():
                 item = layout.takeAt(0)
                 if item.widget(): item.widget().deleteLater()
@@ -555,9 +742,14 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             lo.addWidget(btn)
             parent_layout.addWidget(container, r, c)
 
-        create_color_field(self.ui_colors_layout, "Accent Color", "AccentColor", self.editing_character, True, 0, 0)
-        create_color_field(self.ui_colors_layout, "Hover Color", "HoverColor", self.editing_character, True, 0, 1)
+        # Палитра интерфейса: фоны, текст, акценты (+ «Дополнительно»). Редактор открывается на «Ночи».
+        self.btn_pal_night.blockSignals(True)
+        self.btn_pal_night.setChecked(True)
+        self.btn_pal_night.blockSignals(False)
+        self._build_palette_fields()
+        self.refresh_palette_editor()
 
+        # Цвета терминала Konsole — как раньше
         row, col = 0, 0
         for field_name in self.editing_character.KonsoleTheme.__dataclass_fields__:
             create_color_field(self.konsole_colors_layout, field_name, field_name, self.editing_character.KonsoleTheme, False, row, col)
@@ -583,6 +775,9 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         new_char.KonsoleTheme = KonsoleColorScheme(**asdict(src.KonsoleTheme))
         new_char.Id += "_copy"
         new_char.DisplayName += " (Copy)"
+        # у встроенных персонажей палитра привязана к Id — копия должна выглядеть так же, как исходник
+        new_char.UiPalette = palette_model.freeze(asdict(src), new_char.Id)
+        new_char.UiPaletteDay = palette_model.freeze_day(asdict(src), new_char.Id, new_char.UiPalette)
         self.editing_character = new_char
         self.open_editor()
 
@@ -599,6 +794,9 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.editing_character.IconPath = self.fld_icon.text()
         self.editing_character.KonsoleProfile = self.editing_character.Id
         self.editing_character.KdeColorScheme = self.editing_character.Id
+        self.editing_character.UiPalette = palette_model.clean(self.editing_character.UiPalette)
+        self.editing_character.UiPaletteDay = palette_model.clean(self.editing_character.UiPaletteDay)
+        self.editing_character.AccentColorDay = palette_model.clean_color(self.editing_character.AccentColorDay)
 
         if self.is_creating_new: self.characters.append(self.editing_character)
         else:
@@ -612,8 +810,10 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             # прежнее поведение: активному пересобираем тему, нового применяем
             self.on_character_selected(self.editing_character)
         else:
-            # правка неактивного персонажа не должна трогать текущую тему
+            # правка неактивного персонажа не должна трогать текущую тему; но если его пара
+            # уже есть в ~/.local — её файлы пересобираются, чтобы не отставали от палитры
             self.update_texts()
+            self.rebuild_user_kde_files(self.editing_character)
 
     def confirm_delete_theme(self):
         msg = self.t_str("ui.delete_msg")
@@ -627,8 +827,17 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
                 self._save_state()
                 self.update_texts()
 
+    @staticmethod
+    def _char_json(char):
+        """Персонаж для записи в JSON: пустые правки палитры (ночи/дня) не пишем (файл остаётся таким же, как раньше)."""
+        data = asdict(char)
+        for name in ("UiPalette", "UiPaletteDay", "AccentColorDay"):
+            if not data.get(name):
+                data.pop(name, None)
+        return data
+
     def save_json_and_refresh(self):
-        data = {"Characters": [asdict(c) for c in self.characters]}
+        data = {"Characters": [self._char_json(c) for c in self.characters]}
         json_path = os.path.join(USER_PATH, "characters.json")
         tmp_path = json_path + ".tmp"
         try:
@@ -821,22 +1030,41 @@ fi
         Пара собирается в ~/.local/share при каждом применении: так работают и
         свои персонажи, и изменённый в редакторе акцент встроенных. KDE получает
         пару в DefaultLight/DarkLookAndFeel и дальше сам меняет её по времени
-        суток; --keep-auto не даёт команде выключить эту автоматику."""
+        суток; --keep-auto не даёт команде выключить эту автоматику.
+
+        Цвета (фон окон, области просмотра, кнопки, текст…) приходят из полной цветовой
+        схемы персонажа. После применения проверяется, что KDE действительно взял её цвета;
+        если KDE отказался применять тему — возвращается прежняя пара и тема."""
+        ch = asdict(character)
         try:
-            kde_laf.build(Path.home() / ".local" / "share", [asdict(character)], Path(USER_PATH))
+            kde_laf.build(Path.home() / ".local" / "share", [ch], Path(USER_PATH))
         except OSError as e:
             print(f"Не удалось подготовить тему KDE: {e}")
             return
         light = kde_laf.laf_id(character.Id, "Light")
         dark = kde_laf.laf_id(character.Id, "Dark")
         dark_now = self.day_night.is_dark_now()  # до смены пары: была ли активна ночная половина
+        prev_pair, prev_theme = self.day_night.pair(), self.day_night.current()
         self.day_night.set_pair(light, dark)
         # Акцент теперь внутри цветовой схемы; старый «свой акцент» перебивал бы её
         subprocess.run(["kwriteconfig6", "--file", "kdeglobals", "--group", "General",
                         "--key", "AccentColor", "--delete"], capture_output=True)
-        self.day_night.apply(dark if dark_now else light)
+        if not kde_laf.apply_half(self.day_night, ch, "Dark" if dark_now else "Light"):
+            print(f"KDE не применил тему {light}/{dark}; возвращаю прежнюю", file=sys.stderr)
+            self.day_night.set_pair(*prev_pair)
+            if prev_theme:
+                self.day_night.apply(prev_theme)
+            return
         r, g, b = kde_laf._rgb(character.AccentColor)
         self._recolor_panel_sysmon(r, g, b)
+
+    def rebuild_user_kde_files(self, character):
+        """Файлы пары персонажа в ~/.local пересобираются, только если они уже есть и отстали
+        от его палитры. Применять ничего не нужно: тема не активна."""
+        try:
+            kde_laf.StalePairRefresher(Path.home() / ".local" / "share", Path(USER_PATH)).refresh([asdict(character)])
+        except Exception as e:  # noqa: BLE001
+            print(f"Не удалось обновить файлы темы KDE: {e}", file=sys.stderr)
 
     def refresh_stale_kde_themes(self):
         """Пары тем в ~/.local от старых версий — пересобрать (см. kde_laf.refresh_user_themes).
