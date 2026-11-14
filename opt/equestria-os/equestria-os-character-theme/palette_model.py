@@ -46,68 +46,9 @@ NIGHT, DAY = "Dark", "Light"     # как варианты в kde_laf
 EDITABLE = ("base", "mantle", "crust", "surface0", "surface1", "surface2",
             "text", "subtext", "accent", "accent2", "green", "red", "yellow")
 
-# Тексты по умолчанию (ru, en). Переводы из locales/*.json (ключи pal.*) важнее:
-# так редактор работает и там, где новых ключей в каталоге ещё нет.
-TEXTS = {
-    "pal.title": ("Цвета интерфейса", "Interface colors"),
-    "pal.hint": ("Эти цвета получают и приложения Equestria, и Dolphin, Kate и другие программы KDE. "
-                 "Ночные и дневные цвета выбираются отдельно. Пока вы не меняли день, он считается "
-                 "из ночной палитры автоматически.",
-                 "Equestria apps and KDE apps (Dolphin, Kate…) both use these colors. "
-                 "Night and day colors are set separately. Until you change the day colors, "
-                 "they are derived from the night palette automatically."),
-    "pal.mode_tip": ("Какую половину пары менять: ночь или день.",
-                     "Which half of the pair you are editing: night or day."),
-    "pal.day_auto": ("День, пока не тронут, считается из ночи. Любой выбранный здесь цвет остаётся как есть.",
-                     "Day is derived from night until you touch it. Any color you pick here is kept as is."),
-    "pal.kde_bg": ("Фоны как в KDE", "KDE-style backgrounds"),
-    "pal.kde_bg_tip": ("Для всего стиля: окна, списки, кнопки и заголовки — как в обычной теме KDE (Breeze). "
-                       "От персонажа остаются акцент и выделение. Ваши цвета фонов не удаляются.",
-                       "For the whole style: windows, lists, buttons and title bars look like the regular KDE "
-                       "theme (Breeze). Only the character's accent and selection remain. Your background colors are kept."),
-    "pal.reset_day": ("Вернуть цвета дня", "Restore day colors"),
-    "pal.reset_day_tip": ("Убирает ваши правки только дневных цветов: день снова считается из ночи.",
-                          "Discards only your day color edits: day is derived from night again."),
-    "pal.grp_surfaces": ("Фоны", "Backgrounds"),
-    "pal.grp_text": ("Текст", "Text"),
-    "pal.grp_accent": ("Акценты", "Accents"),
-    "pal.base": ("Фон окна и боковых панелей", "Window & sidebar background"),
-    "pal.mantle": ("Фон областей просмотра", "View background (files, lists)"),
-    "pal.crust": ("Заголовок и панели инструментов", "Title bar & toolbars"),
-    "pal.surface0": ("Кнопки и карточки", "Buttons & cards"),
-    "pal.text": ("Основной текст", "Main text"),
-    "pal.subtext": ("Второстепенный текст", "Secondary text"),
-    "pal.@AccentColor": ("Акцент и выделение", "Accent & selection"),
-    "pal.@AccentColorDay": ("Акцент и выделение (день)", "Accent & selection (day)"),
-    "pal.accent2": ("Второй акцент (ссылки)", "Second accent (links)"),
-    "pal.accent": ("Акцент приложений Equestria", "Equestria apps accent"),
-    "pal.surface1": ("Подсказки, наведение", "Tooltips, hover"),
-    "pal.surface2": ("Выключенные элементы", "Disabled elements"),
-    "pal.green": ("Успех", "Success"),
-    "pal.red": ("Ошибка", "Error"),
-    "pal.yellow": ("Предупреждение", "Warning"),
-    "pal.@HoverColor": ("Цвет при наведении", "Hover color"),
-    "pal.more": ("Дополнительно", "More colors"),
-    "pal.less": ("Скрыть дополнительные", "Hide more colors"),
-    "pal.reset": ("Вернуть стандартные цвета", "Restore default colors"),
-    "pal.reset_tip": ("Отменяет ваши правки цветов этого персонажа (после «Сохранить» — применится).",
-                      "Discards your color edits for this character (applied on Save)."),
-    "pal.night": ("Ночь", "Night"),
-    "pal.day": ("День", "Day"),
-    "pal.warn": ("Низкий контраст: {0} на фоне «{1}» — {2}:1. KDE подправит цвет текста, чтобы его можно было читать.",
-                 "Low contrast: {0} on “{1}” is {2}:1. KDE will adjust the text color so it stays readable."),
-    "pal.pick": ("Выберите цвет", "Pick a color"),
-}
-
-
 def text(key: str, tr=None, lang: str = "en") -> str:
-    """Текст интерфейса: перевод из каталога, а если его нет — встроенный."""
-    if tr is not None:
-        got = str(tr(key))
-        if got and got != key:
-            return got
-    ru, en = TEXTS.get(key, (key, key))
-    return ru if str(lang).lower().startswith("ru") else en
+    """Текст интерфейса из каталога переводов (locales/*.json, ключи pal.*)."""
+    return str(tr(key)) if tr is not None else key
 
 
 def clean(own) -> dict:
