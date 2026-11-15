@@ -1,0 +1,20 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Type=Application
+Name=Equestria Unity Log
+Comment=Monitor Unity build logs and shader compilation
+Comment[ru]=Просмотр лога сборки Unity и хода компиляции шейдеров
+Comment[de]=Unity-Buildlogs und Shader-Kompilierung verfolgen
+Comment[fr]=Suivre le journal de build Unity et la compilation des shaders
+Comment[es]=Ver el registro de compilación de Unity y el progreso de los shaders
+Comment[pt]=Acompanhar o registo de compilação do Unity e a compilação de shaders
+Comment[pl]=Monitoruj dziennik budowania Unity i kompilację shaderów
+Comment[uk]=Перегляд журналу збірки Unity та перебігу компіляції шейдерів
+Comment[zh]=监看 Unity 构建日志和着色器编译进度
+Comment[zh_TW]=監看 Unity 建置記錄與著色器編譯進度
+Comment[ja]=Unity のビルドログとシェーダーのコンパイル状況を表示
+Comment[ko]=Unity 빌드 로그 및 셰이더 컴파일 진행 상황 보기
+Exec=equestria-unity-log %f
+Icon=equestria-unity-log
+Categories=Development;Qt;
+Terminal=false

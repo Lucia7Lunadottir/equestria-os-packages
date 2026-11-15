@@ -1,0 +1,25 @@
+# Maintainer: Equestria OS
+pkgname=equestria-unity
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Native Equestria launcher for Unity projects, editors and packages"
+arch=('any')
+license=('GPL-3.0-or-later')
+depends=('git' 'python-pyqt6' 'equestria-qt-kit>=1.5')
+optdepends=('github-cli: GitHub account repository picker'
+            'glab: GitLab account repository picker'
+            'equestria-color-picker: Wayland screen color picker'
+            'equestria-unity-log: live Unity Editor log viewer')
+
+package() {
+    local lib="$pkgdir/usr/lib/$pkgname"
+    install -Dm644 -t "$lib" "$startdir"/*.py "$startdir/style.qss"
+    install -Dm644 "$startdir/README.md" "$pkgdir/usr/share/doc/$pkgname/README.md"
+    chmod 755 "$lib/equestria_unity.py"
+    install -Dm644 -t "$lib/locales" "$startdir"/locales/*.json
+    install -Dm644 -t "$pkgdir/usr/share/icons/hicolor/scalable/apps" "$startdir/$pkgname.svg"
+    ln -s "../../share/icons/hicolor/scalable/apps/$pkgname.svg" "$lib/$pkgname.svg"
+    install -Dm644 -t "$pkgdir/usr/share/applications" "$startdir/$pkgname.desktop"
+    install -d "$pkgdir/usr/bin"
+    ln -s "../lib/$pkgname/equestria_unity.py" "$pkgdir/usr/bin/$pkgname"
+}

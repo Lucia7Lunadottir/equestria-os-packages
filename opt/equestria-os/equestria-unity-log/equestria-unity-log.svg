@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Equestria Unity Log</title>
+  <defs>
+    <linearGradient id="frame" x2="1" y2="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#ce93d8"/>
+      <stop offset="1" stop-color="#7439a0"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="8" width="56" height="48" rx="9" fill="url(#frame)"/>
+  <rect x="8" y="15" width="48" height="37" rx="5" fill="#2d1b4e"/>
+  <g fill="none" stroke="#e1bee7" stroke-width="3" stroke-linecap="round">
+    <path d="M15 25h10M15 33h7M15 41h13"/>
+  </g>
+  <path d="m41 20 11 6-11 7-11-7z" fill="#fff3b0"/>
+  <path d="m30 28 10 6v12l-10-6z" fill="#f48fb1"/>
+  <path d="m42 34 10-6v12l-10 6z" fill="#ce93d8"/>
+</svg>

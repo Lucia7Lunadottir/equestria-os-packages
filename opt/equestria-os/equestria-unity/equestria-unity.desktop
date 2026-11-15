@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria Unity
+Comment=Manage Unity projects, editors and packages
+Comment[ru]=Проекты, редакторы и пакеты Unity
+Exec=equestria-unity
+Icon=equestria-unity
+Categories=Development;IDE;Qt;
+Terminal=false

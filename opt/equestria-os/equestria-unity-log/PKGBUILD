@@ -1,0 +1,20 @@
+# Maintainer: Equestria OS
+pkgname=equestria-unity-log
+pkgver=1.1
+pkgrel=2
+pkgdesc="Monitor Unity build logs and shader compilation"
+arch=('any')
+license=('GPL-3.0-or-later')
+depends=('python-pyqt6' 'equestria-qt-kit>=1.5')
+
+package() {
+    local appdir="$pkgdir/usr/lib/$pkgname"
+    install -Dm755 "$startdir/logwatch.py" "$appdir/logwatch.py"
+    install -Dm644 -t "$appdir" "$startdir"/{logcore,logview,localization}.py
+    install -Dm644 -t "$pkgdir/usr/share/$pkgname/locales" "$startdir"/locales/*.json
+    install -Dm644 -t "$pkgdir/usr/share/applications" "$startdir/$pkgname.desktop"
+    install -Dm644 -t "$pkgdir/usr/share/icons/hicolor/scalable/apps" "$startdir/$pkgname.svg"
+    ln -s "../../share/icons/hicolor/scalable/apps/$pkgname.svg" "$appdir/$pkgname.svg"
+    install -d "$pkgdir/usr/bin"
+    ln -s "../lib/$pkgname/logwatch.py" "$pkgdir/usr/bin/$pkgname"
+}
