@@ -1,5 +1,7 @@
 PackageName;DisplayName;CategoryKey;DescKey
 unityhub;Unity Hub;cat.gamedev;desc.unityhub
+equestria-unity;Equestria Unity;cat.gamedev;desc.equestria-unity
+equestria-unity-log;Equestria Unity Log;cat.gamedev;desc.equestria-unity-log
 steampipe-gui;SteamPipe GUI;cat.gamedev;desc.steampipe-gui
 rider;Rider;cat.gamedev;desc.rider
 code;Visual Studio Code;cat.gamedev;desc.code
@@ -23,6 +25,8 @@ audacity;Audacity;cat.media;desc.audacity
 haruna;Haruna;cat.media;desc.haruna
 vlc;VLC;cat.media;desc.vlc
 obs-studio;OBS Studio;cat.media;desc.obs
+equestria-recorder;Equestria Recorder;cat.media;desc.equestria-recorder
+equestria-audio-converter;Equestria Converter;cat.media;desc.equestria-audio-converter
 libreoffice-fresh;LibreOffice;cat.office;desc.libreoffice
 okular;Okular;cat.office;desc.okular
 firefox;Firefox;cat.web;desc.firefox
