@@ -183,14 +183,14 @@ class NewProject(Page):
         if editor:
             folder = self.config.get("template_root")
             self.background(lambda: library.templates(editor, folder), lambda result: self.fill_local(version, result))
-        self.feedback.setText(tr("release.loading"))
+        call(self.feedback.setText, tr("release.loading"))
         self.jobs.run("templates:" + version, tr("template.browse"), ["templates", "--editor-version", version],
                       lambda data: self.fill_remote(version, data), structured=True,
                       failed=lambda reason: self.catalog_error(version, reason))
 
     def catalog_error(self, version, reason):
         if version == self.version.currentData():
-            self.feedback.setText(tr("release.error", reason))
+            call(self.feedback.setText, tr("release.error", reason))
 
     def fill_local(self, version, result):
         if version == self.version.currentData() and not isinstance(result, Exception):
@@ -215,7 +215,7 @@ class NewProject(Page):
                                str(entry.get("description") or ""), path if path and path.is_file() else None,
                                entry["name"], str(entry.get("type", "")).lower(),
                                preview))
-        self.feedback.setText(tr("template.local_only") if not any(t.path is None for t in self.remote) else "")
+        call(self.feedback.setText, tr("template.local_only") if not any(t.path is None for t in self.remote) else "")
         self.merge()
 
     def merge(self):

@@ -24,7 +24,7 @@ def when(stamp):
     unit, value = library.ago_parts(stamp)
     if unit == "none":
         return ""
-    return str(tr("time.date", value) if unit == "date" else tr(f"time.{unit}", value))
+    return tr(f"time.{unit}", value)
 
 
 class FoldersPanel(QWidget):
@@ -78,8 +78,14 @@ class FoldersPanel(QWidget):
         for path in self.folders():
             item = QListWidgetItem(short(path), self.view)
             item.setData(Qt.ItemDataRole.UserRole, path)
-            item.setToolTip(path if Path(path).is_dir() else str(tr("folders.missing")))
         self.remove_button.setEnabled(self.view.count() > 0)
+        self.update_tooltips()
+
+    def update_tooltips(self):
+        for row in range(self.view.count()):
+            item = self.view.item(row)
+            path = item.data(Qt.ItemDataRole.UserRole)
+            item.setToolTip(path if Path(path).is_dir() else str(tr("folders.missing")))
 
     def add(self):
         path = QFileDialog.getExistingDirectory(self, str(tr("folders.add")), str(Path.home()))
@@ -181,9 +187,8 @@ class Projects(Page):
         self.tree.setRootIsDecorated(False)
         self.tree.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.tree.setVerticalScrollMode(QTreeWidget.ScrollMode.ScrollPerPixel)
-        self.tree.setHeaderLabels(["", "", "", "", ""])
-        for column, key in ((1, "projects.col_name"), (2, "projects.col_version"), (3, "projects.col_modified")):
-            call(self.tree.headerItem().setText, column, tr(key))
+        call(self.tree.setHeaderLabels, ["", tr("projects.col_name"), tr("projects.col_version"),
+                                         tr("projects.col_modified"), ""])
         header = self.tree.header()
         header.setSectionsClickable(True)
         header.setStretchLastSection(False)
@@ -371,7 +376,7 @@ class Projects(Page):
         cell_layout.addStretch()
         self.tree.setItemWidget(item, 2, cell)
 
-        stamp = QLabel(when(max(self.opened(project), project.modified)))
+        stamp = call(QLabel, when(max(self.opened(project), project.modified)))
         stamp.setObjectName("hint")
         self.tree.setItemWidget(item, 3, stamp)
 

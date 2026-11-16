@@ -10,7 +10,7 @@ from kit import call, qt, tr
 
 def chip(text, level=""):
     """Small rounded label. level: '', 'ok', 'warn' or 'fail'."""
-    label = QLabel(str(text))
+    label = call(QLabel, text)
     label.setObjectName("chip")
     label.setProperty("lvl", level)
     return label

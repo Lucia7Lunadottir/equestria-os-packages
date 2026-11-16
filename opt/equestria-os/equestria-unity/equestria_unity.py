@@ -12,6 +12,7 @@ from store import Store
 from kit import APP_ID, ROOT, LauncherThemes, SingleInstance, call, catalog, qt, tr
 from installs import Installs
 from jobs import Jobs
+from equestria_kit.live_i18n import join_text, format_text
 from newproject import NewProject
 from preferences import Account, Settings
 from projects import Packages, Projects
@@ -163,10 +164,10 @@ class Launcher(QMainWindow):
             row = QHBoxLayout(frame)
             row.setContentsMargins(14, 8, 8, 8)
             row.setSpacing(10)
-            label = QLabel(str(text))
+            label = call(QLabel, text)
             label.setWordWrap(True)
             row.addWidget(label, 1)
-            button = QPushButton(str(action))
+            button = call(QPushButton, action)
             button.setObjectName("small")
             button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
             button.clicked.connect(lambda _=False, c=callback: c())
@@ -353,14 +354,14 @@ class Launcher(QMainWindow):
             self.busy.setRange(0, 100)
             self.busy.setValue(percent)
             self.busy.setTextVisible(False)
-            self.notice.setText(f"{self.jobs.running[key][0]} · {percent}%")
+            call(self.notice.setText, format_text("{} · {}%", self.jobs.running[key][0], percent))
 
     def job_status(self):
         """Operations in progress are always visible in the top bar, not only in the log."""
         if self.jobs.active():
             self.busy.setRange(0, 0)
             self.hide_timer.stop()
-            names = " · ".join(name for name, _ in self.jobs.active().values())
+            names = join_text(" · ", (name for name, _ in self.jobs.active().values()))
             call(self.notice.setText, tr("jobs.working", names))
             self.pill.setProperty("lvl", "")
             self.pill.style().unpolish(self.pill)

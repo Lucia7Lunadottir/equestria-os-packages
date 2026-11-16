@@ -121,7 +121,7 @@ class Installs(Page):
         name = QLabel(f"{title_of(version)}  ({version})")
         name.setObjectName("rowname")
         top.addWidget(name)
-        top.addWidget(chip(str(tr("editor.projects_count", count))))
+        top.addWidget(chip(tr("editor.projects_count", count)))
         top.addStretch()
         column.addLayout(top)
         path = QLabel(str(exe))

@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS
 pkgname=equestria-unity
 pkgver=1.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Native Equestria launcher for Unity projects, editors and packages"
 arch=('any')
 license=('GPL-3.0-or-later')

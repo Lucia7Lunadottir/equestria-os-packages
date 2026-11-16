@@ -1,4 +1,6 @@
 from pathlib import Path
+from PyQt6.QtCore import QSignalBlocker
+from PyQt6.QtWidgets import QComboBox
 import sys
 
 APP_ID = "equestria-unity"
@@ -14,6 +16,37 @@ catalog = live_i18n.Catalog(APP_ID, __file__)
 tr = catalog.tr
 call = live_i18n.call
 
+
+
+class LanguageSelector(QComboBox):
+    """Refresh installed language packs when the launcher settings list opens."""
+    def __init__(self, parent, after):
+        super().__init__(parent)
+        self.after = after
+        self.populate()
+        call(self.setToolTip, catalog.library_text("kit.language"))
+        self.activated.connect(self.choose)
+
+    def populate(self):
+        with QSignalBlocker(self):
+            self.clear()
+            for code in catalog.languages:
+                self.addItem(catalog.language_name(code), code)
+            self.setCurrentIndex(self.findData(catalog.lang))
+
+    def showPopup(self):
+        available = live_i18n.Catalog(APP_ID, __file__)
+        if available.translations != catalog.translations:
+            catalog.translations = available.translations
+            catalog.languages = available.languages
+            catalog.set_language(catalog.lang, persist=False)
+            self.after()
+        self.populate()
+        super().showPopup()
+
+    def choose(self, index):
+        catalog.set_language(self.itemData(index))
+        self.after()
 
 
 class LauncherThemes:

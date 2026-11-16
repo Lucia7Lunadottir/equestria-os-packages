@@ -13,7 +13,7 @@ class Jobs(QObject):
     message = pyqtSignal(str)
     activity = pyqtSignal()
     progress = pyqtSignal(str, int)
-    finished = pyqtSignal(str, bool)  # title, success: lets the window show the result
+    finished = pyqtSignal(object, bool)  # title, success: lets the window show the result
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -28,7 +28,7 @@ class Jobs(QObject):
         if not cli:
             self.message.emit(str(tr("cli.hint")))
             if failed:
-                failed(str(tr("cli.hint")))
+                failed(tr("cli.hint"))
             return
         args = ["--no-pager", "--no-color"]
         if arguments[:2] != ["auth", "login"]:
@@ -69,7 +69,7 @@ class Jobs(QObject):
             for name, value in (environment or {}).items():
                 env.insert(name, value)
             process.setProcessEnvironment(env)
-        self.running[key] = (str(title), process)
+        self.running[key] = (title, process)
         if quiet:
             self.quiet.add(key)
         else:
@@ -134,7 +134,7 @@ class Jobs(QObject):
                 failed(detail or str(code))
             if not quiet:
                 self.message.emit(f"{'✓' if ok else '✗'} {title} ({code})")
-                self.finished.emit(str(title), ok)
+                self.finished.emit(title, ok)
             process.deleteLater()
             if not quiet:
                 self.activity.emit()

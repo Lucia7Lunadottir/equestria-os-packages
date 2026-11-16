@@ -15,7 +15,7 @@ import library
 import cli_download
 from controls import Page, chip
 from projects import FoldersPanel
-from kit import ROOT, call, catalog, qt, tr
+from kit import ROOT, LanguageSelector, call, qt, tr
 from equestria_kit import themes
 
 
@@ -92,7 +92,6 @@ class Settings(Page):
         inner = self.block(installs, "settings.retries", "settings.retries_help")
         self.retries = QSpinBox()
         self.retries.setRange(-1, 10)
-        call(self.retries.setSpecialValueText, tr("settings.default"))
         saved = self.config.get("install_retries")
         self.retries.setValue(saved if isinstance(saved, int) and saved >= 0 else -1)
         self.retries.valueChanged.connect(lambda v: self.save("install_retries", v if v >= 0 else None))
@@ -113,7 +112,7 @@ class Settings(Page):
         self.check(inner, "tray.editor", "editor_to_tray", False)
         self.check(inner, "tray.close", "close_to_tray", True)
         inner = self.block(appearance, "settings.language", "settings.language_help")
-        self.language_combo = catalog.selector(self, after=self.refresh)
+        self.language_combo = LanguageSelector(self, self.language_changed)
         self.actions(inner).addWidget(self.language_combo)
 
         alerts = self.section("settings.notifications")
@@ -240,6 +239,13 @@ class Settings(Page):
         checkbox.toggled.connect(lambda enabled: self.save(key, enabled))
         layout.addWidget(checkbox)
 
+    def language_changed(self):
+        self.refresh()
+        self.window.new.show_cards()
+        self.window.account.show_state()
+        for panel in self.findChildren(FoldersPanel):
+            panel.update_tooltips()
+
     def choose_downloads(self):
         path = self.folder("settings.download_location", self.download_path.text())
         if path:
@@ -274,6 +280,7 @@ class Settings(Page):
         self.renderer.blockSignals(False)
         if not self.arguments.hasFocus():
             self.arguments.setText(self.config.get("arguments"))
+        self.retries.setSpecialValueText(str(tr("settings.default")))
         retries = self.config.get("install_retries")
         self.retries.blockSignals(True)
         self.retries.setValue(-1 if retries is None else retries)
@@ -415,7 +422,7 @@ class Account(Page):
         cli = library.executable("unity")
         if not cli:
             for name in self.state:
-                self.got(name, str(tr("cli.hint")))
+                self.got(name, tr("cli.hint"))
             return
         base = ["--no-pager", "--no-color", "--non-interactive"]
         for key, args, name in (("auth-status", ["auth", "status"], "auth"),
@@ -426,9 +433,15 @@ class Account(Page):
 
     def got(self, name, text):
         self.state[name] = text
+        self.show_state()
+
+    def show_state(self):
         views = {"auth": [self.auth_view], "license": [self.license_view, self.window.pages["settings"].license_info]}
-        for view in views[name]:
-            view.setPlainText(text)
+        for name, targets in views.items():
+            text = str(self.state[name])
+            for view in targets:
+                if view.toPlainText() != text:
+                    view.setPlainText(text)
 
     def run(self, key, args):
         """Run an account command; whatever it changes is re-read afterwards so no screen shows old data."""

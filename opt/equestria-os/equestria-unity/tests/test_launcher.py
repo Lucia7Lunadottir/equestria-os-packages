@@ -294,7 +294,10 @@ class LauncherTests(unittest.TestCase):
         window = Launcher(APP)
         self.addCleanup(window.close)
         self.addCleanup(catalog.set_language, catalog.lang, persist=False)
-        box = window.pages["settings"].language_combo
+        settings = window.pages["settings"]
+        box = settings.language_combo
+        window.new.merge()
+        window.new.name.setText("My draft")
         with patch.object(catalog, "preference", self.root / "language.json"):
             for path in welcome.glob("*.json"):
                 with self.subTest(language=path.stem):
@@ -306,6 +309,11 @@ class LauncherTests(unittest.TestCase):
                     box.setCurrentIndex(index)
                     box.activated.emit(index)
                     self.assertEqual(window.nav["projects"].text(), entries["nav.projects"])
+                    self.assertEqual(window.projects.tree.headerItem().text(2), entries["projects.col_version"])
+                    self.assertEqual(settings.retries.specialValueText(), entries["settings.default"])
+                    self.assertEqual(window.new.about.text(), entries["new.empty_hint"])
+                    self.assertEqual(window.new.name.text(), "My draft")
+                    self.assertEqual(window.account.auth_view.toPlainText(), entries["cli.hint"])
                     self.assertEqual(json.loads(catalog.preference.read_text()), path.stem)
 
     def test_locale_bindings_and_release_order(self):
