@@ -32,6 +32,7 @@ class Change:
     kind: str         # modified, added, deleted, renamed, untracked, conflict
     path: str         # relative to the repository root
     original: str = ""   # the old path of a renamed file
+    code: str = ""       # for a conflict: who did what, e.g. UU both changed, UD deleted by them, DU deleted by us
 
     def paths(self):
         """Everything a commit of this change has to include (both sides of a rename)."""
@@ -46,6 +47,14 @@ class GitStatus:
     ahead: int = 0                # commits made here and not sent yet
     behind: int = 0               # commits on the server (as of the last fetch) not received yet
     changes: list = field(default_factory=list)
+    operation: str = ""           # an unfinished merge, rebase, cherry-pick or revert ("" when none)
+
+    def conflicts(self):
+        return [c for c in self.changes if c.kind == "conflict"]
+
+    def local_changes(self):
+        """Changes that a merge could mix with (files not in Git yet are left alone by a merge)."""
+        return [c for c in self.changes if c.kind not in ("untracked", "conflict")]
 
 
 @dataclass
@@ -54,6 +63,7 @@ class GitInfo:
     branch: str       # current branch, or a short commit when detached
     remote: str       # URL of origin (or the first remote), "" without one
     status: GitStatus | None = None
+    git_dir: Path | None = None   # the .git folder (of this worktree)
 
     @property
     def web(self):
@@ -122,7 +132,7 @@ def read_git(folder):
             if url:
                 remotes.setdefault(current, url.group(1))
     remote = remotes.get("origin") or next(iter(remotes.values()), "")
-    return GitInfo(root, branch, remote)
+    return GitInfo(root, branch, remote, git_dir=dot)
 
 
 KINDS = {"M": "modified", "T": "modified", "A": "added", "D": "deleted", "R": "renamed", "C": "added"}
@@ -164,7 +174,8 @@ def read_status(root, timeout=10):
             status.changes.append(Change("renamed", parts[9], original))
             index += 1  # the original path was its own record
         elif record.startswith("u "):
-            status.changes.append(Change("conflict", record.split(" ", 10)[10]))
+            parts = record.split(" ", 10)
+            status.changes.append(Change("conflict", parts[10], code=parts[1]))
         elif record.startswith("? "):
             status.changes.append(Change("untracked", record[2:]))
     return status
@@ -186,7 +197,20 @@ def read_git_with_status(folder, cache=None):
         if info.root not in cache:
             cache[info.root] = read_status(info.root)
         info.status = cache[info.root]
+        if info.status is not None:
+            info.status.operation = current_operation(info.git_dir)
     return info
+
+
+def current_operation(git_dir):
+    """The operation Git is in the middle of, from the files it keeps while one is unfinished."""
+    if git_dir is None:
+        return ""
+    for marker, name in (("MERGE_HEAD", "merge"), ("rebase-merge", "rebase"), ("rebase-apply", "rebase"),
+                         ("CHERRY_PICK_HEAD", "cherry-pick"), ("REVERT_HEAD", "revert")):
+        if (git_dir / marker).exists():
+            return name
+    return ""
 
 
 def read_branches(root, timeout=10):

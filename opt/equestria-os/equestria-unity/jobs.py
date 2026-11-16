@@ -28,8 +28,17 @@ class Output:
 
 
 class TextOutput(Output):
+    def __init__(self):
+        self.tail = ""
+
     def feed(self, chunk):
-        return chunk.decode(errors="replace").strip()
+        text = chunk.decode(errors="replace").strip()
+        self.tail = (self.tail + "\n" + text)[-1800:]
+        return text
+
+    def finish(self, ok, detail, report):
+        # Some programs explain a failure on stdout (git: "CONFLICT … Automatic merge failed").
+        return ok, None, detail or self.tail.strip()
 
 
 class CaptureOutput(Output):

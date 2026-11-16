@@ -22,6 +22,17 @@ GIT_ERRORS = (("please tell me who you are", "git.err.identity"), ("author ident
               ("has no upstream branch", "git.err.no_upstream"), ("no configured push destination", "git.err.no_remote"))
 
 
+# Git's messages are recognised by their English wording (explain_git, stopped_on_conflicts), so Git must not
+# translate them; the user still reads a translated explanation. No password prompt on a terminal nobody sees.
+GIT_ENVIRONMENT = {"GIT_TERMINAL_PROMPT": "0", "LC_ALL": "C"}
+
+
+def stopped_on_conflicts(output):
+    """A merge that stopped because files conflict: an expected outcome, the panel takes over from here."""
+    text = str(output).casefold()
+    return "automatic merge failed" in text or "conflict (" in text
+
+
 def explain_git(output):
     """A sentence about the failure for the dialog; Git's own output stays in the log."""
     text = str(output).casefold()
@@ -48,23 +59,25 @@ class GitActions:
     def __init__(self, page):
         self.page = page
 
-    def run(self, program, args, label, cwd=None, done=None, capture=False, failed=None):
+    def run(self, program, args, label, cwd=None, done=None, capture=False, failed=None, expected=None):
+        """expected(output): a failure that is a normal outcome (no warning, `failed` still runs)."""
         exe = unity_paths.executable(program)
         if not exe:
             self.page.warning(tr("git.missing", program))
             return
         def fail(reason):
-            self.page.warning(explain_git(reason))
+            if not (expected and expected(reason)):
+                self.page.warning(explain_git(reason))
             if failed:
                 failed(reason)
         # Never wait for a password on a terminal nobody sees: credentials come from helpers or SSH keys.
         # Talking to a server may take a while, but never forever.
         self.page.jobs.run_process(f"git:{cwd or program}", label, exe, args, done, cwd=cwd, capture=capture,
-                                   failed=fail, environment={"GIT_TERMINAL_PROMPT": "0"},
+                                   failed=fail, environment=GIT_ENVIRONMENT,
                                    timeout=0 if args[:1] == ["clone"] else 300)
 
-    def git(self, root, args, label, done=None, failed=None):
-        self.run("git", ["--no-pager", *args], label, root, done, failed=failed)
+    def git(self, root, args, label, done=None, failed=None, expected=None):
+        self.run("git", ["--no-pager", *args], label, root, done, failed=failed, expected=expected)
 
     # ---- everyday operations (used by the Git panel) ----------------------------------------------
 
@@ -89,6 +102,16 @@ class GitActions:
             self.git(root, ["--literal-pathspecs", "commit", "-m", message, "--", *paths], tr("git.commit"),
                      done, failed)
         self.git(root, ["--literal-pathspecs", "add", "--all", "--", *paths], tr("git.commit"), staged, failed)
+
+    def merge_remote(self, root, done, failed=None):
+        """Join the server's commits with ours when both sides have new ones: a merge commit, nothing rewritten."""
+        self.git(root, ["pull", "--no-rebase", "--no-edit"], tr("git.merge_remote"), done, failed,
+                 expected=stopped_on_conflicts)
+
+    def merge_branch(self, root, branch, done, failed=None):
+        """Merge another local branch into the current one."""
+        self.git(root, ["merge", "--no-edit", branch], tr("git.merge_branch"), done, failed,
+                 expected=stopped_on_conflicts)
 
     def switch(self, root, branch, done, failed=None):
         self.git(root, ["switch", "--", branch], tr("git.switch"), done, failed)

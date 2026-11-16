@@ -43,6 +43,11 @@ class LauncherTests(unittest.TestCase):
         # No real Unity CLI in tests: each test that needs one gives its own fake.
         self.enterContext(patch.object(UnityCli, "executable", return_value=None))
         self.enterContext(patch.object(ReleaseInfo, "request"))  # no network in tests
+        # A dialog nobody expected would wait forever for a click: record it and fail the test instead.
+        self.dialogs = []
+        for kind in ("warning", "question", "information"):
+            self.enterContext(patch(f"controls.QMessageBox.{kind}", side_effect=lambda *a, **k: self.dialogs.append(a)))
+        self.addCleanup(lambda: self.assertEqual(self.dialogs, [], "unexpected dialog"))
 
     def fake_cli(self, reply, *, delay=0.0):
         """A Unity CLI that saves its arguments in self.captured and prints `reply`."""
@@ -293,6 +298,145 @@ class LauncherTests(unittest.TestCase):
         self.assertEqual(git("-C", remote, "rev-parse", "main"), git("-C", work, "rev-parse", "HEAD"))
         self.assertEqual(panel.info.status.ahead, 0)
         self.assertEqual(str(explain_git("fatal: Author identity unknown")), str(catalog.tr("git.err.identity")))
+
+    # ---- merging and conflicts (real repositories) -----------------------------------------------
+
+    def merge_setup(self, base_files, server_files, local_files):
+        """A clone ("Game") of a server repository; then the server and the clone both change files.
+        Returns (window, panel, git) with the panel open on the clone."""
+        import subprocess
+        from git_info import read_git_with_status
+        from git_panel import GitPanel
+
+        def git(*args):
+            return subprocess.check_output(["git", *map(str, args)], stderr=subprocess.STDOUT).decode().strip()
+
+        def write(folder, files):
+            for name, text in files.items():
+                path = folder / name
+                if text is None:
+                    path.unlink()
+                else:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(text)
+            git("-C", folder, "add", "--all")
+            git("-C", folder, "commit", "-q", "-m", f"change in {folder.name}")
+
+        server, work, other = self.root / "server.git", self.root / "Game", self.root / "Colleague"
+        git("init", "--bare", "-q", "-b", "main", server)
+        for clone in (work, other):
+            git("clone", "-q", server, clone) if clone == work else None
+        git("-C", work, "config", "user.email", "pony@example.invalid")
+        git("-C", work, "config", "user.name", "Pony")
+        write(work, {"ProjectSettings/ProjectVersion.txt": "m_EditorVersion: 6000.6.7f1\n", **base_files})
+        git("-C", work, "push", "-q", "-u", "origin", "main")
+        git("clone", "-q", server, other)
+        git("-C", other, "config", "user.email", "friend@example.invalid")
+        git("-C", other, "config", "user.name", "Friend")
+        write(other, server_files)
+        git("-C", other, "push", "-q")
+        write(work, local_files)
+        git("-C", work, "fetch", "-q")
+        window = self.launcher()
+        project = Project(work, "6000.6.7f1", 0, read_git_with_status(work))
+        panel = GitPanel(window.projects.git_tools, project, window.projects)
+        self.addCleanup(panel.deleteLater)
+        self.settle(window, panel)
+        return window, panel, git
+
+    def settle(self, window, panel):
+        for _ in range(500):
+            if not (panel.busy or window.jobs.running or window.projects.workers):
+                break
+            QTest.qWait(20)
+        QTest.qWait(50)
+
+    def test_diverged_merge_with_server_stops_on_conflict_and_finishes(self):
+        window, panel, git = self.merge_setup({"notes.txt": "one\n"}, {"notes.txt": "server\n"},
+                                              {"notes.txt": "mine\n"})
+        work = panel.info.root
+        self.assertTrue(panel.merge_remote_button.isVisible() or not panel.merge_remote_button.isHidden())
+        self.assertFalse(panel.push_button.isEnabled())                 # the server is ahead: no sending
+        warnings = []
+        with patch.object(window.projects, "confirm", return_value=True), \
+                patch.object(window.projects, "warning", side_effect=warnings.append):
+            panel.merge_remote()
+            self.settle(window, panel)
+            self.assertEqual(warnings, [])                              # a conflict is expected, not an error
+            self.assertEqual(panel.info.status.operation, "merge")
+            self.assertEqual([c.path for c in panel.info.status.conflicts()], ["notes.txt"])
+            self.assertFalse(panel.finish_button.isEnabled())
+            self.assertFalse(panel.commit_button.isVisible())           # no ordinary commit during a merge
+            panel.take("ours")
+            self.settle(window, panel)
+            self.assertTrue(panel.finish_button.isEnabled())
+            panel.finish_merge()
+            self.settle(window, panel)
+        self.assertEqual(panel.info.status.operation, "")
+        self.assertEqual((work / "notes.txt").read_text(), "mine\n")
+        self.assertEqual(len(git("-C", work, "log", "-1", "--format=%P").split()), 2)   # a merge commit
+
+    def test_cancelling_a_merge_restores_everything(self):
+        window, panel, git = self.merge_setup({"notes.txt": "one\n"}, {"notes.txt": "server\n"},
+                                              {"notes.txt": "mine\n"})
+        work = panel.info.root
+        before = git("-C", work, "rev-parse", "HEAD")
+        git("-C", work, "branch", "theirs", "origin/main")
+        panel.reload()
+        self.settle(window, panel)
+        with patch.object(window.projects, "confirm", return_value=True), patch("git_panel.QInputDialog.getItem",
+                                                                               return_value=("theirs", True)):
+            panel.merge_branch()
+            self.settle(window, panel)
+            self.assertEqual(panel.info.status.operation, "merge")
+            panel.abort_merge()
+            self.settle(window, panel)
+        self.assertEqual(panel.info.status.operation, "")
+        self.assertEqual(git("-C", work, "rev-parse", "HEAD"), before)
+        self.assertEqual((work / "notes.txt").read_text(), "mine\n")
+
+    def test_taking_their_side_of_a_file_they_deleted_deletes_it(self):
+        window, panel, git = self.merge_setup({"old.txt": "one\n"}, {"old.txt": None}, {"old.txt": "mine\n"})
+        with patch.object(window.projects, "confirm", return_value=True):
+            panel.merge_remote()
+            self.settle(window, panel)
+            conflict = panel.info.status.conflicts()[0]
+            self.assertEqual(conflict.code, "UD")
+            panel.take("theirs")
+            self.settle(window, panel)
+        self.assertFalse((panel.info.root / "old.txt").exists())
+        self.assertEqual(panel.info.status.conflicts(), [])
+
+    def test_unity_smart_merge_resolves_a_scene_after_the_merge_stops(self):
+        tool_editor = Path("/mnt/Main/Unity/Hub/Editor/6000.6.7f1/Editor/Unity")
+        if not (tool_editor.parent / "Data/Tools/UnityYAMLMerge").is_file():
+            self.skipTest("no UnityYAMLMerge on this machine")
+
+        def scene(name, tag):
+            return ("%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n--- !u!1 &100\nGameObject:\n  m_ObjectHideFlags: 0\n"
+                    "  serializedVersion: 6\n  m_Component:\n  - component: {fileID: 101}\n  m_Layer: 0\n"
+                    f"  m_Name: {name}\n  m_TagString: {tag}\n  m_IsActive: 1\n--- !u!4 &101\nTransform:\n"
+                    "  m_ObjectHideFlags: 0\n  m_GameObject: {fileID: 100}\n  serializedVersion: 2\n"
+                    "  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}\n  m_LocalPosition: {x: 0, y: 0, z: 0}\n"
+                    "  m_LocalScale: {x: 1, y: 1, z: 1}\n  m_ConstrainProportionsScale: 0\n  m_Children: []\n"
+                    "  m_Father: {fileID: 0}\n  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}\n")
+        # Neighbouring lines: Git sees one conflicting hunk, Unity sees two different properties.
+        window, panel, git = self.merge_setup({"Assets/Main.unity": scene("Player", "Untagged")},
+                                              {"Assets/Main.unity": scene("Player", "Respawn")},
+                                              {"Assets/Main.unity": scene("Hero", "Untagged")})
+        window.editors.found = {"6000.6.7f1": tool_editor}
+        notices = []
+        with patch.object(window.projects, "confirm", return_value=True), \
+                patch.object(window, "notify", side_effect=lambda *a, **k: notices.append(a)):
+            panel.merge_remote()
+            self.settle(window, panel)
+            self.settle(window, panel)   # the smart merge runs after the merge stopped
+        self.assertEqual(panel.info.status.operation, "merge")
+        self.assertEqual(panel.info.status.conflicts(), [])
+        text = (panel.info.root / "Assets/Main.unity").read_text()
+        self.assertIn("m_Name: Hero", text)
+        self.assertIn("m_TagString: Respawn", text)
+        self.assertTrue(any("1" in str(n[0]) for n in notices))
 
     def test_x11_create_and_renderer_affect_only_child(self):
         template = self.root / "3D URP.tgz"
