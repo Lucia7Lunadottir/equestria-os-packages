@@ -55,7 +55,7 @@ FIELDS = {
     "opened": Field((dict,), {}, _number_map),           # path -> time it was last opened
     "scan_dirs": Field((list, NONE), None, lambda v: _strings(v)),  # None = not chosen yet, use the usual folders
     "scan_depth": Field((int,), 3, lambda v: 1 <= v <= 8),
-    "sort_key": Field((str,), "recent", lambda v: v in ("recent", "name", "version")),
+    "sort_key": Field((str,), "recent", lambda v: v in ("recent", "name", "version", "favorite")),
     "sort_down": Field((bool,), True),
     "project_arguments": Field((dict,), {}, _text_map),
     # editors and downloads

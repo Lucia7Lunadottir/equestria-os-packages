@@ -5,10 +5,12 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtWidgets import (QComboBox, QFrame, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
                              QPushButton, QVBoxLayout)
 
-import library
+import editor_launch
+from formatting import bad_name, free_name
+from local_templates import Template, templates
+from project_scanner import scan_dirs
 from controls import Page, icon
 from previews import Previews
-from installs import version_key
 from kit import call, tr
 
 # Word in the template name -> short mark on its picture. First match wins.
@@ -26,6 +28,7 @@ class NewProject(Page):
 
     def __init__(self, window):
         super().__init__(window)
+        self.editors = window.editors
         self.previews = Previews(self)
         self.previews.ready.connect(self.preview_ready)
         self.templates = []
@@ -100,7 +103,7 @@ class NewProject(Page):
         self.empty.setObjectName("hint")
         self.empty.setWordWrap(True)
         self.empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        left.addWidget(self.empty)
+        left.addWidget(self.empty, 1)  # takes the grid's place when there is no Editor yet
         self.to_editors = self.button(left, "new.get_editor", lambda: self.window.go("editors"))
 
         panel = QFrame()
@@ -142,21 +145,23 @@ class NewProject(Page):
         self.make.clicked.connect(self.create)
         inner.addWidget(self.make)
         self.reset_location()
+        self.editors.changed.connect(self.refresh)
 
     # ---- state -----------------------------------------------------------------------------
 
     def reset_location(self):
-        dirs = library.scan_dirs(self.config.snapshot())
+        dirs = scan_dirs(self.config.snapshot())
         folder = next((d for d in dirs if Path(d).is_dir()), str(Path.home() / "UnityProjects"))
         self.location.setText(folder)
-        self.name.setText(library.free_name(folder))
+        self.location.setCursorPosition(0)  # show where the path starts
+        self.name.setText(free_name(folder))
 
     def refresh(self):
         keep = self.version.currentData()
-        found = library.editors(self.config.snapshot())
+        found = self.editors.versions()
         self.version.blockSignals(True)
         self.version.clear()
-        for name in sorted(found, key=version_key, reverse=True):
+        for name in found:
             self.version.addItem(name, name)
         index = self.version.findData(keep)
         self.version.setCurrentIndex(max(0, index))
@@ -179,14 +184,13 @@ class NewProject(Page):
         if not version:
             self.feedback.clear()
             return
-        editor = library.editors(self.config.snapshot()).get(version)
+        editor = self.editors.get(version)
         if editor:
             folder = self.config.get("template_root")
-            self.background(lambda: library.templates(editor, folder), lambda result: self.fill_local(version, result))
+            self.background(lambda: templates(editor, folder), lambda result: self.fill_local(version, result))
         call(self.feedback.setText, tr("release.loading"))
-        self.jobs.run("templates:" + version, tr("template.browse"), ["templates", "--editor-version", version],
-                      lambda data: self.fill_remote(version, data), structured=True,
-                      failed=lambda reason: self.catalog_error(version, reason))
+        self.cli.templates(version, lambda data: self.fill_remote(version, data),
+                           lambda reason: self.catalog_error(version, reason))
 
     def catalog_error(self, version, reason):
         if version == self.version.currentData():
@@ -211,7 +215,7 @@ class NewProject(Page):
             path = Path(archive) if isinstance(archive, str) and archive else None
             preview = next((value for value in (entry.get("previewImage"), entry.get("dynamicIcon"))
                             if isinstance(value, str) and value.startswith("https://")), "")
-            self.remote.append(library.Template(str(entry.get("displayName") or entry["name"]),
+            self.remote.append(Template(str(entry.get("displayName") or entry["name"]),
                                str(entry.get("description") or ""), path if path and path.is_file() else None,
                                entry["name"], str(entry.get("type", "")).lower(),
                                preview))
@@ -244,7 +248,7 @@ class NewProject(Page):
             item = QListWidgetItem(preview or icon("∅" if template is None else glyph(title), title, QSize(270, 140)),
                                    title + ("  ↓" if template and not template.path else ""), self.grid)
             item.setData(Qt.ItemDataRole.UserRole, template)
-            item.setSizeHint(QSize(300, 206))
+            item.setSizeHint(QSize(288, 196))  # smaller than the grid cell: rounded cards must not touch
             if template == keep:
                 self.grid.setCurrentItem(item)
         if not self.grid.currentItem() and self.grid.count():
@@ -281,7 +285,7 @@ class NewProject(Page):
 
     def problem(self):
         name = self.name.text().strip()
-        if library.bad_name(name):
+        if bad_name(name):
             return tr("project.bad_name")
         if not self.location.text().strip():
             return tr("project.parent")
@@ -313,7 +317,8 @@ class NewProject(Page):
         path = self.folder("project.parent", self.location.text())
         if path:
             self.location.setText(path)
-            self.name.setText(library.free_name(path, self.name.text().strip() or "My project"))
+            self.location.setCursorPosition(0)
+            self.name.setText(free_name(path, self.name.text().strip() or "My project"))
 
     # ---- create ----------------------------------------------------------------------------
 
@@ -321,7 +326,7 @@ class NewProject(Page):
         if self.problem():
             return
         version = self.version.currentData()
-        editor = library.editors(self.config.snapshot()).get(version)
+        editor = self.editors.get(version)
         if not editor:
             self.warning(tr("editor.none"))
             return
@@ -329,21 +334,18 @@ class NewProject(Page):
         path = self.target()
         if template and template.path is None:
             def created(_):
-                self.window.projects.remember_created(path)
-                self.window.projects.refresh()
+                self.window.catalog.remember_created(path)
                 self.window.go("projects")
                 self.reset_location()
-            self.jobs.run(str(path), tr("new.create"),
-                          ["projects", "create", path.name, "--output-dir", str(path.parent),
-                           "--editor-version", version, "--template", template.identifier, "--no-cloud"], created)
+            self.cli.create_project(path, version, template.identifier, created)
             return
         try:
-            library.launch(editor, path, self.config.snapshot(), create=True,
+            editor_launch.launch(editor, path, self.config.snapshot(), create=True,
                            template=template.path if template else None)
         except (ValueError, OSError) as error:
             self.warning(error)
             return
-        self.window.projects.remember_created(path)
+        self.window.catalog.remember_created(path)
         self.jobs.message.emit(str(tr("new.started", path.name, version)))
         self.window.go("projects")
         self.reset_location()

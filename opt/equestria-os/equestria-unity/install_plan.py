@@ -5,11 +5,10 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QLabel,
-                             QTreeWidget, QTreeWidgetItem, QVBoxLayout)
+from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem
 
-from kit import tr
-from releases import ENDPOINT
+from kit import call, tr
+from release_info import ENDPOINT
 
 
 def size_text(amount):
@@ -36,17 +35,20 @@ def fetch_manifest(version):
     raise ValueError(tr("install.no_manifest"))
 
 
-class Components(QDialog):
-    def __init__(self, version, modules, chosen, accepted, parent):
+class ModuleTree(QTreeWidget):
+    """Modules of one release as a checkable tree. Installed modules are shown checked and locked;
+    a checked child checks its parent, an unchecked parent unchecks its children."""
+
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(f"Unity {version} · {tr('editor.module_list')}")
-        self.resize(630, 490)
-        layout = QVBoxLayout(self)
-        layout.addWidget(QLabel(tr("install.choose")))
-        self.tree = QTreeWidget()
-        self.tree.setHeaderLabels([tr("editor.module_list"), tr("install.size")])
-        self.tree.setColumnWidth(0, 420)
-        layout.addWidget(self.tree)
+        call(self.setHeaderLabels, [tr("install.step_modules"), tr("install.size")])
+        self.setColumnWidth(0, 420)
+        self.nodes = []
+        self.itemChanged.connect(self.dependencies)
+
+    def show_modules(self, modules, chosen=()):
+        self.blockSignals(True)
+        self.clear()
         self.nodes = []
 
         def add(entries, parent_item):
@@ -63,17 +65,9 @@ class Components(QDialog):
                 self.nodes.append((item, identifier, installed))
                 add(entry.get("subModules") or [], item)
 
-        add(modules, self.tree.invisibleRootItem())
-        self.tree.itemChanged.connect(self.dependencies)
-        self.tree.expandToDepth(0)
-        self.eula = QCheckBox(tr("editor.eula"))
-        self.eula.setChecked(accepted)
-        layout.addWidget(self.eula)
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setText(tr("install.next"))
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
+        add(modules, self.invisibleRootItem())
+        self.expandToDepth(0)
+        self.blockSignals(False)
 
     def dependencies(self, item, column):
         if column != 0:
@@ -89,5 +83,10 @@ class Components(QDialog):
                     child.setCheckState(0, Qt.CheckState.Unchecked)
 
     def selection(self):
+        """IDs of the modules to download (already installed ones are left out)."""
         return [identifier for item, identifier, installed in self.nodes
                 if not installed and item.checkState(0) == Qt.CheckState.Checked]
+
+    def names(self, identifiers):
+        known = {identifier: item.text(0) for item, identifier, _ in self.nodes}
+        return [known.get(identifier, identifier) for identifier in identifiers]

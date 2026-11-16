@@ -1,10 +1,11 @@
 import shlex
-from PyQt6.QtCore import QRectF, QSize, Qt, QThread, QUrl, pyqtSignal
+from PyQt6 import sip
+from PyQt6.QtCore import QObject, QRectF, QSize, Qt, QThread, QUrl, pyqtSignal
 from PyQt6.QtGui import QColor, QDesktopServices, QFont, QIcon, QLinearGradient, QPainter, QPainterPath, QPixmap
 from PyQt6.QtWidgets import (QFileDialog, QFrame, QHBoxLayout, QInputDialog, QLabel,
                              QMessageBox, QPushButton, QVBoxLayout, QWidget)
 
-import library
+from formatting import seed
 from kit import call, qt, tr
 
 
@@ -16,7 +17,7 @@ def chip(text, level=""):
     return label
 
 
-def tile(text, seed=None, width=48, height=48, radius=12):
+def tile(text, key=None, width=48, height=48, radius=12):
     """Coloured square with a letter. The colour comes from the name, so every project looks different."""
     pixmap = QPixmap(width, height)
     pixmap.fill(QColor(0, 0, 0, 0))
@@ -26,7 +27,7 @@ def tile(text, seed=None, width=48, height=48, radius=12):
     clip.addRoundedRect(QRectF(0, 0, width, height), radius, radius)
     painter.setClipPath(clip)
     gradient = QLinearGradient(0, 0, width, height)
-    gradient.setColorAt(0, QColor.fromHsl(library.seed(seed or text) % 360, 110, 70))
+    gradient.setColorAt(0, QColor.fromHsl(seed(text if key is None else key) % 360, 110, 70))
     gradient.setColorAt(1, qt.theme_color("surface1"))
     painter.fillRect(0, 0, width, height, gradient)
     font = QFont()
@@ -39,8 +40,8 @@ def tile(text, seed=None, width=48, height=48, radius=12):
     return pixmap
 
 
-def icon(text, seed=None, size=QSize(220, 124)):
-    return QIcon(tile(text, seed, size.width(), size.height(), 14))
+def icon(text, key=None, size=QSize(220, 124)):
+    return QIcon(tile(text, key, size.width(), size.height(), 14))
 
 
 def open_folder(path):
@@ -63,13 +64,49 @@ class Worker(QThread):
         self.done.emit(result)
 
 
+# Threads whose owner may already be deleted. A QThread destroyed while it still runs kills the whole
+# process, so a worker is kept here, without a Qt parent, until its function has returned.
+RUNNING = set()
+
+
+class Background(QObject):
+    """Functions running off the interface thread for one owner. The result reaches `done` only while
+    the owner still exists; busy() tells whether something is still running."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.workers = set()
+
+    def run(self, function, done):
+        worker = Worker(function)
+        self.workers.add(worker)
+        RUNNING.add(worker)
+
+        def deliver(result):
+            if not sip.isdeleted(self):
+                done(result)
+
+        def finished():
+            self.workers.discard(worker)
+            RUNNING.discard(worker)
+            worker.deleteLater()
+
+        worker.done.connect(deliver, Qt.ConnectionType.QueuedConnection)
+        worker.finished.connect(finished, Qt.ConnectionType.QueuedConnection)
+        worker.start()
+
+    def busy(self):
+        return bool(self.workers)
+
+
 class Page(QWidget):
     def __init__(self, window):
         super().__init__()
         self.window = window
         self.config = window.config
         self.jobs = window.jobs
-        self.workers = set()
+        self.cli = window.cli
+        self.tasks = Background(self)
         self.layout_box = QVBoxLayout(self)
         self.layout_box.setContentsMargins(28, 24, 28, 20)
         self.layout_box.setSpacing(14)
@@ -145,13 +182,8 @@ class Page(QWidget):
         return self.config.set(key, value)
 
     def background(self, function, done):
-        worker = Worker(function, self)
-        self.workers.add(worker)
+        self.tasks.run(function, done)
 
-        def finished():
-            self.workers.discard(worker)
-            worker.deleteLater()
-
-        worker.done.connect(done, Qt.ConnectionType.QueuedConnection)
-        worker.finished.connect(finished, Qt.ConnectionType.QueuedConnection)
-        worker.start()
+    @property
+    def workers(self):
+        return self.tasks.workers

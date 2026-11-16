@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QComboBox
 import sys
 
 APP_ID = "equestria-unity"
+VERSION = "1.2.0"  # keep in step with pkgver in PKGBUILD
 ROOT = Path(__file__).resolve().parent
 checkout = ROOT.parent / "equestria-qt-kit"
 if (checkout / "equestria_kit/live_i18n.py").is_file():

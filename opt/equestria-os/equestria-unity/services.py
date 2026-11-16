@@ -2,7 +2,6 @@ from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QDesktopServices
 
 from controls import Page
-from kit import tr
 
 
 class Services(Page):
@@ -13,7 +12,7 @@ class Services(Page):
         self.button(row, "template.browse", self.templates)
         self.button(row, "template.sample", lambda: self.templates("sample"))
         self.button(row, "template.create", self.template_from_project)
-        self.button(row, "cloud.status", lambda: self.jobs.run("cloud", tr("cloud.status"), ["cloud", "status"]))
+        self.button(row, "cloud.status", self.cli.cloud_status)
         self.button(row, "cloud.link", self.link)
         row.addStretch()
         row = self.row()
@@ -35,11 +34,11 @@ class Services(Page):
         if path:
             name = self.text("template.id", "com.example.template.")
             if name and not name.startswith("-"):
-                self.jobs.run(path, tr("template.create"), ["templates", "create", path, "--name", name])
+                self.cli.create_template(path, name)
 
     def link(self):
         path = self.folder("project.select")
         if path:
             cloud = self.text("cloud.id")
             if cloud and not cloud.startswith("-"):
-                self.jobs.run(path, tr("cloud.link"), ["projects", "link", "cloud", path, "--cloud-project", cloud])
+                self.cli.link_cloud(path, cloud)

@@ -1,20 +1,17 @@
 import os
-import re
 from pathlib import Path
 
-from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFileDialog, QHBoxLayout, QLabel,
-                             QLineEdit, QListWidget, QListWidgetItem, QMenu, QPushButton, QVBoxLayout, QWidget)
+from PyQt6.QtCore import QSize, Qt, QUrl
+from PyQt6.QtGui import QDesktopServices
+from PyQt6.QtWidgets import (QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMenu,
+                             QPushButton, QVBoxLayout, QWidget)
 
-import library
 from controls import Page, chip, open_folder, tile
+from editor_locator import install_size
+from install_plan import size_text
+from install_wizard import InstallWizard
 from kit import call, tr
-from releases import ReleaseBrowser
-from install_plan import Components, fetch_manifest, linux_download, size_text
-
-from versions import RELEASE, version_key
-
-MODULE = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_.+\-]*")
+from versions import RELEASE, release_title, version_key
 
 PLATFORMS = {"AndroidPlayer": "Android", "LinuxStandaloneSupport": "Linux", "WebGLSupport": "Web",
              "WindowsStandaloneSupport": "Windows", "iOSSupport": "iOS", "MacStandaloneSupport": "Mac",
@@ -27,17 +24,15 @@ def modules_of(editor):
     return sorted(names)
 
 
-def title_of(version):
-    match = RELEASE.fullmatch(version)
-    if not match:
-        return f"Unity {version}"
-    major, minor = int(match.group(1)), match.group(2)
-    return f"Unity {major // 1000 if major >= 6000 else major}.{minor}"
-
-
 class Installs(Page):
     def __init__(self, window):
         super().__init__(window)
+        self.editors = window.editors
+        self.catalog = window.catalog
+        self.releases = window.release_info
+        self.releases.updated.connect(self.refresh)
+        self.sizes = {}          # Editor folder -> bytes on disk, measured once per session
+        self.measuring = set()
         self.search = QLineEdit()
         call(self.search.setPlaceholderText, tr("editor.search"))
         self.search.setMinimumWidth(200)
@@ -49,7 +44,7 @@ class Installs(Page):
         self.install_button = call(QPushButton, tr("editor.install_button"))
         self.install_button.setObjectName("primary")
         self.install_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.install_button.clicked.connect(self.releases)
+        self.install_button.clicked.connect(lambda: self.open_wizard())
         self.title("nav.editors", self.search, locate, self.install_button)
 
         self.installed = QListWidget()
@@ -58,47 +53,17 @@ class Installs(Page):
         self.installed.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.installed.setSelectionMode(QListWidget.SelectionMode.NoSelection)
         self.layout_box.addWidget(self.installed, 1)
-
-        self.form, inner = self.card()
-        heading = call(QLabel, tr("editor.install_title"))
-        heading.setObjectName("h2")
-        inner.addWidget(heading)
-        bar = QHBoxLayout()
-        self.version = QComboBox()
-        self.version.setEditable(True)
-        self.version.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
-        self.version.lineEdit().setPlaceholderText("6000.6.9f1")
-        bar.addWidget(self.version, 1)
-        self.button(bar, "editor.releases", self.releases)
-        inner.addLayout(bar)
-        self.modules = QLineEdit()
-        call(self.modules.setPlaceholderText, tr("editor.module_ids"))
-        inner.addWidget(self.modules)
-        self.eula = call(QCheckBox, tr("editor.eula"))
-        inner.addWidget(self.eula)
-        bar = QHBoxLayout()
-        self.button(bar, "editor.module_list", lambda: self.install("list"))
-        self.button(bar, "editor.preview", lambda: self.install("preview"))
-        self.button(bar, "editor.modules", lambda: self.install("modules"))
-        bar.addStretch()
-        self.button(bar, "editor.install", lambda: self.install("install"), "primary")
-        inner.addLayout(bar)
-        self.form.setVisible(False)
-        self.versions = []
+        self.editors.changed.connect(self.refresh)
+        self.catalog.changed.connect(self.refresh)
+        self.config.changed.connect(lambda key: key == "editor_profiles" and self.refresh())
         self.refresh()
 
-    def show_install(self, on):
-        self.form.setVisible(on)
-
     def refresh(self, *_):
-        found = library.editors(self.config.snapshot())
-        self.versions = sorted(found, key=version_key, reverse=True)
-        counts = {}
-        for project in self.window.projects.items:
-            counts[project.version] = counts.get(project.version, 0) + 1
+        found = self.editors.all()
+        counts = self.catalog.usage()
         query = self.search.text().strip().casefold()
         self.installed.clear()
-        for version in self.versions:
+        for version in self.editors.versions():
             if query and query not in version.casefold() and query not in str(found[version]).casefold():
                 continue
             item = QListWidgetItem(self.installed)
@@ -118,15 +83,42 @@ class Installs(Page):
         column = QVBoxLayout()
         column.setSpacing(4)
         top = QHBoxLayout()
-        name = QLabel(f"{title_of(version)}  ({version})")
+        name = QLabel(f"{release_title(version)}  ({version})")
         name.setObjectName("rowname")
         top.addWidget(name)
         top.addWidget(chip(tr("editor.projects_count", count)))
+        info = self.releases.get(version)
+        if info.get("stream"):
+            top.addWidget(chip(info["stream"], "ok" if info["stream"] == "LTS" else ""))
+        label = self.releases.label(version)
+        if label:
+            alert = call(QPushButton, "⚠  " + tr("editor.security" if label.kind == "security" else "editor.warning"))
+            alert.setObjectName("alert")
+            alert.setProperty("lvl", "fail" if label.kind == "security" else "warn")
+            alert.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            alert.setToolTip(label.text)
+            if label.link:
+                alert.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(label.link)))
+            top.addWidget(alert)
+        latest = info.get("latest", "")
+        if latest and version_key(latest) > version_key(version) and latest not in self.editors:
+            update = call(QPushButton, tr("editor.update_to", latest))
+            update.setObjectName("update")
+            update.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            update.clicked.connect(lambda: self.request_install(latest))
+            top.addWidget(update)
         top.addStretch()
         column.addLayout(top)
+        line = QHBoxLayout()
         path = QLabel(str(exe))
         path.setObjectName("hint")
-        column.addWidget(path)
+        line.addWidget(path)
+        size = self.size_of(exe)
+        if size is not None:
+            line.addWidget(call(QLabel, "·  " + size_text(size)))
+            line.itemAt(line.count() - 1).widget().setObjectName("hint")
+        line.addStretch()
+        column.addLayout(line)
         chips = QHBoxLayout()
         for platform in modules_of(exe):
             chips.addWidget(chip(platform))
@@ -137,7 +129,7 @@ class Installs(Page):
         manage.setObjectName("small")
         manage.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         menu = QMenu(manage)
-        call(menu.addAction, tr("editor.add_modules")).triggered.connect(lambda: self.add_modules(version))
+        call(menu.addAction, tr("editor.add_modules")).triggered.connect(lambda: self.open_wizard(version=version))
         call(menu.addAction, tr("editor.updates")).triggered.connect(lambda: self.updates(version))
         call(menu.addAction, tr("projects.show_folder")).triggered.connect(lambda: open_folder(exe.parents[1]))
         profile_key = str(exe.resolve())
@@ -153,6 +145,20 @@ class Installs(Page):
         layout.addWidget(manage, 0, Qt.AlignmentFlag.AlignTop)
         return card
 
+    def size_of(self, exe):
+        """Bytes on disk, or None while it is being measured (the cards are redrawn when it is known)."""
+        folder = str(exe.parents[1])
+        if folder not in self.sizes and folder not in self.measuring:
+            self.measuring.add(folder)
+
+            def measured(result):
+                self.measuring.discard(folder)
+                if not isinstance(result, Exception):
+                    self.sizes[folder] = result
+                    self.refresh()
+            self.background(lambda: install_size(exe), measured)
+        return self.sizes.get(folder)
+
     def save_profile(self, engine, key, value):
         self.config.update("editor_profiles", lambda profiles: {
             **profiles, engine: {**profiles.get(engine, {}), key: value}})
@@ -161,11 +167,6 @@ class Installs(Page):
         profile = self.config.get("editor_profiles").get(engine, {})
         self.edit_arguments("args.editor", profile.get("arguments", ""),
                             lambda value: self.save_profile(engine, "arguments", value))
-
-    def add_modules(self, version):
-        self.version.setEditText(version)
-        self.show_install(True)
-        self.pick_modules(version, review=True)
 
     def locate(self):
         exe = QFileDialog.getOpenFileName(self, tr("editor.locate"), "", "Unity (Unity);;All (*)")[0]
@@ -177,127 +178,33 @@ class Installs(Page):
         version = self.text("editor.version", Path(exe).parents[1].name)
         if RELEASE.fullmatch(version):
             self.save("editors", {**self.config.get("editors"), version: exe})
-            self.refresh()
         elif version:
             self.warning(tr("editor.invalid"))
 
     def set_folder(self):
         path = self.folder("editor.folder")
         if path:
-            def updated(_):
-                self.save("editor_root", path)
-                self.refresh()
-            self.jobs.run("install", tr("editor.folder"), ["install-path", "--set", path], updated)
+            self.cli.set_install_path(path, lambda _: self.save("editor_root", path))
 
-    def releases(self):
-        dialog = ReleaseBrowser(self.versions, self)
-        if dialog.exec():
-            self.version.setEditText(dialog.selected)
-            self.modules.clear()
-            self.eula.setChecked(False)
-            self.show_install(True)
-            self.pick_modules(dialog.selected, dialog.selected_release, review=True)
-        dialog.deleteLater()
+    # ---- installing ---------------------------------------------------------------------------------
+
+    def open_wizard(self, **options):
+        """Install an Editor (no options), add modules / install a known version (version=), or browse one line."""
+        wizard = InstallWizard(self.cli, self.editors, self.tasks, self, failed=self.warning, **options)
+        if wizard.exec():
+            self.window.log.setChecked(True)
+        wizard.deleteLater()
+
+    def request_install(self, version):
+        """Install the version a project needs: the wizard opens on its module list."""
+        self.open_wizard(version=version)
 
     def updates(self, current):
-        line = current.split(".")[:2]
-
-        def newer(data):
-            matches = []
-            for entry in data["items"]:
-                version = entry["version"]
-                if version.split(".")[:2] == line and RELEASE.fullmatch(version):
-                    if version_key(version) > version_key(current) and version not in self.versions:
-                        matches.append(version)
-            if matches:
-                self.show_install(True)
-                self.version.clear()
-                self.version.addItems(sorted(matches, key=version_key, reverse=True))
-                self.version.showPopup()
-            else:
-                self.jobs.message.emit(str(tr("editor.no_update", current)))
-
-        self.jobs.run("releases", tr("editor.updates"), ["releases", "--limit", "100",
-                      "--operating-system", "linux"], newer, structured=True)
-
-    def pick_modules(self, version, release=None, *, review=False):
-        installed = version in self.versions
-
-        def show(entries):
-            if self.version.currentText().strip() != version:
-                return
-            chosen = self.modules.text().replace(",", " ").split()
-            dialog = Components(version, entries, chosen, self.eula.isChecked(), self)
-            if dialog.exec():
-                modules = dialog.selection()
-                self.modules.setText(" ".join(modules))
-                self.eula.setChecked(dialog.eula.isChecked())
-                if review:
-                    self.review(version, modules, installed)
-            dialog.deleteLater()
-
-        if installed:
-            self.jobs.run("module-list", tr("editor.module_list"),
-                          ["install-modules", "--editor-version", version, "--list"],
-                          lambda data: show(data["items"]), structured=True, failed=self.warning)
-        elif release:
-            try:
-                manifest = linux_download(release)
-            except ValueError as error:
-                self.warning(error)
-                return
-            show(manifest["modules"])
-        else:
-            self.window.notify(tr("release.loading"), "busy")
-            def received(result):
-                if isinstance(result, Exception):
-                    self.warning(result)
-                else:
-                    show(result["modules"])
-            self.background(lambda: fetch_manifest(version), received)
-
-    def install(self, action):
-        version = self.version.currentText().strip()
-        if not RELEASE.fullmatch(version):
-            self.warning(tr("editor.invalid"))
-            return
-        if action == "modules" and version not in self.versions:
-            self.warning(tr("editor.select"))
-            return
-        if action != "preview":
-            self.pick_modules(version, review=action != "list")
-            return
-        modules = self.modules.text().replace(",", " ").split()
-        self.review(version, modules, version in self.versions and bool(modules), preview=True)
-
-    def review(self, version, modules, installed, *, preview=False):
-        if any(not MODULE.fullmatch(module) for module in modules) or (installed and not modules):
-            self.warning(tr("editor.module_ids"))
-            return
-        args = ["install-modules", "--editor-version", version] if installed else ["install", version, "--resume"]
-        if modules:
-            args.extend(["--module", *modules, "--no-child-modules"])
-        if self.eula.isChecked():
-            args.append("--accept-eula")
-
-        def planned(data):
-            size = size_text(data.get("totalDownloadSize"))
-            components = [str(m.get("name") or m.get("id")) for m in (data.get("modules") or [])
-                          if isinstance(m, dict) and (m.get("name") or m.get("id"))]
-            selected = ", ".join(dict.fromkeys([*modules, *components])) or str(tr("install.editor_only"))
-            summary = tr("install.summary", version, selected, size)
-            if preview:
-                self.jobs.message.emit(str(summary))
-                self.window.log.setChecked(True)
-            elif self.confirm("install.confirm", summary):
-                self.window.log.setChecked(True)
-                self.jobs.run("install", tr("install.active", version), args + ["--yes"],
-                              lambda _: self.refresh(), failed=self.warning)
-
-        self.jobs.run("install-plan", tr("editor.preview"), args + ["--dry-run", "--yes"],
-                      planned, structured=True, failed=self.warning)
+        """Every patch of the same line (e.g. 6000.6.*), newest first; installed ones are marked."""
+        self.open_wizard(search=".".join(current.split(".")[:2]) + ".")
 
     def uninstall(self, version):
         if self.config.get("no_confirm_remove") or self.confirm("editor.confirm_remove", version):
-            self.jobs.run("install", tr("editor.uninstall"), ["uninstall", version, "--yes"],
-                          lambda _: self.refresh())
+            folder = str(self.editors.get(version).parents[1]) if version in self.editors else None
+            self.sizes.pop(folder, None)
+            self.cli.uninstall(version, lambda _: self.editors.reload())

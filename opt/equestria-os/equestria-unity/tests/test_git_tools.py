@@ -36,43 +36,32 @@ class GitTests(unittest.TestCase):
                     run.call_args.kwargs["done"](json.dumps([{field: "group/game"}]).encode())
                 clone.assert_called_once_with(program, "group/game")
 
-    def test_selected_files_commit_push_and_clone(self):
+    def test_branch_and_remote_are_read_from_git_files_and_clone_adds_project(self):
+        from git_info import read_git
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             work = root / "my game"
             remote = root / "origin.git"
             def git(*args):
                 return subprocess.check_output(["git", *map(str, args)], stderr=subprocess.STDOUT)
-            git("init", "-q", "-b", "main", work)
+            git("init", "-q", "-b", "develop", work)
             git("init", "--bare", "-q", "-b", "main", remote)
-            git("-C", work, "config", "user.email", "local@example.invalid")
-            git("-C", work, "config", "user.name", "Local test")
-            git("-C", work, "remote", "add", "origin", remote)
-            filename = "[demo] scene.txt"
-            (work / filename).write_text("data")
-            (work / "untouched.txt").write_text("data")
+            git("-C", work, "remote", "add", "origin", "git@github.com:acme/game.git")
+            project = work / "Unity" / "Game"   # a project in a subfolder of the repository
+            project.mkdir(parents=True)
+            info = read_git(project)
+            self.assertEqual((info.root, info.branch), (work, "develop"))
+            self.assertEqual(info.web, "https://github.com/acme/game")
+            self.assertEqual(info.reviews, "https://github.com/acme/game/pulls")
+            self.assertIsNone(read_git(root))
             page = SimpleNamespace(jobs=Jobs(None), window=Mock(), warning=Mock(), confirm=Mock(return_value=True),
-                                   text=Mock(return_value="first commit"), folder=Mock(return_value=str(root)),
+                                   text=Mock(return_value="cloned game"), folder=Mock(return_value=str(root)),
                                    add_path=Mock())
-            actions = GitActions(page)
-            def wait():
-                for _ in range(500):
-                    if not page.jobs.running:
-                        break
-                    QTest.qWait(10)
-                self.assertFalse(page.jobs.running)
-                page.warning.assert_not_called()
-            with patch("git_tools.choose_files", return_value=[filename]):
-                actions.stage(work)
-                wait()
-            actions.commit(work)
-            wait()
-            self.assertEqual(git("-C", work, "ls-tree", "-r", "--name-only", "HEAD").decode().strip(), filename)
-            actions.push(work)
-            wait()
-            self.assertEqual(git("-C", work, "rev-parse", "HEAD"), git("-C", remote, "rev-parse", "main"))
-            page.text.return_value = "cloned game"
-            actions.clone(repo=str(remote))
-            wait()
+            GitActions(page).clone(repo=str(remote))
+            for _ in range(500):
+                if not page.jobs.running:
+                    break
+                QTest.qWait(10)
+            page.warning.assert_not_called()
             page.add_path.assert_called_once_with(root / "cloned game")
-            self.assertTrue((root / "cloned game" / filename).exists())
+            self.assertEqual(read_git(root / "cloned game").remote, str(remote))

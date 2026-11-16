@@ -1,4 +1,5 @@
-QMainWindow, QDialog { background: @base@; }
+QMainWindow { background: @crust@; }
+QDialog { background: @base@; }
 QWidget { color: @text@; font-size: 14px; }
 QLabel { background: transparent; }
 QLabel#logo { font-size: 18px; font-weight: 800; color: @accent@; }
@@ -11,7 +12,7 @@ QLabel#chip { background: @mantle@; border-radius: 9px; padding: 3px 10px; font-
 QLabel#chip[lvl="ok"] { color: @green@; }
 QLabel#chip[lvl="warn"] { color: @yellow@; }
 QLabel#chip[lvl="fail"] { color: @red@; }
-QFrame#side { background: @crust@; }
+QFrame#side { background: @mantle@; border-radius: 14px; }
 QFrame#card { background: @surface0@; border-radius: 14px; }
 QFrame#hero { background: @mantle@; border-radius: 16px; }
 
@@ -26,8 +27,8 @@ QPushButton#primary:disabled { background: @surface1@; color: @surface2@; }
 QPushButton#danger { background: @red@; color: @on_red@; }
 QPushButton#danger:hover { background: @red%85@; }
 QPushButton#small { padding: 6px 12px; font-size: 13px; border-radius: 9px; }
-QPushButton#nav { background: transparent; text-align: left; padding: 12px 16px; border-radius: 10px;
-    font-size: 15px; color: @subtext@; }
+QPushButton#nav { background: transparent; text-align: left; padding: 9px 12px; border-radius: 10px;
+    font-size: 14px; color: @subtext@; }
 QPushButton#nav:hover { background: @mantle@; color: @text@; }
 QPushButton#nav:pressed { background: @surface1@; }
 QPushButton#nav:checked { background: @surface0@; color: @accent@; }
@@ -47,9 +48,9 @@ QComboBox QAbstractItemView { background: @surface0@; color: @text@; border: non
 QCheckBox { spacing: 10px; background: transparent; }
 QCheckBox::indicator { width: 18px; height: 18px; border-radius: 5px; background: @mantle@; border: 2px solid @surface2@; }
 QCheckBox::indicator:checked { background: @accent@; border-color: @accent@; image: url("@icon:check_mark@"); }
-QPlainTextEdit { background: @crust@; border: none; border-radius: 10px; padding: 8px; font-size: 13px;
+QPlainTextEdit { background: @mantle@; border: none; border-radius: 10px; padding: 8px; font-size: 13px;
     selection-background-color: @accent@; selection-color: @on_accent@; }
-QProgressBar { background: @mantle@; border: none; border-radius: 6px; height: 12px; text-align: center; font-size: 11px; }
+QProgressBar { background: @mantle@; border: none; border-radius: 6px; max-height: 6px; text-align: center; font-size: 11px; }
 QProgressBar::chunk { background: @accent@; border-radius: 6px; }
 
 QListWidget { background: transparent; border: none; outline: 0; }
@@ -77,10 +78,7 @@ QMenu { background: @mantle@; border: 1px solid @surface1@; padding: 4px; }
 QMenu::item { padding: 6px 20px; border-radius: 6px; }
 QMenu::item:selected { background: @surface1@; }
 QToolTip { background: @surface1@; color: @text@; border: none; padding: 4px 8px; }
-QMainWindow { background: @crust@; }
 QFrame#topbar { background: transparent; }
-QFrame#side { background: @mantle@; border-radius: 14px; }
-QPushButton#nav { padding: 9px 12px; font-size: 14px; }
 QFrame#content { background: @base@; border-radius: 14px; }
 QFrame#pill { background: @surface0@; border-radius: 12px; }
 QFrame#pill[lvl="ok"] { border: 1px solid @green@; }
@@ -93,13 +91,12 @@ QPushButton#cell:hover { background: @surface1@; }
 QPushButton#star { background: transparent; padding: 2px; font-size: 18px; color: @surface2@; }
 QPushButton#star:hover { background: transparent; color: @accent@; }
 QPushButton#star:checked { color: @accent@; }
-QTreeWidget#table { background: transparent; border: none; outline: 0; }
-QTreeWidget#table::item { border-bottom: 1px solid @surface0@; }
-QTreeWidget#table::item:hover { background: @mantle@; }
-QTreeWidget#table::item:selected { background: @surface0@; }
+QTreeView#table { background: transparent; border: none; outline: 0; }
+QTreeView#table::item { border-bottom: 1px solid @surface0@; }
+QTreeView#table::item:hover { background: @mantle@; }
+QTreeView#table::item:selected { background: @surface0@; }
 QLabel#cellname { font-size: 14px; font-weight: 600; }
 QFrame#panel { background: @mantle@; border-radius: 14px; }
-QProgressBar { max-height: 6px; }
 
 QTabBar#releaseTabs::tab { padding: 10px 16px; color: @subtext@; border-bottom: 2px solid @surface1@; }
 QTabBar#releaseTabs::tab:selected { color: @text@; border-bottom-color: @accent@; }
@@ -121,5 +118,29 @@ QTreeWidget#releaseTable QPushButton#releaseNotes:hover { color: @accent@; }
 QFrame#block { border-bottom: 1px solid @surface1@; }
 QFrame#divider { background: @surface1@; border: none; }
 QScrollArea#sectionScroll { background: transparent; border: none; }
-QPlainTextEdit { background: @mantle@; border-radius: 10px; padding: 8px; }
 QFrame#banner { background: @mantle@; border: 1px solid @accent@; border-radius: 10px; }
+
+QLabel#step { color: @subtext@; font-size: 14px; font-weight: 600; padding: 4px 10px; border-radius: 9px; }
+QLabel#stepOn { color: @on_accent@; background: @accent@; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 9px; }
+QFrame#operations { background: @mantle@; border: 1px solid @surface1@; border-radius: 12px; }
+QFrame#oprow { background: @surface0@; border-radius: 10px; }
+QFrame#oprow[lvl="ok"] { border-left: 3px solid @green@; }
+QFrame#oprow[lvl="fail"] { border-left: 3px solid @red@; }
+QFrame#licenseCard { background: @surface0@; border-radius: 12px; }
+QLabel#licenseBadge { background: @mantle@; color: @subtext@; font-size: 16px; font-weight: 700; padding-top: 18px;
+    border-top-left-radius: 12px; border-bottom-left-radius: 12px; border-right: 1px solid @surface1@; }
+QPushButton#update { background: transparent; color: @accent@; padding: 3px 10px; font-size: 12px; font-weight: 700;
+    border: 1px solid @accent@; border-radius: 9px; }
+QPushButton#update:hover { background: @accent@; color: @on_accent@; }
+QTreeView#packages { background: @mantle@; border: none; border-radius: 10px; padding: 4px; outline: 0; }
+QTreeView#packages::item { padding: 7px 4px; }
+QFrame#panel QLineEdit, QFrame#panel QComboBox { background: @surface0@; }
+QTreeView#packages::item:selected { background: @surface1@; color: @text@; }
+QTreeView#packages::item:hover { background: @surface0@; }
+QPushButton#alert { background: transparent; padding: 3px 10px; font-size: 12px; font-weight: 700; border-radius: 9px; }
+QPushButton#alert[lvl="fail"] { color: @red@; border: 1px solid @red@; }
+QPushButton#alert[lvl="warn"] { color: @yellow@; border: 1px solid @yellow@; }
+QPushButton#alert:hover { background: @surface1@; }
+QPushButton#segment { background: transparent; padding: 6px 14px; font-size: 13px; border-radius: 9px; color: @subtext@; }
+QPushButton#segment:hover { background: @surface0@; color: @text@; }
+QPushButton#segment:checked { background: @surface1@; color: @accent@; }
