@@ -1,6 +1,6 @@
 # Maintainer: Equestria OS
 pkgname=equestria-unity-log
-pkgver=1.1
+pkgver=1.2.0
 pkgrel=2
 pkgdesc="Monitor Unity build logs and shader compilation"
 arch=('any')

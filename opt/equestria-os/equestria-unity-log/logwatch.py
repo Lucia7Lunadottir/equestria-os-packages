@@ -13,6 +13,11 @@ from __future__ import annotations
 
 import sys
 import time
+import os
+import re
+import shutil
+import subprocess
+import tempfile
 from pathlib import Path
 
 from PyQt6.QtCore import Qt, QTimer
@@ -24,6 +29,55 @@ from localization import APP_ID, catalog, live_i18n, tr
 from equestria_kit import qt as kit_qt
 from logview import LogView
 from logcore import BuildTracker, LogTailer, ProcMonitor, classify, level, parse_shader
+
+def _kwin_keep_above(enabled: bool) -> tuple[bool, str]:
+    """Ask Plasma 6 KWin to change this application's window directly.
+
+    KWin's Wayland compositor owns the stacking order. Qt's window hint is
+    advisory there; KWin scripting can set the actual keepAbove property.
+    """
+    if not os.environ.get("WAYLAND_DISPLAY"):
+        return False, "Not a Wayland session"
+    gdbus = shutil.which("gdbus")
+    if not gdbus:
+        return False, "gdbus is not installed (glib2 package)"
+
+    # Match the exact application caption and/or its desktop-file identity.
+    # No arbitrary user data is interpolated into JavaScript.
+    script = ("var matches = workspace.windowList().filter(function(w) { "
+              "return w.normalWindow && (w.caption === 'Equestria Unity Log' "
+              "|| w.desktopFileName === 'equestria-unity-log'); }); "
+              "matches.forEach(function(w) { w.keepAbove = "
+              + ("true" if enabled else "false") + "; });\n")
+    script = script.replace(";\\n", ";\n")
+    script_path = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".js", prefix="equestria-unity-log-kwin-",
+                                         encoding="utf-8", delete=False) as f:
+            script_path = f.name
+            f.write(script)
+        loaded = subprocess.run(
+            [gdbus, "call", "--session", "--dest", "org.kde.KWin", "--object-path", "/Scripting",
+             "--method", "org.kde.kwin.Scripting.loadScript", script_path],
+            capture_output=True, text=True, timeout=4, check=True)
+        match = re.search(r"\((\d+),?\s*\)", loaded.stdout)
+        if not match:
+            return False, f"Unexpected KWin loadScript response: {loaded.stdout.strip()}"
+        script_id = int(match.group(1))
+        subprocess.run(
+            [gdbus, "call", "--session", "--dest", "org.kde.KWin",
+             "--object-path", f"/Scripting/Script{script_id}", "--method", "org.kde.kwin.Script.run"],
+            capture_output=True, text=True, timeout=4, check=True)
+        return True, ""
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        return False, str(exc)
+    finally:
+        if script_path:
+            try:
+                os.unlink(script_path)
+            except OSError:
+                pass
+
 
 POLL_MS = 250          # как часто смотрим в файл
 SHADER_ACTIVE_S = 3.0  # столько секунд после строки про шейдер считаем, что компиляция идёт
@@ -186,8 +240,10 @@ class Window(QWidget):
         bottom.addStretch()
         bottom.addWidget(self.top_cb)
         root.addLayout(bottom)
-        if self.top_cb.isChecked():
-            self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
+        # Set the initial hint before the native window is created.
+        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, self.top_cb.isChecked())
+        # Reapply via KWin after the native Wayland window has been mapped.
+        QTimer.singleShot(700, lambda: self._apply_kwin_top(self.top_cb.isChecked()))
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.tick)
@@ -207,8 +263,28 @@ class Window(QWidget):
     def _on_top_toggled(self, on: bool) -> None:
         self.cfg.data["always_on_top"] = on
         self.cfg.save()
+        # Qt recreates the native window when a top-level flag changes.
+        # Preserve geometry and visibility instead of blindly calling show().
+        was_visible = self.isVisible()
+        geometry = self.geometry()
         self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, on)
-        self.show()   # после смены флага окно надо показать заново
+        self.setGeometry(geometry)
+        if was_visible:
+            self.show()
+            if on:
+                self.raise_()
+        # Qt cannot enforce stacking on KDE Wayland; ask KWin itself.
+        QTimer.singleShot(250, lambda: self._apply_kwin_top(on))
+
+    def _apply_kwin_top(self, on: bool) -> None:
+        if on != self.top_cb.isChecked():
+            return  # The user changed the checkbox again.
+        ok, reason = _kwin_keep_above(on)
+        if not ok and reason != "Not a Wayland session":
+            print(f"Equestria Unity Log: KWin Always on Top: {reason}", file=sys.stderr)
+            self.top_cb.setToolTip(f"KWin: {reason}")
+        else:
+            self.top_cb.setToolTip("")
 
     # ── главный цикл: раз в 250 мс ────────────────────────────────────────
     def tick(self) -> None:

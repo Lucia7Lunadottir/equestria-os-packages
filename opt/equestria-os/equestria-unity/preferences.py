@@ -113,7 +113,8 @@ class Settings(Page):
         self.check(inner, "tray.editor", "editor_to_tray", False)
         self.check(inner, "tray.close", "close_to_tray", True)
         inner = self.block(appearance, "settings.language", "settings.language_help")
-        self.actions(inner).addWidget(catalog.selector(self))
+        self.language_combo = catalog.selector(self, after=self.refresh)
+        self.actions(inner).addWidget(self.language_combo)
 
         alerts = self.section("settings.notifications")
         inner = self.block(alerts, "settings.notifications", "settings.notify_help")
@@ -279,7 +280,7 @@ class Settings(Page):
         self.retries.blockSignals(False)
         self.editor_path.setText(str(library.editor_roots(self.config.snapshot())[0]))
         self.download_path.setText(str(self.config.get("download_dir") or tempfile.gettempdir()))
-        self.dismissed.setText(str(tr("settings.dismissed", len(self.config.get("dismissed_banners")))))
+        call(self.dismissed.setText, tr("settings.dismissed", len(self.config.get("dismissed_banners"))))
         self.template_path.setText(str(self.config.get("template_root") or library.HUB / "Templates"))
         path = library.executable("unity")
         if self.downloading_cli:

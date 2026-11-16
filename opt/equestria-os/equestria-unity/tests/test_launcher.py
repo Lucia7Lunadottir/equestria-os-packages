@@ -285,6 +285,29 @@ class LauncherTests(unittest.TestCase):
         loop.exec()
         self.assertFalse(window.jobs.running)
 
+    def test_language_dropdown_matches_welcome_hub(self):
+        source = Path(__file__).resolve().parents[1]
+        self.enterContext(patch.object(library, "executable", return_value=None))
+        welcome = source.parent / "equestria-os-welcome-hub/locales"
+        self.assertEqual({p.name for p in welcome.glob("*.json")},
+                         {p.name for p in (source / "locales").glob("*.json")})
+        window = Launcher(APP)
+        self.addCleanup(window.close)
+        self.addCleanup(catalog.set_language, catalog.lang, persist=False)
+        box = window.pages["settings"].language_combo
+        with patch.object(catalog, "preference", self.root / "language.json"):
+            for path in welcome.glob("*.json"):
+                with self.subTest(language=path.stem):
+                    entries = json.loads((source / "locales" / path.name).read_text())
+                    self.assertEqual(entries.keys(), catalog.translations["en"].keys())
+                    index = box.findData(path.stem)
+                    self.assertGreaterEqual(index, 0)
+                    self.assertEqual(box.itemText(index), json.loads(path.read_text())["_language_name"])
+                    box.setCurrentIndex(index)
+                    box.activated.emit(index)
+                    self.assertEqual(window.nav["projects"].text(), entries["nav.projects"])
+                    self.assertEqual(json.loads(catalog.preference.read_text()), path.stem)
+
     def test_locale_bindings_and_release_order(self):
         window = Launcher(APP)
         self.addCleanup(window.close)

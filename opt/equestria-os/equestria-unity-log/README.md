@@ -37,3 +37,25 @@
 Снятие галочки сразу показывает все категории и временно отключает текстовый поиск.
 Повторное включение возвращает тот же запрос. Поле «Строк» задаёт количество последних
 совпадений от 1 до 200 (по умолчанию 5). Режим, галочка и количество сохраняются между запусками.
+
+## «Поверх всех окон» в KDE Plasma
+
+Переключатель использует стандартный Qt `WindowStaysOnTopHint` и сохраняет
+выбор между запусками. На X11 оконный менеджер обычно поддерживает этот флаг.
+В KDE Plasma на Wayland KWin может не выполнять запросы приложений на
+закрепление поверх остальных окон. В таком случае используйте правило KWin:
+
+1. Откройте меню заголовка окна Equestria Unity Log (Alt+F3).
+2. Выберите «Дополнительно» → «Настроить особые параметры приложения»
+   (названия пунктов могут немного различаться).
+3. Добавьте свойство «Поверх остальных» / «Keep above other windows» и
+   установите «Принудительно» / «Force» → «Да».
+4. Примените правило. Оно будет работать и в Wayland-сессии.
+
+Примечание: принудительное правило KWin имеет приоритет над галочкой
+приложения. Чтобы галочка снова управляла положением окна, удалите правило.
+
+
+## KDE Plasma 6 / KWin Wayland — Always on Top
+
+The checkbox now requests `keepAbove` directly from KWin using its D-Bus scripting interface. This requires `gdbus` (provided by `glib2` on Arch Linux) and KWin scripting enabled. The Qt flag remains the fallback on X11. No persistent KWin window rule is installed. The app reapplies the setting after startup. KWin integration was syntax-checked but cannot be runtime-tested outside a Plasma session.
