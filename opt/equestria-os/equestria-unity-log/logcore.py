@@ -43,8 +43,15 @@ def parse_variants(line: str) -> tuple[int, int] | None:
     return None
 
 
+# Строка стека вызовов («Класс:Метод (аргументы) (at файл:строка)») и «(Filename: …)» — не про работу:
+# в них встречаются слова вроде ShaderCompilerData и OnPreprocessShaders.
+STACK_RX = re.compile(r"^(?:\(Filename:|[\w.`+<>/]+:[\w.<>`$]+ \(.*\)(?: \(at .*\))?$)")
+
+
 def classify(line: str) -> str:
     """'progress' | 'shader' | 'script' | 'build' | 'plain' — к какому виду работы относится строка."""
+    if STACK_RX.match(line):
+        return "plain"
     if "variants" in line and VARIANTS_RX.search(line):
         return "progress"
     if "ompil" in line and SHADER_RX.search(line):
@@ -228,6 +235,45 @@ class BuildTracker:
 
     def shaders_busy(self, now: float, procs_busy: bool) -> bool:
         return self.phase == "shaders" and (procs_busy or now - self.t_last < self.STALE_S)
+
+
+# ── что компилирует Unity прямо сейчас ────────────────────────────────────
+# Editor.log имя шейдера на этом этапе не содержит. Его пишут процессы-компиляторы в соседние
+# файлы Logs/shadercompiler-UnityShaderCompiler-N.log: «Cmd: compileSnippet … name=… pass=…».
+SNIPPET_RX = re.compile(r"name=(.*?) pass=(\S*) ppOnly=")
+
+
+class CompilerLogs:
+    """Читает хвост самого свежего shadercompiler-*.log рядом с Editor.log (не больше 16 КБ)."""
+
+    TAIL = 16 * 1024
+    FRESH_S = 15.0       # лог, который не менялся дольше, считаем старым
+
+    def __init__(self, editor_log: str):
+        self.dir = os.path.dirname(os.path.abspath(editor_log))
+
+    def current(self, wall_now: float) -> tuple[str, str] | None:
+        """(имя шейдера, проход) того, что компилируется сейчас, или None."""
+        newest, newest_t = None, 0.0
+        try:
+            for e in os.scandir(self.dir):
+                if e.name.startswith("shadercompiler-UnityShaderCompiler-") and e.name.endswith(".log"):
+                    t = e.stat().st_mtime
+                    if t > newest_t:
+                        newest, newest_t = e.path, t
+        except OSError:
+            return None
+        if not newest or wall_now - newest_t > self.FRESH_S:
+            return None
+        try:
+            with open(newest, "rb") as f:
+                f.seek(0, os.SEEK_END)
+                f.seek(max(0, f.tell() - self.TAIL))
+                text = f.read().decode("utf-8", "replace")
+        except OSError:
+            return None
+        found = SNIPPET_RX.findall(text)
+        return (found[-1][0], found[-1][1]) if found else None
 
 
 class ProcMonitor:

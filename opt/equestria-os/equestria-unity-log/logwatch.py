@@ -28,7 +28,7 @@ from PyQt6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QFrame, QHBox
 from localization import APP_ID, catalog, live_i18n, tr
 from equestria_kit import qt as kit_qt
 from logview import LogView
-from logcore import BuildTracker, LogTailer, ProcMonitor, classify, level, parse_shader
+from logcore import BuildTracker, CompilerLogs, LogTailer, ProcMonitor, classify, level, parse_shader
 
 def _kwin_keep_above(enabled: bool) -> tuple[bool, str]:
     """Ask Plasma 6 KWin to change this application's window directly.
@@ -162,6 +162,8 @@ class Window(QWidget):
         self.resize(620, 380)
         self.tailer = LogTailer(path)
         self.procs = ProcMonitor()
+        self.compiler_logs = CompilerLogs(path)
+        self.compiling: tuple[str, str] | None = None   # (шейдер, проход) из логов компилятора
         self.procs_busy = False
         self._proc_t = 0.0
         self._reset_state()
@@ -296,6 +298,7 @@ class Window(QWidget):
         if now - self._proc_t >= 1.0:          # раз в секунду: работают ли компиляторы Unity
             self._proc_t = now
             self.procs_busy = self.procs.poll(now)
+            self.compiling = self.compiler_logs.current(time.time()) if self.procs_busy else None
         for line in lines:
             kind = classify(line)
             self.tracker.feed(line, kind, now)
@@ -337,7 +340,12 @@ class Window(QWidget):
             self.status.setText(text)
 
         # карточка шейдера
-        if self.shader_line:
+        if self.compiling and shader_busy:       # точное имя из логов компилятора важнее строк Editor.log
+            shader, pass_name = self.compiling
+            self.shader_name.set_full(f"{shader} · {pass_name}" if pass_name else shader)
+            self.shader_detail.set_full("")
+            prog = bt.variants
+        elif self.shader_line:
             name, detail, prog = parse_shader(self.shader_line)
             self.shader_name.set_full(name or detail)
             self.shader_detail.set_full(detail if name else "")
@@ -390,6 +398,8 @@ class Window(QWidget):
         path = ask_log_file(self, self.cfg)
         if path:
             self.tailer = LogTailer(path)
+            self.compiler_logs = CompilerLogs(path)
+            self.compiling = None
             self._reset_state()
             self.path_label.set_full(path)
             self.log_view.history.clear()
