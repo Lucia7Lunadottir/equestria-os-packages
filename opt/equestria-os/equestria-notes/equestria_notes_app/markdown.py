@@ -23,6 +23,10 @@ HR_RE = re.compile(r"^\s*([-*_])(\s*\1){2,}\s*$")
 TABLE_SEP_RE = re.compile(r"^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$")
 
 
+# отметка в ячейке таблицы: «| [ ] |», «| [x] текст |» (и «\[x]», как раньше сохранял Qt)
+TABLE_TASK_CELL_RE = re.compile(r"^\s*\\?\[([ xX])\]")
+
+
 def count_tasks(src: str):
     """(сделано, всего) — без учёта блоков кода."""
     done = total = 0
@@ -37,6 +41,12 @@ def count_tasks(src: str):
         if m:
             total += 1
             done += m.group(3) in "xX"
+        elif line.lstrip().startswith("|") and not TABLE_SEP_RE.match(line):
+            for cell in line.strip().strip("|").split("|"):
+                tm = TABLE_TASK_CELL_RE.match(cell)
+                if tm:
+                    total += 1
+                    done += tm.group(1) in "xX"
     return done, total
 
 

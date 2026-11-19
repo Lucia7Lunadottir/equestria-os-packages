@@ -13,11 +13,20 @@
     ...
     instance.on_show(win.show_window)    # после создания окна
 
+Приложению, которое открывает документы («Открыть с помощью» в KDE), вторая
+копия передаёт и аргументы — их получает обработчик on_args (вместо on_show):
+
+    if not instance.claim():
+        instance.notify_running(args=[os.path.abspath(p) for p in files])
+        return 0
+    instance.on_args(win.open_files_from_instance)
+
 Кто «первый», решает QLockFile (не путается, если два запуска совпали по
 времени, и сам снимается, если прошлая копия упала); окно будит QLocalServer.
 """
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 from typing import Callable
@@ -26,6 +35,7 @@ from PyQt6.QtCore import QByteArray, QLockFile
 from PyQt6.QtNetwork import QLocalServer, QLocalSocket
 
 _SHOW = b"show"
+_ARGS = b"args"   # «args» + токен + JSON-список аргументов (по строке на каждое)
 
 
 def runtime_dir() -> Path:
@@ -41,6 +51,7 @@ class SingleInstance:
         self._lock.setStaleLockTime(0)   # «протухшим» считается только замок умершего процесса
         self._server: QLocalServer | None = None
         self._show: Callable[[], object] | None = None
+        self._args: Callable[[list], object] | None = None
 
     def claim(self) -> bool:
         """True — это первая копия (замок взят, ждём сигналов от следующих)."""
@@ -54,17 +65,24 @@ class SingleInstance:
             print(f"[equestria_kit] {self.app_id}: {self._server.errorString()}")
         return True
 
-    def notify_running(self, show: bool = True, timeout_ms: int = 1500) -> bool:
+    def notify_running(self, show: bool = True, timeout_ms: int = 1500,
+                       args: list | None = None) -> bool:
         """Из второй копии: попросить первую показать окно. Токен активации Wayland
-        передаётся ей, иначе KWin не даст окну выйти на передний план."""
-        if not show:
+        передаётся ей, иначе KWin не даст окну выйти на передний план.
+        args — аргументы для обработчика on_args (пути — уже абсолютные: у второй
+        копии своя рабочая папка)."""
+        if not show and args is None:
             return True
         sock = QLocalSocket()
         sock.connectToServer(self.server_name)
         if not sock.waitForConnected(timeout_ms):
             return False
         token = os.environ.get("XDG_ACTIVATION_TOKEN", "")
-        sock.write(_SHOW + b"\n" + token.encode() + b"\n")
+        if args is None:
+            sock.write(_SHOW + b"\n" + token.encode() + b"\n")
+        else:
+            sock.write(_ARGS + b"\n" + token.encode() + b"\n"
+                       + json.dumps(list(args), ensure_ascii=False).encode() + b"\n")
         sock.waitForBytesWritten(timeout_ms)
         sock.disconnectFromServer()
         return True
@@ -72,6 +90,10 @@ class SingleInstance:
     def on_show(self, fn: Callable[[], object]) -> None:
         """Что делать, когда повторный запуск просит показать окно."""
         self._show = fn
+
+    def on_args(self, fn: Callable[[list], object]) -> None:
+        """Что делать с аргументами повторного запуска (fn(args) сама показывает окно)."""
+        self._args = fn
 
     def release(self) -> None:
         if self._server is not None:
@@ -86,7 +108,8 @@ class SingleInstance:
 
             def read(s=sock, b=buf) -> None:
                 b.append(s.readAll())
-                if b.count(b"\n") >= 2:   # «show» + токен (может быть пустым)
+                need = 3 if b.startsWith(_ARGS + b"\n") else 2   # «show»/«args» + токен (+ аргументы)
+                if b.count(b"\n") >= need:
                     self._handle(bytes(b.data()))
                     s.disconnectFromServer()
 
@@ -95,12 +118,21 @@ class SingleInstance:
 
     def _handle(self, data: bytes) -> None:
         cmd, _, rest = data.partition(b"\n")
-        if cmd != _SHOW or self._show is None:
+        token, _, payload = rest.partition(b"\n")
+        if cmd == _ARGS and self._args is not None:
+            try:
+                args = json.loads(payload.split(b"\n", 1)[0].decode(errors="ignore"))
+            except ValueError:
+                return
+            call = lambda: self._args([str(a) for a in args] if isinstance(args, list) else [])
+        elif cmd in (_SHOW, _ARGS) and self._show is not None:
+            call = self._show
+        else:
             return
-        token = rest.split(b"\n", 1)[0].decode(errors="ignore")
+        token = token.decode(errors="ignore")
         if token:   # Qt (Wayland) берёт токен из окружения при activateWindow()
             os.environ["XDG_ACTIVATION_TOKEN"] = token
         try:
-            self._show()
+            call()
         except Exception as e:  # noqa: BLE001 — слот Qt: исключение уронит PyQt6
-            print(f"[equestria_kit] {self.app_id}: show: {e}")
+            print(f"[equestria_kit] {self.app_id}: {cmd.decode(errors='ignore')}: {e}")

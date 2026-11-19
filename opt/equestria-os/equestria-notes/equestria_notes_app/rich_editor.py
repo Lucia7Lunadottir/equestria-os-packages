@@ -56,6 +56,13 @@ def draw_task_box(painter: QPainter, r: QRectF, checked: bool) -> None:
     painter.restore()
 
 
+# отметка в ячейке таблицы: «| [ ] |», «| [x] Сделано |» — в GFM это просто текст,
+# поэтому рисуем и переключаем её сами, а в файле она остаётся «[ ]» / «[x]»
+TABLE_TASK_RE = re.compile(r"^(\s*)\[([ xX])\]")
+# Qt при сохранении экранирует «[x]» в ячейке как «\[x]» — возвращаем как было
+ESCAPED_TABLE_TASK_RE = re.compile(r"(^|\|)([ \t]*)\\\[([ xX])\]", re.M)
+
+
 class RichEdit(QTextEdit):
     """Редактор «как есть»: Markdown грузится в документ Qt и сохраняется обратно."""
     # Qt 6 при чтении Markdown выбрасывает картинки с пустым описанием «![](файл)».
@@ -67,6 +74,7 @@ class RichEdit(QTextEdit):
         super().__init__()
         self.base_dir = ""
         self.fitting = False   # подгонка размера картинок — не правка текста
+        self._task_click = False   # нажатие пришлось на отметку списка дел
         self._fit_timer = QTimer(self, singleShot=True, interval=120)
         self._fit_timer.timeout.connect(self.relayout)
         self.setAcceptRichText(True)
@@ -139,7 +147,8 @@ class RichEdit(QTextEdit):
     # --- картинки
     def markdown(self) -> str:
         """Markdown документа без служебных описаний картинок."""
-        return self.toMarkdown().replace(f"![{self.NOALT}](", "![](")
+        md = self.toMarkdown().replace(f"![{self.NOALT}](", "![](")
+        return ESCAPED_TABLE_TASK_RE.sub(r"\1\2[\3]", md)
 
     # --- картинки: по ширине текста, как в Okular (но не больше натурального размера)
     def _natural_size(self, name: str):
@@ -267,9 +276,61 @@ class RichEdit(QTextEdit):
                     painter.fillRect(QRectF(tx - size * 1.9, ty, size * 1.9 - 1, line.height()), bg)
                     draw_task_box(painter, QRectF(tx - size * 1.3, ty + line.ascent() - size, size, size),
                                   mk == MK.Checked)
+            task = self._table_task(b)
+            if task is not None and lay is not None and lay.lineCount():
+                r = self._table_task_rect(task[0])
+                if r.top() > vp.height():
+                    break
+                if r.bottom() >= 0:
+                    painter = painter or QPainter(vp)
+                    line = lay.lineAt(0)
+                    size = max(10.0, round(line.ascent() * 0.82))
+                    w = max(r.width(), size + 2)   # «[ ]» бывает уже самой отметки
+                    painter.fillRect(QRectF(r.center().x() - w / 2, r.top(), w, r.height()), bg)
+                    draw_task_box(painter, QRectF(r.center().x() - size / 2, r.top() + line.ascent() - size,
+                                                  size, size), task[1])
             b = b.next()
         if painter is not None:
             painter.end()
+
+    # --- отметки в ячейках таблиц
+    def _table_task(self, b):
+        """(позиция «[», отмечено) — если ячейка таблицы начинается с «[ ]» / «[x]»; иначе None."""
+        if QTextCursor(b).currentTable() is None:   # у блоков в ячейках нет своей позиции layout
+            return None
+        m = TABLE_TASK_RE.match(b.text())
+        return (b.position() + len(m.group(1)), m.group(2) in "xX") if m else None
+
+    def _table_task_rect(self, pos: int) -> QRectF:
+        """Место «[ ]» на экране (координаты viewport)."""
+        c = QTextCursor(self.document())
+        c.setPosition(pos)
+        r0 = self.cursorRect(c)
+        c.setPosition(pos + 3)
+        r1 = self.cursorRect(c)
+        return QRectF(r0.left(), r0.top(), max(1, r1.left() - r0.left()), r0.height())
+
+    def _flip_table_task(self, pos: int, checked: bool) -> None:
+        c = QTextCursor(self.document())
+        c.setPosition(pos + 1)
+        c.setPosition(pos + 2, QTextCursor.MoveMode.KeepAnchor)
+        c.insertText(" " if checked else "x")
+
+    def task_counts(self) -> tuple:
+        """(сделано, всего): пункты списка дел и отметки в таблицах."""
+        done = total = 0
+        b = self.document().begin()
+        while b.isValid():
+            m = b.blockFormat().marker()
+            task = self._table_task(b)
+            if m != MK.NoMarker:
+                total += 1
+                done += m == MK.Checked
+            elif task is not None:
+                total += 1
+                done += task[1]
+            b = b.next()
+        return done, total
 
     def insert_image_rel(self, rel: str) -> None:
         fmt = QTextImageFormat()
@@ -424,7 +485,10 @@ class RichEdit(QTextEdit):
 
     def toggle_check_here(self) -> None:
         b = self.textCursor().block()
-        if b.blockFormat().marker() == MK.NoMarker:
+        task = self._table_task(b)
+        if task is not None:
+            self._flip_table_task(*task)
+        elif b.blockFormat().marker() == MK.NoMarker:
             self.toggle_task()
         else:
             self._flip(b)
@@ -480,18 +544,47 @@ class RichEdit(QTextEdit):
         super().keyPressEvent(e)
 
     # --- мышь: галочки и ссылки
+    # Qt 6 сам переключает отметку при отпускании кнопки, но применяет её к блоку
+    # под текстовым курсором, а не к блоку под мышью: галочка «перескакивала»
+    # на строку с курсором, а в строке с курсором переключалась дважды.
+    # Поэтому клик по отметке целиком (нажатие, двойной клик, отпускание) — наш.
+    def _task_hit(self, e):
+        """Переключатель отметки под мышью (пункт списка дел или «[ ]» в таблице) или None."""
+        if e.button() != Qt.MouseButton.LeftButton:
+            return None
+        pos = e.position().toPoint()
+        b = self.cursorForPosition(pos).block()
+        task = self._table_task(b)
+        if task is not None:
+            hit = self._table_task_rect(task[0]).adjusted(-4, -2, 4, 2).contains(e.position())
+            return (lambda: self._flip_table_task(*task)) if hit else None
+        if b.blockFormat().marker() == MK.NoMarker:
+            return None
+        r = self.cursorRect(QTextCursor(b))
+        if pos.x() < r.left() and r.top() - 2 <= pos.y() <= r.bottom() + 2:
+            return lambda: self._flip(b)
+        return None
+
     def mousePressEvent(self, e) -> None:
-        if e.button() == Qt.MouseButton.LeftButton:
-            pos = e.position().toPoint()
-            b = self.cursorForPosition(pos).block()
-            if b.blockFormat().marker() != MK.NoMarker:
-                r = self.cursorRect(QTextCursor(b))
-                if pos.x() < r.left() and r.top() - 2 <= pos.y() <= r.bottom() + 2:
-                    self._flip(b)
-                    return
+        flip = self._task_hit(e)
+        if flip is not None:
+            flip()
+            self._task_click = True
+            return
         super().mousePressEvent(e)
 
+    def mouseDoubleClickEvent(self, e) -> None:
+        flip = self._task_hit(e)
+        if flip is not None:   # второй клик быстрой серии — тоже переключение
+            flip()
+            self._task_click = True
+            return
+        super().mouseDoubleClickEvent(e)
+
     def mouseReleaseEvent(self, e) -> None:
+        if self._task_click and e.button() == Qt.MouseButton.LeftButton:
+            self._task_click = False
+            return
         if e.button() == Qt.MouseButton.LeftButton and (e.modifiers() & Qt.KeyboardModifier.ControlModifier):
             a = self.anchorAt(e.position().toPoint())
             if a:

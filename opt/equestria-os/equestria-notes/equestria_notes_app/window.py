@@ -26,7 +26,7 @@ from datetime import datetime
 from equestria_kit import qt as kit_qt
 from equestria_kit.widgets import small_btn
 from pathlib import Path
-from .images import MK, store_image
+from .images import store_image
 from .library import EMPTY_HINT, NoteLibrary
 from .localization import catalog, live_i18n, tr
 from .markdown import count_tasks
@@ -365,6 +365,12 @@ class MainWindow(QMainWindow):
         files, _ = QFileDialog.getOpenFileNames(
             self, tr("window.choose_files"), str(self.gdir),
             tr("window.text_markdown_md_markdown_txt"))
+        self.open_files(files)
+
+    def open_files(self, files: list) -> None:
+        """Открыть отдельные файлы (диалог «Файл» или «Открыть с помощью» в KDE):
+        они попадают в историю отдельных файлов, первый открывается в редакторе."""
+        files = [os.path.abspath(p) for p in files if os.path.isfile(p)]
         if not files:
             return
         if not self._leave_ok():
@@ -377,6 +383,16 @@ class MainWindow(QMainWindow):
         first = os.path.normpath(files[0])
         if self._select_in_list(first):
             self.open_note(first)
+
+    def open_from_instance(self, files: list) -> None:
+        """Повторный запуск приложения: открыть его файлы здесь и показать окно."""
+        if self.isMinimized():
+            self.showNormal()
+        else:
+            self.show()
+        self.raise_()
+        self.activateWindow()
+        self.open_files(files)
 
     def _remember_file(self, p: str) -> None:
         self.lib.remember_file(p)
@@ -540,14 +556,7 @@ class MainWindow(QMainWindow):
         if not self.cur_path:
             return
         if self.active is self.rich:
-            done = total = 0
-            b = self.rich.document().begin()
-            while b.isValid():
-                m = b.blockFormat().marker()
-                if m != MK.NoMarker:
-                    total += 1
-                    done += m == MK.Checked
-                b = b.next()
+            done, total = self.rich.task_counts()
         else:
             done, total = count_tasks(self.editor.toPlainText())
         live_i18n.call(self.progress.setText, tr("window.tasks", done, total) if total else "")
