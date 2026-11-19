@@ -71,5 +71,8 @@
   "window.not_saved": "● sin guardar…",
   "window.file_not_found": "⚠ {}\narchivo no encontrado · {}",
   "window.folder": "＋ Carpeta",
-  "window.file": "＋ Archivo"
+  "window.file": "＋ Archivo",
+  "window.reload": "Recargar",
+  "window.reload_from_disk_f5": "Volver a leer la nota y la lista desde el disco (F5)",
+  "window.reloaded": "Nota recargada desde el disco"
 }

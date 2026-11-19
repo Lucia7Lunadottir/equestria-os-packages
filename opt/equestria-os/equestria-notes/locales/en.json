@@ -71,5 +71,8 @@
   "window.not_saved": "● not saved…",
   "window.file_not_found": "⚠ {}\nfile not found · {}",
   "window.folder": "＋ Folder",
-  "window.file": "＋ File"
+  "window.file": "＋ File",
+  "window.reload": "Reload",
+  "window.reload_from_disk_f5": "Re-read the note and the list from disk (F5)",
+  "window.reloaded": "Note reloaded from disk"
 }

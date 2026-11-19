@@ -71,5 +71,8 @@
   "window.not_saved": "● non enregistré…",
   "window.file_not_found": "⚠ {}\nfichier introuvable · {}",
   "window.folder": "＋ Dossier",
-  "window.file": "＋ Fichier"
+  "window.file": "＋ Fichier",
+  "window.reload": "Recharger",
+  "window.reload_from_disk_f5": "Relire la note et la liste depuis le disque (F5)",
+  "window.reloaded": "Note rechargée depuis le disque"
 }

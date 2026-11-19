@@ -71,5 +71,8 @@
   "window.not_saved": "● не сохранено…",
   "window.file_not_found": "⚠ {}\nфайл не найден · {}",
   "window.folder": "＋ Папка",
-  "window.file": "＋ Файл"
+  "window.file": "＋ Файл",
+  "window.reload": "Обновить",
+  "window.reload_from_disk_f5": "Перечитать заметку и список с диска (F5)",
+  "window.reloaded": "Заметка перечитана с диска"
 }

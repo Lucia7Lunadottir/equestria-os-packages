@@ -71,5 +71,8 @@
   "window.not_saved": "● 未保存…",
   "window.file_not_found": "⚠ {}\n未找到文件 · {}",
   "window.folder": "＋ 文件夹",
-  "window.file": "＋ 文件"
+  "window.file": "＋ 文件",
+  "window.reload": "刷新",
+  "window.reload_from_disk_f5": "从磁盘重新读取笔记和列表 (F5)",
+  "window.reloaded": "已从磁盘重新读取笔记"
 }

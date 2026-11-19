@@ -71,5 +71,8 @@
   "window.not_saved": "● niezapisane…",
   "window.file_not_found": "⚠ {}\nnie znaleziono pliku · {}",
   "window.folder": "＋ Folder",
-  "window.file": "＋ Plik"
+  "window.file": "＋ Plik",
+  "window.reload": "Odśwież",
+  "window.reload_from_disk_f5": "Wczytaj ponownie notatkę i listę z dysku (F5)",
+  "window.reloaded": "Notatka wczytana ponownie z dysku"
 }

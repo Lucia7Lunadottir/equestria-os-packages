@@ -71,5 +71,8 @@
   "window.not_saved": "● 저장 안 됨…",
   "window.file_not_found": "⚠ {}\n파일을 찾을 수 없음 · {}",
   "window.folder": "＋ 폴더",
-  "window.file": "＋ 파일"
+  "window.file": "＋ 파일",
+  "window.reload": "새로 고침",
+  "window.reload_from_disk_f5": "디스크에서 메모와 목록을 다시 읽기 (F5)",
+  "window.reloaded": "디스크에서 메모를 다시 읽었습니다"
 }

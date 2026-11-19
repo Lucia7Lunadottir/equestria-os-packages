@@ -71,5 +71,8 @@
   "window.not_saved": "● nicht gespeichert…",
   "window.file_not_found": "⚠ {}\nDatei nicht gefunden · {}",
   "window.folder": "＋ Ordner",
-  "window.file": "＋ Datei"
+  "window.file": "＋ Datei",
+  "window.reload": "Neu laden",
+  "window.reload_from_disk_f5": "Notiz und Liste neu von der Festplatte lesen (F5)",
+  "window.reloaded": "Notiz neu von der Festplatte geladen"
 }

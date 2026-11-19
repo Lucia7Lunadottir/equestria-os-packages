@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS
 pkgname=equestria-notes
 pkgver=1.0
-pkgrel=6
+pkgrel=7
 pkgdesc="Markdown notes with images and to-do lists (PyQt6)"
 arch=('any')
 license=('GPL-3.0-or-later')

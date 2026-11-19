@@ -145,8 +145,11 @@ class MainWindow(QMainWindow):
         self.save_btn.clicked.connect(self.save_note)
         self.revert_btn = small_btn(tr("window.revert"), tip=tr("window.discard_edits_restore_saved_file"))
         self.revert_btn.clicked.connect(self.revert_note)
+        self.reload_btn = small_btn(tr("window.reload"), tip=tr("window.reload_from_disk_f5"))
+        self.reload_btn.clicked.connect(self.reload_note)
         hrow.addWidget(self.save_btn)
         hrow.addWidget(self.revert_btn)
+        hrow.addWidget(self.reload_btn)
         right.addLayout(hrow)
         frow = QHBoxLayout()
         frow.setSpacing(6)
@@ -195,6 +198,7 @@ class MainWindow(QMainWindow):
         sc("Ctrl+S", self.save_note)
         sc("Ctrl+F", lambda: self.search.setFocus())
         sc("Ctrl+E", self._cycle_mode)
+        sc("F5", self.reload_note)
         for w in (self.editor, self.rich):
             sc("Ctrl+B", lambda: self._fmt("b"), w)
             sc("Ctrl+I", lambda: self._fmt("i"), w)
@@ -536,6 +540,23 @@ class MainWindow(QMainWindow):
         if box.clickedButton() is yes:
             self.dirty = False
             self.open_note(self.cur_path, keep_cursor=True)
+
+    def reload_note(self) -> None:
+        """Перечитать с диска список и открытую заметку — если её изменили снаружи,
+        а автоподхват не сработал. Несохранённые правки — только после вопроса."""
+        self.lib.cache.clear()
+        self.refresh_list()
+        if not self.cur_path:
+            return
+        if not os.path.isfile(self.cur_path):
+            self._say(tr("window.could_not_open", os.path.basename(self.cur_path)))
+            return
+        if self.dirty:
+            self.revert_note()
+        else:
+            self.open_note(self.cur_path, keep_cursor=True)
+        if not self.dirty:
+            self._say(tr("window.reloaded"))
 
     def save_note(self) -> None:
         if not self.cur_path or not self.dirty:

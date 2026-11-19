@@ -71,5 +71,8 @@
   "window.not_saved": "● 未保存…",
   "window.file_not_found": "⚠ {}\nファイルが見つかりません · {}",
   "window.folder": "＋ フォルダー",
-  "window.file": "＋ ファイル"
+  "window.file": "＋ ファイル",
+  "window.reload": "再読み込み",
+  "window.reload_from_disk_f5": "メモと一覧をディスクから読み直す (F5)",
+  "window.reloaded": "メモをディスクから読み直しました"
 }

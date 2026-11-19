@@ -71,5 +71,8 @@
   "window.not_saved": "● não salvo…",
   "window.file_not_found": "⚠ {}\narquivo não encontrado · {}",
   "window.folder": "＋ Pasta",
-  "window.file": "＋ Arquivo"
+  "window.file": "＋ Arquivo",
+  "window.reload": "Recarregar",
+  "window.reload_from_disk_f5": "Reler a nota e a lista do disco (F5)",
+  "window.reloaded": "Nota recarregada do disco"
 }
