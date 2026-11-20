@@ -1,4 +1,6 @@
 """The Unity CLI: the only place that knows its commands and flags. Pages ask for an operation by name."""
+import json
+import subprocess
 from pathlib import Path
 
 import unity_paths
@@ -8,6 +10,7 @@ from kit import tr
 # Seconds a command may take before it is stopped: a Unity service that does not answer must not leave the
 # launcher waiting forever. Downloads, installs and signing in have no limit (they can be cancelled instead).
 STATUS, CATALOG, ACCOUNT = 30, 90, 120
+TOKEN = 15  # the Editor waits for it, so it must be short
 
 
 class UnityCli:
@@ -130,6 +133,36 @@ class UnityCli:
         command = {"auth": ["auth", "status"], "license": ["license", "status"]}[kind]
         self.run(f"{kind}-status", tr("account.status"), command, done, structured=True, failed=failed, quiet=True,
                  timeout=STATUS)
+
+    @classmethod
+    def query(cls, arguments, timeout=TOKEN, *, interactive=False):
+        """Synchronous JSON read for code outside the Qt event loop (the Editor's account service, the moment
+        before an Editor starts). The command's `data`, or None: no CLI, a failure, no answer in time.
+        `interactive` lets a command such as signing in open the browser."""
+        cli = cls.executable()
+        if not cli:
+            return None
+        command = [cli, "--no-pager", "--no-color", "--no-banner", "--format", "json", *arguments]
+        if not interactive:
+            command.insert(4, "--non-interactive")
+        try:
+            result = subprocess.run(command, capture_output=True, text=True, timeout=timeout)
+            reply = json.loads(result.stdout)
+        except (OSError, subprocess.SubprocessError, ValueError):
+            return None
+        return reply.get("data") if isinstance(reply, dict) and reply.get("success") else None
+
+    @classmethod
+    def access_token(cls):
+        """The signed-in account's access token, or None when nobody is signed in."""
+        return (cls.token_info() or {}).get("accessToken")
+
+    @classmethod
+    def token_info(cls):
+        """{"accessToken", "expiresAt"} of the signed-in account, or None."""
+        data = cls.query(["auth", "token"])
+        token = data.get("accessToken") if isinstance(data, dict) else None
+        return data if isinstance(token, str) and token else None
 
     def account(self, title, args, after, timeout=ACCOUNT):
         """An account command; `after` runs whether it worked or not, so the shown state is re-read."""

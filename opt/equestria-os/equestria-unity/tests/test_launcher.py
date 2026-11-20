@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -22,6 +23,7 @@ from release_info import ReleaseInfo
 from kit import catalog
 
 APP = QApplication.instance() or QApplication([])
+HUB_ENSURE = editor_launch.HubService.ensure   # the real one; setUp replaces it for every test
 
 
 class LauncherTests(unittest.TestCase):
@@ -42,6 +44,8 @@ class LauncherTests(unittest.TestCase):
         (self.root / "projects-v1.json").write_text(json.dumps({"data": {str(self.project): {}}}))
         # No real Unity CLI in tests: each test that needs one gives its own fake.
         self.enterContext(patch.object(UnityCli, "executable", return_value=None))
+        # Nor a real Unity Hub: a test must not start one in the background.
+        self.enterContext(patch.object(editor_launch.HubService, "ensure", return_value=False))
         self.enterContext(patch.object(ReleaseInfo, "request"))  # no network in tests
         # A dialog nobody expected would wait forever for a click: record it and fail the test instead.
         self.dialogs = []
@@ -458,6 +462,56 @@ class LauncherTests(unittest.TestCase):
             self.assertEqual(kwargs["env"]["WAYLAND_DISPLAY"], "wayland-0")
             self.assertNotIn("-profiler-enable", args[0])
             self.assertNotIn("-buildTarget", args[0])
+
+    def test_editor_gets_the_cli_account_like_from_the_hub(self):
+        reply = {"success": True, "data": {"accessToken": "secret-token", "expiresAt": "", "authMode": "oauth"}}
+        with self.fake_cli(reply):
+            self.assertEqual(UnityCli.access_token(), "secret-token")
+        self.assertEqual(self.captured.read_text().split()[-2:], ["auth", "token"])
+        # Not signed in: the CLI answers without a token, and the Editor starts signed out.
+        with self.fake_cli({"success": False, "data": None}):
+            self.assertIsNone(UnityCli.access_token())
+        self.assertIsNone(UnityCli.access_token())  # no CLI at all
+
+        with patch.object(UnityCli, "access_token", return_value="secret-token"), \
+                patch("subprocess.Popen") as start:
+            editor_launch.launch(self.editor, self.project, {})
+        args = start.call_args[0][0]
+        self.assertEqual(args[3:], ["-cloudEnvironment", "production", "-accessToken", "secret-token"])
+        self.assertNotIn("secret-token", editor_launch.printable(args))
+        self.assertIn("-accessToken '***'", editor_launch.printable(args))
+
+        # With the Hub's socket the Editor is told to use it, as when the Hub itself starts an Editor.
+        with patch.object(editor_launch.HubService, "ensure", return_value=True):
+            args = editor_launch.AccountHandoff(lambda: None).arguments()
+        self.assertEqual(args[:3], ["-useHub", "-hubIPC", "-hubSessionId"])
+        self.assertEqual(len(args), 4)
+
+    def test_hub_service_is_started_only_when_nobody_listens(self):
+        import socket
+        import sys
+        path = Path(tempfile.mkdtemp(dir="/tmp")) / "hub.sock"
+        self.addCleanup(lambda: path.parent.exists() and __import__("shutil").rmtree(path.parent))
+        broken = editor_launch.HubService(path, command=[str(self.root / "no-service")])
+        broken.WAIT = 0.3
+        self.assertFalse(broken.listening())
+        self.assertFalse(HUB_ENSURE(broken))   # the service cannot start: no socket, no error
+
+        # A stand-in for hub_ipc.py: it only has to open the socket, then waits to be stopped.
+        listener = ("import socket,sys,time; s=socket.socket(socket.AF_UNIX); s.bind(sys.argv[1]); s.listen();"
+                    "time.sleep(30)")
+        hub = editor_launch.HubService(path, command=[sys.executable, "-c", listener, str(path)])
+        real_popen, spawned = subprocess.Popen, []
+
+        def spawn(*args, **kwargs):
+            spawned.append(real_popen(*args, **kwargs))
+            self.addCleanup(lambda process=spawned[-1]: (process.kill(), process.wait()))
+            return spawned[-1]
+
+        with patch("subprocess.Popen", side_effect=spawn):
+            self.assertTrue(HUB_ENSURE(hub))
+            self.assertTrue(HUB_ENSURE(hub))   # already answering: not started twice
+        self.assertEqual(len(spawned), 1)
 
     def test_release_button_text_fits_after_results_arrive(self):
         from PyQt6.QtWidgets import QPushButton, QStyle, QStyleOptionButton

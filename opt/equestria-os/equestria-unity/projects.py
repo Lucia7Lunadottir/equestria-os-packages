@@ -1,5 +1,4 @@
 from pathlib import Path
-import shlex
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QCursor, QGuiApplication
@@ -366,7 +365,7 @@ class Projects(Page):
         except (ValueError, OSError) as error:
             self.warning(error)
             return
-        self.jobs.message.emit(shlex.join(process.args))
+        self.jobs.message.emit(editor_launch.printable(process.args))
         self.catalog.touch(project.path)
         self.window.notify(tr("projects.launching", project.name), "busy", 8000)
         self.window.editor_started(project.path)

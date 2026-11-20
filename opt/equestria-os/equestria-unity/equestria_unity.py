@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+from datetime import datetime
+import faulthandler
+import os
 from pathlib import Path
 import sys
 import traceback
@@ -279,7 +282,39 @@ def report_errors(window):
     sys.excepthook = hook
 
 
+def crash_log():
+    """Started from a file manager or a menu, the launcher's output goes nowhere. Errors, hard crashes
+    (faulthandler) and the exit itself are appended to ~/.cache/equestria-unity/launcher.log instead."""
+    folder = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / APP_ID
+    try:
+        folder.mkdir(parents=True, exist_ok=True)
+        log = open(folder / "launcher.log", "a", buffering=1, encoding="utf-8")
+    except OSError:
+        return
+    log.write(f"\n--- {datetime.now():%Y-%m-%d %H:%M:%S} start, pid {os.getpid()}\n")
+    faulthandler.enable(log)
+    sys.stderr = Tee(sys.stderr, log)
+
+
+class Tee:
+    def __init__(self, *streams):
+        self.streams = [s for s in streams if s]
+
+    def write(self, text):
+        for stream in self.streams:
+            try:
+                stream.write(text)
+                stream.flush()
+            except (OSError, ValueError):
+                pass
+        return len(text)
+
+    def flush(self):
+        pass
+
+
 def main():
+    crash_log()
     app = QApplication(sys.argv)
     app.setApplicationName(APP_ID)
     app.setDesktopFileName(APP_ID)
@@ -293,7 +328,9 @@ def main():
     report_errors(window)
     instance.on_show(window.bring_forward)
     window.show()
-    return app.exec()
+    code = app.exec()
+    sys.stderr.write(f"--- {datetime.now():%Y-%m-%d %H:%M:%S} exit {code}\n")
+    return code
 
 
 if __name__ == "__main__":
