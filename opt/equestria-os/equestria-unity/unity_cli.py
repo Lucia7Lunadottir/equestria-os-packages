@@ -1,5 +1,6 @@
 """The Unity CLI: the only place that knows its commands and flags. Pages ask for an operation by name."""
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -10,6 +11,12 @@ from kit import tr
 # Seconds a command may take before it is stopped: a Unity service that does not answer must not leave the
 # launcher waiting forever. Downloads, installs and signing in have no limit (they can be cancelled instead).
 STATUS, CATALOG, ACCOUNT = 30, 90, 120
+# The CLI's sign-in service ("auth broker") keeps a second, sealed copy of the sign-in (systemd-creds with the
+# host key and TPM2): every token renewal through it asks for the system password through polkit, once per
+# sealed item, five or six times in a row. Without it the CLI reads and renews the sign-in in the session
+# keyring (Secret Service, KWallet's ksecretd), as Unity Hub does: unlocked at login, no password.
+# Signing in itself still goes through the service, which also writes the keyring.
+NO_BROKER = {"UNITY_NO_AUTH_BROKER": "1"}
 TOKEN = 15  # the Editor waits for it, so it must be short
 
 
@@ -43,7 +50,7 @@ class UnityCli:
 
     def environment(self):
         """Launcher settings that reach the Unity CLI through its environment."""
-        env = {}
+        env = dict(NO_BROKER)
         folder = self.config.get("download_dir")
         if folder:
             try:
@@ -146,7 +153,8 @@ class UnityCli:
         if not interactive:
             command.insert(4, "--non-interactive")
         try:
-            result = subprocess.run(command, capture_output=True, text=True, timeout=timeout)
+            env = os.environ if arguments[:2] == ["auth", "login"] else {**os.environ, **NO_BROKER}
+            result = subprocess.run(command, capture_output=True, text=True, timeout=timeout, env=env)
             reply = json.loads(result.stdout)
         except (OSError, subprocess.SubprocessError, ValueError):
             return None
@@ -158,9 +166,9 @@ class UnityCli:
         return (cls.token_info() or {}).get("accessToken")
 
     @classmethod
-    def token_info(cls):
+    def token_info(cls, timeout=TOKEN):
         """{"accessToken", "expiresAt"} of the signed-in account, or None."""
-        data = cls.query(["auth", "token"])
+        data = cls.query(["auth", "token"], timeout=timeout)
         token = data.get("accessToken") if isinstance(data, dict) else None
         return data if isinstance(token, str) and token else None
 

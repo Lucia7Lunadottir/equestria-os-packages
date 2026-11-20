@@ -18,6 +18,7 @@ class FakeCli:
 
     def __init__(self, signed_in=True):
         self.signed_in = signed_in
+        self.token = "token-1"   # None: the CLI does not answer (password prompt cancelled, no answer in time)
         self.calls = []
 
     def query(self, arguments, timeout=0, interactive=False):
@@ -28,8 +29,11 @@ class FakeCli:
             return {"organizations": [{"id": "uuid-1", "genesisId": "200", "name": "Canterlot", "role": "owner"}]}
         return None
 
-    def token_info(self):
-        return {"accessToken": "token-1", "expiresAt": "2030-01-01T00:00:00Z"} if self.signed_in else None
+    def token_info(self, timeout=0):
+        self.calls.append(["auth", "token"])
+        if not self.signed_in or not self.token:
+            return None
+        return {"accessToken": self.token, "expiresAt": "2030-01-01T00:00:00Z"}
 
 
 class HubIpcTests(unittest.TestCase):
@@ -108,6 +112,32 @@ class HubIpcTests(unittest.TestCase):
         self.assertFalse(source.due())
         source.current.expires_ms = int((time.time() + 60) * 1000)
         self.assertTrue(source.due())
+
+    def test_a_failed_renewal_is_not_a_sign_out_and_is_not_retried(self):
+        cli = FakeCli()
+        source = hub_ipc.AccountSource(cli)
+        source.refresh()
+        source.current.expires_ms = int((time.time() + 60) * 1000)
+        self.assertTrue(source.due())
+        cli.token = None                  # the renewal asked for the password and the prompt was cancelled
+        self.assertFalse(source.refresh())
+        self.assertTrue(source.snapshot(0).signed_in)   # the Editors keep the account they had
+        self.assertEqual(source.snapshot(0).token, "token-1")
+        cli.calls.clear()
+        self.assertFalse(source.due())    # no new prompt by itself for the same token
+        self.assertNotIn(["auth", "token"], cli.calls)
+
+    def test_periodic_check_does_not_touch_the_token(self):
+        cli = FakeCli()
+        source = hub_ipc.AccountSource(cli)
+        source.refresh()
+        source.loaded_at -= hub_ipc.RELOAD_EVERY + 1
+        cli.calls.clear()
+        self.assertFalse(source.due())    # same account: nothing to reload
+        self.assertEqual(cli.calls, [["auth", "accounts"]])
+        cli.signed_in = False
+        source.loaded_at -= hub_ipc.RELOAD_EVERY + 1
+        self.assertTrue(source.due())     # signed out elsewhere: reload and tell the Editors
 
     def test_does_not_take_a_socket_somebody_answers(self):
         other = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)

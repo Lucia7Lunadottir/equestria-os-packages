@@ -36,6 +36,8 @@ IDLE_EXIT = 600         # seconds without any Editor before the service ends
 RECHECK = 60            # how often the account and the token are looked at
 RENEW_BEFORE = 15 * 60  # a token this close to its expiry is replaced
 RELOAD_EVERY = 10 * 60  # sign-in changes made elsewhere (launcher, terminal) are picked up this often
+# A token renewal is a network round trip; it may be slow, but a slow answer is not a sign-out.
+TOKEN_WAIT = 120
 LOG = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "equestria-unity" / "hub-ipc.log"
 ORGANIZATIONS_API = "https://api.unity.com/v1/organizations?userId={}"
 
@@ -126,15 +128,28 @@ class AccountSource:
         self.organizations_ready = threading.Event()  # their organizations too (a few seconds later)
         self.current = Account()
         self.loaded_at = 0.0
+        self.given_up = None   # the token whose renewal failed: it is not retried by itself
+
+    def active_user(self):
+        """The signed-in account from `auth accounts` (it never renews the token, so it never asks for a
+        password); {} when nobody is signed in, None when the CLI could not be read."""
+        accounts = self.cli.query(["auth", "accounts"], timeout=60)
+        if accounts is None:
+            return None
+        active = accounts.get("activeForeignKey")
+        return next((a for a in accounts.get("accounts") or [] if a.get("foreignKey") == active), {})
 
     def load(self):
-        """The user and the token; organizations are read separately because they take the longest."""
-        accounts = self.cli.query(["auth", "accounts"], timeout=60) or {}
-        active = accounts.get("activeForeignKey")
-        user = next((a for a in accounts.get("accounts") or [] if a.get("foreignKey") == active), None)
-        info = self.cli.token_info() if user else None
-        if not (user and info):
+        """The user and the token, or None when they could not be read (no answer in time, the password
+        prompt cancelled): a failure is not a sign-out. Organizations are read separately, they are slow."""
+        user = self.active_user()
+        if user is None:
+            return None
+        if not user:
             return Account()
+        info = self.cli.token_info(timeout=TOKEN_WAIT)
+        if not info:
+            return None
         return Account(user, info["accessToken"], self.expiry_ms(info.get("expiresAt")))
 
     @staticmethod
@@ -145,13 +160,20 @@ class AccountSource:
             return int((time.time() + 3600) * 1000)
 
     def refresh(self):
-        """Reload; True when what the Editor sees has changed."""
+        """Reload; True when what the Editor sees has changed. On a failure the last snapshot stays."""
         fresh = self.load()
+        if fresh is None:
+            with self.lock:
+                self.loaded_at, self.given_up = time.time(), self.current.token
+            self.ready.set()
+            self.organizations_ready.set()
+            log("the account could not be read; keeping the last one, no automatic retry for this token")
+            return False
         with self.lock:
             before = self.current
             if fresh.user.get("foreignKey") == before.user.get("foreignKey"):
                 fresh.organizations = before.organizations
-            self.current, self.loaded_at = fresh, time.time()
+            self.current, self.loaded_at, self.given_up = fresh, time.time(), None
         self.ready.set()
         organizations = (self.organizations.load(fresh.user.get("foreignKey"), fresh.token,
                                                  fresh.user.get("primaryOrg")) if fresh.signed_in else [])
@@ -166,12 +188,18 @@ class AccountSource:
             return self.current
 
     def due(self):
-        account = self.snapshot(0)
+        """Whether to reload now. Only a renewal may ask for a password, and it is tried once per token;
+        the periodic check reads `auth accounts` alone and reloads only when the account itself changed."""
         if not self.ready.is_set():
             return False
+        account = self.snapshot(0)
         if account.signed_in and account.expires_in() < RENEW_BEFORE:
-            return True
-        return time.time() - self.loaded_at > RELOAD_EVERY
+            return account.token != self.given_up
+        if time.time() - self.loaded_at < RELOAD_EVERY:
+            return False
+        self.loaded_at = time.time()
+        user = self.active_user()
+        return user is not None and user.get("foreignKey") != account.user.get("foreignKey")
 
 
 class EditorConnection:
@@ -333,7 +361,9 @@ class HubIpcService:
                 log("no Editor connected for a while; exiting")
                 self.close(server)
                 os._exit(0)
-            if self.source.due() and self.source.refresh():
+            with self.clients_lock:
+                editors = bool(self.clients)
+            if editors and self.source.due() and self.source.refresh():
                 self.push()
 
     def close(self, server):

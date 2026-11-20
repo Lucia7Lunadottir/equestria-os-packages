@@ -487,6 +487,17 @@ class LauncherTests(unittest.TestCase):
         self.assertEqual(args[:3], ["-useHub", "-hubIPC", "-hubSessionId"])
         self.assertEqual(len(args), 4)
 
+    def test_cli_runs_without_its_sealed_sign_in_service(self):
+        # Without the broker the CLI renews the token in the session keyring, like Unity Hub: no password.
+        cli = self.root / "unity"
+        cli.write_text("#!/bin/sh\nprintf '{\"success\":true,\"data\":{\"broker\":\"%s\"}}' \"$UNITY_NO_AUTH_BROKER\"\n")
+        cli.chmod(0o755)
+        with patch.object(UnityCli, "executable", return_value=str(cli)):
+            self.assertEqual(UnityCli.query(["auth", "token"]), {"broker": "1"})
+            self.assertEqual(UnityCli.query(["auth", "login"], interactive=True), {"broker": ""})
+        window = self.launcher()
+        self.assertEqual(window.cli.environment().get("UNITY_NO_AUTH_BROKER"), "1")
+
     def test_hub_service_is_started_only_when_nobody_listens(self):
         import socket
         import sys
