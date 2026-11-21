@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS
 pkgname=equestria-clock
 pkgver=1.0
-pkgrel=7
+pkgrel=8
 pkgdesc="Будильник, таймер и секундомер (PyQt6)"
 arch=('any')
 license=('GPL-3.0-or-later')

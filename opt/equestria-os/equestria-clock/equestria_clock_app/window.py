@@ -106,7 +106,10 @@ class MainWindow(QMainWindow):
         self.settings.save()
         for w in self.findChildren(QWidget):
             w.update()
-        self.setWindowIcon(make_icon())
+        ic = make_icon()
+        self.setWindowIcon(ic)
+        if self.tray is not None:
+            self.tray.setIcon(ic)
 
     # --- трей
     def _tray_clicked(self, reason) -> None:
