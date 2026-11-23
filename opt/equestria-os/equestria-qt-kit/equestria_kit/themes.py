@@ -4,7 +4,9 @@
 
 Откуда берутся темы (по порядку, поздние перекрывают ранние):
   1. запасная   — Catppuccin Mocha (основа для недостающих цветов);
-  2. персонажи  — characters.json переключателя «Тема персонажа» (и свои персонажи);
+  2. персонажи  — темы переключателя «Тема персонажа» (и свои персонажи): один файл на
+                  персонажа в characters.d, старый общий characters.json тоже читается
+                  (см. character_store.py);
   3. системные  — /usr/share/equestria-os/themes/*.json;
   4. свои       — ~/.config/equestria-os/themes/*.json.
 Списка персонажей в коде нет: новый персонаж в characters.json сразу становится темой.
@@ -25,6 +27,8 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable, Protocol
+
+from .character_store import CharacterStore
 
 # Что значит каждый цвет:
 #   base      — фон окна              mantle   — чуть темнее фона
@@ -109,7 +113,8 @@ class JsonDictThemes:
 
 
 CHARACTER_DIR = Path.home() / ".local/share/EquestriaOS/Themes"   # USER_PATH переключателя
-CHARACTER_SYSTEM_JSON = Path("/opt/equestria-os/equestria-os-character-theme/characters.json")
+CHARACTER_SYSTEM_DIR = Path("/opt/equestria-os/equestria-os-character-theme")
+CHARACTER_SYSTEM_JSON = CHARACTER_SYSTEM_DIR / "characters.json"   # старый общий файл; новый формат — characters.d рядом
 
 
 def _rgb(v) -> str | None:
@@ -206,22 +211,18 @@ class CharacterThemes:
     акцент — AccentColor, карточки — фон с примесью акцента, а «ок/ошибка/
     предупреждение» берутся из его же цветов, если там есть зелёный/красный/жёлтый."""
 
+    sticky = True   # реестр держится за последние хорошие темы персонажей, если чтение вдруг вернуло пусто
+
     _STATUS = {"green": (85, 165, "#a6e3a1"), "red": (345, 375, "#f38ba8"), "yellow": (40, 66, "#f9e2af")}
 
     def __init__(self, user_dir: Path = None, system_json: Path = None):
         self.user_dir = Path(user_dir or CHARACTER_DIR)
         self.system_json = Path(system_json or CHARACTER_SYSTEM_JSON)
+        self.store = CharacterStore(self.user_dir, self.system_json.parent)
 
     def characters(self) -> list:
-        for path in (self.user_dir / "characters.json", self.system_json):
-            try:
-                data = json.loads(path.read_text(encoding="utf-8"))
-                chars = data.get("Characters") if isinstance(data, dict) else None
-                if isinstance(chars, list):
-                    return [c for c in chars if isinstance(c, dict)]
-            except (OSError, ValueError):
-                continue
-        return []
+        """Итоговый список персонажей (системные + правки пользователя), см. character_store.py."""
+        return [c for c in self.store.read() if isinstance(c, dict)]
 
     def load(self, fallback: Theme) -> Iterable[Theme]:
         for c in self.characters():
@@ -357,6 +358,7 @@ class ThemeRegistry:
         self.sources: list = sources if sources is not None else [
             BuiltinThemes(), CHARACTERS, JsonDirThemes(SYSTEM_THEMES_DIR), JsonDirThemes(config_dir() / "themes")]
         self.palettes: dict = {}
+        self._last_good: dict = {}   # источник -> его последние успешно прочитанные темы
         self.reload()
 
     def add_source(self, source) -> None:
@@ -364,10 +366,25 @@ class ThemeRegistry:
         self.reload()
 
     def reload(self) -> None:
+        """Пересобрать темы. Реестр не теряет темы из-за мгновенного сбоя чтения (обновление пакета,
+        файл переписывается): источник с sticky = True (персонажи), вернувший пусто после непустого
+        ответа, или любой источник, упавший с ошибкой, оставляют свои последние хорошие темы."""
         fallback = Theme(DEFAULT_THEME, dict(zip(KEYS, _FALLBACK_RAW.split())))
         found: dict = {}
         for src in self.sources:
-            for theme in src.load(fallback):
+            key = id(src)
+            try:
+                loaded = list(src.load(fallback))
+            except Exception as e:  # noqa: BLE001 — один плохой источник не должен ломать все темы
+                print(f"[equestria_kit] themes: источник {type(src).__name__} не прочитался ({e}); остаются прежние темы")
+                loaded = None
+            if loaded is None or (not loaded and getattr(src, "sticky", False) and self._last_good.get(key)):
+                if loaded is not None:
+                    print(f"[equestria_kit] themes: источник {type(src).__name__} вернул 0 тем; остаются прежние")
+                loaded = self._last_good.get(key, [])
+            else:
+                self._last_good[key] = loaded
+            for theme in loaded:
                 found[theme.name] = theme.colors
         self.palettes.clear()
         self.palettes.update(found)
@@ -475,8 +492,9 @@ class ThemeFollower:
         персонажей перезаписывает state.json на месте — за ним следим отдельно.
         После атомарной замены файла Qt его «теряет», поэтому зовётся повторно."""
         watched = set(self.watcher.files())
-        for f in (CHARACTERS.user_dir / "state.json", CHARACTERS.user_dir / "characters.json"):
-            if f.is_file() and str(f) not in watched:
+        for f in (CHARACTERS.user_dir / "state.json", CHARACTERS.store.user_legacy,
+                  CHARACTERS.store.user_dropins):
+            if (f.is_file() or f.is_dir()) and str(f) not in watched:
                 self.watcher.addPath(str(f))
 
     def _check(self) -> None:

@@ -1,7 +1,7 @@
 # Maintainer: Equestria OS
 pkgname=equestria-qt-kit
-pkgver=1.5
-pkgrel=2
+pkgver=1.6
+pkgrel=3
 pkgdesc="Общая библиотека PyQt6-приложений Equestria OS: темы персонажей, локализация, автозапуск, общие виджеты"
 arch=('any')
 license=('GPL-3.0-or-later')
@@ -15,4 +15,5 @@ package() {
     install -Dm644 -t "$pkgdir$site/equestria_kit/icons" "$startdir"/equestria_kit/icons/*.svg
     install -Dm644 -t "$pkgdir$site/equestria_kit/locales" "$startdir"/equestria_kit/locales/*.json
     install -dm755 "$pkgdir/usr/share/equestria-os/themes"
+    install -Dm644 "$startdir/STABILITY.md" "$pkgdir/usr/share/doc/$pkgname/STABILITY.md"
 }

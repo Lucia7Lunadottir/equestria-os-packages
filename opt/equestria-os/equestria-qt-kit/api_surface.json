@@ -1,0 +1,78 @@
+{
+  "equestria_kit": [
+    "live_i18n",
+    "palette",
+    "qt",
+    "themes",
+    "widgets"
+  ],
+  "equestria_kit.autostart": [
+    "Autostart"
+  ],
+  "equestria_kit.character_store": [
+    "CharacterStore"
+  ],
+  "equestria_kit.i18n": [
+    "detect_language"
+  ],
+  "equestria_kit.live_i18n": [
+    "Catalog",
+    "Text",
+    "call",
+    "format_text",
+    "join_text"
+  ],
+  "equestria_kit.palette": [
+    "contrast",
+    "dark_variant",
+    "day_overrides",
+    "hex_to_rgb",
+    "is_dark",
+    "light_variant",
+    "mix",
+    "readable",
+    "rgb_to_hex",
+    "with_derived"
+  ],
+  "equestria_kit.qt": [
+    "JsonConfig",
+    "ThemeApplier",
+    "ThemeManager",
+    "app_style",
+    "contrast",
+    "derived_colors",
+    "on_theme_change",
+    "pick_theme",
+    "readable",
+    "style",
+    "style_append",
+    "text_color",
+    "theme_choices",
+    "theme_color",
+    "theme_menu"
+  ],
+  "equestria_kit.single_instance": [
+    "SingleInstance"
+  ],
+  "equestria_kit.themes": [
+    "DEFAULT_THEME",
+    "JsonDictThemes",
+    "KEYS",
+    "THEMES",
+    "Theme",
+    "character_palette",
+    "choice",
+    "current_name",
+    "fallback_colors",
+    "follow",
+    "on_list_change",
+    "registry"
+  ],
+  "equestria_kit.widgets": [
+    "card",
+    "font_families",
+    "load_typed_config",
+    "scrolled",
+    "small_btn"
+  ]
+}
