@@ -70,5 +70,11 @@
  "pal.night": "Noche",
  "pal.day": "Día",
  "pal.warn": "Contraste bajo: {0} sobre «{1}» es {2}:1. KDE ajustará el color del texto para que siga siendo legible.",
- "pal.pick": "Elegir un color"
+ "pal.pick": "Elegir un color",
+ "kbd.title": "Retroiluminación del teclado",
+ "kbd.hint": "Color de la luz del teclado para este personaje. Con «Arcoíris» marcado, el teclado muestra un arcoíris si puede; si no, se usa este color. Lo aplica la página del teclado de Ajustes de Equestria OS cuando sigue el tema.",
+ "kbd.color": "Color del teclado",
+ "kbd.color_auto": "Auto (acento)",
+ "kbd.rainbow": "Arcoíris",
+ "kbd.needs_settings": "La vista previa y la aplicación requieren el paquete equestria-os-settings, que no está instalado."
 }

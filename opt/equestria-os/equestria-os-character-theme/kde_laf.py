@@ -46,9 +46,11 @@ from pathlib import Path
 
 try:
     from equestria_kit import palette as kit_palette, themes as kit_themes
+    from equestria_kit.character_store import CharacterStore
 except ImportError:  # запуск из исходников: пакет equestria-qt-kit лежит рядом
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "equestria-qt-kit"))
     from equestria_kit import palette as kit_palette, themes as kit_themes
+    from equestria_kit.character_store import CharacterStore
 
 VARIANTS = {  # вариант -> (устар.: базовая схема Breeze, курсор, суффикс id темы)
     "Light": ("BreezeLight.colors", "Vimix-white-cursors", ""),
@@ -728,14 +730,7 @@ def refresh_user_themes(day_night: DayNight | None = None, home: Path | None = N
     day_night = day_night or DayNight()
     share = (home or Path.home()) / ".local" / "share"
     themes = share / "EquestriaOS" / "Themes"
-    characters = []
-    for path in (themes / "characters.json", Path(__file__).resolve().parent / "characters.json"):
-        try:
-            characters = json.loads(path.read_text(encoding="utf-8")).get("Characters", [])
-            break
-        except (OSError, ValueError):
-            continue
-    characters = [c for c in characters if isinstance(c, dict)]
+    characters = [c for c in CharacterStore(themes, Path(__file__).resolve().parent).read() if isinstance(c, dict)]
     rebuilt = StalePairRefresher(share, themes).refresh(characters)
     current = day_night.current()
     if current in rebuilt:
@@ -770,12 +765,25 @@ def _roles_args(ch: dict, variant: str) -> tuple:
     return pals[variant], accent_for(ch, variant), pals["Dark"]
 
 
+def load_characters_arg(path: str) -> list:
+    """Персонажи для сборки: каталог characters.d (файл на персонажа, порядок по имени) или старый общий файл."""
+    p = Path(path)
+    if p.is_dir():
+        entries = []
+        for f in sorted(p.glob("*.json")):
+            data = json.loads(f.read_text(encoding="utf-8"))
+            if isinstance(data, dict) and data.get("Id"):
+                entries.append(data)
+        return entries
+    return json.loads(p.read_text(encoding="utf-8")).get("Characters", [])
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--refresh-user", action="store_true",
                     help="пересобрать устаревшие темы в ~/.local (автозапуск сессии)")
     ap.add_argument("--dest", help="каталог share (например $pkgdir/usr/share)")
-    ap.add_argument("--characters", help="characters.json")
+    ap.add_argument("--characters", help="characters.d (каталог с файлами персонажей) или старый characters.json")
     ap.add_argument("--icons", help="каталог, от которого отсчитываются IconPath")
     ap.add_argument("--panel-styles", action="store_true", help="ещё и базовые стили панели (для пакета)")
     ap.add_argument("--report", action="store_true",
@@ -784,8 +792,7 @@ def main() -> None:
     if a.report:
         if not a.characters:
             ap.error("для --report нужен --characters")
-        chars = json.loads(Path(a.characters).read_text(encoding="utf-8")).get("Characters", [])
-        sys.exit(report(chars))
+        sys.exit(report(load_characters_arg(a.characters)))
     if a.refresh_user:
         for i in refresh_user_themes():
             print(i)
@@ -795,7 +802,7 @@ def main() -> None:
     if a.panel_styles:
         for i in panel_styles(Path(a.dest)):
             print(i)
-    chars = json.loads(Path(a.characters).read_text(encoding="utf-8")).get("Characters", [])
+    chars = load_characters_arg(a.characters)
     for i in build(Path(a.dest), chars, Path(a.icons) if a.icons else None):
         print(i)
 

@@ -1,0 +1,30 @@
+{
+    "Id": "canterlot",
+    "DisplayName": "Canterlot",
+    "KonsoleProfile": "canterlot",
+    "WallpaperPath": "Wallpapers/Canterlot",
+    "KdeColorScheme": "canterlot",
+    "AccentColor": "#5CC98B",
+    "HoverColor": "#0C2A23",
+    "IconPath": "MLP Cutiemarks/Equestria_OS.png",
+    "KonsoleTheme": {
+        "Background": "7,26,22",
+        "Foreground": "214,238,232",
+        "Color0": "7,26,22",
+        "Color0Intense": "40,72,64",
+        "Color1": "226,110,110",
+        "Color1Intense": "246,150,150",
+        "Color2": "92,201,139",
+        "Color2Intense": "140,230,175",
+        "Color3": "224,190,100",
+        "Color3Intense": "245,215,140",
+        "Color4": "79,179,217",
+        "Color4Intense": "130,210,240",
+        "Color5": "165,140,220",
+        "Color5Intense": "195,175,245",
+        "Color6": "90,183,180",
+        "Color6Intense": "140,220,215",
+        "Color7": "214,238,232",
+        "Color7Intense": "245,255,252"
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "Id": "rarity",
+    "DisplayName": "Rarity",
+    "KonsoleProfile": "rarity",
+    "WallpaperPath": "Wallpapers/Rarity",
+    "KdeColorScheme": "rarity",
+    "AccentColor": "#B39DDB",
+    "KeyboardBacklight": {
+        "Color": "#783fdb"
+    },
+    "HoverColor": "#191628",
+    "IconPath": "MLP Cutiemarks/Rarity.png",
+    "KonsoleTheme": {
+        "Background": "12,10,22",
+        "Foreground": "240,235,255",
+        "Color0": "12,10,22",
+        "Color0Intense": "50,45,80",
+        "Color1": "179,157,219",
+        "Color1Intense": "210,190,245",
+        "Color2": "150,140,200",
+        "Color2Intense": "190,180,240",
+        "Color3": "200,190,230",
+        "Color3Intense": "225,215,255",
+        "Color4": "100,90,170",
+        "Color4Intense": "140,130,210",
+        "Color5": "160,140,220",
+        "Color5Intense": "200,180,255",
+        "Color6": "180,170,230",
+        "Color6Intense": "210,200,255",
+        "Color7": "240,235,255",
+        "Color7Intense": "255,252,255"
+    }
+}

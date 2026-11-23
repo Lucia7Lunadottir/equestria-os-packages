@@ -70,5 +70,11 @@
  "pal.night": "Nuit",
  "pal.day": "Jour",
  "pal.warn": "Faible contraste : {0} sur « {1} » donne {2}:1. KDE ajustera la couleur du texte pour qu’il reste lisible.",
- "pal.pick": "Choisir une couleur"
+ "pal.pick": "Choisir une couleur",
+ "kbd.title": "Rétroéclairage du clavier",
+ "kbd.hint": "Couleur du rétroéclairage du clavier pour ce personnage. Avec « Arc-en-ciel » coché, le clavier affiche un arc-en-ciel s'il le peut ; sinon cette couleur est utilisée. Appliqué par la page clavier des Paramètres Equestria OS lorsqu'elle suit le thème.",
+ "kbd.color": "Couleur du clavier",
+ "kbd.color_auto": "Auto (accent)",
+ "kbd.rainbow": "Arc-en-ciel",
+ "kbd.needs_settings": "L'aperçu et l'application nécessitent le paquet equestria-os-settings, qui n'est pas installé."
 }

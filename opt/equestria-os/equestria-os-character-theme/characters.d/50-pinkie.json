@@ -1,0 +1,30 @@
+{
+    "Id": "pinkie",
+    "DisplayName": "Pinkie Pie",
+    "KonsoleProfile": "pinkie",
+    "WallpaperPath": "Wallpapers/Pinkie Pie",
+    "KdeColorScheme": "pinkie",
+    "AccentColor": "#F06292",
+    "HoverColor": "#280C19",
+    "IconPath": "MLP Cutiemarks/Pinkie_Pie.png",
+    "KonsoleTheme": {
+        "Background": "25,8,18",
+        "Foreground": "255,210,230",
+        "Color0": "25,8,18",
+        "Color0Intense": "80,30,55",
+        "Color1": "240,98,146",
+        "Color1Intense": "255,140,180",
+        "Color2": "220,80,130",
+        "Color2Intense": "255,120,170",
+        "Color3": "255,170,200",
+        "Color3Intense": "255,200,220",
+        "Color4": "180,60,110",
+        "Color4Intense": "220,90,140",
+        "Color5": "210,80,140",
+        "Color5Intense": "250,120,170",
+        "Color6": "240,120,170",
+        "Color6Intense": "255,160,200",
+        "Color7": "255,210,230",
+        "Color7Intense": "255,235,245"
+    }
+}

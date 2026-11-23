@@ -23,6 +23,10 @@ from ui import Ui_MainWindow, APP_STYLE, ModeSwitch
 from character_card import CharacterCard
 import kde_laf
 import palette_model
+import keyboard_look
+import asset_sync
+from equestria_kit.character_store import CharacterStore
+from keyboard_preview import KeyboardPreview
 
 SYSTEM_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -75,6 +79,9 @@ class EGCharacter:
     # (пусто — как ночной AccentColor). Нужны, чтобы KDE-приложения днём читались так, как хочет пользователь.
     UiPaletteDay: dict = field(default_factory=dict)
     AccentColorDay: str = ""
+    # Вид на подсветке клавиатуры: {"Color": "#rrggbb", "Rainbow": true}; пусто — цвет акцента.
+    # Какой именно эффект даёт «радугу», решает equestria-os-settings. См. keyboard_look.py
+    KeyboardBacklight: dict = field(default_factory=dict)
 
 class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
     def __init__(self, title_font_family=None):
@@ -94,6 +101,8 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         kit_qt.style(self, style)
 
         self._apply_lock = threading.Lock()
+        self.store = CharacterStore(USER_PATH, SYSTEM_PATH)
+        self.kbd_preview = KeyboardPreview()
         self.characters = []
         self.active_character = None
         self.editing_character = None
@@ -126,7 +135,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         os.makedirs(USER_PATH, exist_ok=True)
 
         # Список того, что РЕАЛЬНО нужно скопировать пользователю
-        assets_to_copy = ["characters.json", "Wallpapers", "MLP Cutiemarks"]
+        assets_to_copy = ["Wallpapers", "MLP Cutiemarks"]   # данные персонажей — в characters.d, их не копируем
 
         for item in assets_to_copy:
             src = os.path.join(SYSTEM_PATH, item)
@@ -135,9 +144,12 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             # Если это дефолтный файл/папка есть в системе, копируем его
             if os.path.exists(src):
                 if os.path.isdir(src):
-                    # Копируем только если папки ещё нет — иначе блокируем UI
                     if not os.path.exists(dst):
                         shutil.copytree(src, dst, dirs_exist_ok=True)
+                    else:
+                        # Папка уже есть: докладываем только то, чего у пользователя нет
+                        # (новая встроенная тема привозит свою папку обоев и иконку); его файлы не трогаем
+                        asset_sync.add_missing(src, dst)
                 else:
                     # Если файла у пользователя еще нет, копируем
                     if not os.path.exists(dst):
@@ -296,6 +308,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             char.UiPalette = palette_model.clean(char.UiPalette)   # файл чужой: только известные роли и цвета
             char.UiPaletteDay = palette_model.clean(char.UiPaletteDay)
             char.AccentColorDay = palette_model.clean_color(char.AccentColorDay)
+            char.KeyboardBacklight = keyboard_look.clean(char.KeyboardBacklight)
 
             base_id = str(char.Id).strip() or "imported"
             new_id, n = base_id, 2
@@ -423,6 +436,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         for b in (self.btn_pal_night, self.btn_pal_day):
             b.setToolTip(self.pal_text("pal.mode_tip"))
         self.lbl_pal_mode_note.setText(self.pal_text("pal.day_auto"))
+        self.retranslate_keyboard_block()
         self.on_palette_more_toggled(self.btn_pal_more.isChecked())
         self.palette_preview.set_titles(self.pal_text("pal.night"), self.pal_text("pal.day"))
         self.lbl_konsole_colors.setText(self.t_str("ui.lbl_konsole_colors"))
@@ -440,11 +454,14 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.btn_create.clicked.connect(self.on_create_new)
         self.btn_import.clicked.connect(self.import_theme)
         self.btn_export.clicked.connect(self.export_current_theme)
-        self.btn_cancel.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(0))
+        self.btn_cancel.clicked.connect(self.cancel_editor)
         self.btn_save.clicked.connect(self.save_theme)
         self.btn_delete.clicked.connect(self.confirm_delete_theme)
         self.btn_browse_wall.clicked.connect(self.browse_wallpaper)
         self.btn_browse_icon.clicked.connect(self.browse_icon)
+        self.chk_kbd_rainbow.toggled.connect(self.on_kbd_rainbow_toggled)
+        self.btn_kbd_color.clicked.connect(self.on_kbd_pick_color)
+        self.btn_kbd_color_auto.clicked.connect(self.on_kbd_color_auto)
         self.btn_pal_more.toggled.connect(self.on_palette_more_toggled)
         self.btn_pal_reset.clicked.connect(self.on_palette_reset)
         self.btn_pal_reset_day.clicked.connect(self.on_palette_reset_day)
@@ -453,21 +470,13 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
 
     def load_characters(self):
         self.characters.clear()
-        data = None
-        # Битый пользовательский JSON не должен ронять приложение:
-        # откатываемся на системный набор персонажей
-        for path in (os.path.join(USER_PATH, "characters.json"),
-                     os.path.join(SYSTEM_PATH, "characters.json")):
-            if not os.path.exists(path):
-                continue
-            try:
-                with open(path, "r", encoding='utf-8') as f:
-                    data = json.load(f)
-                break
-            except (json.JSONDecodeError, OSError):
-                data = None
-        if not isinstance(data, dict):
-            return
+        # Старый общий characters.json конвертируется в файлы по персонажам (сам он
+        # сохраняется как characters.json.pre-split). Битый файл не трогаем и не роняем приложение.
+        try:
+            self.store.migrate_legacy()
+        except OSError as e:
+            print(f"Не удалось конвертировать characters.json: {e}", file=sys.stderr)
+        data = {"Characters": [dict(c) for c in self.store.read()]}
         known_char = {f.name for f in fields(EGCharacter)}
         known_kon = {f.name for f in fields(KonsoleColorScheme)}
         for c_dict in data.get("Characters", []):
@@ -482,6 +491,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
             char.UiPalette = palette_model.clean(char.UiPalette)
             char.UiPaletteDay = palette_model.clean(char.UiPaletteDay)
             char.AccentColorDay = palette_model.clean_color(char.AccentColorDay)
+            char.KeyboardBacklight = keyboard_look.clean(char.KeyboardBacklight)
             char.AccentColor = kde_laf.migrated_accent(char.Id, char.AccentColor)
             self.characters.append(char)
 
@@ -562,6 +572,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.fld_wallpaper.setText(self.editing_character.WallpaperPath)
         self.fld_icon.setText(self.editing_character.IconPath)
         self.build_color_fields()
+        self.load_keyboard_block()
 
     # ── Редактор палитры (логика — в palette_model.py, предпросмотр — в palette_editor.py) ──
 
@@ -644,6 +655,77 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.btn_pal_reset_day.setVisible(day)
         self.lbl_pal_mode_note.setVisible(day)
 
+    # ── Подсветка клавиатуры персонажа (данные — в keyboard_look.py) ──
+
+    def retranslate_keyboard_block(self):
+        self.lbl_kbd.setText(self.t_str("kbd.title"))
+        hint = self.t_str("kbd.hint")
+        if not self.kbd_preview.available():   # без пакета настроек выбор сохранится, но нигде не применится
+            hint += "\n" + self.t_str("kbd.needs_settings")
+        self.lbl_kbd_hint.setText(hint)
+        self.btn_kbd_color_auto.setText(self.t_str("kbd.color_auto"))
+        self.chk_kbd_rainbow.setText(self.t_str("kbd.rainbow"))
+        self.refresh_keyboard_block()
+
+    def load_keyboard_block(self):
+        look = keyboard_look.clean(self.editing_character.KeyboardBacklight)
+        self.chk_kbd_rainbow.blockSignals(True)
+        self.chk_kbd_rainbow.setChecked(bool(look.get("Rainbow")))
+        self.chk_kbd_rainbow.blockSignals(False)
+        self.refresh_keyboard_block()
+
+    def refresh_keyboard_block(self):
+        """Цвет можно менять всегда. Пока свой не выбран, на кнопке цвет акцента — он и будет на клавиатуре."""
+        look = self.editing_character.KeyboardBacklight if self.editing_character else {}
+        self.btn_kbd_color_auto.setEnabled(bool(look.get("Color")))
+        shown = look.get("Color") or (self.editing_character.AccentColor if self.editing_character else "#ffffff")
+        self._paint_swatch(self.btn_kbd_color, shown)
+
+    def on_kbd_rainbow_toggled(self, checked):
+        look = dict(self.editing_character.KeyboardBacklight)
+        if checked:
+            look["Rainbow"] = True
+        else:
+            look.pop("Rainbow", None)
+        self.editing_character.KeyboardBacklight = keyboard_look.clean(look)
+        self.refresh_keyboard_block()
+        self.preview_keyboard()
+
+    def preview_keyboard(self, color=None):
+        """Показать вид на клавиатуре до сохранения (если установлен pg-kbd-preview).
+        color — цвет, который выбирают прямо сейчас; без него — сохранённый в правке."""
+        look = self.editing_character.KeyboardBacklight
+        self.kbd_preview.show(color or look.get("Color"), self.editing_character.AccentColor,
+                              bool(look.get("Rainbow")))
+
+    def cancel_editor(self):
+        self.kbd_preview.restore()   # вернуть то, что на клавиатуре должно быть по-настоящему
+        self.stacked_widget.setCurrentIndex(0)
+
+    def closeEvent(self, event):
+        if self.stacked_widget.currentIndex() == 1:
+            self.kbd_preview.restore()
+        super().closeEvent(event)
+
+    def on_kbd_pick_color(self):
+        look = self.editing_character.KeyboardBacklight
+        dialog = QColorDialog(QColor(look.get("Color") or self.editing_character.AccentColor), self)
+        dialog.setWindowTitle(self.t_str("kbd.color"))
+        # Цвет сразу виден на клавиатуре, пока выбираешь
+        dialog.currentColorChanged.connect(lambda c: self.preview_keyboard(c.name()))
+        if dialog.exec() and dialog.currentColor().isValid():
+            self.editing_character.KeyboardBacklight = keyboard_look.clean(
+                {**look, "Color": dialog.currentColor().name()})
+        self.refresh_keyboard_block()
+        self.preview_keyboard()   # итог (или прежний вид, если закрыли без выбора)
+
+    def on_kbd_color_auto(self):
+        look = dict(self.editing_character.KeyboardBacklight)
+        look.pop("Color", None)
+        self.editing_character.KeyboardBacklight = look
+        self.refresh_keyboard_block()
+        self.preview_keyboard()
+
     def on_kde_bg_toggled(self, checked):
         """«Фоны как в KDE» — общая настройка стиля: фоны окон, списков, кнопок берутся из обычного
         Breeze, цвета персонажей остаются в акценте и выделении. Свои цвета фонов не теряются.
@@ -691,8 +773,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         акцент и цвет наведения возвращаются заводскими. Это правка в редакторе — запишется
         по «Сохранить», а «Отмена» вернёт всё как было."""
         char = self.editing_character
-        original = palette_model.system_character(self.editing_original_id or char.Id,
-                                                  os.path.join(SYSTEM_PATH, "characters.json"))
+        original = self.store.system_character(self.editing_original_id or char.Id)
         char.UiPalette = {}
         char.UiPaletteDay = {}
         char.AccentColorDay = ""
@@ -797,6 +878,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
         self.editing_character.UiPalette = palette_model.clean(self.editing_character.UiPalette)
         self.editing_character.UiPaletteDay = palette_model.clean(self.editing_character.UiPaletteDay)
         self.editing_character.AccentColorDay = palette_model.clean_color(self.editing_character.AccentColorDay)
+        self.editing_character.KeyboardBacklight = keyboard_look.clean(self.editing_character.KeyboardBacklight)
 
         if self.is_creating_new: self.characters.append(self.editing_character)
         else:
@@ -831,24 +913,18 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
     def _char_json(char):
         """Персонаж для записи в JSON: пустые правки палитры (ночи/дня) не пишем (файл остаётся таким же, как раньше)."""
         data = asdict(char)
-        for name in ("UiPalette", "UiPaletteDay", "AccentColorDay"):
+        for name in ("UiPalette", "UiPaletteDay", "AccentColorDay", "KeyboardBacklight"):
             if not data.get(name):
                 data.pop(name, None)
         return data
 
     def save_json_and_refresh(self):
-        data = {"Characters": [self._char_json(c) for c in self.characters]}
-        json_path = os.path.join(USER_PATH, "characters.json")
-        tmp_path = json_path + ".tmp"
+        # Каждому персонажу — свой файл правки в characters.d (только то, что отличается от встроенного)
         try:
-            with open(tmp_path, "w", encoding='utf-8') as f:
-                json.dump(data, f, indent=4)
-            os.replace(tmp_path, json_path)  # атомарная подмена
-        except OSError:
-            try:
-                os.remove(tmp_path)
-            except OSError:
-                pass
+            self.store.write([self._char_json(c) for c in self.characters])
+        except OSError as e:
+            print(f"Не удалось сохранить персонажей: {e}", file=sys.stderr)
+        self.kbd_preview.restore()   # предпросмотр закончен: на клавиатуре снова то, что должно быть
         self.stacked_widget.setCurrentIndex(0)
         self.build_ui()
 

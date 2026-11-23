@@ -1,16 +1,17 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-character-theme
-pkgver=2.3.1
-pkgrel=1
+pkgver=2.4.0
+pkgrel=3
 pkgdesc="Customizing the visual style and characters of Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
 license=('GPL-3.0-or-later')
-depends=('python-pyqt6' 'equestria-qt-kit>=1.5' 'equestria-os-branding>=1.5.0'
+depends=('python-pyqt6' 'equestria-qt-kit>=1.6' 'equestria-os-branding>=1.5.0'
          'plasma-workspace' 'breeze')
-makedepends=('python' 'breeze' 'equestria-qt-kit>=1.5')
-optdepends=('konsole: применение терминального профиля персонажа'
+makedepends=('python' 'breeze' 'equestria-qt-kit>=1.6')
+optdepends=('equestria-os-settings: подсветка клавиатуры — предпросмотр и применение цвета/радуги темы'
+            'konsole: применение терминального профиля персонажа'
             'fastfetch: приветствие с кьютимаркой в терминале'
             'chafa: отрисовка кьютимарки в fastfetch'
             'imagemagick: обработка изображений для fastfetch')
@@ -19,9 +20,17 @@ package() {
     local _lib="$pkgdir/opt/equestria-os/$pkgname"
     install -dm755 "$_lib"
 
-    for f in main.py ui.py character_card.py kde_laf.py palette_model.py palette_editor.py style.qss equestria_cyrillic.ttf characters.json; do
+    for f in main.py ui.py character_card.py kde_laf.py palette_model.py palette_editor.py keyboard_look.py keyboard_preview.py asset_sync.py style.qss equestria_cyrillic.ttf; do
         install -Dm644 "$startdir/$f" "$_lib/$f"
     done
+
+    # встроенные персонажи: по файлу на персонажа (порядок карточек — по имени файла)
+    for f in "$startdir"/characters.d/*.json; do
+        install -Dm644 "$f" "$_lib/characters.d/$(basename "$f")"
+    done
+
+    # авторы и лицензии картинок (собирается из credits.json: tools/credits.py)
+    install -Dm644 "$startdir/CREDITS.md" "$pkgdir/usr/share/doc/$pkgname/CREDITS.md"
 
     # переводы: locales/<язык>.json рядом с программой
     for f in "$startdir"/locales/*.json; do
@@ -33,7 +42,7 @@ package() {
     # Глобальные темы KDE встроенных персонажей (пара «день/ночь» на каждого) —
     # видны в «Параметры системы → Глобальная тема» сразу после установки.
     python3 "$startdir/kde_laf.py" --dest "$pkgdir/usr/share" \
-        --characters "$startdir/characters.json" --icons "$startdir" --panel-styles >/dev/null
+        --characters "$startdir/characters.d" --icons "$startdir" --panel-styles >/dev/null
     cp -a "$startdir/Wallpapers" "$_lib/"
 
     install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-os-character-theme" << 'EOF'

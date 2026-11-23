@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QButtonGroup,
-                             QPushButton, QScrollArea, QStackedWidget, QLineEdit, QGridLayout)
+                             QPushButton, QScrollArea, QStackedWidget, QLineEdit, QGridLayout, QCheckBox)
 from PyQt6.QtCore import Qt, pyqtSignal
 from palette_editor import PalettePreview
 
@@ -401,6 +401,30 @@ class Ui_MainWindow:
         self.pal_more_layout.setHorizontalSpacing(16)
         self.pal_more_container.setVisible(False)
         self.ed_form_layout.addWidget(self.pal_more_container)
+
+        # Подсветка клавиатуры: эффект и цвет персонажа (логика — в main.py / keyboard_look.py)
+        self.lbl_kbd = QLabel("Keyboard backlight")
+        self.lbl_kbd.setProperty("cssClass", "subtitle")
+        self.ed_form_layout.addWidget(self.lbl_kbd)
+        self.lbl_kbd_hint = QLabel("")
+        self.lbl_kbd_hint.setProperty("cssClass", "pal-hint")
+        self.lbl_kbd_hint.setWordWrap(True)
+        self.ed_form_layout.addWidget(self.lbl_kbd_hint)
+        kbd_row = QWidget()
+        kbd_lo = QHBoxLayout(kbd_row)
+        kbd_lo.setContentsMargins(0, 4, 0, 4)
+        self.chk_kbd_rainbow = QCheckBox()
+        self.btn_kbd_color = QPushButton()
+        self.btn_kbd_color.setFixedSize(40, 24)
+        self.btn_kbd_color.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_kbd_color_auto = QPushButton("")
+        self.btn_kbd_color_auto.setProperty("cssClass", "open-terminal-btn")
+        self.btn_kbd_color_auto.setProperty("variant", "neutral")
+        kbd_lo.addWidget(self.btn_kbd_color)
+        kbd_lo.addWidget(self.btn_kbd_color_auto)
+        kbd_lo.addWidget(self.chk_kbd_rainbow)
+        kbd_lo.addStretch()
+        self.ed_form_layout.addWidget(kbd_row)
 
         self.lbl_konsole_colors = QLabel("Konsole Colors (RGB)")
         self.lbl_konsole_colors.setProperty("cssClass", "subtitle")

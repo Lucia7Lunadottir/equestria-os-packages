@@ -133,18 +133,6 @@ def reset_day(ch: dict) -> None:
     ch["AccentColorDay"] = ""
 
 
-def system_character(char_id: str, system_json: Path) -> dict | None:
-    """Заводская версия встроенного персонажа (из пакета), если он там есть."""
-    try:
-        data = json.loads(Path(system_json).read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return None
-    for c in data.get("Characters", []) if isinstance(data, dict) else []:
-        if isinstance(c, dict) and c.get("Id") == char_id:
-            return c
-    return None
-
-
 def freeze(ch: dict, new_id: str) -> dict:
     """UiPalette для КОПИИ персонажа под другим Id. У встроенных персонажей палитра
     «спроектирована» и привязана к Id; копия иначе получила бы выведенную, другую.

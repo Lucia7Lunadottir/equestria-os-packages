@@ -70,5 +70,11 @@
  "pal.night": "Noc",
  "pal.day": "Dzień",
  "pal.warn": "Niski kontrast: {0} na „{1}” to {2}:1. KDE dostosuje kolor tekstu, aby był czytelny.",
- "pal.pick": "Wybierz kolor"
+ "pal.pick": "Wybierz kolor",
+ "kbd.title": "Podświetlenie klawiatury",
+ "kbd.hint": "Kolor podświetlenia klawiatury dla tej postaci. Po zaznaczeniu „Tęcza” klawiatura pokazuje tęczę, jeśli potrafi; w przeciwnym razie używany jest ten kolor. Stosuje go strona klawiatury w Ustawieniach Equestria OS po włączeniu podążania za motywem.",
+ "kbd.color": "Kolor klawiatury",
+ "kbd.color_auto": "Auto (akcent)",
+ "kbd.rainbow": "Tęcza",
+ "kbd.needs_settings": "Podgląd i zastosowanie wymagają pakietu equestria-os-settings, który nie jest zainstalowany."
 }

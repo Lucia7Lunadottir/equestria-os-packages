@@ -70,5 +70,11 @@
  "pal.night": "밤",
  "pal.day": "낮",
  "pal.warn": "대비 낮음: “{1}” 위의 {0}은(는) {2}:1입니다. KDE가 읽기 쉽도록 텍스트 색을 조정합니다.",
- "pal.pick": "색상 선택"
+ "pal.pick": "색상 선택",
+ "kbd.title": "키보드 백라이트",
+ "kbd.hint": "이 캐릭터의 키보드 조명 색상입니다. '무지개'를 선택하면 키보드가 지원하는 경우 무지개를 표시하고, 아니면 이 색상을 사용합니다. 테마 따라가기가 켜져 있을 때 Equestria OS 설정의 키보드 페이지가 적용합니다.",
+ "kbd.color": "키보드 색상",
+ "kbd.color_auto": "자동 (강조색)",
+ "kbd.rainbow": "무지개",
+ "kbd.needs_settings": "미리보기와 적용에는 equestria-os-settings 패키지가 필요하지만 설치되어 있지 않습니다."
 }

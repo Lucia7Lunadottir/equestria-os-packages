@@ -1,0 +1,33 @@
+{
+    "Id": "sunset",
+    "DisplayName": "Sunset Shimmer",
+    "KonsoleProfile": "sunset",
+    "WallpaperPath": "Wallpapers/Sunset Shimmer",
+    "KdeColorScheme": "sunset",
+    "AccentColor": "#e54c35",
+    "KeyboardBacklight": {
+        "Color": "#e53b1d"
+    },
+    "HoverColor": "#32140F",
+    "IconPath": "MLP Cutiemarks/Sunset_Shimmer.png",
+    "KonsoleTheme": {
+        "Background": "37,18,16",
+        "Foreground": "255,220,200",
+        "Color0": "17,8,6",
+        "Color0Intense": "80,40,30",
+        "Color1": "229,76,53",
+        "Color1Intense": "255,120,90",
+        "Color2": "255,214,51",
+        "Color2Intense": "255,232,120",
+        "Color3": "229,76,53",
+        "Color3Intense": "255,120,90",
+        "Color4": "180,60,40",
+        "Color4Intense": "220,90,60",
+        "Color5": "200,80,50",
+        "Color5Intense": "240,110,80",
+        "Color6": "255,214,51",
+        "Color6Intense": "255,232,120",
+        "Color7": "255,220,200",
+        "Color7Intense": "255,240,230"
+    }
+}

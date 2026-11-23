@@ -70,5 +70,11 @@
  "pal.night": "Night",
  "pal.day": "Day",
  "pal.warn": "Low contrast: {0} on “{1}” is {2}:1. KDE will adjust the text color so it stays readable.",
- "pal.pick": "Pick a color"
+ "pal.pick": "Pick a color",
+ "kbd.title": "Keyboard backlight",
+ "kbd.hint": "Color of the keyboard light for this character. With “Rainbow” ticked, the keyboard shows a rainbow if it can; otherwise this color is used. Applied by the keyboard page of Equestria OS Settings when it follows the theme.",
+ "kbd.color": "Keyboard color",
+ "kbd.color_auto": "Auto (accent)",
+ "kbd.rainbow": "Rainbow",
+ "kbd.needs_settings": "Preview and applying need the equestria-os-settings package, which is not installed."
 }

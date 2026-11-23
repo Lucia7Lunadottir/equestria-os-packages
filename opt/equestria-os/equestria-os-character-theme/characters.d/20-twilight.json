@@ -1,0 +1,33 @@
+{
+    "Id": "twilight",
+    "DisplayName": "Sci-Twi",
+    "KonsoleProfile": "twilight",
+    "WallpaperPath": "Wallpapers/Twilight Sparkle",
+    "KdeColorScheme": "twilight",
+    "AccentColor": "#8E44AD",
+    "KeyboardBacklight": {
+        "Color": "#8a00ad"
+    },
+    "HoverColor": "#190F2D",
+    "IconPath": "MLP Cutiemarks/Twilight_Sparkle.png",
+    "KonsoleTheme": {
+        "Background": "15,10,25",
+        "Foreground": "220,200,255",
+        "Color0": "15,10,25",
+        "Color0Intense": "50,35,80",
+        "Color1": "142,68,173",
+        "Color1Intense": "180,100,210",
+        "Color2": "100,80,200",
+        "Color2Intense": "140,120,240",
+        "Color3": "180,140,220",
+        "Color3Intense": "210,180,255",
+        "Color4": "70,50,150",
+        "Color4Intense": "100,80,190",
+        "Color5": "160,80,200",
+        "Color5Intense": "200,120,240",
+        "Color6": "120,100,220",
+        "Color6Intense": "160,140,255",
+        "Color7": "220,200,255",
+        "Color7Intense": "240,230,255"
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "Id": "fluttershy",
+    "DisplayName": "Fluttershy",
+    "KonsoleProfile": "fluttershy",
+    "WallpaperPath": "Wallpapers/Fluttershy",
+    "KdeColorScheme": "fluttershy",
+    "AccentColor": "#e481ae",
+    "KeyboardBacklight": {
+        "Color": "#a4e41b"
+    },
+    "HoverColor": "#132410",
+    "IconPath": "MLP Cutiemarks/Fluttershy.png",
+    "KonsoleTheme": {
+        "Background": "10,18,8",
+        "Foreground": "220,240,200",
+        "Color0": "10,18,8",
+        "Color0Intense": "40,65,30",
+        "Color1": "183,199,129",
+        "Color1Intense": "210,225,160",
+        "Color2": "140,190,100",
+        "Color2Intense": "180,220,140",
+        "Color3": "200,215,160",
+        "Color3Intense": "225,235,190",
+        "Color4": "100,140,70",
+        "Color4Intense": "140,180,100",
+        "Color5": "160,180,110",
+        "Color5Intense": "190,210,140",
+        "Color6": "170,200,130",
+        "Color6Intense": "200,225,160",
+        "Color7": "220,240,200",
+        "Color7Intense": "240,250,225"
+    }
+}

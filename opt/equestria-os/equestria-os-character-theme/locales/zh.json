@@ -70,5 +70,11 @@
  "pal.night": "夜间",
  "pal.day": "白天",
  "pal.warn": "对比度偏低：{0}在“{1}”上为 {2}:1。KDE 会调整文字颜色以保证可读。",
- "pal.pick": "选择颜色"
+ "pal.pick": "选择颜色",
+ "kbd.title": "键盘背光",
+ "kbd.hint": "此角色的键盘灯颜色。勾选“彩虹”后，键盘支持时会显示彩虹，否则使用此颜色。开启跟随主题时，由 Equestria OS 设置中的键盘页面应用。",
+ "kbd.color": "键盘颜色",
+ "kbd.color_auto": "自动（强调色）",
+ "kbd.rainbow": "彩虹",
+ "kbd.needs_settings": "预览和应用需要 equestria-os-settings 软件包，但它尚未安装。"
 }

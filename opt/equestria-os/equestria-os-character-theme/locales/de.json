@@ -70,5 +70,11 @@
  "pal.night": "Nacht",
  "pal.day": "Tag",
  "pal.warn": "Geringer Kontrast: {0} auf „{1}“ ergibt {2}:1. KDE passt die Textfarbe an, damit sie lesbar bleibt.",
- "pal.pick": "Farbe wählen"
+ "pal.pick": "Farbe wählen",
+ "kbd.title": "Tastaturbeleuchtung",
+ "kbd.hint": "Farbe der Tastaturbeleuchtung für diesen Charakter. Ist „Regenbogen“ angehakt, zeigt die Tastatur einen Regenbogen, sofern sie das kann; sonst wird diese Farbe verwendet. Wird von der Tastaturseite der Equestria-OS-Einstellungen angewendet, wenn dem Thema gefolgt wird.",
+ "kbd.color": "Tastaturfarbe",
+ "kbd.color_auto": "Auto (Akzent)",
+ "kbd.rainbow": "Regenbogen",
+ "kbd.needs_settings": "Für Vorschau und Anwendung wird das Paket equestria-os-settings benötigt, das nicht installiert ist."
 }
