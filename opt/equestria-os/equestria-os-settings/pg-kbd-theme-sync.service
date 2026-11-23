@@ -1,0 +1,13 @@
+[Unit]
+Description=Equestria OS — keyboard backlight follows the character theme
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pg-kbd-theme-sync
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

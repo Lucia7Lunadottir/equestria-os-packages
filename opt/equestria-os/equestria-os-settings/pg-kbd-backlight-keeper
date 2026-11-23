@@ -1,0 +1,59 @@
+#!/bin/bash
+# pg-kbd-backlight-keeper — возвращает подсветку клавиатуры после сна.
+#
+# Проблема: при уходе в suspend прошивка/ядро (ASUS и др.) гасит подсветку, а
+# PowerDevil запоминает этот «0» как последнюю яркость и после пробуждения
+# восстанавливать ему нечего — экран блокировки остаётся тёмным, пароль
+# приходится вводить вслепую.
+#
+# Решение: слушаем PrepareForSleep от logind. Перед сном запоминаем уровень
+# подсветки, после пробуждения возвращаем его — но только если до сна свет
+# горел (выключенную осознанно подсветку не включаем). Яркость выставляется
+# через logind (Session.SetBrightness), поэтому root не нужен. Работает как
+# пользовательский сервис; на машинах без подсветки клавиатуры сразу выходит.
+
+set -u
+
+RETRY_DELAY=3   # другие демоны (asusd, PowerDevil) могут тронуть LED после пробуждения
+
+# Первое устройство подсветки клавиатуры (asus::kbd_backlight, tpacpi::kbd_backlight, ...)
+find_led() {
+    local d
+    for d in /sys/class/leds/*kbd_backlight*; do
+        [[ -r "$d/brightness" ]] && { basename "$d"; return 0; }
+    done
+    return 1
+}
+
+LED_NAME=$(find_led) || exit 0
+LED_PATH="/sys/class/leds/$LED_NAME/brightness"
+
+current_level() { cat "$LED_PATH" 2>/dev/null || echo 0; }
+
+set_level() {
+    busctl --system call org.freedesktop.login1 /org/freedesktop/login1/session/auto \
+        org.freedesktop.login1.Session SetBrightness ssu leds "$LED_NAME" "$1" >/dev/null 2>&1
+}
+
+saved_level=0
+
+restore_after_resume() {
+    (( saved_level > 0 )) || return 0
+    (( $(current_level) == 0 )) && set_level "$saved_level"
+    sleep "$RETRY_DELAY"
+    (( $(current_level) == 0 )) && set_level "$saved_level"
+    return 0
+}
+
+dbus-monitor --system \
+    "type='signal',interface='org.freedesktop.login1.Manager',member='PrepareForSleep'" 2>/dev/null |
+while read -r line; do
+    case "$line" in
+        *"boolean true"*)
+            saved_level=$(current_level)
+            ;;
+        *"boolean false"*)
+            restore_after_resume
+            ;;
+    esac
+done

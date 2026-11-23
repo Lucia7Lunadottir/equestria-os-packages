@@ -1,0 +1,62 @@
+#!/usr/bin/python3
+"""pg-kbd-preview — show a keyboard look right away, for the theme editor's preview.
+
+    pg-kbd-preview --color #rrggbb [--rainbow]   show it
+    pg-kbd-preview --accent #rrggbb [--rainbow]  same, for a character without a colour
+                                                 of its own (the accent, adjusted for LEDs)
+    pg-kbd-preview --restore                     go back to what the keyboard should show now
+
+The caller (the theme editor) only passes a colour and a rainbow flag; which light
+effect that means is decided here. Works only when changing the keyboard needs no
+password (the "no password" access); otherwise it does nothing and exits quietly.
+"""
+
+import argparse
+import os
+import sys
+
+sys.path.insert(0, os.environ.get("PG_KBD_MODULES", "/opt/equestria-os/equestria-os-settings/modules"))
+import kbd_rgb_backends as rgb  # noqa: E402
+import kbd_theme_look as look  # noqa: E402
+
+
+def restore_setting(controller: rgb.RgbController, available: set) -> rgb.RgbSetting | None:
+    """The theme's look when the keyboard follows the theme, else the page's own setting."""
+    own = controller.store.load()
+    if own.follow_theme:
+        char_id = look.active_id()
+        setting = look.setting_for(char_id, own, available) if char_id else None
+        if setting is not None:
+            return setting
+    return own
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--color")
+    parser.add_argument("--accent")
+    parser.add_argument("--rainbow", action="store_true")
+    parser.add_argument("--restore", action="store_true")
+    args = parser.parse_args()
+
+    controller = rgb.RgbController()
+    if controller.backend is None or not controller.backend.silent:
+        return 0
+    available = {e.id for e in controller.backend.effects()}
+    if args.restore:
+        setting = restore_setting(controller, available)
+    elif args.color or args.accent:
+        try:
+            color = args.color or look.led_color(args.accent)
+        except ValueError:
+            return 1
+        setting = look.resolve(color, args.rainbow, controller.store.load(), available)
+    else:
+        parser.error("give --color, --accent or --restore")
+    if setting is not None:
+        controller.apply(setting)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

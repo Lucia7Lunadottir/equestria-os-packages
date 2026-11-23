@@ -5,11 +5,16 @@ post_install() {
     # Plasmashell watchdog: включаем для всех пользователей (со следующего
     # входа в систему) и сразу запускаем у тех, кто залогинен прямо сейчас.
     systemctl --global enable pg-plasmashell-watchdog.service >/dev/null 2>&1 || true
+    # Keyboard backlight keeper: возвращает подсветку клавиатуры после сна.
+    systemctl --global enable pg-kbd-backlight-keeper.service >/dev/null 2>&1 || true
+    # Puts the keyboard colour back at login (takes effect from the next login).
+    systemctl --global enable pg-kbd-restore.service >/dev/null 2>&1 || true
     local uid
     for uid in $(loginctl list-users --no-legend 2>/dev/null | awk '{print $1}'); do
         [ "$uid" -ge 1000 ] 2>/dev/null || continue
         systemctl --user --machine="${uid}@.host" daemon-reload >/dev/null 2>&1 || true
         systemctl --user --machine="${uid}@.host" restart pg-plasmashell-watchdog.service >/dev/null 2>&1 || true
+        systemctl --user --machine="${uid}@.host" restart pg-kbd-backlight-keeper.service >/dev/null 2>&1 || true
     done
 }
 
@@ -18,5 +23,12 @@ post_upgrade() {
 }
 
 pre_remove() {
+    # Optional no-password rule created from the keyboard backlight page.
+    if [ -f /etc/udev/rules.d/91-equestria-kbd-rgb.rules ]; then
+        rm -f /etc/udev/rules.d/91-equestria-kbd-rgb.rules
+        udevadm control --reload-rules 2>/dev/null || true
+    fi
     systemctl --global disable pg-plasmashell-watchdog.service >/dev/null 2>&1 || true
+    systemctl --global disable pg-kbd-backlight-keeper.service >/dev/null 2>&1 || true
+    systemctl --global disable pg-kbd-restore.service >/dev/null 2>&1 || true
 }

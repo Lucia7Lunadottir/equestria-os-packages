@@ -1,0 +1,60 @@
+#!/usr/bin/python3
+"""pg-kbd-theme-sync — keyboard backlight follows the active character theme.
+
+Started as a user service from the keyboard-backlight page (switch "Follow the
+character theme"). It sets the keyboard to the active character's look at start,
+when the character changes, and whenever that character's settings are edited
+(e.g. the "Rainbow" tick in the theme editor) — see modules/kbd_theme_look.py for
+how a look is worked out.
+
+The look is shown at once and, once it has stayed the same for a few seconds, also written into the
+keyboard's own memory, so it survives switching off and shows on the sign-in screen without the user ever
+opening the settings page.
+
+Needs a way to write without a password prompt (the "no password" udev access,
+or asusctl on ROG keyboards); without it the service exits. Plain Python
+standard library only — no Qt — to keep the memory footprint small.
+"""
+
+import os
+import sys
+import time
+
+sys.path.insert(0, os.environ.get("PG_KBD_MODULES", "/opt/equestria-os/equestria-os-settings/modules"))
+import kbd_rgb_backends as rgb  # noqa: E402
+import kbd_theme_look as look  # noqa: E402
+
+POLL_SECONDS = 2
+SETTLE_SECONDS = 6   # how long the look must stay unchanged before it is written into the keyboard's memory
+
+
+def main() -> int:
+    controller = rgb.RgbController()
+    if controller.backend is None or not controller.backend.silent:
+        sys.stderr.write("pg-kbd-theme-sync: no password-free way to change the keyboard colour\n")
+        return 0
+    available = {e.id for e in controller.backend.effects()}
+    seen = None
+    applied = None
+    pending = None          # look shown on the keyboard but not yet written into its memory
+    pending_since = 0.0
+    while True:
+        signature = look.watched_files()
+        if signature != seen:   # character switched, its data edited, or the page's settings changed
+            char_id = look.active_id()
+            setting = look.setting_for(char_id, controller.store.load(), available) if char_id else None
+            if setting is None or setting == applied:
+                seen = signature
+            elif controller.apply(setting):   # shown at once; on failure, try again next round
+                seen, applied = signature, setting
+                pending, pending_since = setting, time.monotonic()
+        # Written into the keyboard's memory only after the look stayed the same for SETTLE_SECONDS: switching
+        # through several characters in a row must not write the memory every time.
+        if pending is not None and signature == seen and time.monotonic() - pending_since >= SETTLE_SECONDS:
+            look.persist_to_keyboard(controller, pending)
+            pending = None
+        time.sleep(POLL_SECONDS)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

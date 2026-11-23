@@ -1,0 +1,13 @@
+[Unit]
+Description=Equestria OS — Keyboard backlight keeper (restores the backlight after suspend)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pg-kbd-backlight-keeper
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

@@ -107,6 +107,10 @@ class SidebarDelegate(QStyledItemDelegate):
         full_text = f"{icon}  {text}"
         font = QFont(option.font)
         font.setPointSize(11)
+        # The selected row is painted bold (see paint()), which is wider. Measure
+        # with the bold font so a name that only wraps when selected still gets
+        # enough height instead of being clipped.
+        font.setBold(True)
         from PyQt6.QtGui import QFontMetrics
         fm = QFontMetrics(font)
         avail_w = 220 - 16 - 8
