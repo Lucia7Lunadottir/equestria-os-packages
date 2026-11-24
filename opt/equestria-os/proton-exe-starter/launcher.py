@@ -11,6 +11,7 @@ import subprocess
 import re
 import shlex
 import shutil
+import time
 
 from steam_integration import apply_steam_env
 
@@ -244,6 +245,21 @@ def _detect_language():
 def t(key: str, *args) -> str:
     return proton_i18n.t(key, *args)
 
+def proton_log_path(env):
+    """Где Proton оставит свой лог при PROTON_LOG=1 (или None, если лог выключен).
+
+    Proton пишет в $PROTON_LOG_DIR (по умолчанию $HOME) файл steam-<SteamGameId>.log,
+    а SteamGameId перед запуском выставляет umu-run из GAMEID: для "umu-<id>"
+    это <id>, для всего остального — "0" (та же проверка, что в umu_run.py).
+    """
+    if env.get("PROTON_LOG", "0") in ("", "0"):
+        return None
+    gameid = env.get("GAMEID", "")
+    steam_game_id = gameid.split("-", 1)[1] if re.fullmatch(r"umu-\w+", gameid) else "0"
+    log_dir = env.get("PROTON_LOG_DIR") or os.path.expanduser("~")
+    return os.path.join(log_dir, f"steam-{steam_game_id}.log")
+
+
 class SplashWindow(QDialog):
     def __init__(self, exe_name, log_path, cmd, env, cwd, debug=False):
         super().__init__()
@@ -331,6 +347,7 @@ class SplashWindow(QDialog):
 
         # Открываем лог на запись (очищаем старый)
         log_out = open(self.log_path, "w", encoding="utf-8")
+        self._started_at = time.time()
         self.proc = subprocess.Popen(self.cmd, env=self.env, cwd=self.cwd, stdout=log_out, stderr=subprocess.STDOUT)
 
         # Открываем лог на чтение
@@ -358,10 +375,11 @@ class SplashWindow(QDialog):
     def _build_log_text(self, base_log: str) -> str:
         """Assemble display log: our captured output + proton log if present."""
         lines = [f"=== {self.log_path} ===", base_log.strip()]
-        gameid = self.env.get("GAMEID", "")
-        if gameid:
-            proton_log = os.path.expanduser(f"~/proton_{gameid}.log")
-            if os.path.exists(proton_log):
+        proton_log = proton_log_path(self.env)
+        # Файл общий для всех игр без AppID (steam-default.log), поэтому берём его,
+        # только если он записан этим запуском, а не остался от другой программы.
+        if proton_log and os.path.exists(proton_log):
+            if os.path.getmtime(proton_log) >= getattr(self, "_started_at", 0):
                 try:
                     with open(proton_log, "r", encoding="utf-8", errors="ignore") as f:
                         lines += [f"\n=== {proton_log} ===", f.read().strip()]
@@ -475,7 +493,12 @@ def main():
 
     env = os.environ.copy()
     env["WINEPREFIX"] = prefix_path
-    env["GAMEID"] = app_id
+    # GAMEID обязан быть вида "umu-<что-то>": protonfixes из UMU-Proton 11 делит его
+    # по "-" и берёт [1] без проверки длины — id без дефиса (наш "eu5.exe_7a6e87d7")
+    # роняет Proton ещё до запуска игры (IndexError в protonfixes/fix.py).
+    # "umu-default" — штатное значение umu-run для игр не из его базы;
+    # для игр из Steam apply_steam_env ниже заменит его на umu-<AppID>.
+    env["GAMEID"] = "umu-default"
     # Игра из Steam: даём Proton её AppID и путь к клиенту (см. steam_integration.py)
     apply_steam_env(env, exe_path)
 
