@@ -113,12 +113,9 @@ class EmbeddedAppModule(BaseModule):
         if self.lib_dir:
             here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             name = os.path.basename(self.lib_dir.rstrip("/"))
-            # в репозитории папка панели задач называется с опечаткой «equstria-…»
-            for cand in (name, name.replace("equestria-", "equstria-", 1)):
-                sibling = os.path.join(here, cand)
-                if os.path.isfile(os.path.join(sibling, self.main_file)):
-                    self.lib_dir = sibling
-                    break
+            sibling = os.path.join(here, name)
+            if os.path.isfile(os.path.join(sibling, self.main_file)):
+                self.lib_dir = sibling
 
     def is_available(self) -> bool:
         """Returns False if the target directory in /opt does not exist."""

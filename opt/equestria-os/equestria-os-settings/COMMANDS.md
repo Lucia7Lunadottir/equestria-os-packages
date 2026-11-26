@@ -15,7 +15,7 @@
 | `mod_swap_manager.py` | `equestria-os-swap-manager` | `../equestria-os-swap-manager/COMMANDS.md` |
 | `mod_software_center.py` | `equestria-os-software-center` | `../equestria-os-software-center/COMMANDS.md` |
 | `mod_character_theme.py` | `equestria-os-character-theme` | `../equestria-os-character-theme/COMMANDS.md` |
-| `mod_task_panel.py` | `equstria-os-task-panel-changer` | `../equstria-os-task-panel-changer/COMMANDS.md` |
+| `mod_task_panel.py` | `equestria-os-task-panel-changer` | `../equestria-os-task-panel-changer/COMMANDS.md` |
 | `mod_tutorial.py` | `equestria-os-tutorial` | `../equestria-os-tutorial/COMMANDS.md` |
 | `mod_mirrors.py` | `pg-rankmirrors` | `../pg-rankmirrors/COMMANDS.md` |
 
