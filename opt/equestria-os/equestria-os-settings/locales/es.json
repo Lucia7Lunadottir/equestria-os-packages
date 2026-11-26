@@ -30,6 +30,8 @@
   "module.tutorial.desc": "Recorrido interactivo por Equestria OS",
   "module.swap_manager.name": "Gestor Swap",
   "module.swap_manager.desc": "Archivo Swap y configuración de presión de memoria",
+  "module.recovery.name": "Recuperación del sistema",
+  "module.recovery.desc": "Entorno de recuperación en el menú de arranque — sin memoria USB",
   "module.install_pkgs.name": "Componentes del sistema",
   "module.install_pkgs.desc": "Instalar y eliminar componentes base de Equestria OS",
   "install_pkgs.search_placeholder": "Buscar paquetes…",

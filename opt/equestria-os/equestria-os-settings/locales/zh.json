@@ -30,6 +30,8 @@
   "module.tutorial.desc": "Equestria OS 交互式导览",
   "module.swap_manager.name": "交换空间管理器",
   "module.swap_manager.desc": "交换文件和内存压力设置",
+  "module.recovery.name": "系统恢复",
+  "module.recovery.desc": "启动菜单中的恢复环境 — 无需 U 盘",
   "module.install_pkgs.name": "系统组件",
   "module.install_pkgs.desc": "安装和移除 Equestria OS 基础组件",
   "install_pkgs.search_placeholder": "搜索软件包…",

@@ -30,6 +30,8 @@
   "module.tutorial.desc": "Equestria OS 互動式導覽",
   "module.swap_manager.name": "交換空間管理器",
   "module.swap_manager.desc": "交換檔案和記憶體壓力設定",
+  "module.recovery.name": "系統復原",
+  "module.recovery.desc": "開機選單中的復原環境 — 不需要隨身碟",
   "module.install_pkgs.name": "系統元件",
   "module.install_pkgs.desc": "安裝和移除 Equestria OS 基礎元件",
   "install_pkgs.search_placeholder": "搜尋軟體包…",

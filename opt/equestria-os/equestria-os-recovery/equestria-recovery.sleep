@@ -1,0 +1,9 @@
+#!/bin/sh
+# Выход из гибернации тоже проходит через GRUB (и считается там попыткой загрузки),
+# но службы загрузки при этом не запускаются — снимаем отметку сами.
+[ "$1" = "post" ] || exit 0
+case "$2" in
+    hibernate|hybrid-sleep|suspend-then-hibernate)
+        /usr/bin/equestria-recovery-backend boot-ok >/dev/null 2>&1 || true ;;
+esac
+exit 0

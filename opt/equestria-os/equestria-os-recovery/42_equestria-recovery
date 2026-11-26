@@ -1,0 +1,4 @@
+#!/bin/sh
+# Equestria OS Recovery: подключает пункты меню из /boot/grub/equestria-recovery.cfg.
+# Сам файл пишет equestria-recovery-backend при установке образа; нет файла — нет пунктов.
+exec /usr/bin/python3 -c 'import sys; sys.path.insert(0, "/opt/equestria-os/equestria-os-recovery"); from recovery_grub import HOOK_BLOCK; print(HOOK_BLOCK, end="")'

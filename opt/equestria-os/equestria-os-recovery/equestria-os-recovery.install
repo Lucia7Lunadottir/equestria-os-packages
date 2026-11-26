@@ -1,0 +1,39 @@
+# Образ (5,5 ГБ) пакет сам не качает: это делает пользователь в окне
+# «Восстановление системы» (или Настройки → Восстановление системы).
+# Установщик Equestria OS (Calamares) кладёт его сразу — с той же флешки.
+
+_iso_path() {
+    python3 -c 'import sys; sys.path.insert(0, "/opt/equestria-os/equestria-os-recovery")
+from recovery_image import RecoveryState; print(RecoveryState.load().iso_path)' 2>/dev/null
+}
+
+post_install() {
+    if [ ! -f /var/lib/equestria-recovery/equestria-recovery.iso ]; then
+        echo "equestria-os-recovery: откройте «Восстановление системы» и скачайте образ,"
+        echo "  чтобы в меню загрузки появился пункт «Восстановление Equestria OS»."
+    fi
+}
+
+post_upgrade() {
+    # формат пунктов меню мог измениться — переписываем из уже установленного образа
+    [ -f /var/lib/equestria-recovery/state.json ] && [ -f /boot/grub/grub.cfg ] || return 0
+    out=$(/usr/bin/equestria-recovery-backend refresh 2>&1)
+    case "$out" in
+        *error.iso_missing*) ;;
+        *error*) echo "equestria-os-recovery: не удалось обновить пункт GRUB — установите образ заново в окне программы." ;;
+    esac
+}
+
+pre_remove() {
+    # образ — 5,5 ГБ данных пользователя, но без программы он бесполезен:
+    # убираем пункт меню и файл счётчика, сам ISO оставляем и говорим, где он
+    iso=$(_iso_path)
+    rm -f /boot/grub/equestria-recovery.cfg /boot/grub/equestria-recovery.env
+    for esp in /boot/efi /efi /boot; do
+        rm -f "$esp/EFI/equestria-recovery/equestria-recovery.env"
+        rmdir "$esp/EFI/equestria-recovery" 2>/dev/null
+    done
+    if [ -n "$iso" ] && [ -f "$iso" ]; then
+        echo "equestria-os-recovery: образ оставлен в $iso — удалите его вручную, если он не нужен."
+    fi
+}

@@ -1,0 +1,15 @@
+[Unit]
+Description=Equestria OS Recovery: the system booted, reset the failed-boot counter
+Documentation=file:///opt/equestria-os/equestria-os-recovery/COMMANDS.md
+# GRUB считает каждую загрузку обычного пункта неудачной, пока эта служба не скажет обратного.
+# multi-user.target — система поднялась (Emergency Mode и сбой initramfs сюда не доходят).
+# Заодно стирает разовый флаг «в восстановление», если GRUB не смог сам.
+ConditionPathExists=/boot/grub/equestria-recovery.cfg
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/equestria-recovery-backend boot-ok
+
+[Install]
+WantedBy=multi-user.target

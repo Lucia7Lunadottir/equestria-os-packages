@@ -1,0 +1,69 @@
+# Maintainer: Equestria OS Team
+
+pkgname=equestria-os-recovery
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="Recovery environment on disk: boots the Equestria OS live ISO from GRUB and repairs the installed system without a USB stick"
+arch=('any')
+url="https://github.com/Lucia7Lunadottir"
+license=('GPL-3.0-or-later')
+depends=('equestria-qt-kit>=1.6' 'python-pyqt6' 'polkit' 'grub' 'libarchive' 'util-linux'
+         'arch-install-scripts' 'mkinitcpio' 'e2fsprogs')
+optdepends=('btrfs-progs: check and scrub Btrfs systems in the recovery wizard'
+            'xfsprogs: check XFS systems in the recovery wizard'
+            'f2fs-tools: check F2FS systems in the recovery wizard'
+            'konsole: terminal inside the repaired system')
+install="$pkgname.install"
+
+_files=(recovery_app.py recovery_paths.py recovery_image.py recovery_grub.py recovery_source.py
+        recovery_storage.py recovery_livemedia.py
+        recovery_backend.py recovery_rescue.py recovery_widgets.py recovery_manager.py
+        recovery_wizard.py style.qss equestria_cyrillic.ttf check_mark.svg arrow_up.svg
+        equestria-os-recovery.png)
+
+package() {
+    local _lib="$pkgdir/opt/equestria-os/$pkgname"
+    install -dm755 "$_lib"
+    for f in "${_files[@]}"; do
+        install -Dm644 "$startdir/$f" "$_lib/$f"
+    done
+    for f in "$startdir"/locales/*.json; do
+        install -Dm644 "$f" "$_lib/locales/$(basename "$f")"
+    done
+
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-recovery" << 'EOS'
+#!/bin/bash
+# из автозапуска live-сессии: дальше идём, только если загрузились через пункт «Восстановление»
+if [ "$1" = "--autostart" ] && ! grep -qw 'equestria.recovery=1' /proc/cmdline; then
+    exit 0
+fi
+cd /opt/equestria-os/equestria-os-recovery/
+exec python3 recovery_app.py "$@"
+EOS
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-recovery-backend" << 'EOS'
+#!/bin/bash
+cd /opt/equestria-os/equestria-os-recovery/
+exec python3 -E -s recovery_backend.py "$@"
+EOS
+    install -Dm755 /dev/stdin "$pkgdir/usr/bin/equestria-recovery-rescue" << 'EOS'
+#!/bin/bash
+cd /opt/equestria-os/equestria-os-recovery/
+exec python3 -E -s recovery_rescue.py "$@"
+EOS
+
+    install -Dm755 "$startdir/42_equestria-recovery" "$pkgdir/etc/grub.d/42_equestria-recovery"
+    install -Dm644 "$startdir/equestria-recovery-boot-ok.service" \
+        "$pkgdir/usr/lib/systemd/system/equestria-recovery-boot-ok.service"
+    install -Dm755 "$startdir/equestria-recovery.sleep" \
+        "$pkgdir/usr/lib/systemd/system-sleep/equestria-recovery"
+    install -dm755 "$pkgdir/usr/lib/systemd/system/multi-user.target.wants"
+    ln -s ../equestria-recovery-boot-ok.service \
+        "$pkgdir/usr/lib/systemd/system/multi-user.target.wants/equestria-recovery-boot-ok.service"
+    install -Dm644 "$startdir/equestria-os-recovery-live.desktop" \
+        "$pkgdir/etc/xdg/autostart/equestria-os-recovery-live.desktop"
+    install -Dm644 "$startdir/equestria-os-recovery.desktop" \
+        "$pkgdir/usr/share/applications/equestria-os-recovery.desktop"
+    install -Dm644 "$startdir/equestria-os-recovery.png" \
+        "$pkgdir/usr/share/pixmaps/equestria-os-recovery.png"
+    install -dm755 "$pkgdir/var/lib/equestria-recovery"
+}

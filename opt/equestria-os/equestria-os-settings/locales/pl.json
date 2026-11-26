@@ -30,6 +30,8 @@
   "module.tutorial.desc": "Interaktywne wprowadzenie do Equestria OS",
   "module.swap_manager.name": "Menedżer Swap",
   "module.swap_manager.desc": "Plik wymiany i ustawienia ciśnienia pamięci",
+  "module.recovery.name": "Odzyskiwanie systemu",
+  "module.recovery.desc": "Środowisko odzyskiwania w menu rozruchu — bez pendrive'a",
   "module.install_pkgs.name": "Komponenty systemu",
   "module.install_pkgs.desc": "Instaluj i usuwaj podstawowe komponenty Equestria OS",
   "install_pkgs.search_placeholder": "Szukaj pakietów…",

@@ -30,6 +30,8 @@
   "module.tutorial.desc": "Equestria OSのインタラクティブガイド",
   "module.swap_manager.name": "スワップマネージャー",
   "module.swap_manager.desc": "スワップファイルとメモリプレッシャーの設定",
+  "module.recovery.name": "システムの回復",
+  "module.recovery.desc": "起動メニューの回復環境 — USB メモリ不要",
   "module.install_pkgs.name": "システムコンポーネント",
   "module.install_pkgs.desc": "Equestria OS の基本コンポーネントのインストールと削除",
   "install_pkgs.search_placeholder": "パッケージを検索…",

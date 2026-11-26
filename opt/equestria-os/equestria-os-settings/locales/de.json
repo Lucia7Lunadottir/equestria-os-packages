@@ -30,6 +30,8 @@
   "module.tutorial.desc": "Interaktive Führung durch Equestria OS",
   "module.swap_manager.name": "Swap-Manager",
   "module.swap_manager.desc": "Swap-Datei und Speicherdruck-Einstellungen",
+  "module.recovery.name": "Systemwiederherstellung",
+  "module.recovery.desc": "Wiederherstellungsumgebung im Bootmenü — ohne USB-Stick",
   "module.install_pkgs.name": "Systemkomponenten",
   "module.install_pkgs.desc": "Basiskomponenten von Equestria OS installieren und entfernen",
   "install_pkgs.search_placeholder": "Pakete suchen…",

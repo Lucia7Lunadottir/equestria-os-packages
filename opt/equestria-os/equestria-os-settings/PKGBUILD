@@ -22,6 +22,7 @@ optdepends=(
     'equestria-os-character-theme: character theme switcher module'
     'equestria-os-software-center: software installation module'
     'equestria-os-swap-manager: swap and memory pressure management module'
+    'equestria-os-recovery: system recovery module (recovery environment in the boot menu)'
     'polkit: keyboard backlight page — password prompt (pkexec) for colour and effects'
     'asusctl: keyboard backlight page — effects on ROG keyboards the kernel cannot colour'
     'plasma-workspace: Open KDE System Settings button'

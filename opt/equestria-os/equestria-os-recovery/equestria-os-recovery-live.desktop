@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Equestria OS Recovery
+Exec=equestria-recovery --autostart
+NoDisplay=true
+X-KDE-autostart-phase=2

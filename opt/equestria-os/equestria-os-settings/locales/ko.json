@@ -30,6 +30,8 @@
   "module.tutorial.desc": "Equestria OS 대화형 둘러보기",
   "module.swap_manager.name": "스왑 관리자",
   "module.swap_manager.desc": "스왑 파일 및 메모리 압박 설정",
+  "module.recovery.name": "시스템 복구",
+  "module.recovery.desc": "부팅 메뉴의 복구 환경 — USB 메모리 불필요",
   "module.install_pkgs.name": "시스템 구성 요소",
   "module.install_pkgs.desc": "Equestria OS 기본 구성 요소 설치 및 제거",
   "install_pkgs.search_placeholder": "패키지 검색…",

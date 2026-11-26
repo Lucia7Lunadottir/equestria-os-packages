@@ -30,6 +30,8 @@
   "module.tutorial.desc": "Интерактивное знакомство с Equestria OS",
   "module.swap_manager.name": "Менеджер подкачки",
   "module.swap_manager.desc": "Файл подкачки и настройки давления памяти",
+  "module.recovery.name": "Восстановление системы",
+  "module.recovery.desc": "Среда восстановления в меню загрузки — без флешки",
   "module.install_pkgs.name": "Компоненты системы",
   "module.install_pkgs.desc": "Установка и удаление базовых компонентов Equestria OS",
   "install_pkgs.search_placeholder": "Поиск пакетов…",
