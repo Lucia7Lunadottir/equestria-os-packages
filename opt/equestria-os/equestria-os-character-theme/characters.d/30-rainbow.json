@@ -26,5 +26,8 @@
         "Color6Intense": "50,220,255",
         "Color7": "200,230,255",
         "Color7Intense": "230,245,255"
+    },
+    "KeyboardBacklight": {
+        "Rainbow": true
     }
 }

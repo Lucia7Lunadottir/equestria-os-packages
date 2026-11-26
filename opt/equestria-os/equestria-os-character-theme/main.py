@@ -1191,7 +1191,85 @@ fi
         if h < 330: return "magenta"
         return "red"
 
+class FirstLogin:
+    """Первый вход нового пользователя: включить тему по умолчанию (Canterlot) так же,
+    как клик по её карточке.
+
+    Запускается из ~/.config/autostart/equestria-appearance-first-login.desktop — этот
+    файл кладёт в /etc/skel профиль ISO, поэтому он есть только у новых пользователей:
+    у тех, кто уже пользуется системой, обновление пакета внешний вид не меняет.
+    Если тема уже выбиралась (есть state.json), ничего не делает.
+
+    Перед применением ждёт другие одноразовые настройки первого входа из ISO: они
+    ставят обои default.png и перезапускают plasmashell — иначе перекрыли бы тему."""
+
+    DEFAULT_THEME_ID = "canterlot"
+    AUTOSTART = os.path.expanduser("~/.config/autostart/equestria-appearance-first-login.desktop")
+    # одноразовые шаги первого входа из /etc/skel ISO (см. equestria-iso)
+    WALLPAPER_ONCE = os.path.expanduser("~/.config/autostart/eq-wallpaper.desktop")
+    CONFIG_ONCE = os.path.expanduser("~/.config/autostart-scripts/eq-apply-config.sh")
+    CONFIG_DONE = os.path.expanduser("~/.config/.eq-configured")
+
+    def __init__(self, timeout: float = 180, window_factory=None):
+        self.timeout = timeout
+        self.window_factory = window_factory or (lambda: EGThemeSwitcher())
+
+    def run(self) -> int:
+        if os.path.exists(os.path.join(USER_PATH, "state.json")):
+            self._done()                       # тему уже выбирали — не трогаем
+            return 0
+        if not self._wait_for_session():
+            return 1                           # Plasma так и не поднялась — попробуем при следующем входе
+        window = self.window_factory()
+        theme = next((c for c in window.characters if c.Id == self.DEFAULT_THEME_ID), None)
+        if theme is not None:
+            window.active_character = theme
+            window._save_state()
+            window._apply_gen = 1
+            window._apply_character_bg(theme, 1)   # то же, что клик по карточке, но сразу, без потока
+        self._done()
+        return 0
+
+    def _pending_first_login_steps(self) -> bool:
+        if os.path.exists(self.WALLPAPER_ONCE):
+            return True
+        return os.path.exists(self.CONFIG_ONCE) and not os.path.exists(self.CONFIG_DONE)
+
+    @staticmethod
+    def _plasma_up() -> bool:
+        r = subprocess.run([find_qdbus(), "org.kde.plasmashell", "/PlasmaShell"],
+                           capture_output=True)
+        return r.returncode == 0
+
+    def _wait_for_session(self) -> bool:
+        """Plasma поднялась дважды подряд с паузой (eq-apply-config.sh её перезапускает),
+        и другие шаги первого входа закончились. Не закончились за отведённое время,
+        но Plasma работает — применяем всё равно."""
+        import time
+        deadline = time.monotonic() + self.timeout
+        while True:
+            expired = time.monotonic() > deadline
+            if (expired or not self._pending_first_login_steps()) and self._plasma_up():
+                time.sleep(2)
+                if self._plasma_up():
+                    return True
+            if expired and time.monotonic() > deadline + 60:
+                return False
+            time.sleep(1)
+
+    def _done(self):
+        try:
+            os.remove(self.AUTOSTART)
+        except FileNotFoundError:
+            pass
+
+
 if __name__ == "__main__":
+    if "--first-login" in sys.argv:
+        # без окна: включить тему по умолчанию у нового пользователя
+        app = QApplication(sys.argv)
+        sys.exit(FirstLogin().run())
+
     app = QApplication(sys.argv)
     kit_qt.ThemeManager(app)  # общая тема Equestria OS: следит за переключателем персонажей
     app.setDesktopFileName("equestria-theme-switcher")

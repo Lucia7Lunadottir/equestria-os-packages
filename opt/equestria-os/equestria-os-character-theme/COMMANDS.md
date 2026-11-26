@@ -45,3 +45,17 @@
 ## Прочее
 
 * Ни одна из вызываемых утилит (`qdbus6`, `kreadconfig6`, `kwriteconfig6`, `plasma-apply-colorscheme`, `fastfetch`) не проверяется на присутствие явно — при отсутствии `run_shell()`/`subprocess.run()` (`main.py:680-681`) просто ничего не делают (ошибки нигде не показываются пользователю), а не крашат приложение.
+
+## Тема по умолчанию у нового пользователя (`--first-login`, класс `FirstLogin` в `main.py`)
+
+`equestria-os-character-theme --first-login` — без окна включает Canterlot (`FirstLogin.DEFAULT_THEME_ID`)
+тем же кодом, что клик по карточке (`_apply_character_bg`), и записывает выбор в `state.json`.
+Запускается из `~/.config/autostart/equestria-appearance-first-login.desktop`; этот файл кладёт
+`/etc/skel` профиля ISO, поэтому он есть только у новых пользователей — у тех, кто уже пользуется
+системой, обновление пакета вид не меняет. Если `state.json` уже есть (тему выбирали) — ничего не делает.
+После успеха файл автозапуска удаляется; если Plasma так и не поднялась — остаётся до следующего входа.
+
+Перед применением ждёт одноразовые шаги первого входа из skel ISO, иначе они перекрыли бы тему:
+`eq-wallpaper.desktop` (ставит обои default.png и удаляется) и `autostart-scripts/eq-apply-config.sh`
+(перезапускает plasmashell, по окончании создаёт `~/.config/.eq-configured`), затем — что plasmashell
+отвечает по D-Bus дважды подряд. Не дождался за 3 минуты, но Plasma работает — применяет всё равно.
