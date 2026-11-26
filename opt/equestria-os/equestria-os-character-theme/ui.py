@@ -218,7 +218,7 @@ class Ui_MainWindow:
         self.page_main_layout = QVBoxLayout(self.page_main)
         self.page_main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.lbl_title = QLabel("✨ Equestria OS Character Theme")
+        self.lbl_title = QLabel("✨ Equestria OS Appearance")
         self.lbl_title.setProperty("cssClass", "title")
         self.lbl_title.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.page_main_layout.addWidget(self.lbl_title)

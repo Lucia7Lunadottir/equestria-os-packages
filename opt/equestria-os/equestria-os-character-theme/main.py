@@ -87,7 +87,7 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
     def __init__(self, title_font_family=None):
         super().__init__()
         self.setupUi(self)
-        self.setWindowTitle("Equestria OS Character Theme")
+        self.setWindowTitle("Equestria OS Appearance")   # до перевода; update_texts ставит название на языке окна
         style = APP_STYLE
         if title_font_family:
             # Шрифт Эквестрии — только на заголовках и именах персонажей;
@@ -407,6 +407,8 @@ class EGThemeSwitcher(QMainWindow, Ui_MainWindow):
 
     def update_texts(self):
         self.lbl_title.setText(self.t_str("ui.title"))
+        # заголовок окна — то же название, без ✨ (оно для крупной надписи на странице)
+        self.setWindowTitle(self.t_str("ui.title").lstrip("✨").strip())
         self.lbl_subtitle.setText(self.t_str("ui.subtitle"))
         self.btn_duplicate.setText(self.t_str("ui.btn_duplicate"))
         self.btn_create.setToolTip(self.t_str("ui.btn_create_new"))

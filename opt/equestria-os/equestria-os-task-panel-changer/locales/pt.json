@@ -39,7 +39,7 @@
  "ui.err_duplicate_id": "O ID '{0}' já existe.",
  "ui.err_capture": "Não foi possível capturar o layout: o Plasma não responde.",
  "ui.err_plasma": "O Plasma não conseguiu aplicar a predefinição: {0}",
- "help.ed_color": "O painel tem uma cor de dia e uma de noite. O KDE alterna as duas junto com o tema global dia/noite do seu personagem. O texto do painel sempre segue o esquema de cores.",
+ "help.ed_color": "O painel tem uma cor de dia e uma de noite. O KDE alterna as duas junto com o tema global dia/noite da aparência. O texto do painel sempre segue o esquema de cores.",
  "help.ed_hide_icons": "Mostra ou oculta os ícones da área de trabalho enquanto esta predefinição está ativa. Ao mudar, o Plasma reinicia por alguns segundos.",
  "help.ed_kde": "Desbloqueia os painéis do KDE para movê-los, redimensioná-los e adicionar widgets diretamente. Depois clique em \"Capturar os painéis atuais\" abaixo para salvar o resultado nesta predefinição.",
  "help.ed_layout": "Salva nesta predefinição os painéis organizados no KDE; ao escolhê-la, eles são restaurados. O papel de parede e a área de trabalho não são alterados.",

@@ -39,7 +39,7 @@
  "ui.err_duplicate_id": "Die Preset-ID '{0}' existiert bereits.",
  "ui.err_capture": "Layout konnte nicht übernommen werden: Plasma antwortet nicht.",
  "ui.err_plasma": "Plasma konnte das Preset nicht anwenden: {0}",
- "help.ed_color": "Das Panel hat eine Tages- und eine Nachtfarbe. KDE wechselt sie zusammen mit dem Tag/Nacht-Globaldesign Ihres Charakters. Der Text auf dem Panel folgt immer dem Farbschema.",
+ "help.ed_color": "Das Panel hat eine Tages- und eine Nachtfarbe. KDE wechselt sie zusammen mit dem Tag/Nacht-Globaldesign des Erscheinungsbilds. Der Text auf dem Panel folgt immer dem Farbschema.",
  "help.ed_hide_icons": "Blendet Desktop-Symbole ein oder aus, solange dieses Preset aktiv ist. Beim Wechsel startet Plasma für einige Sekunden neu.",
  "help.ed_kde": "Entsperrt die KDE-Panels, sodass Sie sie direkt verschieben, skalieren und mit Widgets bestücken können. Danach unten auf „Aktuelle Panels übernehmen“ klicken, um das Ergebnis im Preset zu speichern.",
  "help.ed_layout": "Speichert die in KDE eingerichteten Panels im Preset; bei Auswahl des Presets werden sie wiederhergestellt. Hintergrund und Desktop bleiben unverändert.",

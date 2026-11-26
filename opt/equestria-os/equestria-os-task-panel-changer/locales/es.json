@@ -39,7 +39,7 @@
  "ui.err_duplicate_id": "El ID de ajuste '{0}' ya existe.",
  "ui.err_capture": "No se pudo capturar el diseño: Plasma no responde.",
  "ui.err_plasma": "Plasma no pudo aplicar el ajuste: {0}",
- "help.ed_color": "El panel tiene un color de día y otro de noche. KDE los alterna junto con el tema global día/noche de tu personaje. El texto del panel siempre sigue el esquema de colores.",
+ "help.ed_color": "El panel tiene un color de día y otro de noche. KDE los alterna junto con el tema global día/noche de la apariencia. El texto del panel siempre sigue el esquema de colores.",
  "help.ed_hide_icons": "Muestra u oculta los iconos del escritorio mientras este ajuste está activo. Al cambiarlo, Plasma se reinicia unos segundos.",
  "help.ed_kde": "Desbloquea los paneles de KDE para moverlos, cambiar su tamaño y añadir widgets directamente. Después pulse «Capturar los paneles actuales» abajo para guardar el resultado en este ajuste.",
  "help.ed_layout": "Guarda en este ajuste los paneles organizados en KDE; al elegirlo se restauran. El fondo y el escritorio no cambian.",

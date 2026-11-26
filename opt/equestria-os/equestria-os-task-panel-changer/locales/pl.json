@@ -39,7 +39,7 @@
  "ui.err_duplicate_id": "Styl o ID '{0}' już istnieje.",
  "ui.err_capture": "Nie udało się zapisać układu: Plasma nie odpowiada.",
  "ui.err_plasma": "Plasma nie mogła zastosować stylu: {0}",
- "help.ed_color": "Panel ma kolor dzienny i nocny. KDE przełącza je razem z globalnym motywem dzień/noc postaci. Tekst na panelu zawsze pochodzi ze schematu kolorów.",
+ "help.ed_color": "Panel ma kolor dzienny i nocny. KDE przełącza je razem z globalnym motywem dzień/noc wyglądu. Tekst na panelu zawsze pochodzi ze schematu kolorów.",
  "help.ed_hide_icons": "Pokazuje lub ukrywa ikony pulpitu, gdy ten styl jest aktywny. Zmiana uruchamia Plasmę ponownie na kilka sekund.",
  "help.ed_kde": "Odblokowuje panele KDE, aby można je było przesuwać, zmieniać rozmiar i dodawać widżety bezpośrednio. Następnie kliknij „Zapisz bieżące panele” poniżej, aby zapisać wynik w tym stylu.",
  "help.ed_layout": "Zapisuje w tym stylu panele ułożone w KDE; po wybraniu stylu zostaną przywrócone. Tapeta i pulpit pozostają bez zmian.",

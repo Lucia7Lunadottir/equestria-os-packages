@@ -39,7 +39,7 @@
  "ui.err_duplicate_id": "L'ID de préréglage « {0} » existe déjà.",
  "ui.err_capture": "Impossible de capturer la disposition : Plasma ne répond pas.",
  "ui.err_plasma": "Plasma n'a pas pu appliquer le préréglage : {0}",
- "help.ed_color": "Le panneau a une couleur de jour et une couleur de nuit. KDE les alterne avec le thème global jour/nuit de votre personnage. Le texte du panneau suit toujours le jeu de couleurs.",
+ "help.ed_color": "Le panneau a une couleur de jour et une couleur de nuit. KDE les alterne avec le thème global jour/nuit de l'apparence. Le texte du panneau suit toujours le jeu de couleurs.",
  "help.ed_hide_icons": "Affiche ou masque les icônes du bureau tant que ce préréglage est actif. Le changement redémarre Plasma quelques secondes.",
  "help.ed_kde": "Déverrouille les panneaux KDE pour les déplacer, les redimensionner et y ajouter des widgets directement. Cliquez ensuite sur « Capturer les panneaux actuels » ci-dessous pour enregistrer le résultat.",
  "help.ed_layout": "Enregistre dans ce préréglage les panneaux arrangés dans KDE ; les choisir plus tard les restaure. Le fond d'écran et le bureau ne sont pas modifiés.",

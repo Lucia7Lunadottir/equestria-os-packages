@@ -2,7 +2,7 @@
 
 pkgname=equestria-os-character-theme
 pkgver=2.4.0
-pkgrel=3
+pkgrel=4
 pkgdesc="Customizing the visual style and characters of Equestria OS"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"

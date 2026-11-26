@@ -39,7 +39,7 @@
  "ui.err_duplicate_id": "Preset ID '{0}' already exists.",
  "ui.err_capture": "Could not capture the layout: Plasma is not responding.",
  "ui.err_plasma": "Plasma could not apply the preset: {0}",
- "help.ed_color": "The panel has a day color and a night color. KDE switches them together with the day/night global theme of your character. Text on the panel always follows the color scheme.",
+ "help.ed_color": "The panel has a day color and a night color. KDE switches them together with the day/night global theme (Appearance). Text on the panel always follows the color scheme.",
  "help.ed_hide_icons": "Shows or hides desktop icons while this preset is active. Changing it restarts the Plasma shell for a few seconds.",
  "help.ed_kde": "Unlocks KDE panels so you can move, resize and add widgets right on them. Then press \"Capture current panels\" below to save the result into this preset.",
  "help.ed_layout": "Saves the panels you arranged in KDE into this preset; selecting the preset later restores them. Wallpaper and desktop are not affected.",
