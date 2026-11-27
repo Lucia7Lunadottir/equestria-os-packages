@@ -58,7 +58,7 @@
   "window.save_changes": "¿Guardar los cambios en «{}»?",
   "window.checklist_ctrl_shift_l": "Lista de verificación (Ctrl+Shift+L)",
   "common.link": "Enlace",
-  "window.link_ctrl_k_open_ctrl": "Enlace (Ctrl+K; abrir: Ctrl+clic)",
+  "window.link_hint": "Enlace (Ctrl+K; abrir: clic en el enlace)",
   "window.text_markdown_md_markdown_txt": "Texto y Markdown (*.md *.markdown *.txt);;Todos los archivos (*)",
   "window.theme": "Tema",
   "window.remove_from_history": "Quitar del historial",
@@ -74,5 +74,6 @@
   "window.file": "＋ Archivo",
   "window.reload": "Recargar",
   "window.reload_from_disk_f5": "Volver a leer la nota y la lista desde el disco (F5)",
-  "window.reloaded": "Nota recargada desde el disco"
+  "window.reloaded": "Nota recargada desde el disco",
+  "rich_editor.link_tooltip": "{}\nClic para abrir"
 }

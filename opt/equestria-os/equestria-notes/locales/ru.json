@@ -58,7 +58,7 @@
   "window.save_changes": "Сохранить изменения в «{}»?",
   "window.checklist_ctrl_shift_l": "Список с галочками (Ctrl+Shift+L)",
   "common.link": "Ссылка",
-  "window.link_ctrl_k_open_ctrl": "Ссылка (Ctrl+K; открыть — Ctrl+клик)",
+  "window.link_hint": "Ссылка (Ctrl+K; открыть — щелчок по ссылке)",
   "window.text_markdown_md_markdown_txt": "Текст и Markdown (*.md *.markdown *.txt);;Все файлы (*)",
   "window.theme": "Тема",
   "window.remove_from_history": "Убрать из истории",
@@ -74,5 +74,6 @@
   "window.file": "＋ Файл",
   "window.reload": "Обновить",
   "window.reload_from_disk_f5": "Перечитать заметку и список с диска (F5)",
-  "window.reloaded": "Заметка перечитана с диска"
+  "window.reloaded": "Заметка перечитана с диска",
+  "rich_editor.link_tooltip": "{}\nЩелчок — открыть"
 }

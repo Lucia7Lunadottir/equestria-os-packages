@@ -2,7 +2,7 @@
 
 `equestria_notes.py` — только точка входа. Реализация находится в `equestria_notes_app/`.
 
-markdown — преобразование Markdown; source_editor / rich_editor — редакторы; images — ресурсы изображений; storage — файловый ввод-вывод; library — библиотека заметок.
+markdown — преобразование Markdown; source_editor / rich_editor — редакторы; links — поиск адресов в тексте (автоссылки, щелчок по ссылке); images — ресурсы изображений; storage — файловый ввод-вывод; library — библиотека заметок.
 
 `window` связывает компоненты и обрабатывает действия пользователя. `app` запускает Qt.
 `style` управляет темой; `paths` задаёт пути; `localization` подключает общий каталог.

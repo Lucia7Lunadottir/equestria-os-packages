@@ -58,7 +58,7 @@
   "window.save_changes": "Salvar alterações em “{}”?",
   "window.checklist_ctrl_shift_l": "Lista de verificação (Ctrl+Shift+L)",
   "common.link": "Link",
-  "window.link_ctrl_k_open_ctrl": "Link (Ctrl+K; abrir — Ctrl+clique)",
+  "window.link_hint": "Link (Ctrl+K; abrir — clique no link)",
   "window.text_markdown_md_markdown_txt": "Texto e Markdown (*.md *.markdown *.txt);;Todos os arquivos (*)",
   "window.theme": "Tema",
   "window.remove_from_history": "Remover do histórico",
@@ -74,5 +74,6 @@
   "window.file": "＋ Arquivo",
   "window.reload": "Recarregar",
   "window.reload_from_disk_f5": "Reler a nota e a lista do disco (F5)",
-  "window.reloaded": "Nota recarregada do disco"
+  "window.reloaded": "Nota recarregada do disco",
+  "rich_editor.link_tooltip": "{}\nClique para abrir"
 }

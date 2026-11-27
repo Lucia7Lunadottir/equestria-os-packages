@@ -58,7 +58,7 @@
   "window.save_changes": "Änderungen an „{}“ speichern?",
   "window.checklist_ctrl_shift_l": "Checkliste (Strg+Umschalt+L)",
   "common.link": "Link",
-  "window.link_ctrl_k_open_ctrl": "Link (Strg+K; öffnen — Strg+Klick)",
+  "window.link_hint": "Link (Strg+K; öffnen — auf den Link klicken)",
   "window.text_markdown_md_markdown_txt": "Text und Markdown (*.md *.markdown *.txt);;Alle Dateien (*)",
   "window.theme": "Design",
   "window.remove_from_history": "Aus dem Verlauf entfernen",
@@ -74,5 +74,6 @@
   "window.file": "＋ Datei",
   "window.reload": "Neu laden",
   "window.reload_from_disk_f5": "Notiz und Liste neu von der Festplatte lesen (F5)",
-  "window.reloaded": "Notiz neu von der Festplatte geladen"
+  "window.reloaded": "Notiz neu von der Festplatte geladen",
+  "rich_editor.link_tooltip": "{}\nKlicken zum Öffnen"
 }

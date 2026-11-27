@@ -161,7 +161,7 @@ class MainWindow(QMainWindow):
                 ("•", tr("window.bulleted_list_tab_nested"), "ul"),
                 ("☑", tr("window.checklist_ctrl_shift_l"), "task"),
                 ("1.", tr("window.numbered_list"), "ol"), ("❝", tr("window.quote"), "quote"),
-                (tr("common.link"), tr("window.link_ctrl_k_open_ctrl"), "link"),
+                (tr("common.link"), tr("window.link_hint"), "link"),
                 ("🖼", tr("window.insert_picture_you_can_paste"), "img")):
             b = small_btn(label, tip=tip)
             b.clicked.connect(lambda _=False, k=key: self._fmt(k))

@@ -58,7 +58,7 @@
   "window.save_changes": "「{}」への変更を保存しますか？",
   "window.checklist_ctrl_shift_l": "チェックリスト（Ctrl+Shift+L）",
   "common.link": "リンク",
-  "window.link_ctrl_k_open_ctrl": "リンク（Ctrl+K、開く — Ctrl+クリック）",
+  "window.link_hint": "リンク（Ctrl+K、開く — リンクをクリック）",
   "window.text_markdown_md_markdown_txt": "テキストと Markdown (*.md *.markdown *.txt);;すべてのファイル (*)",
   "window.theme": "テーマ",
   "window.remove_from_history": "履歴から削除",
@@ -74,5 +74,6 @@
   "window.file": "＋ ファイル",
   "window.reload": "再読み込み",
   "window.reload_from_disk_f5": "メモと一覧をディスクから読み直す (F5)",
-  "window.reloaded": "メモをディスクから読み直しました"
+  "window.reloaded": "メモをディスクから読み直しました",
+  "rich_editor.link_tooltip": "{}\nクリックで開く"
 }

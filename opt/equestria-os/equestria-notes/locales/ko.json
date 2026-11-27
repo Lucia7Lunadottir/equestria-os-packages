@@ -58,7 +58,7 @@
   "window.save_changes": "“{}”의 변경 사항을 저장할까요?",
   "window.checklist_ctrl_shift_l": "체크리스트 (Ctrl+Shift+L)",
   "common.link": "링크",
-  "window.link_ctrl_k_open_ctrl": "링크 (Ctrl+K, 열기 — Ctrl+클릭)",
+  "window.link_hint": "링크 (Ctrl+K, 열기 — 링크 클릭)",
   "window.text_markdown_md_markdown_txt": "텍스트 및 Markdown (*.md *.markdown *.txt);;모든 파일 (*)",
   "window.theme": "테마",
   "window.remove_from_history": "기록에서 제거",
@@ -74,5 +74,6 @@
   "window.file": "＋ 파일",
   "window.reload": "새로 고침",
   "window.reload_from_disk_f5": "디스크에서 메모와 목록을 다시 읽기 (F5)",
-  "window.reloaded": "디스크에서 메모를 다시 읽었습니다"
+  "window.reloaded": "디스크에서 메모를 다시 읽었습니다",
+  "rich_editor.link_tooltip": "{}\n클릭하여 열기"
 }

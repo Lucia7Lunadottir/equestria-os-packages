@@ -58,7 +58,7 @@
   "window.save_changes": "儲存對“{}”的更改嗎？",
   "window.checklist_ctrl_shift_l": "複選列表（Ctrl+Shift+L）",
   "common.link": "連結",
-  "window.link_ctrl_k_open_ctrl": "連結（Ctrl+K；開啟 — Ctrl+點選）",
+  "window.link_hint": "連結（Ctrl+K；開啟 — 點選連結）",
   "window.text_markdown_md_markdown_txt": "文本和 Markdown (*.md *.markdown *.txt);;所有檔案 (*)",
   "window.theme": "主題",
   "window.remove_from_history": "從歷史中移除",
@@ -74,5 +74,6 @@
   "window.file": "＋ 檔案",
   "window.reload": "重新整理",
   "window.reload_from_disk_f5": "從磁碟重新讀取筆記和清單 (F5)",
-  "window.reloaded": "已從磁碟重新讀取筆記"
+  "window.reloaded": "已從磁碟重新讀取筆記",
+  "rich_editor.link_tooltip": "{}\n點選即可開啟"
 }

@@ -9,6 +9,7 @@
   "images": [],
   "rich_editor": [
     "images",
+    "links",
     "localization",
     "style"
   ],
@@ -41,5 +42,6 @@
     "style",
     "window"
   ],
-  "localization": []
+  "localization": [],
+  "links": []
 }

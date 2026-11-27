@@ -58,7 +58,7 @@
   "window.save_changes": "Зберегти зміни в «{}»?",
   "window.checklist_ctrl_shift_l": "Список із галочками (Ctrl+Shift+L)",
   "common.link": "Посилання",
-  "window.link_ctrl_k_open_ctrl": "Посилання (Ctrl+K; відкрити — Ctrl+клік)",
+  "window.link_hint": "Посилання (Ctrl+K; відкрити — клік по посиланню)",
   "window.text_markdown_md_markdown_txt": "Текст і Markdown (*.md *.markdown *.txt);;Усі файли (*)",
   "window.theme": "Тема",
   "window.remove_from_history": "Прибрати з історії",
@@ -74,5 +74,6 @@
   "window.file": "＋ Файл",
   "window.reload": "Оновити",
   "window.reload_from_disk_f5": "Перечитати нотатку й список з диска (F5)",
-  "window.reloaded": "Нотатку перечитано з диска"
+  "window.reloaded": "Нотатку перечитано з диска",
+  "rich_editor.link_tooltip": "{}\nКлік — відкрити"
 }

@@ -58,7 +58,7 @@
   "window.save_changes": "Save changes to “{}”?",
   "window.checklist_ctrl_shift_l": "Checklist (Ctrl+Shift+L)",
   "common.link": "Link",
-  "window.link_ctrl_k_open_ctrl": "Link (Ctrl+K; open — Ctrl+click)",
+  "window.link_hint": "Link (Ctrl+K; open — click the link)",
   "window.text_markdown_md_markdown_txt": "Text and Markdown (*.md *.markdown *.txt);;All files (*)",
   "window.theme": "Theme",
   "window.remove_from_history": "Remove from history",
@@ -74,5 +74,6 @@
   "window.file": "＋ File",
   "window.reload": "Reload",
   "window.reload_from_disk_f5": "Re-read the note and the list from disk (F5)",
-  "window.reloaded": "Note reloaded from disk"
+  "window.reloaded": "Note reloaded from disk",
+  "rich_editor.link_tooltip": "{}\nClick to open"
 }

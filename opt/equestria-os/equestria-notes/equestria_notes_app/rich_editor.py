@@ -22,10 +22,11 @@ from PyQt6.QtGui import (
     QTextImageFormat,
     QTextListFormat
 )
-from PyQt6.QtWidgets import QInputDialog, QTextEdit
+from PyQt6.QtWidgets import QInputDialog, QTextEdit, QToolTip
 from equestria_kit import qt as kit_qt
 from urllib.parse import unquote
 from .images import BULLETS, FSA, IMG_EXTS, MK, resolve_refs, store_image, store_qimage
+from .links import LinkFinder
 from .localization import tr
 from .style import THEME
 
@@ -75,12 +76,15 @@ class RichEdit(QTextEdit):
         self.base_dir = ""
         self.fitting = False   # подгонка размера картинок — не правка текста
         self._task_click = False   # нажатие пришлось на отметку списка дел
+        self._links = LinkFinder()
+        self._link_press = None    # (адрес, точка) — нажали на ссылку; откроется, если не тянули
         self._fit_timer = QTimer(self, singleShot=True, interval=120)
         self._fit_timer.timeout.connect(self.relayout)
         self.setAcceptRichText(True)
         self.setTabStopDistance(32)
         self.setAutoFormatting(QTextEdit.AutoFormattingFlag.AutoBulletList)
         self.document().setDocumentMargin(0)   # поля задаёт relayout() — как у страницы в Google Docs
+        self.viewport().setMouseTracking(True)  # «рука» и адрес при наведении на ссылку
 
     # --- загрузка
     def set_markdown(self, text: str) -> None:
@@ -91,10 +95,21 @@ class RichEdit(QTextEdit):
         md = re.sub(r"!\[\]\(", f"![{self.NOALT}](", resolve_refs(text, self.base_dir))
         self.setMarkdown(md)
         doc.setBaseUrl(base)
+        self._drop_stray_task_marks()
         self._restyle()
         self.relayout()
         doc.clearUndoRedoStacks()
         self.setUpdatesEnabled(True)
+
+    def _drop_stray_task_marks(self) -> None:
+        """Qt 6 при чтении Markdown оставляет отметку «- [ ]» абзацу или заголовку, идущему
+        после списка дел: рядом с обычным текстом рисовалась лишняя галочка, а счётчик дел
+        врал. Отметка бывает только у пунктов списка — у остальных блоков её снимаем."""
+        b = self.document().begin()
+        while b.isValid():
+            if b.textList() is None and b.blockFormat().marker() != MK.NoMarker:
+                self._set_bf(b, marker=MK.NoMarker)
+            b = b.next()
 
     def _restyle(self) -> None:
         doc, jobs = self.document(), []
@@ -356,7 +371,9 @@ class RichEdit(QTextEdit):
                         return
             except OSError:
                 pass
+        start = self.textCursor().selectionStart()
         super().insertFromMimeData(src)
+        self._linkify(start, self.textCursor().position())   # вставленные адреса — сразу ссылки
 
     # --- выбор блоков
     def _sel_blocks(self) -> list:
@@ -417,6 +434,7 @@ class RichEdit(QTextEdit):
         else:
             c.insertText(url, f)
         self.setTextCursor(c)
+        self._stop_link_typing()
 
     # --- блоки
     def cycle_heading(self) -> None:
@@ -521,6 +539,12 @@ class RichEdit(QTextEdit):
         k, mods = e.key(), e.modifiers()
         ctrl = bool(mods & Qt.KeyboardModifier.ControlModifier)
         c = self.textCursor()
+        if k in (Qt.Key.Key_Space, Qt.Key.Key_Return, Qt.Key.Key_Enter, Qt.Key.Key_Tab) and not c.hasSelection():
+            # адрес допечатан — делаем его ссылкой; следующий символ ссылку не продолжает
+            b = c.block()
+            self._linkify(b.position(), c.position())
+            self._stop_link_typing()
+            c = self.textCursor()
         if k == Qt.Key.Key_Tab and not ctrl and c.currentList():
             self._indent(1)
             return
@@ -571,7 +595,21 @@ class RichEdit(QTextEdit):
             flip()
             self._task_click = True
             return
+        href = self._href_at(e.position().toPoint()) if e.button() == Qt.MouseButton.LeftButton else None
+        self._link_press = (href, e.position()) if href else None
         super().mousePressEvent(e)
+
+    def mouseMoveEvent(self, e) -> None:
+        if self._link_press and (e.position() - self._link_press[1]).manhattanLength() > 6:
+            self._link_press = None            # тянут — выделяют текст ссылки, а не открывают
+        super().mouseMoveEvent(e)
+        if e.buttons() == Qt.MouseButton.NoButton:
+            href = self._href_at(e.position().toPoint())
+            self.viewport().setCursor(Qt.CursorShape.PointingHandCursor if href else Qt.CursorShape.IBeamCursor)
+            if href:
+                QToolTip.showText(e.globalPosition().toPoint(), tr("rich_editor.link_tooltip", href), self.viewport())
+            else:
+                QToolTip.hideText()
 
     def mouseDoubleClickEvent(self, e) -> None:
         flip = self._task_hit(e)
@@ -585,15 +623,80 @@ class RichEdit(QTextEdit):
         if self._task_click and e.button() == Qt.MouseButton.LeftButton:
             self._task_click = False
             return
-        if e.button() == Qt.MouseButton.LeftButton and (e.modifiers() & Qt.KeyboardModifier.ControlModifier):
-            a = self.anchorAt(e.position().toPoint())
-            if a:
-                u = QUrl(a)
-                if u.scheme() in ("http", "https", "mailto", "file"):
-                    QDesktopServices.openUrl(u)
-                else:
-                    p = os.path.join(self.base_dir, unquote(a))
-                    if os.path.isfile(p):
-                        QDesktopServices.openUrl(QUrl.fromLocalFile(p))
-                return
+        press, self._link_press = self._link_press, None
+        if e.button() == Qt.MouseButton.LeftButton and press:
+            # щелчок по ссылке (без протягивания) — открыть, как в браузере; Ctrl не нужен
+            super().mouseReleaseEvent(e)
+            if not self.textCursor().hasSelection() and self._href_at(e.position().toPoint()) == press[0]:
+                self.open_link(press[0])
+            return
         super().mouseReleaseEvent(e)
+
+    # --- ссылки
+    def _href_at(self, pt) -> str:
+        """Куда ведёт ссылка под точкой: ссылка документа или просто написанный адрес."""
+        a = self.anchorAt(pt)
+        if a:
+            return a
+        c = self.cursorForPosition(pt)
+        if self.cursorRect(c).adjusted(-12, -2, 12, 2).contains(pt):   # точка над текстом, а не в поле
+            found = self._links.at(c.block().text(), c.positionInBlock())
+            if found is None and c.positionInBlock():                  # правая половина последней буквы
+                found = self._links.at(c.block().text(), c.positionInBlock() - 1)
+            if found is not None:
+                return found.href
+        return ""
+
+    def open_link(self, href: str) -> None:
+        u = QUrl(href)
+        if u.scheme() in ("http", "https", "mailto", "file"):
+            QDesktopServices.openUrl(u)
+            return
+        p = os.path.join(self.base_dir, unquote(href))   # ссылка на файл рядом с заметкой
+        if os.path.isfile(p):
+            QDesktopServices.openUrl(QUrl.fromLocalFile(p))
+
+    def _linkify(self, start: int, end: int) -> None:
+        """Адреса в блоках диапазона — в ссылки (кроме кода и уже готовых ссылок)."""
+        doc = self.document()
+        b, last = doc.findBlock(start), doc.findBlock(end)
+        jobs = []
+        while b.isValid():
+            for f in self._links.find(b.text()):
+                pos = b.position() + f.start
+                probe = QTextCursor(doc)
+                probe.setPosition(pos + 1)
+                fmt = probe.charFormat()
+                if fmt.isAnchor() or fmt.fontFixedPitch():
+                    continue
+                jobs.append((pos, b.position() + f.end, f.href))
+            if b == last:
+                break
+            b = b.next()
+        if not jobs:
+            return
+        c = QTextCursor(doc)
+        c.beginEditBlock()
+        for pos, stop, href in jobs:
+            nf = QTextCharFormat()
+            nf.setAnchor(True)
+            nf.setAnchorHref(href)
+            nf.setForeground(QColor(THEME["accent"]))
+            nf.setFontUnderline(True)
+            c.setPosition(pos)
+            c.setPosition(stop, QTextCursor.MoveMode.KeepAnchor)
+            c.mergeCharFormat(nf)
+        c.endEditBlock()
+
+    def _stop_link_typing(self) -> None:
+        """Курсор сразу за ссылкой: дальше печатается обычный текст, а не продолжение ссылки."""
+        f = self.textCursor().charFormat()
+        if not f.isAnchor():
+            return
+        nf = QTextCharFormat(f)
+        # свойства убираем совсем: пустой AnchorHref Qt сохраняет как «[текст]()»
+        for prop in (QTextFormat.Property.IsAnchor, QTextFormat.Property.AnchorHref,
+                     QTextFormat.Property.AnchorName, QTextFormat.Property.TextUnderlineStyle,
+                     QTextFormat.Property.ForegroundBrush):
+            nf.clearProperty(prop.value)
+        self.setCurrentCharFormat(nf)

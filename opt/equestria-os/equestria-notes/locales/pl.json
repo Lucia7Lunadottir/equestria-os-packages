@@ -58,7 +58,7 @@
   "window.save_changes": "Zapisać zmiany w „{}”?",
   "window.checklist_ctrl_shift_l": "Lista z polami (Ctrl+Shift+L)",
   "common.link": "Link",
-  "window.link_ctrl_k_open_ctrl": "Link (Ctrl+K; otwórz — Ctrl+klik)",
+  "window.link_hint": "Link (Ctrl+K; otwórz — kliknij link)",
   "window.text_markdown_md_markdown_txt": "Tekst i Markdown (*.md *.markdown *.txt);;Wszystkie pliki (*)",
   "window.theme": "Motyw",
   "window.remove_from_history": "Usuń z historii",
@@ -74,5 +74,6 @@
   "window.file": "＋ Plik",
   "window.reload": "Odśwież",
   "window.reload_from_disk_f5": "Wczytaj ponownie notatkę i listę z dysku (F5)",
-  "window.reloaded": "Notatka wczytana ponownie z dysku"
+  "window.reloaded": "Notatka wczytana ponownie z dysku",
+  "rich_editor.link_tooltip": "{}\nKliknij, aby otworzyć"
 }
