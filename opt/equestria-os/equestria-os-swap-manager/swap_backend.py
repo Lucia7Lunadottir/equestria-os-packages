@@ -6,17 +6,22 @@ Supports multiple commands in a single invocation:
   python3 swap_backend.py --swappiness 150
   python3 swap_backend.py --zram-enable 19 zstd --overcommit 1 --oomd disable --panic-on-oom 0
   python3 swap_backend.py --set thp madvise --set vfs_cache_pressure 50 --zswap off
+  python3 swap_backend.py --apply-boot          (run by equestria-swap-manager-boot.service)
+  python3 swap_backend.py --fix-root-owner --disable-unit zram.service
 
 Every kernel setting (--set <name>) is described once in memory_config.KNOBS.
 """
 import sys
 import os
+import glob
+import gzip
 import shutil
 import subprocess
 
 from memory_config import (
     KNOBS, FSTAB_PATH, ZRAM_GENERATOR, ZRAM_DROPIN, ZRAM_DEVICE,
     LEGACY_ZRAM_SERVICE, ZSWAP_PARAM, ZSWAP_TMPFILES, ZRAM_SYSCTL_FILE,
+    FILESYSTEM_MTREE_GLOB, read_saved_sysfs, foreign_zram_services,
 )
 
 BTRFS_SWAP_SUBVOL = "/swap"
@@ -138,6 +143,70 @@ def set_oomd(state):
     action = "enable" if state == "enable" else "disable"
     subprocess.run(["systemctl", action, "--now", "systemd-oomd"], check=False)
     sys.stdout.write(f"OK: systemd-oomd {action}d\n")
+
+
+# ── boot-time and system repair commands ──────────────────────────────────────
+
+def apply_saved_sysfs():
+    """Write our saved tmpfiles.d `w` values directly. Doesn't depend on
+    systemd-tmpfiles, which skips them when "/" isn't owned by root."""
+    for path, value in read_saved_sysfs():
+        try:
+            with open(path, "w") as f:
+                f.write(value)
+            sys.stdout.write(f"OK: {path} = {value}\n")
+        except OSError as e:
+            # one value the kernel refuses must not stop the others
+            sys.stderr.write(f"Skipped {path}: {e}\n")
+
+
+def _filesystem_dir_owners():
+    """{path: (uid, gid)} for directories of the `filesystem` package, from
+    its mtree — the ownership pacman installed them with."""
+    owners = {"/": (0, 0)}
+    for mtree in glob.glob(FILESYSTEM_MTREE_GLOB):
+        defaults = {}
+        with gzip.open(mtree, "rt") as f:
+            for line in f:
+                parts = line.split()
+                if not parts or parts[0].startswith("#"):
+                    continue
+                fields = dict(p.split("=", 1) for p in parts[1:] if "=" in p)
+                if parts[0] == "/set":
+                    defaults.update(fields)
+                    continue
+                entry = {**defaults, **fields}
+                if entry.get("type") == "dir" and parts[0].startswith("./"):
+                    owners[parts[0][1:]] = (int(entry.get("uid", 0)), int(entry.get("gid", 0)))
+    return owners
+
+
+def fix_root_owner():
+    """Give the base system directories (/, /usr, /etc, …) back to their
+    packaged owners. Only those directories themselves — nothing recursive."""
+    fixed = []
+    for path, (uid, gid) in sorted(_filesystem_dir_owners().items()):
+        try:
+            st = os.lstat(path)
+        except OSError:
+            continue
+        if os.path.islink(path) or (st.st_uid, st.st_gid) == (uid, gid):
+            continue
+        os.chown(path, uid, gid, follow_symlinks=False)
+        fixed.append(path)
+    sys.stdout.write("OK: owner restored: " + (", ".join(fixed) or "nothing to fix") + "\n")
+    # what tmpfiles skipped at boot can be applied right away now
+    apply_saved_sysfs()
+
+
+def disable_foreign_unit(name):
+    """Disable (not delete) a hand-written zram unit. No --now: its ExecStop
+    would swapoff/reset /dev/zram0, which zram-generator owns."""
+    if name not in foreign_zram_services():
+        raise ValueError(f"{name} is not an enabled zram service in /etc/systemd/system")
+    subprocess.run(["systemctl", "disable", name], check=True)
+    subprocess.run(["systemctl", "reset-failed", name], check=False)
+    sys.stdout.write(f"OK: {name} disabled (file kept)\n")
 
 
 # ── zram commands ─────────────────────────────────────────────────────────────
@@ -361,6 +430,18 @@ def main():
             elif cmd == "--zram-enable" and i + 2 < len(args):
                 ZramSetup().enable(args[i+1], args[i+2])
                 i += 3
+
+            elif cmd == "--apply-boot":
+                apply_saved_sysfs()
+                i += 1
+
+            elif cmd == "--fix-root-owner":
+                fix_root_owner()
+                i += 1
+
+            elif cmd == "--disable-unit" and i + 1 < len(args):
+                disable_foreign_unit(args[i+1])
+                i += 2
 
             elif cmd == "--zram-disable":
                 ZramSetup().disable()

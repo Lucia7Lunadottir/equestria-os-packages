@@ -29,6 +29,14 @@ ZSWAP_PARAM = "/sys/module/zswap/parameters/enabled"
 ZSWAP_TMPFILES = os.path.join(TMPFILES_DIR, "equestria-swap-manager-zswap.conf")
 FSTAB_PATH = "/etc/fstab"
 
+# sysfs values (THP, zswap) are saved as tmpfiles.d `w` lines. systemd-tmpfiles
+# silently skips them when "/" is not owned by root ("unsafe path transition"),
+# so this unit (shipped statically enabled) writes the same lines itself.
+BOOT_UNIT = "equestria-swap-manager-boot.service"
+SAVED_SYSFS_FILES = (MM_TMPFILES, ZSWAP_TMPFILES)
+FILESYSTEM_MTREE_GLOB = "/var/lib/pacman/local/filesystem-*/mtree"
+SYSTEMD_ETC_DIR = "/etc/systemd/system"
+
 ZRAM_ALGORITHMS = ("zstd", "lz4", "lzo-rle")
 
 MIB = 1024 * 1024
@@ -215,6 +223,74 @@ KNOBS = {k.name: k for k in (
 )}
 
 
+# ── saved sysfs values ────────────────────────────────────────────────────────
+
+def read_saved_sysfs():
+    """[(sysfs path, value)] from our tmpfiles.d `w` lines."""
+    saved = []
+    for conf in SAVED_SYSFS_FILES:
+        raw = _read(conf)
+        if raw is None:
+            continue
+        for line in raw.splitlines():
+            parts = line.split()
+            # w <path> <mode> <user> <group> <age> <value>
+            if len(parts) >= 7 and parts[0] == "w" and parts[1].startswith("/sys/"):
+                saved.append((parts[1], " ".join(parts[6:])))
+    return saved
+
+
+def sysfs_matches(path, value):
+    """Does the sysfs file currently hold `value`? None when unreadable.
+    Handles "always [madvise] never" lists and Y/N/1/0 booleans."""
+    raw = _read(path)
+    if raw is None:
+        return None
+    words = raw.split()
+    current = next((w[1:-1] for w in words if w.startswith("[") and w.endswith("]")), raw)
+    truth = {"y": "1", "n": "0", "1": "1", "0": "0"}
+    if current.lower() in truth and value.lower() in truth:
+        return truth[current.lower()] == truth[value.lower()]
+    return current == value
+
+
+# ── foreign zram services ─────────────────────────────────────────────────────
+
+def foreign_zram_services():
+    """Hand-written units in /etc/systemd/system that set up zram on their own
+    (not ours, not zram-generator's) and are enabled. Next to zram-generator
+    they fight over /dev/zram0 and fail at boot ("Device or resource busy")."""
+    found = []
+    try:
+        names = sorted(os.listdir(SYSTEMD_ETC_DIR))
+    except OSError:
+        return found
+    for name in names:
+        path = os.path.join(SYSTEMD_ETC_DIR, name)
+        if (not name.endswith(".service") or name == os.path.basename(LEGACY_ZRAM_SERVICE)
+                or os.path.islink(path) or not os.path.isfile(path)):
+            continue
+        text = _read(path) or ""
+        exec_lines = [l for l in text.splitlines() if l.strip().startswith("ExecStart")]
+        if not any("zram" in l for l in exec_lines):
+            continue
+        if _unit_enabled(name):
+            found.append(name)
+    return found
+
+
+def _unit_enabled(name):
+    """Enabled = a symlink to it in some *.wants / *.requires directory."""
+    try:
+        for entry in os.listdir(SYSTEMD_ETC_DIR):
+            if entry.endswith((".wants", ".requires")) and os.path.lexists(
+                    os.path.join(SYSTEMD_ETC_DIR, entry, name)):
+                return True
+    except OSError:
+        pass
+    return False
+
+
 # ── zram drop-in ──────────────────────────────────────────────────────────────
 
 def read_zram_dropin():
@@ -249,5 +325,6 @@ CONFIG_FILES = (
     ("files_tuning", TUNING_FILE),
     ("files_mm_tmpfiles", MM_TMPFILES),
     ("files_zswap", ZSWAP_TMPFILES),
+    ("files_boot_unit", "/usr/lib/systemd/system/" + BOOT_UNIT),
     ("files_fstab", FSTAB_PATH),
 )

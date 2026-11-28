@@ -10,8 +10,8 @@ import subprocess
 from dataclasses import dataclass, field
 
 from memory_config import (
-    KNOBS, ZSWAP_PARAM, LEGACY_ZRAM_SERVICE,
-    read_zram_dropin,
+    KNOBS, ZSWAP_PARAM, LEGACY_ZRAM_SERVICE, THP_ENABLED,
+    read_zram_dropin, read_saved_sysfs, sysfs_matches, foreign_zram_services,
 )
 
 RECOMMENDED_ALGORITHM = "zstd"
@@ -31,6 +31,20 @@ def read_ram_gb():
     except (OSError, ValueError):
         pass
     return 8
+
+
+def _owner_name(path):
+    try:
+        uid = os.stat(path).st_uid
+    except OSError:
+        return "root"
+    if uid == 0:
+        return "root"
+    try:
+        import pwd
+        return pwd.getpwuid(uid).pw_name
+    except (ImportError, KeyError):
+        return str(uid)
 
 
 @dataclass
@@ -61,6 +75,9 @@ class MemoryState:
     mem_used_gib: float = 0.0
     oomd_enabled: bool = False
     values: dict = field(default_factory=dict)       # knob name -> current value
+    unapplied: list = field(default_factory=list)    # saved sysfs paths not in effect
+    root_owner: str = "root"                         # owner of "/"
+    foreign_units: list = field(default_factory=list)  # hand-written zram services
 
     @classmethod
     def from_system(cls):
@@ -91,6 +108,10 @@ class MemoryState:
         except OSError:
             state.zswap_enabled = None
         state.values = {name: knob.read() for name, knob in KNOBS.items()}
+        state.unapplied = [path for path, value in read_saved_sysfs()
+                           if sysfs_matches(path, value) is False]
+        state.root_owner = _owner_name("/")
+        state.foreign_units = foreign_zram_services()
         return state
 
     def _read_meminfo(self):
@@ -183,8 +204,41 @@ class NoSwapCheck(Check):
         return None
 
 
+class RootOwnerCheck(Check):
+    """"/" owned by a user: systemd-tmpfiles then refuses every path under it
+    ("unsafe path transition") and our saved values aren't applied at boot."""
+
+    def inspect(self, state):
+        if state.root_owner != "root":
+            return Issue("health_root_owner", ["--fix-root-owner"], (state.root_owner,))
+        return None
+
+
+class NotAppliedCheck(Check):
+    """Values we saved for every boot (THP, zswap) aren't in effect now."""
+
+    def inspect(self, state):
+        if state.unapplied:
+            short = {THP_ENABLED: "THP", ZSWAP_PARAM: "zswap"}
+            names = ", ".join(short.get(p, os.path.basename(p)) for p in state.unapplied)
+            return Issue("health_not_applied", ["--apply-boot"], (names,))
+        return None
+
+
+class ForeignZramServiceCheck(Check):
+    def inspect(self, state):
+        if state.foreign_units:
+            fix = []
+            for name in state.foreign_units:
+                fix += ["--disable-unit", name]
+            return Issue("health_foreign_zram", fix, (", ".join(state.foreign_units),))
+        return None
+
+
 class ZswapWithZramCheck(Check):
     def inspect(self, state):
+        if ZSWAP_PARAM in state.unapplied:
+            return None  # NotAppliedCheck already reports it, with the cause
         if state.zram_active and state.zswap_enabled:
             return Issue("health_zswap", ["--zswap", "off"])
         return None
@@ -214,12 +268,15 @@ class ThpAlwaysCheck(Check):
     """THP "always" makes processes stall on memory compaction under pressure."""
 
     def inspect(self, state):
+        if THP_ENABLED in state.unapplied:
+            return None  # saved as madvise, just not applied — NotAppliedCheck
         if state.values.get("thp") == "always":
             return Issue("health_thp", ["--set", "thp", "madvise"], severity="info")
         return None
 
 
 CHECKS = (
+    RootOwnerCheck(), NotAppliedCheck(), ForeignZramServiceCheck(),
     LegacyServiceCheck(), ExtraZramCheck(), ZramNotRunningCheck(), NoSwapCheck(),
     ZswapWithZramCheck(), LowSwappinessCheck(), PageClusterCheck(), ThpAlwaysCheck(),
 )

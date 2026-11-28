@@ -1,0 +1,17 @@
+[Unit]
+Description=Equestria OS Swap Manager: apply saved memory settings (THP, zswap)
+Documentation=file:///opt/equestria-os/equestria-os-swap-manager/COMMANDS.md
+# Same values as /etc/tmpfiles.d/equestria-swap-manager-*.conf, written
+# directly: systemd-tmpfiles skips them when "/" isn't owned by root.
+DefaultDependencies=no
+After=local-fs.target systemd-tmpfiles-setup.service
+Before=sysinit.target shutdown.target
+Conflicts=shutdown.target
+ConditionPathExistsGlob=/etc/tmpfiles.d/equestria-swap-manager-*.conf
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/equestria-os-swap-backend --apply-boot
+
+# No [Install]: the package links it into sysinit.target.wants, so it
+# shows as "static" rather than a misleading "disabled".

@@ -1,8 +1,8 @@
 # Maintainer: Equestria OS Team
 
 pkgname=equestria-os-swap-manager
-pkgver=2.2.0
-pkgrel=1
+pkgver=2.3.0
+pkgrel=2
 pkgdesc="GUI tool for managing swap files, partitions, and swappiness"
 arch=('any')
 url="https://github.com/Lucia7Lunadottir"
@@ -35,6 +35,14 @@ EOF
 cd /opt/equestria-os/equestria-os-swap-manager/
 exec python3 swap_backend.py "$@"
 EOF
+
+    # включена «статически» (симлинк из пакета): при загрузке применяет
+    # сохранённые THP/zswap, даже если systemd-tmpfiles их пропустил
+    install -Dm644 "$startdir/equestria-swap-manager-boot.service" \
+        "$pkgdir/usr/lib/systemd/system/equestria-swap-manager-boot.service"
+    install -dm755 "$pkgdir/usr/lib/systemd/system/sysinit.target.wants"
+    ln -s ../equestria-swap-manager-boot.service \
+        "$pkgdir/usr/lib/systemd/system/sysinit.target.wants/equestria-swap-manager-boot.service"
 
     install -Dm644 "$startdir/equestria-os-swap-manager.desktop" \
         "$pkgdir/usr/share/applications/equestria-os-swap-manager.desktop"

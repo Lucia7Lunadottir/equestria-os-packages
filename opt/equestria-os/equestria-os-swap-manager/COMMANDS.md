@@ -34,6 +34,9 @@
 | `--oomd enable\|disable` | `set_oomd()` | `systemctl enable\|disable --now systemd-oomd`. |
 | `--zram-enable <size_gb> <algorithm>` | `ZramSetup.enable()` | См. подробно ниже. |
 | `--zram-disable` | `ZramSetup.disable()` | Выключает zram (drop-in с `zram-size = 0`) и возвращает zswap. |
+| `--apply-boot` | `apply_saved_sysfs()` | Читает наши `w`-строки из `/etc/tmpfiles.d/equestria-swap-manager-*.conf` и пишет значения в `/sys` сам. Его запускает `equestria-swap-manager-boot.service` при каждой загрузке (включена симлинком из пакета в `sysinit.target.wants`) — потому что `systemd-tmpfiles` молча пропускает эти строки, если `/` принадлежит не root («unsafe path transition»). |
+| `--fix-root-owner` | `fix_root_owner()` | Возвращает владельца `/` (root:root) и каталогам пакета `filesystem` (`/usr`, `/usr/bin`, …) — по его mtree в `/var/lib/pacman/local/filesystem-*/mtree`. Только сами каталоги, без рекурсии. Затем `--apply-boot`. |
+| `--disable-unit <имя>` | `disable_foreign_unit()` | `systemctl disable` (без `--now`, файл остаётся) для самописной службы zram из `/etc/systemd/system`. Принимается только имя, которое находит `foreign_zram_services()`. |
 
 ### Объяснение параметров ядра
 
@@ -74,14 +77,17 @@
 
 | Проверка | Когда срабатывает | Исправление |
 |---|---|---|
+| `RootOwnerCheck` | `/` принадлежит не root | `--fix-root-owner` |
+| `NotAppliedCheck` | сохранённые нами THP/zswap сейчас не действуют | `--apply-boot` |
+| `ForeignZramServiceCheck` | включена самописная служба в `/etc/systemd/system`, у которой в `ExecStart` есть `zram` (не наша и не zram-generator) — она дерётся с zram-generator за `/dev/zram0` и падает | `--disable-unit <имя>` |
 | `LegacyServiceCheck` | есть `/etc/systemd/system/equestria-zram.service` | `--zram-enable` (сам убирает службу) |
 | `ExtraZramCheck` | активно больше одного zram-swap | `--zram-enable` (сбрасывает лишние устройства) |
 | `ZramNotRunningCheck` | наш drop-in просит zram, но zram-swap не активен | `--zram-enable` с сохранёнными размером/алгоритмом |
 | `NoSwapCheck` | нет ни одного swap и zram не настроен | `--zram-enable` (50% ОЗУ, zstd) |
-| `ZswapWithZramCheck` | zram активен и zswap включён | `--zswap off` |
+| `ZswapWithZramCheck` | zram активен и zswap включён (молчит, если это уже показал `NotAppliedCheck`) | `--zswap off` |
 | `LowSwappinessCheck` | zram активен и swappiness < 100 | `--set swappiness 150` |
 | `PageClusterCheck` | zram активен и page-cluster ≠ 0 | `--set page_cluster 0` |
-| `ThpAlwaysCheck` | THP = always | `--set thp madvise` |
+| `ThpAlwaysCheck` | THP = always (молчит, если это уже показал `NotAppliedCheck`) | `--set thp madvise` |
 
 «Исправить всё» склеивает исправления в **один** вызов бэкенда (один запрос пароля), без повторов; `--zram-enable` идёт первым.
 
